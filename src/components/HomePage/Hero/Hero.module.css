@@ -28,7 +28,7 @@
   align-items: flex-start;
   justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 5rem;
+  gap: 3rem;
 }
 
 .right {
@@ -37,10 +37,15 @@
   justify-content: flex-end;
 }
 
-@media screen and (max-width: 968px) {
+@media screen and (max-width: 1268px) {
   .content {
     grid-template-columns: repeat(1, 1fr);
     gap: 5rem;
+  }
+
+  .right {
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 }
 

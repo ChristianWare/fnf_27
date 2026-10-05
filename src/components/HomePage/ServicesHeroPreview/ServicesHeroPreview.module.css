@@ -1,4 +1,73 @@
-.light2 {
-  background-color: var(--light2);
-  padding: 0.5rem;
+.container {
+  background-color: var(--light);
+  border-radius: 10px;
+  padding: 0.8rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  width: fit-content;
+}
+
+.mapDataContainer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.8rem;
+  height: 100%;
+}
+
+.imgContainer {
+  position: relative;
+  width: 74px;
+  height: 74px;
+}
+
+.img {
+  object-fit: cover;
+  object-position: top;
+  border-radius: 10px;
+  border: 1px solid var(--text);
+}
+
+.heading {
+  font-size: 1.8rem;
+  line-height: 140%;
+}
+
+.copy {
+  font-size: 1.4rem;
+  width: 300px;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+@media screen and (max-width: 1268px) {
+  .imgContainer {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .copy {
+    width: 100%;
+  }
+
+  .imgContainer {
+    height: 100%;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .copy {
+    width: 100%;
+  }
+
+  .imgContainer:nth-child(1), .imgContainer:nth-child(2) {
+display: none;
+  }
 }
