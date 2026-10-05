@@ -21,6 +21,11 @@
   color: inherit;
 }
 
+.arrow {
+  color: inherit;
+  transform: rotate(45deg);
+}
+
 .black,
 .black:link,
 .black:visited {
@@ -28,9 +33,16 @@
   color: var(--white);
 }
 
-.arrow {
-  color: var(--white);
-  transform: rotate(45deg);
+.blackUnderline,
+.blackUnderline:link,
+.blackUnderline:visited {
+  background-color: none;
+  color: var(--black);
+  padding-left: 0;
+  padding-right: 0;
+  border-bottom: 1px solid var(--black);
+  padding-bottom: 7px;
+  border-radius: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
