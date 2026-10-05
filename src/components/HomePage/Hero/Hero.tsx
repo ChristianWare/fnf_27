@@ -12,10 +12,10 @@ export default function Hero() {
           <div className={styles.left}>
             <EyeBrow text='Black car & limo operators' />
             <h1 className={`${styles.heading} display1`}>
-              Expand your <br /> Black Car Business.
+              Expand your 👨‍✈️ <br /> Black Car Business.
             </h1>
             <p className={styles.copy}>
-              We build websites, booking software and leads for black car & limo
+              We build websites, booking software and leads generation tools for black car & limo
               operators. Get found on Google, take bookings directly with no
               per-booking fees, and fill the slow months with corporate
               accounts, hotels and events in your market.
