@@ -1,0 +1,20 @@
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .5rem;
+}
+
+.dot {
+  background-color: var(--black);
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+}
+
+.text {
+  font-family: var(--IBMPlex);
+  font-size: 1.4rem;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}

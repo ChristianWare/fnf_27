@@ -1,0 +1,40 @@
+.btn {
+  position: relative;
+  overflow: hidden;
+  gap: 2rem;
+  padding: 14px 22px;
+  border-radius: 50px;
+  font-family: var(--CreatoDisplayExtraBold);
+  text-transform: capitalize;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn:link,
+.btn:visited {
+  color: inherit;
+}
+
+.black,
+.black:link,
+.black:visited {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.arrow {
+  color: var(--white);
+  transform: rotate(45deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .container:hover .arrow {
+    transform: rotate(90deg) translateY(-5px);
+  }
+}
