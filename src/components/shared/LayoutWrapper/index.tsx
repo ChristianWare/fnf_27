@@ -3,26 +3,13 @@ import styles from "./LayoutWrapper.module.css";
 
 interface Props {
   children: React.ReactNode;
-  borderDark?: boolean;
-  borderDarkii?: boolean;
-  lightGrayBorder?: boolean;
+  paddingNSNone?: string;
 }
 
-const LayoutWrapper = ({
-  children,
-  borderDark = false,
-  borderDarkii = false,
-  lightGrayBorder = false,
-}: Props) => {
+const LayoutWrapper = ({ children, paddingNSNone = "" }: Props) => {
   return (
     <div className={styles.layout}>
-      <ContentPadding
-        borderDark={borderDark}
-        borderDarkii={borderDarkii}
-        lightGrayBorder={lightGrayBorder}
-      >
-        {children}
-      </ContentPadding>
+      <ContentPadding paddingNSNone={paddingNSNone}>{children}</ContentPadding>
     </div>
   );
 };

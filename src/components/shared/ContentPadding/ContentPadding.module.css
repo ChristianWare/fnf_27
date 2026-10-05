@@ -10,25 +10,14 @@
 .container {
   padding-top: 3rem;
   background-color: transparent;
-
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.borderDark {
-  border-left: 1px solid var(--blackii);
-  border-right: 1px solid var(--blackii);
-}
-
-.borderDarkii {
-  border-left: 1px solid var(--lightGrayV);
-  border-right: 1px solid var(--lightGrayV);
-}
-
-.lightGrayBorder {
-  border-left: 1px solid var(--lightGrayBorder);
-  border-right: 1px solid var(--lightGrayBorder);
+.paddingNSNone {
+  padding-top: 0rem;
+  padding-bottom: 0rem;
 }
 
 /* @media screen and (max-width: 870px) {
@@ -40,5 +29,10 @@
 @media screen and (max-width: 568px) {
   .container {
     padding-top: 4rem;
+  }
+
+  .paddingNSNone {
+    padding-top: 0rem;
+    padding-bottom: 0rem;
   }
 }

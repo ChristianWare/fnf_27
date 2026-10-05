@@ -45,6 +45,13 @@
   border-radius: 0;
 }
 
+.grayNav,
+.grayNav:link,
+.grayNav:visited {
+  padding: 17px 24px;
+  background-color: var(--light);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .container:hover .arrow {
     transform: rotate(90deg) translateY(-5px);

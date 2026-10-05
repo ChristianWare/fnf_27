@@ -1,0 +1,42 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.5rem;
+}
+
+/* The background lives here, not on the image: a filter on .logo
+   would invert the image's own background along with the logo. */
+.logoWrapper {
+  --slant: -14deg; /* negative leans right; change this one value to adjust */
+  background-color: var(--black);
+  border-radius: 5px;
+  padding: .01rem;
+  transform: skewX(var(--slant));
+}
+
+.logo {
+  display: block;
+  width: 50px;
+  padding: 1rem;
+  height: auto;
+  object-fit: contain;
+  border-radius: inherit;
+  filter: brightness(0) invert(1); /* turns the black PNG white */
+  transform: skewX(calc(var(--slant) * -1)); /* cancels the slant so the logo stays upright */
+}
+
+.text {
+  font-size: 2rem;
+  font-family: var(--CreatoDisplayMedium);
+  line-height: 0;
+  color: var(--black);
+  letter-spacing: -.1px;
+  /* text-transform: uppercase; */
+}
+
+@media screen and (max-width: 568px) {
+  .text {
+    display: none;
+  }
+}
