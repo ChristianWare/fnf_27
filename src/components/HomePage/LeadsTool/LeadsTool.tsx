@@ -45,7 +45,7 @@ export default function LeadsTool() {
             <div className={styles.topLeft}>
               <EyeBrow text="Leads tool" color="white" />
               <h2 className={styles.heading}>
-                Find your next client before your competition does.
+                Find your next client before your competition does
               </h2>
               <p className={styles.copy}>
                 Three lead temperatures, delivered to your inbox every morning.
@@ -69,7 +69,7 @@ export default function LeadsTool() {
                 <li className={styles.card} key={lead.id}>
                   <div className={styles.cardLeft}>
                     <span className={styles.number}>0{lead.id}</span>
-                    <h3 className={`${styles.title} h6`}>{lead.title}</h3>
+                    <h3 className={`${styles.title} h5`}>{lead.title}</h3>
                   </div>
                   <div className={styles.cardRight}>
                     <span className={styles.cardLabel}>{lead.label}</span>

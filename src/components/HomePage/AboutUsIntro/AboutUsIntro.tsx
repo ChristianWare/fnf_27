@@ -40,7 +40,7 @@ export default function AboutUsIntro() {
             <div className={styles.topLeft}>
               <EyeBrow text='About Us' />
               <h2 className={styles.heading}>
-                Built by One Developer <br /> for One Industry.
+                Built by One Developer <br /> for One Industry
               </h2>
               <p className={styles.copy}>
                 I'm Chris Ware, the developer behind it. I built the platform
