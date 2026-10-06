@@ -91,7 +91,7 @@ export default function Faq() {
                     <button
                       type='button'
                       id={`faq-question-${faq.id}`}
-                      className={`${styles.question} subHeading`}
+                      className={`${styles.question} h6`}
                       aria-expanded={open}
                       aria-controls={`faq-answer-${faq.id}`}
                       onClick={() => setOpenId(open ? null : faq.id)}

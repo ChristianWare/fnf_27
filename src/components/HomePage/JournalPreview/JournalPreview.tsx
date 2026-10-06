@@ -48,7 +48,7 @@ export default function JournalPreview() {
         <div className={styles.content}>
           <div className={styles.left}>
             <EyeBrow text='Journal' />
-            <h2 className={styles.heading}>Guides for operators.</h2>
+            <h2 className={styles.heading}>Guides for operators</h2>
             <p className={styles.copy}>
               Straight answers on booking software, getting found and winning
               accounts.
@@ -72,7 +72,7 @@ export default function JournalPreview() {
                       <span className={styles.category}>{post.category}</span>
                       <span className={styles.date}>{post.date}</span>
                     </div>
-                    <h3 className={`${styles.title} subHeading`}>
+                    <h3 className={`${styles.title} h6`}>
                       {post.title}
                     </h3>
                   </div>

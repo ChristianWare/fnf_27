@@ -7,6 +7,7 @@ import LeadsIcon from "@/components/shared/icons/LeadsIcon/LeadsIcon";
 import Platform from "@/components/shared/icons/Platform/Platform";
 import Design from "@/components/shared/icons/Design/Design";
 import Chris from "../../../../public/images/chris.png";
+import Logo from "@/components/shared/Logo/Logo";
 
 const plans = [
   {
@@ -98,12 +99,10 @@ export default function Pricing() {
                     <div className={styles.iconTile}>
                       <Icon className={styles.icon} aria-hidden='true' />
                     </div>
-                    <h3 className={`${styles.planName} subHeading`}>
-                      {plan.name}
-                    </h3>
+                    <h3 className={`${styles.planName} h5`}>{plan.name}</h3>
                     <p className={styles.planDesc}>{plan.desc}</p>
                     <div className={styles.priceRow}>
-                      <span className={styles.price}>{plan.price}</span>
+                      <span className={`${styles.price} h2`}>{plan.price}</span>
                       <span className={styles.per}>{plan.per}</span>
                     </div>
                     <p className={styles.setup}>{plan.setup}</p>
@@ -127,7 +126,7 @@ export default function Pricing() {
 
           <div className={styles.help}>
             <div className={styles.helpLeft}>
-              <div className={styles.avatar}>
+              {/* <div className={styles.avatar}>
                 <Image
                   src={Chris}
                   alt='Chris Ware, founder of Fonts & Footers'
@@ -135,7 +134,8 @@ export default function Pricing() {
                   sizes='48px'
                   className={styles.avatarImg}
                 />
-              </div>
+              </div> */}
+              <Logo noText blur='blur' />
               <div className={styles.helpText}>
                 <span className={styles.helpTitle}>
                   Not sure which plan fits?

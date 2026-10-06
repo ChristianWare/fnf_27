@@ -26,7 +26,7 @@ export default function Hero() {
                 arrow
               />
               <Button
-                btnType='blackUnderline'
+                btnType='gray'
                 text='run a free website audit'
                 arrow
               />

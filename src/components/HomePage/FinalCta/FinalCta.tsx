@@ -12,7 +12,7 @@ export default function FinalCta() {
         <div className={styles.cardTop}>
           <EyeBrow text='Let&#39;s work together' />
           <h2 className={styles.heading}>
-            Start with free leads in your city.
+            Ready to expand your 👨‍✈️ black car business?
           </h2>
           <p className={styles.copy}>
             See the hotels, venues and events you could be calling this week.

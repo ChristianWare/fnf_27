@@ -60,6 +60,10 @@
   border-radius: 4px;
 }
 
+.question[aria-expanded="true"] {
+  padding-bottom: 1.4rem;
+}
+
 /* The plus sign. It turns into an x when the answer is open. */
 .plus {
   position: relative;
@@ -112,8 +116,8 @@
 .answer {
   max-width: 580px;
   padding-bottom: 2.6rem;
-  margin-top: -1.2rem;
-  font-size: 1.4rem;
+  /* margin-top: -1.2rem; */
+  font-size: 1.6rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
