@@ -26,6 +26,10 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
         smoothWheel: !reducedMotion,
         // Links to a spot on the same page (href='#pricing') glide there.
         anchors: true,
+        // Leave sideways gestures alone, so rows that scroll sideways (like
+        // the booking cards on smaller screens) still work with a trackpad.
+        virtualScroll: ({ deltaX, deltaY }) =>
+          Math.abs(deltaX) <= Math.abs(deltaY),
       }}
     >
       {children}

@@ -252,6 +252,41 @@
     width: 215px;
     height: 225px;
   }
+
+  .set {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    scroll-snap-align: start;
+  }
+
+  .block {
+    display: contents;
+  }
+
+  .name {
+    padding: 2.5rem 2rem;
+  }
+
+  .quote {
+    order: 1;
+    grid-column: span 2;
+    gap: 2rem;
+    padding: 2.5rem;
+  }
+
+  .name {
+    order: 2;
+    grid-column: span 2;
+    padding: 2.5rem 2rem;
+  }
+
+  .photo {
+    width: 100%;
+  }
+
+  .desc {
+    font-size: 18px;
+  }
 }
 
 @media screen and (max-width: 568px) {

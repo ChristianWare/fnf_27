@@ -20,7 +20,7 @@ const plans = [
     href: "/leads",
     Icon: LeadsIcon,
     featured: false,
-    tab: "",
+    tab: "For winning accounts",
     features: [
       "Hot, warm and cold leads",
       "Decision-maker contacts",
@@ -40,7 +40,7 @@ const plans = [
     href: "/services/booking-software",
     Icon: Platform,
     featured: true,
-    tab: "",
+    tab: "For booking direct",
     features: [
       "Custom website",
       "Direct booking & dispatch",
@@ -62,7 +62,7 @@ const plans = [
     href: "/services/websites",
     Icon: Design,
     featured: false,
-    tab: "Keep your booking software",
+    tab: "For getting found",
     features: [
       "Custom website",
       "SEO foundation",
@@ -86,7 +86,11 @@ export default function Pricing() {
           <div className={styles.plans}>
             {plans.map(({ Icon, ...plan }) => (
               <div className={styles.planWrap} key={plan.id}>
-                {plan.tab && <div className={styles.tab}>{plan.tab}</div>}
+                <div
+                  className={`${styles.tab} ${plan.featured ? styles.tabFeatured : ""}`}
+                >
+                  {plan.tab}
+                </div>
                 <article
                   className={`${styles.plan} ${plan.featured ? styles.featured : ""}`}
                 >

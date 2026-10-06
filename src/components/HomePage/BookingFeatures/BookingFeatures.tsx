@@ -78,7 +78,7 @@ export default function BookingFeatures() {
     const track = trackRef.current;
     if (!wrap || !sticky || !viewport || !track) return;
 
-    const wide = window.matchMedia("(min-width: 969px)");
+    const wide = window.matchMedia("(min-width: 769px)");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     let pinned = false;

@@ -17,29 +17,37 @@
   align-items: flex-start;
   justify-content: flex-start;
   gap: 2rem;
-  padding-bottom: 5rem;
+  padding-bottom: 1.6rem;
 }
 
-/* Three plans. They line up along the bottom, so the one with a tab on
-   top stands a little taller. */
 .plans {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: end;
   gap: 0.8rem;
   width: 100%;
 }
 
+/* The space above each plan is reserved for its tab, so nothing moves
+   when the tab appears. */
 .planWrap {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  padding-top: 3.4rem;
 }
 
-/* The label that sits on top of a plan, like a folder tab. */
+/* The label on top of a plan, like a folder tab. It hides behind the top
+   of the card and slides up when the card is hovered (or a link inside it
+   has keyboard focus). */
 .tab {
-  padding: 1.4rem 2rem 3.4rem;
-  margin-bottom: -2rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  height: 5.4rem;
+  padding: 1.4rem 2rem 0;
   border-radius: 2rem 2rem 0 0;
   background-color: var(--light2);
   font-family: var(--IBMPlex);
@@ -49,10 +57,40 @@
   text-transform: uppercase;
   text-align: center;
   color: var(--text);
+  opacity: 0;
+  transform: translateY(3.4rem);
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.tabFeatured {
+  background-color: #1c1c1e;
+  color: var(--white);
+}
+
+.planWrap:focus-within .tab {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .planWrap:hover .tab {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab {
+    transition: opacity 0.2s ease;
+  }
 }
 
 .plan {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -92,9 +130,9 @@
 
 .planDesc {
   margin-top: 0.8rem;
-  max-width: 340px;
-  min-height: 6.2rem;
-  font-size: 1.4rem;
+  max-width: 380px;
+  min-height: 6.8rem;
+  font-size: 1.6rem;
 }
 
 .priceRow {
@@ -241,9 +279,22 @@
 }
 
 @media screen and (max-width: 968px) {
+  .top {
+    padding-bottom: 5rem;
+  }
+
   .plans {
     grid-template-columns: repeat(1, 1fr);
     gap: 1.2rem;
+  }
+
+  /* Stacked cards have no room for tabs, and there's no hover on touch. */
+  .planWrap {
+    padding-top: 0;
+  }
+
+  .tab {
+    display: none;
   }
 
   .planDesc,
