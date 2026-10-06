@@ -5,6 +5,7 @@ import Img1 from "../../../../public/images/freeLeads.jpg";
 import Img2 from "../../../../public/images/fullPlatform.jpg";
 import Img3 from "../../../../public/images/websiteOnly.jpg";
 import Img4 from "../../../../public/images/freeAudit.jpg";
+import Reveal from "@/components/shared/Reveal/Reveal";
 
 // Paste this over your existing `data` array.
 // Img1 to Img4 are the image imports you already have in the component.
@@ -78,6 +79,7 @@ export default function Problems() {
         <div className={styles.mapDataContainer}>
           {data.map((x, index) => (
             <div className={styles.card} key={x.id}>
+              <Reveal />
               <LayoutWrapper
                 paddingNSNone='paddingNSNone'
                 pRightSmall='pRightSmall'
@@ -85,18 +87,30 @@ export default function Problems() {
                 <div className={styles.cardContent}>
                   <div className={styles.left}>
                     <div className={styles.l1}>
-                      <h2 className={`${styles.title} h4`}>00{index + 1}</h2>
+                      <h2
+                        className={`${styles.title} h4`}
+                        data-reveal
+                        data-reveal-style='fade'
+                      >
+                        00{index + 1}
+                      </h2>
                     </div>
                     <div className={styles.l2}>
-                      <h2 className={`${styles.title} h4`}>{x.title}</h2>
-                      <ul className={styles.bullets}>
+                      <h2
+                        className={`${styles.title} h4`}
+                        data-reveal
+                        data-reveal-style='fade'
+                      >
+                        {x.title}
+                      </h2>
+                      <ul className={styles.bullets} data-reveal>
                         {x.bullets.map((bullet) => (
                           <li key={bullet}>{bullet}</li>
                         ))}
                       </ul>
                     </div>
                   </div>
-                  <div className={styles.right}>
+                  <div className={styles.right} data-reveal>
                     <SlideInImage src={x.src} className={styles.imgContainer} />
                   </div>
                 </div>

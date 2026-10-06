@@ -12,6 +12,7 @@ import Plane from "@/components/shared/icons/Plane/Plane";
 import Target from "@/components/shared/icons/Target/Target";
 import Cursor from "@/components/shared/icons/Cursor/Cursor";
 import NierHomePage from "../../../../public/images/nierHomePage.png";
+import Reveal from "@/components/shared/Reveal/Reveal";
 
 const facts = [
   { id: 1, text: "40 city pages", Icon: Location },
@@ -25,21 +26,26 @@ export default function NierCaseStudy() {
 
   return (
     <section className={styles.container}>
+      <Reveal />
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.left}>
             <div className={styles.leftTop}>
               <EyeBrow text="Real results" />
-              <h2 className={`${styles.heading}`}>
+              <h2
+                className={`${styles.heading}`}
+                data-reveal
+                data-reveal-style='fade'
+              >
                 Built with a working operator in Phoenix
               </h2>
-              <p className={styles.copy}>
+              <p className={styles.copy} data-reveal>
                 Nier Transportation has run black car service in Phoenix since
                 2004. Barry LaNier was paying per-booking fees to platforms that
                 owned his customer list. Now his clients book on his own site,
                 under his own name, with $0 per-booking fees.
               </p>
-              <figure className={styles.quote}>
+              <figure className={styles.quote} data-reveal>
                 <blockquote className={styles.quoteText}>
                   &ldquo;Fonts &amp; Footers built us a direct booking platform
                   that looks better than anything our competitors are running,
@@ -50,7 +56,7 @@ export default function NierCaseStudy() {
                   Barry LaNier, Owner, Nier Transportation
                 </figcaption>
               </figure>
-              <div className={styles.btnContainer}>
+              <div className={styles.btnContainer} data-reveal>
                 <Button
                   href="/projects/nier-transportation"
                   btnType="black"
@@ -67,7 +73,7 @@ export default function NierCaseStudy() {
               </div>
             </div>
 
-            <ul className={styles.facts}>
+            <ul className={styles.facts} data-reveal>
               {facts.map(({ id, text, Icon }) => (
                 <li className={styles.fact} key={id}>
                   <Icon className={styles.factIcon} aria-hidden="true" />
@@ -77,7 +83,7 @@ export default function NierCaseStudy() {
             </ul>
           </div>
 
-          <div className={styles.right}>
+          <div className={styles.right} data-reveal>
             <button
               type="button"
               className={styles.imgContainer}

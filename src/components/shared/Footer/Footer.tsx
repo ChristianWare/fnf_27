@@ -6,6 +6,7 @@ import NewsletterForm from "./NewsletterForm";
 import LinkedIn from "../icons/LinkedIn/LinkedIn";
 import Instagram from "../icons/Instagram/Instagram";
 import Facebook from "../icons/Facebook/Facebook";
+import Reveal from "@/components/shared/Reveal/Reveal";
 
 // Contact details. Keep them exactly as they appear on the Fonts & Footers
 // Google Business Profile. Leave PHONE empty to hide it.
@@ -104,9 +105,10 @@ const columns = [
 export default function Footer() {
   return (
     <footer className={styles.container}>
+      <Reveal mode='together' />
       <LayoutWrapper>
         <div className={styles.content}>
-          <div className={styles.top}>
+          <div className={styles.top} data-reveal>
             <div className={styles.left}>
               <div className={styles.brand}>
                 <Logo noText blur='blur' />
@@ -192,7 +194,7 @@ export default function Footer() {
             </nav>
           </div>
 
-          <div className={styles.about}>
+          <div className={styles.about} data-reveal>
             <p>
               Websites, booking software and leads, built only for black car and
               limo operators. Get found on Google, take bookings directly with
@@ -205,7 +207,7 @@ export default function Footer() {
             </p>
           </div>
 
-          <div className={styles.bottom}>
+          <div className={styles.bottom} data-reveal>
             <span>
               © {new Date().getFullYear()}{" "}
               <span className={styles.white}>Fonts &amp; Footers</span>

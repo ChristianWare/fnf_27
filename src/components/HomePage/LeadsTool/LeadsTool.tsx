@@ -3,6 +3,7 @@ import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./LeadsTool.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
+import Reveal from "@/components/shared/Reveal/Reveal";
 
 const leads = [
   {
@@ -28,6 +29,7 @@ const leads = [
 export default function LeadsTool() {
   return (
     <section className={styles.container}>
+      <Reveal />
       {/* The background stays put while the page scrolls over it. */}
       <div className={styles.bg} aria-hidden="true">
         <Image
@@ -66,7 +68,7 @@ export default function LeadsTool() {
           <div className={styles.bottom}>
             <ol className={styles.steps}>
               {leads.map((lead) => (
-                <li className={styles.card} key={lead.id}>
+                <li className={styles.card} key={lead.id} data-reveal='each'>
                   <div className={styles.cardLeft}>
                     <span className={styles.number}>0{lead.id}</span>
                     <h3 className={`${styles.title} h5`}>{lead.title}</h3>

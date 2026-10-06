@@ -21,6 +21,7 @@ import Payment from "@/components/shared/icons/Payment/Payment";
 import DirectBookingImg from "../../../../public/images/happyClient.jpg";
 import FlightTrackingImg from "../../../../public/images/dispatch.jpg";
 import PaymentImg from "../../../../public/images/takePayments.jpg";
+import Reveal from "@/components/shared/Reveal/Reveal";
 
 const EASE = 0.14; // how quickly the cards catch up with the scroll (0 to 1)
 
@@ -171,9 +172,10 @@ export default function BookingFeatures() {
 
   return (
     <section ref={wrapRef} className={styles.container}>
+      <Reveal mode='together' />
       <div ref={stickyRef} className={styles.sticky}>
         <LayoutWrapper>
-          <div className={styles.top}>
+          <div className={styles.top} data-reveal>
             <div className={styles.topLeft}>
               <EyeBrow text='Booking software' />
               <h2 className={`${styles.heading} h3`}>
@@ -197,7 +199,7 @@ export default function BookingFeatures() {
           </div>
         </LayoutWrapper>
 
-        <div ref={viewportRef} className={styles.viewport}>
+        <div ref={viewportRef} className={styles.viewport} data-reveal>
           <ul ref={trackRef} className={styles.track}>
             {features.map(({ Icon, ...feature }) => (
               <li className={styles.set} key={feature.id}>

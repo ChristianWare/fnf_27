@@ -8,6 +8,7 @@ import Chris from "../../../../public/images/chris.png";
 import Img1 from "../../../../public/images/WhyWeExist.jpg";
 import Img2 from "../../../../public/images/call.jpg";
 import Img3 from "../../../../public/images/range.jpg";
+import Reveal from "@/components/shared/Reveal/Reveal";
 
 // Placeholder articles. Swap these for the three latest Journal posts once
 // the Journal is live (titles are from the site plan's first posts).
@@ -44,9 +45,10 @@ const posts = [
 export default function JournalPreview() {
   return (
     <section className={styles.container}>
+      <Reveal />
       <LayoutWrapper>
         <div className={styles.content}>
-          <div className={styles.left}>
+          <div className={styles.left} data-reveal>
             <EyeBrow text='Journal' />
             <h2 className={styles.heading}>Guides for operators</h2>
             <p className={styles.copy}>
@@ -65,7 +67,12 @@ export default function JournalPreview() {
 
           <div className={styles.right}>
             {posts.map((post) => (
-              <Link href={post.href} className={styles.card} key={post.id}>
+              <Link
+                href={post.href}
+                className={styles.card}
+                key={post.id}
+                data-reveal='each'
+              >
                 <div className={styles.cardLeft}>
                   <div className={styles.cardTop}>
                     <div className={styles.meta}>

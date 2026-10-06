@@ -8,6 +8,7 @@ import Platform from "@/components/shared/icons/Platform/Platform";
 import Design from "@/components/shared/icons/Design/Design";
 import Chris from "../../../../public/images/chris.png";
 import Logo from "@/components/shared/Logo/Logo";
+import Reveal from "@/components/shared/Reveal/Reveal";
 
 const plans = [
   {
@@ -77,16 +78,19 @@ const plans = [
 export default function Pricing() {
   return (
     <section className={styles.container}>
+      <Reveal />
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.top}>
             <EyeBrow text='Pricing' />
-            <h2 className={styles.heading}>Flat prices, published.</h2>
+            <h2 className={styles.heading} data-reveal data-reveal-style='fade'>
+              Flat prices, published.
+            </h2>
           </div>
 
           <div className={styles.plans}>
             {plans.map(({ Icon, ...plan }) => (
-              <div className={styles.planWrap} key={plan.id}>
+              <div className={styles.planWrap} key={plan.id} data-reveal>
                 <div
                   className={`${styles.tab} ${plan.featured ? styles.tabFeatured : ""}`}
                 >
@@ -124,7 +128,7 @@ export default function Pricing() {
             ))}
           </div>
 
-          <div className={styles.help}>
+          <div className={styles.help} data-reveal>
             <div className={styles.helpLeft}>
               {/* <div className={styles.avatar}>
                 <Image

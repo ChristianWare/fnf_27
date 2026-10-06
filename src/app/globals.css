@@ -359,3 +359,38 @@ textarea:focus {
     letter-spacing: 0;
   }
 }
+
+/* ── Fade-ins (see components/shared/Reveal) ──
+   The hidden starting state only applies once the script in the root
+   layout has marked the page, so nothing is ever hidden without
+   JavaScript. */
+html[data-reveal-ready] [data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  transform: translate3d(0, 2.4rem, 0);
+}
+
+html[data-reveal-ready] [data-reveal-style="fade"]:not([data-revealed]) {
+  transform: none;
+}
+
+html [data-reveal] {
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+html [data-reveal-style="fade"] {
+  transition-duration: 1.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-reveal-ready] [data-reveal]:not([data-revealed]) {
+    opacity: 1;
+    transform: none;
+  }
+
+  html [data-reveal] {
+    transition: none;
+  }
+}

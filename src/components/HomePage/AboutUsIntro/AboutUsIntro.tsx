@@ -3,6 +3,7 @@ import styles from "./AboutUsIntro.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
+import Reveal from "@/components/shared/Reveal/Reveal";
 
 const data = [
   {
@@ -34,15 +35,20 @@ const data = [
 export default function AboutUsIntro() {
   return (
     <section className={styles.container}>
+      <Reveal />
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
               <EyeBrow text='About Us' />
-              <h2 className={styles.heading}>
+              <h2
+                className={styles.heading}
+                data-reveal
+                data-reveal-style='fade'
+              >
                 Built by One Developer <br /> for One Industry
               </h2>
-              <p className={styles.copy}>
+              <p className={styles.copy} data-reveal>
                 I'm Chris Ware, the developer behind it. I built the platform
                 and refined it on real bookings, real drivers and real corporate
                 clients until it ran his whole business. When you work with
@@ -50,14 +56,14 @@ export default function AboutUsIntro() {
                 a ticket system.
               </p>
             </div>
-            <div className={styles.topRight}>
+            <div className={styles.topRight} data-reveal>
               <Button btnType='black' text='More about us' arrow />
             </div>
           </div>
           <div className={styles.bottom}>
             <div className={styles.mapDataContainer}>
               {data.map((x) => (
-                <div className={styles.card} key={x.id}>
+                <div className={styles.card} key={x.id} data-reveal>
                   <div className={styles.cardLeft}>
                     <div className={styles.iconContainer}>{x.icon}</div>
                   </div>
