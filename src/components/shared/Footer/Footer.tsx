@@ -210,7 +210,7 @@ export default function Footer() {
           <div className={styles.bottom} data-reveal>
             <span>
               © {new Date().getFullYear()}{" "}
-              <span className={styles.white}>Fonts &amp; Footers</span>
+              <span className={styles.white}> Fonts &amp; Footers</span>
             </span>
             <span className={styles.bottomRight}>
               <Link href='/privacy' className={styles.white}>
