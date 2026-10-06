@@ -10,6 +10,10 @@ import NierCaseStudy from "@/components/HomePage/NierCaseStudy/NierCaseStudy";
 import LeadsTool from "@/components/HomePage/LeadsTool/LeadsTool";
 import BookingFeatures from "@/components/HomePage/BookingFeatures/BookingFeatures";
 import Pricing from "@/components/HomePage/Pricing/Pricing";
+import JournalPreview from "@/components/HomePage/JournalPreview/JournalPreview";
+import Faq from "@/components/HomePage/Faq/Faq";
+import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
+import Footer from "@/components/shared/Footer/Footer";
 
 export default function Home() {
   return (
@@ -25,6 +29,10 @@ export default function Home() {
       <LeadsTool />
       <BookingFeatures />
       <Pricing />
+      <JournalPreview />
+      <Faq />
+      <FinalCta />
+      <Footer />
     </main>
   );
 }

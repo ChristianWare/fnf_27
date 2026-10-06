@@ -1,0 +1,151 @@
+.container {
+  padding: 10rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  width: 100%;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 480px;
+}
+
+.btnContainer {
+  margin-top: 1rem;
+}
+
+.right {
+  width: 100%;
+  border-bottom: 1px solid var(--light);
+}
+
+.item {
+  border-top: 1px solid var(--light);
+}
+
+.itemHeading {
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+.question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  width: 100%;
+  padding: 2.6rem 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.question:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* The plus sign. It turns into an x when the answer is open. */
+.plus {
+  position: relative;
+  flex: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.plus::before,
+.plus::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background-color: var(--black);
+  transform: translateY(-50%);
+}
+
+.plus::after {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.plusOpen {
+  transform: rotate(45deg);
+}
+
+/* The answer slides open: its row grows from zero height to its natural
+   height. */
+.answerWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.35s ease,
+    visibility 0.35s;
+}
+
+.answerOpen {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+
+.answerInner {
+  overflow: hidden;
+}
+
+.answer {
+  max-width: 580px;
+  padding-bottom: 2.6rem;
+  margin-top: -1.2rem;
+  font-size: 1.4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plus,
+  .answerWrap {
+    transition: none;
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .content {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 5rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  .question {
+    padding: 2.2rem 0;
+  }
+
+  .answer {
+    padding-bottom: 2.2rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+}

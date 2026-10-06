@@ -40,6 +40,13 @@
   color: var(--black);
 }
 
+.gray,
+.gray:link,
+.gray:visited {
+  background-color: var(--light2);
+  color: var(--black);
+}
+
 .blackUnderline,
 .blackUnderline:link,
 .blackUnderline:visited {
