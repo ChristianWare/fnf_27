@@ -5,8 +5,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./ProofStrip.module.css";
-import Image from "next/image";
-import LogoImg from "../../../../public/logos/fnf_logo_black.png";
+
+import Logo from "@/components/shared/Logo/Logo";
 
 const VIDEO_SRC = "/videos/heroii.mp4";
 const POSTER = "/images/proof-poster.jpg"; // the clip's first frame
@@ -47,14 +47,6 @@ export default function ProofStrip({
     }
   }
 
-  const items = [
-    "Nier Transportation, Phoenix",
-    "In business since 2004",
-    "$0 per-booking fees",
-    "Books online 24/7",
-    ...(googleRating ? [`${googleRating} on Google`] : []),
-  ];
-
   return (
     <section
       className={styles.container}
@@ -78,14 +70,7 @@ export default function ProofStrip({
       <div className={styles.overlay} />
 
       <div className={styles.content}>
-        <div className={styles.imgContainer}>
-          <Image src={LogoImg} alt='' title='' className={styles.img} fill />
-        </div>
-        <h2 className={`${styles.heading} h6`}>
-          Fonts & Footers is a web development agency that builds websites,
-          booking software and lead tools for black car and limo operators, and
-          no one else.
-        </h2>
+        <Logo noText blur='blur' logoLarge='logoLarge' />
       </div>
 
       <button

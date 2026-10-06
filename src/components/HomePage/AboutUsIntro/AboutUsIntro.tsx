@@ -43,10 +43,8 @@ export default function AboutUsIntro() {
                 Built by One Developer <br /> for One Industry.
               </h2>
               <p className={styles.copy}>
-                I'm Chris Ware, the developer behind
-                it. I built the platform alongside Barry LaNier at Nier
-                Transportation, a Phoenix black car company since 2004, and
-                refined it on real bookings, real drivers and real corporate
+                I'm Chris Ware, the developer behind it. I built the platform
+                and refined it on real bookings, real drivers and real corporate
                 clients until it ran his whole business. When you work with
                 Fonts & Footers, you work with me: the person who built it, not
                 a ticket system.
@@ -64,7 +62,7 @@ export default function AboutUsIntro() {
                     <div className={styles.iconContainer}>{x.icon}</div>
                   </div>
                   <div className={styles.cardRight}>
-                    <h3 className={`${styles.title}`}>{x.title}</h3>
+                    <h3 className={`${styles.title} subHeading`}>{x.title}</h3>
                     <p className={styles.desc}>{x.desc}</p>
                   </div>
                 </div>

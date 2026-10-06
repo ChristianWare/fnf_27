@@ -11,19 +11,34 @@
   --slant: -14deg; /* negative leans right; change this one value to adjust */
   background-color: var(--black);
   border-radius: 5px;
-  padding: .01rem;
+  padding: 0.01rem;
   transform: skewX(var(--slant));
+}
+
+.blur {
+  border: 1px solid rgb(255 255 255 / 35%);
+  background-color: rgb(255 255 255 / 25%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 7px;
 }
 
 .logo {
   display: block;
   width: 50px;
-  padding: 1rem;
   height: auto;
+  padding: 1rem;
   object-fit: contain;
   border-radius: inherit;
   filter: brightness(0) invert(1); /* turns the black PNG white */
-  transform: skewX(calc(var(--slant) * -1)); /* cancels the slant so the logo stays upright */
+  transform: skewX(
+    calc(var(--slant) * -1)
+  ); /* cancels the slant so the logo stays upright */
+}
+
+.logoLarge {
+  width: 100px;
+  padding: 1.5rem;
 }
 
 .text {
@@ -31,8 +46,12 @@
   font-family: var(--CreatoDisplayMedium);
   line-height: 0;
   color: var(--black);
-  letter-spacing: -.1px;
+  letter-spacing: -0.1px;
   /* text-transform: uppercase; */
+}
+
+.noText {
+  display: none;
 }
 
 @media screen and (max-width: 568px) {

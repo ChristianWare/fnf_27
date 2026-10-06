@@ -15,10 +15,9 @@ export default function Hero() {
               Expand your 👨‍✈️ <br /> Black Car Business.
             </h1>
             <p className={styles.copy}>
-              We build websites, booking software and leads generation tools for black car & limo
-              operators. Get found on Google, take bookings directly with no
-              per-booking fees, and fill the slow months with corporate
-              accounts, hotels and events in your market.
+              Get found on Google, take bookings directly with no per-booking
+              fees, and fill the slow months with corporate accounts, hotels and
+              events in your market.
             </p>
             <div className={styles.btnContainer}>
               <Button

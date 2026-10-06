@@ -30,21 +30,95 @@
 }
 
 .copy {
-  max-width: 900px;
+  max-width: 700px;
+}
+
+.bottom {
+  border-top: 1px solid var(--light);
+  width: 100%;
+  padding-top: 4rem;
+}
+
+.mapDataContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 1.5rem;
+}
+
+.iconContainer {
+  width: 50px;
+  height: 50px;
+  background-color: var(--accent1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card:nth-child(2) .iconContainer {
+  background-color: var(--accent2);
+}
+
+.card:nth-child(3) .iconContainer {
+  background-color: var(--accent3);
+}
+
+.card:nth-child(4) .iconContainer {
+  background-color: var(--accent4);
+}
+
+.icon {
+  transform: rotate(45deg);
+}
+
+.cardRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.5rem;
+}
+
+.desc {
+  font-size: 14px;
+  width: 85%;
 }
 
 @media screen and (max-width: 1268px) {
-    .top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 3rem;
-    }
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+
+  .mapDataContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
- 
 
 @media screen and (max-width: 768px) {
   .container {
     padding: 7rem 0rem;
+  }
+
+  .content {
+    gap: 3rem;
+  }
+
+  .bottom {
+    padding-top: 3rem;
+  }
+
+  .mapDataContainer {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 3rem;
   }
 }
 
