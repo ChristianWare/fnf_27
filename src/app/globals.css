@@ -50,7 +50,8 @@ h2,
 h3,
 h4,
 h5,
-h6 {
+h6,
+.subHeading {
   font-family:
     var(--CreatoDisplayMedium, "Creato Display"), system-ui, sans-serif;
   color: var(--black);
@@ -199,17 +200,49 @@ textarea:focus {
   .display1 {
     font-size: 5.5vw;
   }
+
+  h2,
+  .h2 {
+    font-size: 52px;
+  }
+}
+
+@media screen and (max-width: 1268px) {
+  .h2,
+  .h2 {
+    font-size: 46px;
+    letter-spacing: -1px;
+  }
 }
 
 @media screen and (max-width: 968px) {
   .display1 {
     font-size: 7.5vw;
   }
+
+  h2,
+  .h2 {
+    font-size: 40px;
+  }
 }
 
 @media screen and (max-width: 768px) {
   .display1 {
     font-size: 8.2vw;
+    letter-spacing: -0.4px;
+  }
+
+  h2,
+  .h2 {
+    font-size: 36px;
+    letter-spacing: -0.4px;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  h2,
+  .h2 {
+    font-size: 32px;
     letter-spacing: -0.4px;
   }
 }

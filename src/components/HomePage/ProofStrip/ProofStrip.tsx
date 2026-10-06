@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./ProofStrip.module.css";
 import Image from "next/image";
-import LogoImg from '../../../../public/logos/fnf_logo_black.png'
+import LogoImg from "../../../../public/logos/fnf_logo_black.png";
 
 const VIDEO_SRC = "/videos/heroii.mp4";
 const POSTER = "/images/proof-poster.jpg"; // the clip's first frame
@@ -82,9 +82,9 @@ export default function ProofStrip({
           <Image src={LogoImg} alt='' title='' className={styles.img} fill />
         </div>
         <h2 className={`${styles.heading} h6`}>
-          Fonts & Footers is a Phoenix company that builds websites, booking
-          software and a leads tool for black car and limo operators, and no one
-          else.
+          Fonts & Footers is a web development agency that builds websites,
+          booking software and lead tools for black car and limo operators, and
+          no one else.
         </h2>
       </div>
 

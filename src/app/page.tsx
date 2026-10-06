@@ -2,6 +2,7 @@ import Nav from "@/components/shared/Nav/Nav";
 import styles from "./page.module.css";
 import Hero from "@/components/HomePage/Hero/Hero";
 import ProofStrip from "@/components/HomePage/ProofStrip/ProofStrip";
+import AboutUsIntro from "@/components/HomePage/AboutUsIntro/AboutUsIntro";
 
 export default function Home() {
   return (
@@ -9,6 +10,7 @@ export default function Home() {
       <Nav />
       <Hero />
       <ProofStrip/>
+      <AboutUsIntro />
       Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis nisi
       doloribus ipsum odit quaerat iste architecto magnam hic maxime numquam
       repellat magni ad quia recusandae quidem facilis corrupti, laborum commodi
