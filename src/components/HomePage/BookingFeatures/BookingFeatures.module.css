@@ -2,9 +2,9 @@
    --gutter lines the row of cards up with the rest of the page's content. */
 .container {
   --gutter: max(30px, calc((100vw - 1800px) / 2 + 30px));
-
   position: relative;
   width: 100%;
+  margin-top: 5rem;
 }
 
 .sticky {
@@ -24,6 +24,8 @@
   gap: 4rem;
   width: 100%;
   padding-bottom: 5rem;
+  padding-top: 3rem;
+  border-top: 1px solid #00000014;
 }
 
 .topLeft {

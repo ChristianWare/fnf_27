@@ -148,7 +148,7 @@ export default function BookingFeatures() {
           <div className={styles.top}>
             <div className={styles.topLeft}>
               <EyeBrow text='Booking software' />
-              <h2 className={`${styles.heading} h4`}>
+              <h2 className={`${styles.heading} h3`}>
                 Your website takes the booking, dispatches the driver and gets
                 you paid.
               </h2>
