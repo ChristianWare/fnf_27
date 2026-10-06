@@ -1,0 +1,296 @@
+/* A full-screen card with a background video, inset so the gray page
+   shows around it. It fills the screen under the nav, up to 970px tall. */
+.container {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+  overflow: hidden;
+  background-color: var(--black);
+  color: var(--white);
+  height: calc(100vh - 9.5rem);
+  height: calc(100svh - 9.5rem);
+  min-height: 640px;
+  max-height: 970px;
+}
+
+/* The video, with a soft dark wash so the white text stays readable. */
+.media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 45%),
+    rgb(0 0 0 / 20%) 45%,
+    rgb(0 0 0 / 50%)
+  );
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6rem;
+  padding-top: 8rem;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 3rem;
+}
+
+.topLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.4rem;
+}
+
+.heading {
+  color: var(--white);
+  max-width: 1100px;
+}
+
+.based,
+.talkLabel,
+.talkRole {
+  font-family: var(--IBMPlex);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.based {
+  flex: none;
+  padding-top: 0.2rem;
+  font-size: 14px;
+  color: var(--white);
+}
+
+/* Bottom: a thin line across, with a second line down the middle. */
+.bottom {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid rgb(255 255 255 / 20%);
+}
+
+.bottomLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.4rem;
+  padding: 2.4rem 3rem 3rem 0;
+  border-right: 1px solid rgb(255 255 255 / 20%);
+}
+
+.copy {
+  max-width: 440px;
+  font-size: max(16px, 1.8rem);
+  line-height: 1.4;
+  color: var(--white);
+}
+
+.pin {
+  width: 2rem;
+  height: 2rem;
+  color: var(--white);
+  opacity: 0.8;
+}
+
+.bottomRight {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 2.4rem 0 7rem 3rem;
+}
+
+/* The "Let's talk" card. The whole card books a call. */
+.talk {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1.4rem;
+  width: 34rem;
+  max-width: 100%;
+  padding: 0.6rem;
+  border-radius: 1.6rem;
+  background-color: rgb(255 255 255 / 14%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--white);
+  transition: background-color 0.2s ease;
+}
+
+.talk:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 3px;
+}
+
+.photo {
+  position: relative;
+  width: 6.4rem;
+  height: 6.4rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+.photoImg {
+  object-fit: cover;
+}
+
+.talkText {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  min-width: 0;
+}
+
+.talkLabel,
+.talkRole {
+  font-size: 12px;
+  color: rgb(255 255 255 / 65%);
+}
+
+.talkName {
+  font-size: max(16px, 1.8rem);
+  line-height: 1.1;
+  color: var(--white);
+}
+
+.talkArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6.4rem;
+  border-radius: 1rem;
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.arrow {
+  width: 1.8rem;
+  height: 1.8rem;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .talk:hover {
+    background-color: rgb(255 255 255 / 22%);
+  }
+
+  .talk:hover .arrow {
+    transform: rotate(90deg);
+  }
+}
+
+.toggle {
+  position: absolute;
+  right: 1.4rem;
+  bottom: 1.4rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 1rem;
+  background-color: rgb(255 255 255 / 25%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--white);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toggle:hover {
+  background-color: rgb(255 255 255 / 40%);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 3px;
+}
+
+.toggle svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+@media screen and (max-width: 968px) {
+  .content {
+    padding-top: 6rem;
+  }
+
+  .bottomLeft {
+    padding-right: 2rem;
+  }
+
+  .bottomRight {
+    padding-left: 2rem;
+  }
+}
+
+/* Phones: one column. "Based in" moves under the heading, and the card
+   goes full width. */
+@media screen and (max-width: 568px) {
+  .container {
+    height: auto;
+    min-height: 600px;
+    border-radius: 2rem;
+  }
+
+  .content {
+    padding-top: 5rem;
+    gap: 4rem;
+  }
+
+  .top {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .topLeft {
+    gap: 1.6rem;
+  }
+
+  .bottom {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .bottomLeft {
+    padding: 2.4rem 0 2.4rem;
+    border-right: none;
+  }
+
+  .pin {
+    display: none;
+  }
+
+  .bottomRight {
+    padding: 0 0 6.4rem;
+  }
+
+  .talk {
+    width: 100%;
+  }
+}
