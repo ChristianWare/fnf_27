@@ -1,10 +1,11 @@
 "use client";
 
-// The booking software teaser. On desktop the section pins to the top of
-// the screen and its cards move sideways as you scroll down. Once the last
-// set is in view, the next section rises to meet it and the page carries on.
-// On phones and tablets (or with motion turned off) the cards are a normal
-// swipeable row.
+// The booking software teaser. The section pins and its cards move sideways
+// as you scroll down. Once the last set is in view, the next section rises
+// to meet it and the page carries on. This works at every screen size: when
+// the section is taller than the screen (phones), it pins with its bottom
+// edge at the bottom of the screen, so the cards stay in view.
+// With motion turned off, the cards are a normal swipeable row instead.
 
 import { useEffect, useRef } from "react";
 import { useLenis } from "lenis/react";
@@ -78,41 +79,47 @@ export default function BookingFeatures() {
     const track = trackRef.current;
     if (!wrap || !sticky || !viewport || !track) return;
 
-    const wide = window.matchMedia("(min-width: 769px)");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     let pinned = false;
     let distance = 0; // how far the cards travel sideways, in px
+    let start = 0; // how far the page scrolls past the section before it pins
     let current = 0;
     let raf = 0;
 
     const measure = () => {
-      // Pin only on wide screens, with motion allowed, and when the whole
-      // panel fits on screen. Otherwise fall back to the swipeable row.
       wrap.dataset.pinned = "true";
       const panel = sticky.offsetHeight;
-      pinned = wide.matches && !reduced.matches && panel <= window.innerHeight;
+      const screen = window.innerHeight;
+      pinned = !reduced.matches;
 
       if (!pinned) {
         delete wrap.dataset.pinned;
         wrap.style.height = "";
+        sticky.style.top = "";
         track.style.transform = "";
         current = 0;
         return;
       }
 
+      // A panel taller than the screen pins with its bottom edge at the
+      // bottom of the screen; a shorter one pins at the top.
+      const top = Math.min(0, screen - panel);
+      sticky.style.top = `${top}px`;
+      start = -top;
+
       viewport.scrollLeft = 0;
       distance = Math.max(0, track.scrollWidth - viewport.clientWidth);
       // After the cards finish, the next section rises through the empty
       // space under the panel until it meets it. That takes "gap" px.
-      const gap = Math.max(0, window.innerHeight - panel);
+      const gap = Math.max(0, screen - panel);
       wrap.style.height = `${panel + distance + gap}px`;
     };
 
     const tick = () => {
       raf = requestAnimationFrame(tick);
       if (!pinned) return;
-      const scrolled = -wrap.getBoundingClientRect().top;
+      const scrolled = -wrap.getBoundingClientRect().top - start;
       const target = Math.min(distance, Math.max(0, scrolled));
       // With site-wide smooth scrolling on, the page is already eased, so
       // the cards follow it exactly. Easing twice makes them lag behind.
@@ -123,11 +130,24 @@ export default function BookingFeatures() {
 
     measure();
 
+    // Phone browsers change the screen height slightly as their address bar
+    // shows and hides during a scroll. Re-measuring for that would make the
+    // page jump, so small height-only changes are ignored.
+    let lastWidth = window.innerWidth;
+    let lastHeight = window.innerHeight;
+    const onResize = () => {
+      const widthChanged = window.innerWidth !== lastWidth;
+      const bigHeightChange = Math.abs(window.innerHeight - lastHeight) > 150;
+      if (!widthChanged && !bigHeightChange) return;
+      lastWidth = window.innerWidth;
+      lastHeight = window.innerHeight;
+      measure();
+    };
+
     const resize = new ResizeObserver(measure);
     resize.observe(sticky);
     resize.observe(track);
-    window.addEventListener("resize", measure);
-    wide.addEventListener("change", measure);
+    window.addEventListener("resize", onResize);
     reduced.addEventListener("change", measure);
 
     // Only do the work while the section is on (or near) the screen.
@@ -143,8 +163,7 @@ export default function BookingFeatures() {
     return () => {
       resize.disconnect();
       visible.disconnect();
-      window.removeEventListener("resize", measure);
-      wide.removeEventListener("change", measure);
+      window.removeEventListener("resize", onResize);
       reduced.removeEventListener("change", measure);
       cancelAnimationFrame(raf);
     };
