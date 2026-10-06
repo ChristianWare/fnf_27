@@ -1,0 +1,141 @@
+.content {
+  width: 100%;
+}
+
+.mapDataContainer {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.card {
+  background-color: var(--light);
+  padding: 1rem;
+  border-radius: 3rem;
+  width: 100%;
+}
+
+.cardContent {
+  display: grid;
+  grid-template-columns: 4fr 2fr;
+  gap: 2rem;
+  width: 100%;
+}
+
+.left {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 3rem;
+  padding-top: 5rem;
+}
+
+/* Two columns that fill top to bottom: the first three bullets go on the
+   left, and the rest go on the right. */
+.bullets {
+  margin-top: 4rem;
+  list-style: none;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(3, auto);
+  justify-content: start;
+  gap: .5rem 4rem;
+}
+
+.bullets li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  font-family: var(--IBMPlexMonoBold);
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.4;
+  /* width: 60%; */
+}
+
+/* The plus sign in place of the dot. */
+.bullets li::before {
+  content: "+";
+  flex: none;
+}
+
+.right {
+  width: 100%;
+  height: 100%;
+}
+
+/* The image frame's size in this section. The sliding, the clipping and
+   the image itself live in the shared SlideInImage component. */
+.imgContainer {
+  position: relative;
+  /* max-width: 640px; */
+  width: 100%;
+  min-height: 290px;
+  margin-left: auto;
+  --slide-radius: 25px;
+  --slide-position: top;
+}
+
+@media screen and (max-width: 1268px) {
+  .bullets {
+    grid-auto-flow: row;
+    grid-template-rows: none;
+  }
+
+  .imgContainer {
+    height: 100%;
+  }
+
+  .cardContent {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .left {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .bullets {
+    margin-top: 2rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .cardContent {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .imgContainer {
+    min-height: 350px;
+  }
+
+  .imgContainer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(to left, var(--light), transparent);
+    pointer-events: none;
+  }
+
+  .bullets li {
+    color: var(--text);
+    width: 100%;
+  }
+
+  .left {
+    padding-top: 2rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .imgContainer {
+    --slide-radius: 16px;
+  }
+}

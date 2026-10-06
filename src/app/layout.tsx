@@ -44,6 +44,18 @@ const IBMPlex = localFont({
   display: "swap",
 });
 
+const IBMPlexReg = localFont({
+  src: "../../public/fonts/IBMPlexMono-Regular.ttf",
+  variable: "--IBMPlexReg",
+  display: "swap",
+});
+
+const IBMPlexMonoBold = localFont({
+  src: "../../public/fonts/IBMPlexMono-Bold.ttf",
+  variable: "--IBMPlexMonoBold",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
     default: "Fonts & Footers | Custom Booking Websites",
@@ -71,7 +83,7 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body
-        className={`${CreatoDisplayMedium.variable} ${CreatoDisplayRegular.variable} ${IBMPlex.variable} ${CreatoDisplayBold.style} ${cdCopy.variable} ${CreatoDisplayBlack.variable} ${CreatoDisplayExtraBold.variable}`}
+        className={`${CreatoDisplayMedium.variable} ${CreatoDisplayRegular.variable} ${IBMPlex.variable} ${CreatoDisplayBold.style} ${cdCopy.variable} ${CreatoDisplayBlack.variable} ${CreatoDisplayExtraBold.variable} ${IBMPlexReg.variable} ${IBMPlexMonoBold.variable}`}
       >
         {children}
       </body>

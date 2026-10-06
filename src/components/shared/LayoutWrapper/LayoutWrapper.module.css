@@ -10,9 +10,13 @@
   flex-direction: column;
 }
 
+.pRightSmall {
+  padding-right: 0rem;
+}
+
 @media screen and (max-width: 568px) {
   .layout {
-    padding-right: 25px;
-    padding-left: 25px;
+    padding-right: 15px;
+    padding-left: 15px;
   }
 }

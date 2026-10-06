@@ -47,46 +47,6 @@
   top: 2.4rem;
 }
 
-.toggle {
-  position: absolute;
-  right: 2.4rem;
-  bottom: 2.4rem;
-  z-index: 3;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 4.8rem;
-  height: 4.8rem;
-  border-radius: 50%;
-  border: 1px solid rgb(255 255 255 / 35%);
-  background-color: rgb(255 255 255 / 15%);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: var(--white);
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.toggle:hover {
-  background-color: rgb(255 255 255 / 28%);
-}
-
-.toggle:active {
-  transform: scale(0.95);
-}
-
-.toggle:focus-visible {
-  outline: 2px solid var(--white);
-  outline-offset: 3px;
-}
-
-.toggle svg {
-  width: 1.8rem;
-  height: 1.8rem;
-}
-
 @media screen and (max-width: 968px) {
   .container {
     min-height: 600px;
@@ -110,13 +70,6 @@
 
   .item {
     white-space: normal;
-  }
-
-  .toggle {
-    right: 1.6rem;
-    bottom: 1.6rem;
-    width: 4.4rem;
-    height: 4.4rem;
   }
 
   .heading {

@@ -1,54 +1,89 @@
 "use client";
 
-// A muted background video under a dark overlay, with the proof strip in
-// white on top and a pause/play button in the bottom-right corner.
+// A muted background video that follows the page scroll: it moves forward
+// as the visitor scrolls down and rewinds as they scroll back up.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import styles from "./ProofStrip.module.css";
 
 import Logo from "@/components/shared/Logo/Logo";
 
 const VIDEO_SRC = "/videos/heroii.mp4";
 const POSTER = "/images/proof-poster.jpg"; // the clip's first frame
-const RATE = 1; // playback speed: 0.25 is quarter speed
+const EASE = 0.12; // how quickly the video catches up to the scroll (0 to 1)
 
-export default function ProofStrip({
-  googleRating,
-}: {
-  /** e.g. "4.9★". Leave it out until you have it, and that item is hidden. */
-  googleRating?: string;
-}) {
+export default function ProofStrip() {
+  const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [paused, setPaused] = useState(true);
 
   useEffect(() => {
+    const section = sectionRef.current;
     const video = videoRef.current;
-    if (!video) return;
-    video.defaultPlaybackRate = RATE;
-    video.playbackRate = RATE;
+    if (!section || !video) return;
 
-    // People who turn off motion get the still image. The button still
-    // lets them play it.
+    // People who turn off motion get the still image.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // Autoplay can be blocked (an iPhone in Low Power Mode, for example).
-    // The poster stays up, and the button shows Play.
-    video.play().catch(() => setPaused(true));
-  }, []);
+    let frame = 0;
+    let current = 0; // where the video is, in seconds
+    let started = false;
 
-  function toggle() {
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.paused) {
-      video.playbackRate = RATE;
-      video.play().catch(() => setPaused(true));
-    } else {
-      video.pause();
-    }
-  }
+    // 0 when the card first comes into view (or the page is at the very
+    // top), 1 when it has scrolled completely off the top of the screen.
+    const progress = () => {
+      const rect = section.getBoundingClientRect();
+      const top = rect.top + window.scrollY;
+      const start = Math.max(0, top - window.innerHeight);
+      const end = top + rect.height;
+      if (end <= start) return 0;
+      return Math.min(1, Math.max(0, (window.scrollY - start) / (end - start)));
+    };
+
+    const tick = () => {
+      frame = requestAnimationFrame(tick);
+      const duration = video.duration;
+      if (!Number.isFinite(duration) || duration <= 0) return;
+
+      // Stop just short of the last frame; some browsers go black on it.
+      const target = progress() * Math.max(0, duration - 0.05);
+      if (!started) {
+        current = target; // no catch-up animation on page load
+        started = true;
+      }
+      current += (target - current) * EASE;
+      if (Math.abs(target - current) < 0.005) current = target;
+
+      if (!video.seeking && Math.abs(video.currentTime - current) > 0.016) {
+        video.currentTime = current;
+      }
+    };
+
+    // iPhones don't load video frames until the video has played once, so
+    // start it and pause it straight away. It's muted, so this is allowed.
+    video
+      .play()
+      .then(() => video.pause())
+      .catch(() => {});
+
+    // Only do the work while the card is on (or near) the screen.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        cancelAnimationFrame(frame);
+        if (entry.isIntersecting) frame = requestAnimationFrame(tick);
+      },
+      { rootMargin: "200px 0px" },
+    );
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, []);
 
   return (
     <section
+      ref={sectionRef}
       className={styles.container}
       aria-label='Results for Nier Transportation'
     >
@@ -58,38 +93,17 @@ export default function ProofStrip({
         src={VIDEO_SRC}
         poster={POSTER}
         muted
-        loop
         playsInline
         preload='auto'
         disablePictureInPicture
         aria-hidden='true'
         tabIndex={-1}
-        onPlay={() => setPaused(false)}
-        onPause={() => setPaused(true)}
       />
       <div className={styles.overlay} />
 
       <div className={styles.content}>
         <Logo noText blur='blur' logoLarge='logoLarge' />
       </div>
-
-      <button
-        type='button'
-        className={styles.toggle}
-        onClick={toggle}
-        aria-label={paused ? "Play background video" : "Pause background video"}
-      >
-        {paused ? (
-          <svg viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
-            <path d='M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z' />
-          </svg>
-        ) : (
-          <svg viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
-            <rect x='6' y='5' width='4' height='14' rx='1' />
-            <rect x='14' y='5' width='4' height='14' rx='1' />
-          </svg>
-        )}
-      </button>
     </section>
   );
 }

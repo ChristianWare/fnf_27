@@ -1,0 +1,32 @@
+/* The frame. It clips the image while it slides in.
+   Give it a size where you use it, with the className prop.
+   Two optional settings, set on that same class:
+     --slide-radius    corner radius (default 25px)
+     --slide-position  which part of the photo to keep in view (default center) */
+.frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--slide-radius, 25px);
+}
+
+/* The moving layer. It starts hidden past the frame's left edge, and the
+   component moves it into place as the frame scrolls into view. */
+.slide {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(-100%, 0, 0);
+  will-change: transform;
+}
+
+.img {
+  object-fit: cover;
+  object-position: var(--slide-position, center);
+  border-radius: var(--slide-radius, 25px);
+}
+
+/* No sliding for people who turn off motion. */
+@media (prefers-reduced-motion: reduce) {
+  .slide {
+    transform: none;
+  }
+}
