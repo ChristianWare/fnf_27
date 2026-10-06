@@ -1,0 +1,174 @@
+/* The card: inset from the edges so the gray page shows around it. */
+.container {
+  position: relative;
+  margin: 0 0.5rem;
+  min-height: 700px;
+  border-radius: 3rem;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--black);
+}
+
+/* The video fills the card like background-size: cover. */
+.video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgb(0 0 0 / 45%);
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 500px;
+  padding: 0 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.imgContainer {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  z-index: 999;
+}
+
+.img {
+  filter: brightness(0) invert(1);
+  object-fit: contain;
+}
+
+.heading {
+  color: var(--white);
+  background-color: rgb(255 255 255 / 15%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgb(255 255 255 / 15%);
+  padding: 2rem;
+  border-radius: 15px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.items {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.2rem 1.6rem;
+}
+
+.item {
+  color: var(--white);
+  font-size: 2.4rem;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.item:not(:last-child)::after {
+  content: "·";
+  margin-left: 1.6rem;
+  color: rgb(255 255 255 / 60%);
+}
+
+/* The pause/play button, bottom right. */
+.toggle {
+  position: absolute;
+  right: 2.4rem;
+  bottom: 2.4rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 35%);
+  background-color: rgb(255 255 255 / 15%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--white);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.toggle:hover {
+  background-color: rgb(255 255 255 / 28%);
+}
+
+.toggle:active {
+  transform: scale(0.95);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 3px;
+}
+
+.toggle svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+@media screen and (max-width: 968px) {
+  .container {
+    min-height: 600px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    min-height: 550px;
+  }
+
+  .item {
+    font-size: 2rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    min-height: 450px;
+  }
+
+  .item {
+    white-space: normal;
+  }
+
+  .toggle {
+    right: 1.6rem;
+    bottom: 1.6rem;
+    width: 4.4rem;
+    height: 4.4rem;
+  }
+
+  .heading {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .imgContainer {
+    height: 60px;
+  }
+}
