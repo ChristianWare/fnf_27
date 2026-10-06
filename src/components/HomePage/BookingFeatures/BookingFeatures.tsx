@@ -17,9 +17,9 @@ import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import Platform from "@/components/shared/icons/Platform/Platform";
 import Plane from "@/components/shared/icons/Plane/Plane";
 import Payment from "@/components/shared/icons/Payment/Payment";
-import DirectBookingImg from "../../../../public/images/directBooking.png";
-import FlightTrackingImg from "../../../../public/images/flightTracking.png";
-import PaymentImg from "../../../../public/images/payment.png";
+import DirectBookingImg from "../../../../public/images/happyClient.jpg";
+import FlightTrackingImg from "../../../../public/images/dispatch.jpg";
+import PaymentImg from "../../../../public/images/takePayments.jpg";
 
 const EASE = 0.14; // how quickly the cards catch up with the scroll (0 to 1)
 
@@ -188,21 +188,21 @@ export default function BookingFeatures() {
                       src={feature.src}
                       alt={feature.alt}
                       fill
-                      sizes='(max-width: 568px) 45vw, 240px'
+                      // sizes='(max-width: 568px) 45vw, 240px'
                       className={styles.img}
                     />
                   </div>
                   <div className={styles.stat}>
                     <Icon className={styles.statIcon} aria-hidden='true' />
                     <div className={styles.statBottom}>
-                      <span className={styles.statValue}>{feature.stat}</span>
+                      <span className={`${styles.statValue} h3`}>{feature.stat}</span>
                       <span className={styles.statLabel}>
                         {feature.statLabel}
                       </span>
                     </div>
                   </div>
                   <div className={styles.name}>
-                    <h3 className={`${styles.title} h6`}>{feature.title}</h3>
+                    <h3 className={`${styles.title} h5`}>{feature.title}</h3>
                     <span className={styles.sub}>{feature.sub}</span>
                   </div>
                 </div>
