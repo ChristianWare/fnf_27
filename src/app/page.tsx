@@ -8,6 +8,8 @@ import HowItWorks from "@/components/HomePage/HowItWorks/HowItWorks";
 import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
 import NierCaseStudy from "@/components/HomePage/NierCaseStudy/NierCaseStudy";
 import LeadsTool from "@/components/HomePage/LeadsTool/LeadsTool";
+import BookingFeatures from "@/components/HomePage/BookingFeatures/BookingFeatures";
+import Pricing from "@/components/HomePage/Pricing/Pricing";
 
 export default function Home() {
   return (
@@ -21,6 +23,8 @@ export default function Home() {
       <FeatureMarquee />
       <NierCaseStudy />
       <LeadsTool />
+      <BookingFeatures />
+      <Pricing />
     </main>
   );
 }
