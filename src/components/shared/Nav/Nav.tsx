@@ -1,5 +1,6 @@
 "use client";
 
+import { useLenis } from "lenis/react";
 import styles from "./Nav.module.css";
 import Link from "next/link";
 import Logo from "../Logo/Logo";
@@ -17,6 +18,14 @@ export default function Nav({
   hamburgerColor = "",
 }: NavProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const lenis = useLenis();
+
+  // Hold the page still while the mobile menu is open.
+  useEffect(() => {
+    if (!lenis) return;
+    if (isOpen) lenis.stop();
+    else lenis.start();
+  }, [isOpen, lenis]);
 
   useEffect(() => {
     const body = document.body;
@@ -85,6 +94,7 @@ export default function Nav({
             className={
               isOpen ? `${styles.navItems} ${styles.active}` : styles.navItems
             }
+            data-lenis-prevent
           >
             {items.map((item) => {
               const active = isActive(item.href);

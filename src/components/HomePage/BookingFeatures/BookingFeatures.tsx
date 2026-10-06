@@ -7,6 +7,7 @@
 // swipeable row.
 
 import { useEffect, useRef } from "react";
+import { useLenis } from "lenis/react";
 import Image from "next/image";
 import Link from "next/link";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
@@ -64,6 +65,12 @@ export default function BookingFeatures() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
 
+  const lenis = useLenis();
+  const pageIsSmooth = useRef(false);
+  useEffect(() => {
+    pageIsSmooth.current = Boolean(lenis?.options.smoothWheel);
+  }, [lenis]);
+
   useEffect(() => {
     const wrap = wrapRef.current;
     const sticky = stickyRef.current;
@@ -107,7 +114,9 @@ export default function BookingFeatures() {
       if (!pinned) return;
       const scrolled = -wrap.getBoundingClientRect().top;
       const target = Math.min(distance, Math.max(0, scrolled));
-      current += (target - current) * EASE;
+      // With site-wide smooth scrolling on, the page is already eased, so
+      // the cards follow it exactly. Easing twice makes them lag behind.
+      current += (target - current) * (pageIsSmooth.current ? 1 : EASE);
       if (Math.abs(target - current) < 0.3) current = target;
       track.style.transform = `translate3d(${-current}px, 0, 0)`;
     };

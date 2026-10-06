@@ -1,3 +1,4 @@
+import SmoothScroll from "@/components/shared/SmoothScroll/SmoothScroll";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
@@ -85,7 +86,7 @@ export default function RootLayout({
       <body
         className={`${CreatoDisplayMedium.variable} ${CreatoDisplayRegular.variable} ${IBMPlex.variable} ${CreatoDisplayBold.style} ${cdCopy.variable} ${CreatoDisplayBlack.variable} ${CreatoDisplayExtraBold.variable} ${IBMPlexReg.variable} ${IBMPlexMonoBold.variable}`}
       >
-        {children}
+        <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>
   );

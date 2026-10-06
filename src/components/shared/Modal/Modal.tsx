@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useLenis } from "lenis/react";
 import { useLayoutEffect, useRef, MouseEvent } from "react";
 import styles from "./Modal.module.css";
 
@@ -14,6 +15,7 @@ export default function Modal({ isOpen, onClose, children }: Props) {
   const scrollRef = useRef(0);
   const htmlPrev = useRef<string>("");
   const removeTouchBlockRef = useRef<() => void>(() => {});
+  const lenis = useLenis();
 
   useLayoutEffect(() => {
     if (!isOpen) return;
@@ -31,6 +33,9 @@ export default function Modal({ isOpen, onClose, children }: Props) {
 
     html.style.overflow = "hidden";
     (html.style as any).scrollbarGutter = "stable";
+
+    // Hold the page still while the modal is open.
+    lenis?.stop();
 
     const blockTouch = (e: TouchEvent) => {
       const target = e.target as HTMLElement | null;
@@ -51,8 +56,9 @@ export default function Modal({ isOpen, onClose, children }: Props) {
       removeTouchBlockRef.current?.();
       html.setAttribute("style", htmlPrev.current);
       root.scrollTo({ top: scrollRef.current });
+      lenis?.start();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, lenis]);
 
   const stop = (e: MouseEvent) => e.stopPropagation();
 
@@ -68,6 +74,7 @@ export default function Modal({ isOpen, onClose, children }: Props) {
         onClick={stop}
         role='dialog'
         aria-modal='true'
+        data-lenis-prevent
       >
         <button
           onClick={onClose}
