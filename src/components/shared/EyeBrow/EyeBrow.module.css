@@ -18,3 +18,12 @@
   letter-spacing: -0.5px;
   text-transform: uppercase;
 }
+
+/* For dark sections: <EyeBrow text='…' color='white' /> */
+.white .dot {
+  background-color: var(--white);
+}
+
+.white .text {
+  color: var(--white);
+}

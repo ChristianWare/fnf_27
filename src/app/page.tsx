@@ -7,6 +7,7 @@ import Problems from "@/components/HomePage/Problems/Problems";
 import HowItWorks from "@/components/HomePage/HowItWorks/HowItWorks";
 import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
 import NierCaseStudy from "@/components/HomePage/NierCaseStudy/NierCaseStudy";
+import LeadsTool from "@/components/HomePage/LeadsTool/LeadsTool";
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
       <HowItWorks />
       <FeatureMarquee />
       <NierCaseStudy />
+      <LeadsTool />
     </main>
   );
 }

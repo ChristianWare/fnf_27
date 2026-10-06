@@ -33,6 +33,13 @@
   color: var(--white);
 }
 
+.white,
+.white:link,
+.white:visited {
+  background-color: var(--white);
+  color: var(--black);
+}
+
 .blackUnderline,
 .blackUnderline:link,
 .blackUnderline:visited {

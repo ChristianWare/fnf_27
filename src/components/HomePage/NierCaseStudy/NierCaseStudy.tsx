@@ -30,8 +30,8 @@ export default function NierCaseStudy() {
           <div className={styles.left}>
             <div className={styles.leftTop}>
               <EyeBrow text="Real results" />
-              <h2 className={`${styles.heading} h3`}>
-                Built with a working operator in Phoenix.
+              <h2 className={`${styles.heading}`}>
+                Built with a working operator in Phoenix
               </h2>
               <p className={styles.copy}>
                 Nier Transportation has run black car service in Phoenix since

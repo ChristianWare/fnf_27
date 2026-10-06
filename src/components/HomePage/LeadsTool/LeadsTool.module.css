@@ -1,0 +1,248 @@
+/* A dark card with a background image that stays fixed to the screen.
+   The image is a fixed, full-screen layer; clip-path trims it to the card's
+   rounded shape, so the card acts like a window onto it. (This works on
+   iPhones, where background-attachment: fixed does not.) */
+.container {
+  position: relative;
+  isolation: isolate;
+  padding: 10rem 0rem;
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+  clip-path: inset(0 round 3rem);
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.bgImg {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Darkens the image so the white text stays readable. */
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 50%);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+  width: 100%;
+}
+
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 5rem;
+  width: 100%;
+}
+
+.topLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  color: var(--white);
+  max-width: 900px;
+}
+
+.copy {
+  color: rgb(255 255 255 / 80%);
+  max-width: 560px;
+}
+
+.topRight {
+  flex: none;
+}
+
+.bottom {
+  width: 100%;
+  border-top: 1px solid rgb(255 255 255 / 18%);
+  padding-top: 0.5rem;
+}
+
+/* The staircase: each card is half the width and steps a quarter to the
+   right of the one above it. */
+.steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  min-height: 15rem;
+  padding: 2.4rem;
+  border-radius: 2rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  background-color: rgb(255 255 255 / 12%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.card:nth-child(1) {
+  grid-column: 1 / span 2;
+}
+
+.card:nth-child(2) {
+  grid-column: 2 / span 2;
+}
+
+.card:nth-child(3) {
+  grid-column: 3 / span 2;
+}
+
+/* The thin lines linking the steps: one drops from the first card into
+   the second, one runs from the second down into the third. */
+.card:nth-child(2)::before,
+.card:nth-child(2)::after {
+  content: "";
+  position: absolute;
+  width: 22.5%;
+  height: calc(50% + 1rem);
+  border: 0 solid rgb(255 255 255 / 22%);
+  pointer-events: none;
+}
+
+.card:nth-child(2)::before {
+  right: 100%;
+  top: -1rem;
+  border-left-width: 1px;
+  border-bottom-width: 1px;
+  border-bottom-left-radius: 1.2rem;
+}
+
+.card:nth-child(2)::after {
+  left: 100%;
+  top: 50%;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-top-right-radius: 1.2rem;
+}
+
+.cardLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2.5rem;
+}
+
+.number {
+  padding: 0.7rem 1.3rem;
+  border-radius: 50px;
+  background-color: rgb(255 255 255 / 18%);
+  font-family: var(--IBMPlex);
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--white);
+}
+
+.title {
+  color: var(--white);
+}
+
+.cardRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 1.8rem;
+}
+
+.cardLabel {
+  font-family: var(--IBMPlexMonoBold);
+  font-size: 1.2rem;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.desc {
+  font-size: 1.4rem;
+  color: rgb(255 255 255 / 80%);
+}
+
+.note {
+  margin-top: 3rem;
+  font-family: var(--IBMPlex);
+  font-size: 1.3rem;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 75%);
+}
+
+@media screen and (max-width: 968px) {
+  .content {
+    gap: 5rem;
+  }
+
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+
+  /* No staircase: the cards stack at full width. */
+  .steps {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .card:nth-child(1),
+  .card:nth-child(2),
+  .card:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .card:nth-child(2)::before,
+  .card:nth-child(2)::after {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+    clip-path: inset(0 round 2rem);
+  }
+
+  .card {
+    grid-template-columns: repeat(1, 1fr);
+    padding: 2rem;
+  }
+
+  .cardLeft {
+    gap: 1.5rem;
+  }
+
+  .cardRight {
+    gap: 1rem;
+  }
+}
