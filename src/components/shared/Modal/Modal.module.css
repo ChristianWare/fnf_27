@@ -4,7 +4,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10000;
+  z-index: 100000000;
   background: rgb(0 0 0 / 60%);
   transition: opacity 0.2s ease;
   pointer-events: none;
@@ -18,14 +18,14 @@
 
 .dialog {
   background: var(--white);
-  border: 1px solid var(--lightGray);
   padding: 0;
   width: 900px;
   max-width: calc(100vw - 4rem);
   max-height: 90vh;
   overflow: auto;
+  border-radius: 2rem;
   position: relative;
-  z-index: 10001;
+  z-index: 100000001;
   transform: translateY(8px);
   opacity: 0;
   transition:
@@ -38,35 +38,35 @@
   transform: translateY(0);
 }
 
+/* Stays in the top-right corner while tall content scrolls under it. */
 .closeBtn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 5rem;
-  height: 5rem;
+  position: sticky;
+  top: 1.2rem;
+  float: right;
+  margin: 1.2rem 1.2rem -5.6rem 0;
+  width: 4.4rem;
+  height: 4.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
-  border: none;
-  border-left: 1px solid var(--lightGray);
-  border-bottom: 1px solid var(--lightGray);
-  background-color: var(--accent);
+  border-radius: 50%;
+  background-color: var(--black);
+  color: var(--white);
   cursor: pointer;
-  font-family: var(--GeistMono);
-  font-size: 4rem;
-  color: var(--black);
+  font-size: 2.8rem;
   line-height: 1;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+  transition: transform 0.15s ease;
   z-index: 1;
 }
 
-/* .closeBtn:hover {
-  background-color: var(--black);
-  color: var(--accent);
-} */
+.closeBtn:hover {
+  transform: scale(1.06);
+}
+
+.closeBtn:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
 
 .body {
   display: flex;

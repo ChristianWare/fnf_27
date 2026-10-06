@@ -5,6 +5,8 @@ import ProofStrip from "@/components/HomePage/ProofStrip/ProofStrip";
 import AboutUsIntro from "@/components/HomePage/AboutUsIntro/AboutUsIntro";
 import Problems from "@/components/HomePage/Problems/Problems";
 import HowItWorks from "@/components/HomePage/HowItWorks/HowItWorks";
+import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
+import NierCaseStudy from "@/components/HomePage/NierCaseStudy/NierCaseStudy";
 
 export default function Home() {
   return (
@@ -15,6 +17,8 @@ export default function Home() {
       <AboutUsIntro />
       <Problems />
       <HowItWorks />
+      <FeatureMarquee />
+      <NierCaseStudy />
     </main>
   );
 }

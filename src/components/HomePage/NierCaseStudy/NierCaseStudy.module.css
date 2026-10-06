@@ -1,0 +1,210 @@
+.container {
+  padding: 10rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 8rem;
+  width: 100%;
+}
+
+/* Left: the story at the top, the facts pinned to the bottom. */
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6rem;
+  padding: 3rem 0;
+}
+
+.leftTop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 560px;
+}
+
+.copy {
+  max-width: 480px;
+}
+
+.quote {
+  max-width: 480px;
+  padding-left: 2rem;
+  border-left: 2px solid var(--black);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.quoteText {
+  font-size: 1.8rem;
+  line-height: 1.4;
+  color: var(--black);
+}
+
+.quoteBy {
+  font-family: var(--IBMPlex);
+  font-size: 1.2rem;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.btnContainer {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 3rem;
+}
+
+.facts {
+  list-style: none;
+  width: 100%;
+  max-width: 400px;
+  border-bottom: 1px solid var(--light2);
+}
+
+.fact {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.7rem 0;
+  border-top: 1px solid var(--light2);
+  font-size: 1.7rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.factIcon {
+  width: 2.2rem;
+  height: 2.2rem;
+  flex: none;
+}
+
+/* Right: the screenshot. The whole image is a button that opens the
+   full-length view. */
+.right {
+  width: 100%;
+}
+
+.imgContainer {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 62rem;
+  border-radius: 2.5rem;
+  overflow: hidden;
+  background-color: var(--light);
+  cursor: zoom-in;
+}
+
+.imgContainer:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 4px;
+}
+
+.img {
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.5s ease;
+}
+
+.expand {
+  position: absolute;
+  right: 1.6rem;
+  bottom: 1.6rem;
+  z-index: 1;
+  padding: 1rem 1.6rem;
+  border-radius: 50px;
+  background-color: rgb(255 255 255 / 85%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-family: var(--IBMPlex);
+  font-size: 1.2rem;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--black);
+  transition: background-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .imgContainer:hover .img {
+    transform: scale(1.03);
+  }
+
+  .imgContainer:hover .expand {
+    background-color: var(--white);
+  }
+}
+
+/* The full-length view inside the modal. */
+.modalImage {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media screen and (max-width: 1268px) {
+  .content {
+    gap: 4rem;
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .content {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 5rem;
+  }
+
+  .left {
+    gap: 4rem;
+    padding: 0;
+  }
+
+  .facts {
+    max-width: 100%;
+  }
+
+  .imgContainer {
+    min-height: 52rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  .imgContainer {
+    min-height: 44rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .imgContainer {
+    min-height: 38rem;
+    border-radius: 2rem;
+  }
+
+  .quoteText {
+    font-size: 1.9rem;
+  }
+}

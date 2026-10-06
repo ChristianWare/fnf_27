@@ -1,0 +1,128 @@
+.container {
+  padding: 3.5rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+  overflow: hidden;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 3rem;
+  width: 100%;
+}
+
+.label {
+  font-family: var(--IBMPlex);
+  font-size: 1.3rem;
+  line-height: 1.4;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--black);
+  max-width: 20rem;
+  hyphens: none;
+}
+
+/* The window the items scroll through. Both edges fade out. */
+.viewport {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 90%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 90%,
+    transparent
+  );
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  animation: scroll 45s linear infinite;
+}
+
+.row {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 7rem;
+  padding-right: 7rem;
+  flex: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 2.2rem;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--text);
+  opacity: 0.45;
+}
+
+.icon {
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: none;
+}
+
+/* The track holds two identical rows, so moving it left by half its width
+   lands exactly where it started. */
+@keyframes scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* No scrolling for people who turn off motion. */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 3rem 0rem;
+  }
+
+  .content {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 2rem;
+  }
+
+  .label {
+    max-width: 100%;
+  }
+
+  .row {
+    gap: 5rem;
+    padding-right: 5rem;
+  }
+
+  .item {
+    font-size: 1.9rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+}
