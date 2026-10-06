@@ -44,14 +44,14 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1.4rem;
+  gap: 2rem;
   width: 100%;
-  max-width: 320px;
+  max-width: 400px;
 }
 
 .label {
   font-family: var(--IBMPlex);
-  font-size: 1.1rem;
+  font-size: 14px;
   line-height: 1;
   text-transform: uppercase;
   color: rgb(255 255 255 / 50%);
@@ -61,7 +61,8 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0.4rem 0.4rem 0.4rem 1.6rem;
+  padding: 1rem;
+  padding-left: 2rem;
   border-radius: 50px;
   background-color: rgb(255 255 255 / 10%);
 }
@@ -71,7 +72,7 @@
   min-width: 0;
   border: none;
   background: transparent;
-  font-size: 1.4rem;
+  font-size: 16px;
   color: var(--white);
 }
 
@@ -111,7 +112,7 @@
 
 .small,
 .formNote {
-  font-size: 1.3rem;
+  font-size: 16px;
   line-height: 1.4;
   color: rgb(255 255 255 / 50%);
 }
@@ -123,6 +124,10 @@
 .inlineLink,
 .white {
   color: var(--white);
+}
+
+.inlineLink {
+  margin-left: 0.5rem;
 }
 
 .socials {
@@ -183,10 +188,12 @@
 }
 
 .link {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   line-height: 1.2;
   color: var(--white);
   transition: opacity 0.2s ease;
+  /* hyphens: break-all; */
+  white-space: wrap;
 }
 
 a.link:hover {
@@ -261,5 +268,14 @@ a.link:hover {
 
   .newsletter {
     max-width: 100%;
+  }
+
+  .link {
+    font-size: 16px;
+  }
+
+  .right {
+    grid-template-columns: repeat(1, 1fr);
+    /* gap: 2rem 1rem; */
   }
 }
