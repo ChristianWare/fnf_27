@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, type KeyboardEvent } from "react";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./ComparePlans.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
@@ -9,6 +12,9 @@ const plans = [
   { id: "platform", name: "Full Platform", featured: true },
   { id: "leads", name: "Leads on its own", featured: false },
 ];
+
+// The tabs open on the Full Platform, the plan the table highlights.
+const DEFAULT_PLAN = plans.findIndex((plan) => plan.featured);
 
 // true = Included, false = Not included, text = shown as written.
 // { yes, note } = Included, with a note.
@@ -90,6 +96,23 @@ function Cell({ value }: { value: Value }) {
 }
 
 export default function ComparePlans() {
+  const [selected, setSelected] = useState(DEFAULT_PLAN);
+  const plan = plans[selected];
+
+  // Left and right arrow keys move between the tabs.
+  function onTabKeyDown(e: KeyboardEvent<HTMLButtonElement>) {
+    let next = selected;
+    if (e.key === "ArrowRight") next = (selected + 1) % plans.length;
+    else if (e.key === "ArrowLeft")
+      next = (selected - 1 + plans.length) % plans.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = plans.length - 1;
+    else return;
+    e.preventDefault();
+    setSelected(next);
+    document.getElementById(`compare-tab-${plans[next].id}`)?.focus();
+  }
+
   return (
     <section className={styles.container} id='compare'>
       <Reveal mode='together' />
@@ -98,10 +121,11 @@ export default function ComparePlans() {
           <div className={styles.top}>
             <EyeBrow text='Compare plans' />
             <h2 className={styles.heading} data-reveal data-reveal-style='fade'>
-              Every plan, side by side.
+              Every Plan <br /> Side by Side
             </h2>
           </div>
 
+          {/* Wide screens: the full table. */}
           <div className={styles.tableWrap} data-reveal>
             <table className={styles.table}>
               <caption className={styles.srOnly}>
@@ -110,14 +134,14 @@ export default function ComparePlans() {
               <thead>
                 <tr>
                   <td className={styles.corner} />
-                  {plans.map((plan) => (
+                  {plans.map((p) => (
                     <th
-                      key={plan.id}
+                      key={p.id}
                       scope='col'
-                      className={`${styles.planHead} ${plan.featured ? styles.featuredHead : ""}`}
+                      className={`${styles.planHead} ${p.featured ? styles.featuredHead : ""}`}
                     >
-                      {plan.name}
-                      {plan.featured && (
+                      {p.name}
+                      {p.featured && (
                         <span className={styles.badge}>Leads included</span>
                       )}
                     </th>
@@ -127,7 +151,7 @@ export default function ComparePlans() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.label}>
-                    <th scope='row' className={styles.rowLabel}>
+                    <th scope='row' className={`${styles.rowLabel} subHeading`}>
                       {row.label}
                     </th>
                     {row.values.map((value, i) => (
@@ -144,27 +168,55 @@ export default function ComparePlans() {
             </table>
           </div>
 
-          {/* At 768px and below: one card per feature, with each plan's
-              answer side by side, instead of the wide table. */}
-          <div className={styles.cards} data-reveal>
-            {rows.map((row) => (
-              <div className={styles.feature} key={row.label}>
-                <h3 className={styles.featureTitle}>{row.label}</h3>
-                <dl className={styles.featureGrid}>
-                  {plans.map((plan, i) => (
-                    <div
-                      key={plan.id}
-                      className={`${styles.featureCell} ${plan.featured ? styles.featureCellFeatured : ""}`}
-                    >
-                      <dt className={styles.featurePlan}>{plan.name}</dt>
-                      <dd className={styles.featureValue}>
-                        <Cell value={row.values[i]} />
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
+          {/* 968px and below: one plan at a time. */}
+          <div className={styles.mobile} data-reveal>
+            <div
+              className={styles.tabs}
+              role='tablist'
+              aria-label='Choose a plan to see what it includes'
+            >
+              {plans.map((p, i) => (
+                <button
+                  key={p.id}
+                  type='button'
+                  role='tab'
+                  id={`compare-tab-${p.id}`}
+                  aria-selected={i === selected}
+                  aria-controls='compare-panel'
+                  tabIndex={i === selected ? 0 : -1}
+                  className={`${styles.tab} ${i === selected ? styles.tabActive : ""}`}
+                  onClick={() => setSelected(i)}
+                  onKeyDown={onTabKeyDown}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+
+            <div
+              className={`${styles.panel} ${plan.featured ? styles.panelFeatured : ""}`}
+              role='tabpanel'
+              id='compare-panel'
+              aria-labelledby={`compare-tab-${plan.id}`}
+            >
+              <div className={styles.panelHead}>
+                <span className={styles.panelName}>{plan.name}</span>
+                {plan.featured && (
+                  <span className={styles.panelBadge}>Leads included</span>
+                )}
               </div>
-            ))}
+              {/* Re-mounts on every tab change, which replays the fade. */}
+              <dl className={styles.list} key={plan.id}>
+                {rows.map((row) => (
+                  <div className={styles.listRow} key={row.label}>
+                    <dt className={`${styles.listLabel} h6`}>{row.label}</dt>
+                    <dd className={styles.listValue}>
+                      <Cell value={row.values[selected]} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
         </div>
       </LayoutWrapper>

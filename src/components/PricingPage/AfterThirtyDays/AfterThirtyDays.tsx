@@ -14,12 +14,12 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 import Bell from "@/components/shared/icons/Bell/Bell";
 import PlatformImg from "../../../../public/images/fullPlatform.jpg";
 import LeadsImg from "../../../../public/images/leads.jpg";
-import NeitherImg from "../../../../public/images/reliefii.jpg";
+import NeitherImg from "../../../../public/images/website.jpg";
 
 const options = [
   {
     id: 1,
-    title: "Keep your leads with the Full Platform",
+    title: "Keep Your Leads with the Full Platform",
     desc: "The leads tool is included at no extra cost, alongside your website, booking and dispatch, and payments in one system.",
     bullets: [
       "Leads tool included",
@@ -34,7 +34,7 @@ const options = [
   },
   {
     id: 2,
-    title: "Keep the leads tool on its own",
+    title: "Keep the Leads Tool on its Own",
     desc: "Keep the hotels, venues, corporate accounts and events coming for $125/mo, with no website plan needed.",
     bullets: ["$125/mo flat", "No per-lead fees", "Month to month"],
     stat: "$125",
@@ -45,7 +45,7 @@ const options = [
   },
   {
     id: 3,
-    title: "Do neither",
+    title: "Do Neither",
     desc: "The free period ends. There's no card on file, so nothing is charged.",
     bullets: ["No card on file", "Nothing charged", "Nothing to cancel"],
     stat: "$0",
@@ -73,7 +73,7 @@ export default function AfterThirtyDays() {
                 data-reveal
                 data-reveal-style='fade'
               >
-                What happens after 30 days
+                What Happens <br /> After 30 Days?
               </h2>
               <p className={styles.copy} data-reveal>
                 On day 30 your free period ends, and you choose:
@@ -90,7 +90,6 @@ export default function AfterThirtyDays() {
           </div>
 
           <div className={styles.grid} data-reveal>
-            {/* All three photos are stacked; the open choice's fades in. */}
             <div className={styles.photo}>
               {options.map((o) => (
                 <Image
@@ -111,7 +110,9 @@ export default function AfterThirtyDays() {
                 aria-live='polite'
               >
                 <div className={styles.statTop} key={current.id}>
-                  <span className={styles.statValue}>{current.stat}</span>
+                  <span className={`${styles.statValue} h2`}>
+                    {current.stat}
+                  </span>
                   <span className={styles.statLabel}>{current.statLabel}</span>
                 </div>
                 <span className={styles.statTag}>{current.tag}</span>
@@ -142,7 +143,9 @@ export default function AfterThirtyDays() {
                         onClick={() => setActive(o.id)}
                       >
                         <span className={styles.pill}>0{o.id}</span>
-                        <span className={styles.optionTitle}>{o.title}</span>
+                        <span className={`${styles.optionTitle} h5 `}>
+                          {o.title}
+                        </span>
                         <span className={styles.chevron} aria-hidden='true'>
                           <svg viewBox='0 0 24 24' fill='none'>
                             <path

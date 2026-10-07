@@ -29,8 +29,7 @@
   white-space: nowrap;
 }
 
-/* If the table is ever wider than its space, it scrolls sideways with the
-   row labels pinned to the left. */
+/* ── The table (wide screens) ── */
 .tableWrap {
   width: 100%;
   overflow-x: auto;
@@ -97,12 +96,10 @@ tbody tr:last-child .featuredCell {
   left: 0;
   z-index: 1;
   background-color: var(--white);
-  font-size: max(16px, 1.6rem);
-  font-weight: 400;
-  line-height: 1.35;
-  color: var(--black);
+  font-family: var(--CreatoDisplayExtraBold);
 }
 
+/* ── Values (both versions) ── */
 .text {
   font-size: max(16px, 1.6rem);
   line-height: 1.35;
@@ -144,80 +141,142 @@ tbody tr:last-child .featuredCell {
   color: var(--black);
 }
 
-/* The feature cards: only shown at 768px and below. */
-.cards {
+/* ── One plan at a time (968px and below) ── */
+.mobile {
   display: none;
   flex-direction: column;
+  gap: 1.6rem;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.8rem;
 }
 
-.feature {
-  padding: 1.8rem;
+.tab {
+  padding: 1.2rem 1.8rem;
+  border-radius: 50px;
+  border: 1px solid var(--light2);
+  background-color: var(--white);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--black);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tab:not(.tabActive):hover {
+    background-color: var(--light);
+  }
+}
+
+.tabActive {
+  border-color: var(--black);
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.panel {
   border-radius: 2rem;
+  overflow: hidden;
   background-color: var(--light);
 }
 
-.featureTitle {
-  margin-bottom: 1.4rem;
-  font-size: max(17px, 1.8rem);
-  font-weight: 400;
-  line-height: 1.25;
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  padding: 2.2rem 2.4rem;
+  background-color: var(--light2);
+}
+
+.panelName {
+  font-size: max(18px, 2rem);
+  line-height: 1.2;
   letter-spacing: -0.2px;
   color: var(--black);
 }
 
-.featureGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-}
-
-.featureCell {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 1.2rem;
-  min-height: 9.6rem;
-  padding: 1.4rem;
-  border-radius: 1.4rem;
-  background-color: var(--white);
-}
-
-.featurePlan {
+.panelBadge {
   font-family: var(--IBMPlex);
   font-size: 14px;
-  line-height: 1.25;
+  line-height: 1;
   text-transform: uppercase;
-  color: var(--text);
-}
-
-.featureValue {
-  display: flex;
-  align-items: center;
-  min-height: 2.6rem;
-}
-
-/* The Full Platform's answer stands out, like its column in the table. */
-.featureCellFeatured {
-  background-color: var(--black);
-}
-
-.featureCellFeatured .featurePlan {
   color: rgb(255 255 255 / 70%);
 }
 
-.featureCellFeatured .text,
-.featureCellFeatured .withNote {
+/* The Full Platform's panel gets the black header, like its column. */
+.panelFeatured .panelHead {
+  background-color: var(--black);
+}
+
+.panelFeatured .panelName {
   color: var(--white);
 }
 
-.featureCellFeatured .check {
-  background-color: var(--white);
+.list {
+  animation: listIn 0.4s ease both;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  min-height: 6.4rem;
+  padding: 1.4rem 2.4rem;
+  border-top: 1px solid var(--light2);
+}
+
+.listRow:first-child {
+  border-top: none;
+}
+
+.listLabel {
+
   color: var(--black);
 }
 
-.featureCellFeatured .dash {
-  background-color: rgb(255 255 255 / 35%);
+.listValue {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: none;
+  max-width: 50%;
+  text-align: right;
+}
+
+@keyframes listIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.8rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list {
+    animation: none;
+  }
 }
 
 /* 1068px: the table fits the screen with tighter spacing, no scrolling. */
@@ -239,7 +298,6 @@ tbody tr:last-child .featuredCell {
     font-size: 16px;
   }
 
-  .rowLabel,
   .text {
     font-size: 15px;
   }
@@ -255,21 +313,13 @@ tbody tr:last-child .featuredCell {
   }
 }
 
-/* 768px: the feature cards replace the table. */
-@media screen and (max-width: 768px) {
-  .container {
-    padding: 7rem 0rem;
-  }
-
-  .top {
-    padding-bottom: 4rem;
-  }
-
+/* 968px: the tabs replace the table. */
+@media screen and (max-width: 968px) {
   .tableWrap {
     display: none;
   }
 
-  .cards {
+  .mobile {
     display: flex;
   }
 
@@ -278,25 +328,45 @@ tbody tr:last-child .featuredCell {
   }
 }
 
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  .top {
+    padding-bottom: 4rem;
+  }
+}
+
+/* 568px: the tabs sit two by two, and the rows tighten up. */
 @media screen and (max-width: 568px) {
   .container {
     border-radius: 2rem;
   }
 
-  .feature {
-    padding: 1.4rem;
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tab {
+    padding: 1.2rem 1rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .panel {
     border-radius: 1.6rem;
   }
 
-  .featureTitle {
-    margin-bottom: 1.2rem;
-    padding: 0.4rem 0.4rem 0;
+  .panelHead {
+    padding: 1.8rem;
   }
 
-  .featureCell {
-    min-height: 8.8rem;
-    padding: 1.2rem;
-    border-radius: 1.2rem;
+  .listRow {
+    min-height: 5.6rem;
+    padding: 1.2rem 1.8rem;
+    gap: 1.6rem;
   }
 
   .text {

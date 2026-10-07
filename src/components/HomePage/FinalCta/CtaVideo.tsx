@@ -8,12 +8,25 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./FinalCta.module.css";
 
 const VIDEO_SRC = "/videos/heroiii.mp4";
+const START = 6; // seconds into the video
 
 export default function CtaVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(true);
   // Set when the visitor presses pause, so scrolling doesn't restart it.
   const stoppedByUser = useRef(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const toStart = () => {
+      if (video.currentTime < START) video.currentTime = START;
+    };
+    // The metadata may have loaded before this ran, so check now as well.
+    if (video.readyState >= 1) toStart();
+    video.addEventListener("loadedmetadata", toStart);
+    return () => video.removeEventListener("loadedmetadata", toStart);
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -63,6 +76,12 @@ export default function CtaVideo() {
         tabIndex={-1}
         onPlay={() => setPaused(false)}
         onPause={() => setPaused(true)}
+        onTimeUpdate={(e) => {
+          // Jump back just before the end, so every loop skips the first 2 seconds.
+          const video = e.currentTarget;
+          if (video.duration - video.currentTime < 0.3)
+            video.currentTime = START;
+        }}
       />
       <button
         type='button'

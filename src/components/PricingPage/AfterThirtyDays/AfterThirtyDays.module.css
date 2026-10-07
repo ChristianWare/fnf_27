@@ -133,13 +133,6 @@
   animation: fadeIn 0.5s ease both;
 }
 
-.statValue {
-  font-size: 5.6rem;
-  line-height: 1;
-  letter-spacing: -2px;
-  color: var(--black);
-}
-
 .statLabel,
 .statTag,
 .pill,
@@ -161,15 +154,15 @@
 .note {
   align-items: center;
   justify-content: center;
-  gap: 2rem;
+  gap: 3rem;
   text-align: center;
   background-color: var(--black);
   color: var(--white);
 }
 
 .noteIcon {
-  width: 4.4rem;
-  height: 4.4rem;
+  width: 4rem;
+  height: 4rem;
   color: var(--white);
 }
 
@@ -190,6 +183,7 @@
 .option {
   border-radius: 2.4rem;
   background-color: var(--light);
+  padding: 4rem;
 }
 
 .optionOpen {
@@ -207,9 +201,9 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 1.6rem;
+  gap: 2rem;
   width: 100%;
-  padding: 2.8rem 3rem;
+  /* padding: 2.8rem 3rem; */
   text-align: left;
   cursor: pointer;
 }
@@ -217,7 +211,7 @@
 .optionOpen .optionButton {
   flex-direction: column;
   align-items: flex-start;
-  padding-bottom: 1.4rem;
+  padding-bottom: 2rem;
   cursor: default;
 }
 
@@ -241,10 +235,6 @@
 
 .optionTitle {
   flex: 1;
-  font-size: max(18px, 2.2rem);
-  line-height: 1.2;
-  letter-spacing: -0.3px;
-  color: var(--black);
 }
 
 .chevron {
@@ -296,7 +286,7 @@
 
 .desc {
   max-width: 460px;
-  padding: 0 3rem;
+  /* padding: 0 3rem; */
   font-size: max(16px, 1.6rem);
   line-height: 1.45;
 }
@@ -306,7 +296,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding: 4rem 3rem 3rem;
+  margin-top: 10rem;
+  /* padding: 4rem 3rem 3rem; */
 }
 
 .bullets li {
@@ -376,13 +367,12 @@
     padding: 2rem;
   }
 
-  .statValue {
-    font-size: 4.4rem;
-  }
-
   .noteIcon {
     width: 3.6rem;
     height: 3.6rem;
+  }
+  .noteText {
+    font-size: 12px;
   }
 }
 
@@ -398,14 +388,26 @@
    the note and its photo. */
 @media screen and (max-width: 868px) {
   .grid {
-    grid-template-columns: repeat(1, 1fr);
-    grid-template-rows: none;
-    grid-template-areas: none;
+    display: flex;
+  }
+
+  .options,
+  .option {
+    width: 100%;
+  }
+
+  .option {
+    padding: 3rem;
   }
 
   .photo,
   .middle {
     display: none;
+  }
+
+  .inlineCards,
+  .bullets {
+    margin-top: 4rem;
   }
 
   .inlineMedia {
@@ -416,18 +418,6 @@
 @media screen and (max-width: 768px) {
   .container {
     padding: 7rem 0rem;
-  }
-
-  .optionButton {
-    padding: 2.4rem;
-  }
-
-  .desc {
-    padding: 0 2.4rem;
-  }
-
-  .bullets {
-    padding: 3rem 2.4rem 2.4rem;
   }
 }
 
@@ -442,24 +432,29 @@
     border-radius: 2rem;
   }
 
-  .statValue {
-    font-size: 4rem;
+  .option {
+    padding: 2rem;
   }
 
   .inlineMedia {
-    padding: 0 0.8rem 0.8rem;
+    padding: 0;
   }
 
   .inlineCards .stat,
   .inlineCards .note {
     min-height: 15rem;
-    padding: 1.6rem;
   }
-}
 
-/* Very small phones: the two cards stack. */
-@media screen and (max-width: 420px) {
   .inlineCards {
     grid-template-columns: repeat(1, 1fr);
   }
+
+  .inlinePhoto {
+    height: 250px;
+  }
+
+  .img {
+    object-position: top;
+  }
 }
+
