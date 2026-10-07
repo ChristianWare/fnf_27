@@ -5,11 +5,10 @@
   --textDark: #82888f;
   --light: #f1f2f4;
   --light2: #e0e2e5;
-  --accent: #ffbe00;
-  --accent1: #96A78D;
-  --accent2: #B6CEB4;
-  --accent3: #D9E9CF;
-  --accent4: #F0F0F0;
+  --accent1: #b5f2e0;
+  --accent2: #c1b7ff;
+  --accent3: #d1ff93;
+  --accent4: #fff78b;
   --white: #ffffff;
 }
 
@@ -397,12 +396,11 @@ html [data-reveal-style="fade"] {
 }
 
 /* ── Page transitions ──
-   PageTransitions (in the root layout) starts a view transition whenever an
-   internal link is clicked, and the browser animates a snapshot of the
-   whole screen ("root"). The page you're leaving lifts and fades back into
-   the dark while the new page wipes up over it from the bottom of the
-   screen. The nav stays still on top. Browsers without view transitions
-   just change pages normally.
+   app/template.tsx starts a view transition on every page change, and the
+   browser animates a snapshot of the whole screen ("root"). The page you're
+   leaving lifts and fades back into the dark while the new page wipes up
+   over it from the bottom of the screen. The nav stays still on top.
+   Browsers without view transitions just change pages normally.
 
    To change the speed, edit the 1.2s in both rules below. */
 ::view-transition {
@@ -467,6 +465,17 @@ html [data-reveal-style="fade"] {
   }
 }
 */
+
+/* The invisible marker that starts the transition doesn't animate. */
+::view-transition-group(.route-change) {
+  animation: none;
+}
+
+::view-transition-old(.route-change),
+::view-transition-new(.route-change) {
+  animation: none;
+  opacity: 0;
+}
 
 /* The nav doesn't move or fade between pages. */
 ::view-transition-group(site-nav) {
