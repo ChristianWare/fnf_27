@@ -1,7 +1,3 @@
-/* A dark card with a background image that stays fixed to the screen, the
-   same way as the leads tool section on the home page. The image is a
-   fixed, full-screen layer; clip-path trims it to the card's rounded
-   shape, so the card acts like a window onto it. */
 .container {
   position: relative;
   isolation: isolate;
@@ -30,12 +26,12 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgb(0 0 0 / 68%);
+  background: rgb(0 0 0 / 10%);
 }
 
 .content {
   display: grid;
-  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.4fr);
+  grid-template-columns: 2fr 4fr;
   gap: 6rem;
   width: 100%;
 }
@@ -81,10 +77,8 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.8rem;
-  font-size: max(17px, 1.8rem);
-  line-height: 1.25;
-  letter-spacing: -0.2px;
+  gap: 2rem;
+
   color: var(--white);
 }
 
@@ -93,7 +87,7 @@
   border-radius: 0.5rem;
   background-color: var(--white);
   font-family: var(--IBMPlex);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -104,13 +98,19 @@
   flex: none;
   padding-top: 0.3rem;
   font-family: var(--IBMPlex);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
   color: rgb(255 255 255 / 75%);
 }
 
 .items {
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 1.6rem;
+  width: 100%;
 }
 
 .item {
@@ -120,17 +120,17 @@
   gap: 2rem;
   padding: 1.8rem 0;
   border-bottom: 1px solid rgb(255 255 255 / 16%);
+  width: 100%;
 }
 
 .itemText {
-  font-size: max(16px, 1.6rem);
   line-height: 1.35;
   color: var(--white);
 }
 
 .note {
   flex: none;
-  font-size: max(15px, 1.5rem);
+  font-size: 1.8rem;
   line-height: 1.35;
   text-align: right;
   white-space: nowrap;

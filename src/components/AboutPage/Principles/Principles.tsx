@@ -3,7 +3,7 @@ import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./Principles.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import BgImg from "../../../../public/images/newHero.png";
+import BgImg from "../../../../public/images/irr.webp";
 
 // The four principles, each with the commitments that come with it.
 const principles = [
@@ -73,7 +73,7 @@ export default function Principles() {
           <div className={styles.left}>
             <EyeBrow text='Our principles' color='white' />
             <h2 className={styles.heading} data-reveal data-reveal-style='fade'>
-              What guides us.
+              What <br /> Guides Us
             </h2>
           </div>
 
@@ -81,7 +81,7 @@ export default function Principles() {
             {principles.map((principle) => (
               <li className={styles.group} key={principle.id} data-reveal>
                 <div className={styles.groupHead}>
-                  <h3 className={styles.groupTitle}>
+                  <h3 className={`${styles.groupTitle} subHeading`}>
                     {principle.title}
                     <span className={styles.tag}>{principle.tag}</span>
                   </h3>
