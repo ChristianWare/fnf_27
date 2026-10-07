@@ -8,7 +8,7 @@ import Image from "next/image";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./AboutStory.module.css";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import WhatImg from "../../../../public/images/cadiiv.png";
+import WhatImg from "../../../../public/images/subLap.png";
 import StoryImg from "../../../../public/images/barry.png";
 import BelieveImg from "../../../../public/images/chevy_corp.png";
 import WhoImg from "../../../../public/images/chris.png";
