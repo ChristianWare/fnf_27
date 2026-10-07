@@ -7,6 +7,9 @@ import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee"
 import HowIWork from "@/components/AboutPage/HowIWork/HowIWork";
 import AboutStory from "@/components/AboutPage/AboutStory/AboutStory";
 import Process from "@/components/AboutPage/Process/Process";
+import Principles from "@/components/AboutPage/Principles/Principles";
+import JournalPreview from "@/components/HomePage/JournalPreview/JournalPreview";
+import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
 
 export const metadata: Metadata = {
@@ -27,6 +30,9 @@ export default function AboutPage() {
       <HowIWork />
       <AboutStory />
       <Process />
+      <Principles />
+      <JournalPreview />
+      <FinalCta />
       <Footer />
     </main>
   );

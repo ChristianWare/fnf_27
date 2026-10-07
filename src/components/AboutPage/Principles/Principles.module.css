@@ -1,0 +1,186 @@
+/* A dark card with a background image that stays fixed to the screen, the
+   same way as the leads tool section on the home page. The image is a
+   fixed, full-screen layer; clip-path trims it to the card's rounded
+   shape, so the card acts like a window onto it. */
+.container {
+  position: relative;
+  isolation: isolate;
+  padding: 10rem 0rem;
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+  clip-path: inset(0 round 3rem);
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.bgImg {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Darkens the image so the white text stays readable. */
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 68%);
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.4fr);
+  gap: 6rem;
+  width: 100%;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  color: var(--white);
+  max-width: 460px;
+}
+
+/* The list: each principle on the left, its commitments on the right, with
+   thin lines between rows. */
+.list {
+  list-style: none;
+  border-top: 1px solid rgb(255 255 255 / 16%);
+}
+
+.group {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  column-gap: 4rem;
+}
+
+.group + .group .groupHead {
+  border-top: 1px solid rgb(255 255 255 / 16%);
+}
+
+.groupHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.8rem 0;
+}
+
+.groupTitle {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  font-size: max(17px, 1.8rem);
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+  color: var(--white);
+}
+
+.tag {
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+  background-color: var(--white);
+  font-family: var(--IBMPlex);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.number {
+  flex: none;
+  padding-top: 0.3rem;
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  line-height: 1;
+  color: rgb(255 255 255 / 75%);
+}
+
+.items {
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.8rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / 16%);
+}
+
+.itemText {
+  font-size: max(16px, 1.6rem);
+  line-height: 1.35;
+  color: var(--white);
+}
+
+.note {
+  flex: none;
+  font-size: max(15px, 1.5rem);
+  line-height: 1.35;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--white);
+}
+
+/* Heading on top, the list underneath. */
+@media screen and (max-width: 1268px) {
+  .content {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 5rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  /* Each principle above its commitments. */
+  .group {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .group + .group .groupHead {
+    border-top: none;
+  }
+
+  .groupHead {
+    padding: 2.4rem 0 0.8rem;
+  }
+
+  .item {
+    padding: 1.4rem 0;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+    clip-path: inset(0 round 2rem);
+  }
+
+  .item {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .note {
+    text-align: left;
+    color: rgb(255 255 255 / 70%);
+  }
+}
