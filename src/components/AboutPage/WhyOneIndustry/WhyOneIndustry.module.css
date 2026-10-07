@@ -145,6 +145,10 @@
   color: var(--black);
 }
 
+.tag1 .tagText {
+  background-color: var(--accent1);
+}
+
 .tag1 {
   top: 6%;
   left: 58%;
@@ -155,9 +159,17 @@
   left: 0%;
 }
 
+.tag2 .tagText {
+  background-color: var(--accent2);
+}
+
 .tag3 {
   top: 76%;
   left: 50%;
+}
+
+.tag3 .tagText {
+  background-color: var(--accent3);
 }
 
 @media screen and (max-width: 1268px) {
