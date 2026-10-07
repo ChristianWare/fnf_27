@@ -86,8 +86,8 @@
 }
 
 .icon {
-  width: 3.6rem;
-  height: 3.6rem;
+  width: 5rem;
+  height: 5rem;
   color: var(--black);
 }
 
@@ -114,9 +114,6 @@
 }
 
 .title {
-  font-size: max(20px, 2.2rem);
-  line-height: 1.2;
-  letter-spacing: -0.2px;
   color: var(--black);
 }
 
@@ -125,6 +122,7 @@
   font-size: max(16px, 1.6rem);
   line-height: 1.4;
   color: var(--black);
+  opacity: 0.7;
 }
 
 /* Two by two. */

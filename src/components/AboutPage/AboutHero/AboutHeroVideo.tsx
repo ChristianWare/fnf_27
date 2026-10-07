@@ -18,6 +18,18 @@ export default function AboutHeroVideo() {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    const toStart = () => {
+      if (video.currentTime < START) video.currentTime = START;
+    };
+    // The metadata may have loaded before this ran, so check now as well.
+    if (video.readyState >= 1) toStart();
+    video.addEventListener("loadedmetadata", toStart);
+    return () => video.removeEventListener("loadedmetadata", toStart);
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
 
     // People who turn off motion get a still frame. The button still works.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -51,7 +63,7 @@ export default function AboutHeroVideo() {
         <video
           ref={videoRef}
           className={styles.video}
-          src={VIDEO_SRC}
+          src={`${VIDEO_SRC}#t=${START}`}
           muted
           loop
           playsInline
@@ -60,9 +72,6 @@ export default function AboutHeroVideo() {
           tabIndex={-1}
           onPlay={() => setPaused(false)}
           onPause={() => setPaused(true)}
-          onLoadedMetadata={(e) => {
-            e.currentTarget.currentTime = START;
-          }}
           onTimeUpdate={(e) => {
             // Jump back just before the end, so every loop skips the first 2 seconds.
             const video = e.currentTarget;

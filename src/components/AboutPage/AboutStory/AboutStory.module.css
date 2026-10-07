@@ -25,15 +25,15 @@
 .tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.2rem;
+  gap: 1.6rem;
   width: 100%;
 }
 
 .tab {
-  padding: 1.8rem 1.2rem;
-  border-radius: 1.4rem;
+  padding: 2.5rem;
+  border-radius: 2rem;
   background-color: var(--light);
-  font-size: max(15px, 1.5rem);
+  font-size: 18px;
   line-height: 1.2;
   text-align: center;
   color: var(--black);
@@ -99,8 +99,7 @@
 }
 
 .note {
-  font-size: max(16px, 1.8rem);
-  line-height: 1.2;
+ 
   color: var(--black);
 }
 
@@ -112,7 +111,7 @@
 }
 
 .body {
-  max-width: 440px;
+  max-width: 600px;
   font-size: max(16px, 1.7rem);
   line-height: 1.45;
 }
@@ -159,6 +158,10 @@
     gap: 3rem;
     padding: 4rem 1.5rem 3rem;
   }
+
+  .tab {
+    padding: 1.5rem;
+  }
 }
 
 /* Tabs two by two. */
@@ -180,5 +183,16 @@
 
   .text {
     padding: 3rem 0.8rem 2rem;
+  }
+
+  .tabs {
+    gap: 1rem;
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .tab {
+    font-size: 16px;
+    padding: 1rem;
+    border-radius: 10px;
   }
 }

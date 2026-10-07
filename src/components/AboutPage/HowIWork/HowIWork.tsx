@@ -9,7 +9,7 @@ import LightBulb from "@/components/shared/icons/LightBulb/LightBulb";
 import Target from "@/components/shared/icons/Target/Target";
 import Customer from "@/components/shared/icons/Customer/Customer";
 import AuditImg from "../../../../public/images/freeAudit.jpg";
-import ChrisImg from "../../../../public/images/chris.png";
+import ChrisImg from "../../../../public/images/me.png";
 
 const items = [
   {
@@ -60,10 +60,12 @@ export default function HowIWork() {
                 data-reveal
                 data-reveal-style='fade'
               >
-                How I work.
+                How We Work
               </h2>
               <p className={styles.copy} data-reveal>
-                Four things you can count on, whichever plan you choose.
+                We built our platform to solve the real problems operators face.
+                If that sounds good, you're in the right place. So here are four things you
+                can count on, whichever plan you choose.
               </p>
             </div>
             <div className={styles.btnContainer} data-reveal>
@@ -96,7 +98,7 @@ export default function HowIWork() {
                   </span>
                 )}
                 <div className={styles.cardBottom}>
-                  <h3 className={styles.title}>{item.title}</h3>
+                  <h3 className={`${styles.title} h6`}>{item.title}</h3>
                   <p className={styles.desc}>{item.desc}</p>
                 </div>
               </li>

@@ -6,7 +6,7 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import Location from "@/components/shared/icons/Location/Location";
 import AboutHeroVideo from "./AboutHeroVideo";
-import Chris from "../../../../public/images/chris.png";
+import Chris from "../../../../public/images/me.png";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 

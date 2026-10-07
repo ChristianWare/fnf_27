@@ -42,7 +42,7 @@ export default function WhyOneIndustry() {
             <div className={styles.leftTop}>
               <EyeBrow text='Why only black car operators' />
               <h2
-                className={`${styles.heading} h4`}
+                className={`${styles.heading} h3`}
                 data-reveal
                 data-reveal-style='fade'
               >
@@ -83,7 +83,7 @@ export default function WhyOneIndustry() {
                   key={stat.id}
                 >
                   <dt className={styles.statLabel}>{stat.label}</dt>
-                  <dd className={styles.statValue}>{stat.value}</dd>
+                  <dd className={`${styles.statValue} h2`}>{stat.value}</dd>
                 </div>
               ))}
             </dl>

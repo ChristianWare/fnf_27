@@ -71,9 +71,7 @@
 }
 
 .statValue {
-  font-size: 5.6rem;
   line-height: 1;
-  letter-spacing: -2px;
   color: var(--black);
 }
 
