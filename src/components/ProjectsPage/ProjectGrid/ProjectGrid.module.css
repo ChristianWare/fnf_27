@@ -1,0 +1,204 @@
+.container {
+  padding: 3rem 0rem 8rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Read by screen readers only. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Two cards per row. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  width: 100%;
+}
+
+/* One project: the photo with the client's name on it, then the details. */
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem;
+  border-radius: 2.4rem;
+  background-color: var(--light);
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 1.36 / 1;
+  border-radius: 1.6rem;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+/* A soft shade along the top keeps the white name readable on any photo. */
+.media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 35%), rgb(0 0 0 / 0%) 32%);
+  pointer-events: none;
+}
+
+.mediaLink {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.img {
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .img {
+    transform: scale(1.04);
+  }
+}
+
+.brand {
+  position: absolute;
+  top: 2.2rem;
+  left: 2.2rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  max-width: calc(100% - 4.4rem);
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: max(18px, 2.2rem);
+  line-height: 1;
+  letter-spacing: -0.5px;
+  color: var(--white);
+  pointer-events: none;
+}
+
+/* The logo files are black; this shows them in white. */
+.brandMark {
+  flex: none;
+  width: auto;
+  height: 2.4rem;
+  filter: brightness(0) invert(1);
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  padding: 2.2rem 1.1rem 1.1rem;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 1.2rem;
+  width: 100%;
+}
+
+.tag,
+.label {
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.tag {
+  padding: 0.6rem 1rem;
+  border-radius: 50px;
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.label {
+  flex: none;
+  color: var(--text);
+}
+
+.title {
+  max-width: 58rem;
+  color: var(--black);
+}
+
+/* The buttons sit at the bottom, so they line up across a row. */
+.btnContainer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 0.8rem;
+}
+
+.note {
+  margin-top: 2.4rem;
+  font-family: var(--IBMPlex);
+  font-size: 13px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .img {
+    transition: none;
+  }
+}
+
+/* One card per row. */
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 3rem 0rem 7rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .card {
+    padding: 0.8rem;
+    border-radius: 2rem;
+  }
+
+  .media {
+    border-radius: 1.4rem;
+  }
+
+  .brand {
+    top: 1.6rem;
+    left: 1.6rem;
+    max-width: calc(100% - 3.2rem);
+  }
+
+  .body {
+    gap: 1.4rem;
+    padding: 2rem 0.8rem 0.8rem;
+  }
+}

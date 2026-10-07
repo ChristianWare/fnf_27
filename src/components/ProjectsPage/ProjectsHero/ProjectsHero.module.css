@@ -1,0 +1,267 @@
+.container {
+  padding: 12rem 0rem 5rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Heading and intro on the left, the client on the right. */
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4rem;
+  padding-bottom: 6rem;
+}
+
+.topLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.copy {
+  max-width: 580px;
+}
+
+.client {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.4rem;
+}
+
+/* Overlapping circles, with a white ring between them. */
+.avatars {
+  display: flex;
+}
+
+.avatar {
+  position: relative;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--black);
+  box-shadow: 0 0 0 2px var(--white);
+}
+
+.avatar + .avatar {
+  margin-left: -1rem;
+}
+
+.avatarImg {
+  object-fit: cover;
+  object-position: center 15%; /* Barry's face is near the top of his photo */
+}
+
+.avatarLogo {
+  border: 1px solid var(--light2);
+  background-color: var(--white);
+}
+
+.avatarLogoImg {
+  object-fit: contain;
+  padding: 1.1rem;
+}
+
+.clientText {
+  font-family: var(--IBMPlex);
+  font-size: 13px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--text);
+}
+
+/* Two photos side by side. The wider one carries Barry's quote. */
+.media {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr);
+  gap: 0.8rem;
+  height: clamp(38rem, 32vw, 58rem);
+}
+
+.photo {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+}
+
+.img {
+  object-fit: cover;
+}
+
+/* Lines the photo up on its right edge, which keeps the vehicle on the
+   left, clear of the quote card. */
+.photoWide .img {
+  object-position: right center;
+}
+
+/* The quote card: frosted glass in the bottom-right corner. */
+.quote {
+  position: absolute;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: min(30rem, calc(100% - 2.4rem));
+  padding: 2rem;
+  border-radius: 1.6rem;
+  border: 1px solid rgb(255 255 255 / 14%);
+  background-color: rgb(13 13 14 / 30%);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+.quoteText {
+  font-size: max(15px, 1.5rem);
+  line-height: 1.45;
+  color: var(--white);
+}
+
+.quoteBy {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.quoteAvatar {
+  position: relative;
+  flex: none;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  background-color: var(--black);
+}
+
+.quoteWho {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.quoteName {
+  font-size: 1.6rem;
+  line-height: 1.1;
+  color: var(--white);
+}
+
+.quoteRole {
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 70%);
+}
+
+/* Heading on top, the client underneath, and the photos stack. */
+@media screen and (max-width: 968px) {
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+    padding-bottom: 5rem;
+  }
+
+  .client {
+    align-items: flex-start;
+  }
+
+  .clientText {
+    text-align: left;
+  }
+
+  .media {
+    grid-template-columns: repeat(1, 1fr);
+    height: auto;
+  }
+
+  .photoSmall {
+    height: 34rem;
+  }
+
+  .photoWide {
+    height: 46rem;
+  }
+}
+
+/* The quote moves under its photo, in the same card, so it never covers
+   the vehicle on narrower screens. */
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 9rem 0rem 4rem;
+  }
+
+  .photoSmall {
+    height: 30rem;
+  }
+
+  .photoWide {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    background-color: var(--black);
+  }
+
+  .photoWide .img {
+    object-position: 35% center;
+  }
+
+  .frame {
+    position: relative;
+    inset: auto;
+    height: 34rem;
+  }
+
+  .quote {
+    position: static;
+    width: 100%;
+    gap: 1.6rem;
+    padding: 2.4rem 2.4rem 2.6rem;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .photo {
+    border-radius: 1.6rem;
+  }
+
+  .photoSmall {
+    height: 24rem;
+  }
+
+  .frame {
+    height: 28rem;
+  }
+
+  .quote {
+    padding: 2rem 1.8rem 2.2rem;
+  }
+}
