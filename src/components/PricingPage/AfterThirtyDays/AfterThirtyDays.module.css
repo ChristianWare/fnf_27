@@ -59,6 +59,39 @@
   opacity: 1;
 }
 
+/* The photo and cards inside each choice: only shown at 868px and below. */
+.inlineMedia {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 1.2rem 1.2rem;
+}
+
+.inlineCards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.inlineCards .stat,
+.inlineCards .note {
+  min-height: 17rem;
+  padding: 2rem;
+  border-radius: 2rem;
+}
+
+.inlinePhoto {
+  position: relative;
+  aspect-ratio: 1 / 1.05;
+  border-radius: 2rem;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+.inlinePhoto .img {
+  opacity: 1;
+}
+
 .middle {
   display: flex;
   flex-direction: column;
@@ -312,14 +345,44 @@
   }
 }
 
-/* Tablets: no photo. */
-@media screen and (max-width: 1268px) {
+/* 1068px: the colored card and the note side by side, with the photo under
+   them, on the left; the choices on the right. */
+@media screen and (max-width: 1068px) {
   .grid {
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
+    grid-template-rows: auto minmax(30rem, 1fr);
+    grid-template-areas:
+      "middle options"
+      "photo options";
+    min-height: 0;
   }
 
   .photo {
-    display: none;
+    grid-area: photo;
+  }
+
+  .middle {
+    grid-area: middle;
+    flex-direction: row;
+  }
+
+  .options {
+    grid-area: options;
+  }
+
+  .middle .stat,
+  .middle .note {
+    min-height: 17rem;
+    padding: 2rem;
+  }
+
+  .statValue {
+    font-size: 4.4rem;
+  }
+
+  .noteIcon {
+    width: 3.6rem;
+    height: 3.6rem;
   }
 }
 
@@ -331,29 +394,28 @@
   }
 }
 
-/* Phones: the choices first, then the two cards side by side. */
+/* 868px: one column of choices. The open choice holds its own colored card,
+   the note and its photo. */
+@media screen and (max-width: 868px) {
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: none;
+    grid-template-areas: none;
+  }
+
+  .photo,
+  .middle {
+    display: none;
+  }
+
+  .inlineMedia {
+    display: flex;
+  }
+}
+
 @media screen and (max-width: 768px) {
   .container {
     padding: 7rem 0rem;
-  }
-
-  .grid {
-    grid-template-columns: repeat(1, 1fr);
-    min-height: 0;
-  }
-
-  .options {
-    order: 1;
-  }
-
-  .middle {
-    order: 2;
-    flex-direction: row;
-  }
-
-  .stat,
-  .note {
-    min-height: 22rem;
   }
 
   .optionButton {
@@ -374,10 +436,6 @@
     border-radius: 2rem;
   }
 
-  .middle {
-    flex-direction: column;
-  }
-
   .option,
   .stat,
   .note {
@@ -385,6 +443,23 @@
   }
 
   .statValue {
-    font-size: 4.8rem;
+    font-size: 4rem;
+  }
+
+  .inlineMedia {
+    padding: 0 0.8rem 0.8rem;
+  }
+
+  .inlineCards .stat,
+  .inlineCards .note {
+    min-height: 15rem;
+    padding: 1.6rem;
+  }
+}
+
+/* Very small phones: the two cards stack. */
+@media screen and (max-width: 420px) {
+  .inlineCards {
+    grid-template-columns: repeat(1, 1fr);
   }
 }

@@ -143,9 +143,29 @@ export default function ComparePlans() {
               </tbody>
             </table>
           </div>
-          <p className={styles.scrollHint} aria-hidden='true'>
-            Swipe to see every plan
-          </p>
+
+          {/* At 768px and below: one card per feature, with each plan's
+              answer side by side, instead of the wide table. */}
+          <div className={styles.cards} data-reveal>
+            {rows.map((row) => (
+              <div className={styles.feature} key={row.label}>
+                <h3 className={styles.featureTitle}>{row.label}</h3>
+                <dl className={styles.featureGrid}>
+                  {plans.map((plan, i) => (
+                    <div
+                      key={plan.id}
+                      className={`${styles.featureCell} ${plan.featured ? styles.featureCellFeatured : ""}`}
+                    >
+                      <dt className={styles.featurePlan}>{plan.name}</dt>
+                      <dd className={styles.featureValue}>
+                        <Cell value={row.values[i]} />
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ))}
+          </div>
         </div>
       </LayoutWrapper>
     </section>

@@ -2,6 +2,7 @@
 
 // What happens when the free leads period ends. The three choices are an
 // accordion: opening one also swaps the photo and the colored card beside it.
+// At 868px and below, the photo and cards move inside the open choice.
 
 import { useState } from "react";
 import Image from "next/image";
@@ -98,7 +99,7 @@ export default function AfterThirtyDays() {
                   alt={o.id === active ? o.alt : ""}
                   aria-hidden={o.id !== active}
                   fill
-                  sizes='(max-width: 1268px) 1px, 28vw'
+                  sizes='(max-width: 868px) 1px, (max-width: 1068px) 36vw, 28vw'
                   className={`${styles.img} ${o.id === active ? styles.imgActive : ""}`}
                 />
               ))}
@@ -167,6 +168,44 @@ export default function AfterThirtyDays() {
                             <li key={b}>{b}</li>
                           ))}
                         </ul>
+
+                        {/* Shown at 868px and below, inside the open choice. */}
+                        <div className={styles.inlineMedia}>
+                          <div className={styles.inlineCards}>
+                            <div
+                              className={`${styles.stat} ${styles[`tone${o.id}`]}`}
+                            >
+                              <div className={styles.statTop}>
+                                <span className={styles.statValue}>
+                                  {o.stat}
+                                </span>
+                                <span className={styles.statLabel}>
+                                  {o.statLabel}
+                                </span>
+                              </div>
+                              <span className={styles.statTag}>{o.tag}</span>
+                            </div>
+                            <div className={styles.note}>
+                              <Bell
+                                className={styles.noteIcon}
+                                aria-hidden='true'
+                              />
+                              <p className={styles.noteText}>
+                                Five days before the end, your dashboard shows
+                                the choice, so it&apos;s never a surprise.
+                              </p>
+                            </div>
+                          </div>
+                          <div className={styles.inlinePhoto}>
+                            <Image
+                              src={o.src}
+                              alt={o.alt}
+                              fill
+                              sizes='(max-width: 868px) 92vw, 1px'
+                              className={styles.img}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
