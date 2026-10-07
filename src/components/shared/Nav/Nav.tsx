@@ -79,7 +79,12 @@ export default function Nav({
       : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <header className={styles.header}>
+    <header
+      className={styles.header}
+      // Holds the nav still during page transitions (see globals.css). Set
+      // here, not in the CSS module, which would rename it.
+      style={{ viewTransitionName: "site-nav" }}
+    >
       <LayoutWrapper paddingNSNone='paddingNSNone'>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
