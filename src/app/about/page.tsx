@@ -4,6 +4,9 @@ import Nav from "@/components/shared/Nav/Nav";
 import AboutHero from "@/components/AboutPage/AboutHero/AboutHero";
 import WhyOneIndustry from "@/components/AboutPage/WhyOneIndustry/WhyOneIndustry";
 import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
+import HowIWork from "@/components/AboutPage/HowIWork/HowIWork";
+import AboutStory from "@/components/AboutPage/AboutStory/AboutStory";
+import Process from "@/components/AboutPage/Process/Process";
 import Footer from "@/components/shared/Footer/Footer";
 
 export const metadata: Metadata = {
@@ -21,6 +24,9 @@ export default function AboutPage() {
       <AboutHero />
       <WhyOneIndustry />
       <FeatureMarquee />
+      <HowIWork />
+      <AboutStory />
+      <Process />
       <Footer />
     </main>
   );

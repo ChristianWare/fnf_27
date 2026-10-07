@@ -1,0 +1,179 @@
+.container {
+  padding: 10rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4rem;
+  padding-bottom: 6rem;
+}
+
+.topLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+}
+
+.heading {
+  max-width: 700px;
+}
+
+.copy {
+  max-width: 520px;
+}
+
+.btnContainer {
+  flex: none;
+}
+
+/* Four cards in three columns: the first and last are full height, and the
+   middle two share the middle column. */
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(28rem, auto));
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4rem;
+  padding: 3rem;
+  border-radius: 2rem;
+  color: var(--black);
+}
+
+.card1 {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  background-color: var(--accent1);
+}
+
+.card2 {
+  grid-column: 2;
+  grid-row: 1;
+  background-color: var(--accent2);
+}
+
+.card3 {
+  grid-column: 2;
+  grid-row: 2;
+  background-color: var(--accent3);
+}
+
+.card4 {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  background-color: var(--accent4);
+}
+
+.icon {
+  width: 3.6rem;
+  height: 3.6rem;
+  color: var(--black);
+}
+
+/* The small photo in the top-right corner of the two tall cards. */
+.thumb {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 1.4rem;
+  overflow: hidden;
+  background-color: var(--black);
+}
+
+.thumbImg {
+  object-fit: cover;
+}
+
+.cardBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.title {
+  font-size: max(20px, 2.2rem);
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--black);
+}
+
+.desc {
+  max-width: 34rem;
+  font-size: max(16px, 1.6rem);
+  line-height: 1.4;
+  color: var(--black);
+}
+
+/* Two by two. */
+@media screen and (max-width: 968px) {
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+    padding-bottom: 5rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: minmax(28rem, auto);
+  }
+
+  .card1,
+  .card2,
+  .card3,
+  .card4 {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+}
+
+/* One column. */
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+    grid-auto-rows: minmax(24rem, auto);
+  }
+
+  .card {
+    padding: 2.4rem;
+  }
+
+  .thumb {
+    width: 10rem;
+    height: 10rem;
+  }
+}
