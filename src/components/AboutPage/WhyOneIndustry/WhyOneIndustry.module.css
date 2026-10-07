@@ -1,0 +1,245 @@
+.container {
+  padding: 10rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8rem;
+  width: 100%;
+}
+
+/* Left: the story at the top, the numbers pinned to the bottom. */
+.left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8rem;
+}
+
+.leftTop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.4rem;
+}
+
+.heading {
+  max-width: 660px;
+}
+
+.copies {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4rem;
+  width: 100%;
+}
+
+.copy {
+  font-size: max(16px, 1.6rem);
+  line-height: 1.45;
+}
+
+.btnContainer {
+  margin-top: 1rem;
+}
+
+/* The numbers: one full-width row, then two half rows. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.6rem;
+  width: 100%;
+}
+
+.stat {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 2rem 0;
+  border-top: 1px solid var(--light2);
+  border-bottom: 1px solid var(--light2);
+}
+
+.statWide {
+  grid-column: span 2;
+}
+
+.statValue {
+  font-size: 5.6rem;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--black);
+}
+
+.statLabel {
+  max-width: 22rem;
+  font-family: var(--IBMPlex);
+  font-size: 13px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--text);
+}
+
+/* Right: the vehicle, with markers pinned around it. The frame is wider
+   than the photo, so it crops the empty space above and below. */
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imgContainer {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 1 / 0.9;
+}
+
+.img {
+  object-fit: cover;
+  object-position: center 55%;
+}
+
+.tag {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+}
+
+.tagIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.6rem;
+  height: 4.6rem;
+  border-radius: 1rem;
+  border: 1px solid var(--light2);
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.tagIcon svg {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.tagText {
+  margin-left: -0.8rem;
+  margin-bottom: -1.2rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 0.6rem;
+  background-color: var(--light2);
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--black);
+}
+
+.tag1 {
+  top: 6%;
+  left: 58%;
+}
+
+.tag2 {
+  top: 44%;
+  left: 0%;
+}
+
+.tag3 {
+  top: 76%;
+  left: 50%;
+}
+
+@media screen and (max-width: 1268px) {
+  .content {
+    gap: 5rem;
+  }
+
+  .copies {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.6rem;
+  }
+
+  .statValue {
+    font-size: 4.8rem;
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .content {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 6rem;
+  }
+
+  .left {
+    gap: 5rem;
+  }
+
+  .copies {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .copies {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.6rem;
+  }
+
+  /* All three numbers full width. */
+  .stats {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+  }
+
+  .statWide {
+    grid-column: span 1;
+  }
+
+  .statValue {
+    font-size: 4.4rem;
+  }
+
+  .tagIcon {
+    width: 3.8rem;
+    height: 3.8rem;
+  }
+
+  .tagIcon svg {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  .tagText {
+    font-size: 11px;
+  }
+
+  .tag1 {
+    left: 46%;
+  }
+
+  .tag3 {
+    left: 40%;
+  }
+}

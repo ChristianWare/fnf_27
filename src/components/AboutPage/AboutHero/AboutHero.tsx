@@ -26,7 +26,7 @@ export default function AboutHero() {
                 data-reveal
                 data-reveal-style='fade'
               >
-                About Fonts &amp; Footers.
+                Built for one <br /> industry — yours
               </h1>
             </div>
             <span className={styles.based}>Based in Phoenix, AZ</span>

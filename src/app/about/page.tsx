@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import styles from "../page.module.css";
 import Nav from "@/components/shared/Nav/Nav";
 import AboutHero from "@/components/AboutPage/AboutHero/AboutHero";
+import WhyOneIndustry from "@/components/AboutPage/WhyOneIndustry/WhyOneIndustry";
+import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
 import Footer from "@/components/shared/Footer/Footer";
 
 export const metadata: Metadata = {
@@ -17,6 +19,8 @@ export default function AboutPage() {
     <main className={styles.container}>
       <Nav />
       <AboutHero />
+      <WhyOneIndustry />
+      <FeatureMarquee />
       <Footer />
     </main>
   );

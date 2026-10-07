@@ -16,6 +16,14 @@
   max-height: 970px;
 }
 
+/* The page-width wrapper (LayoutWrapper) centers itself with auto side
+   margins, and inside a flex column that makes it shrink to the width of
+   its content. Setting its width puts it back to full width (up to its
+   1800px max), the same as in the home hero. */
+.container > div:not(.media) {
+  width: 100%;
+}
+
 /* The video, with a soft dark wash so the white text stays readable. */
 .media {
   position: absolute;
@@ -292,5 +300,14 @@
 
   .talk {
     width: 100%;
+  }
+
+  .media::after {
+    background: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 55%),
+      rgb(0 0 0 / 40%) 45%,
+      rgb(0 0 0 / 65%)
+    );
   }
 }

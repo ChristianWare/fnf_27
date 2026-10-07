@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./AboutHero.module.css";
 
 const VIDEO_SRC = "/videos/about.mp4";
+const START = 2; // seconds into the video
 
 export default function AboutHeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,6 +60,15 @@ export default function AboutHeroVideo() {
           tabIndex={-1}
           onPlay={() => setPaused(false)}
           onPause={() => setPaused(true)}
+          onLoadedMetadata={(e) => {
+            e.currentTarget.currentTime = START;
+          }}
+          onTimeUpdate={(e) => {
+            // Jump back just before the end, so every loop skips the first 2 seconds.
+            const video = e.currentTarget;
+            if (video.duration - video.currentTime < 0.3)
+              video.currentTime = START;
+          }}
         />
       </div>
       <button
