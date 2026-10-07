@@ -64,7 +64,7 @@ export default function PricingPage() {
       <PricingHero />
       <ComparePlans />
       <PlanDetails />
-      <Faq faqs={pricingFaqs} heading='Pricing questions.' />
+      <Faq faqs={pricingFaqs} heading='Pricing Questions' />
       <FinalCta />
       <Footer />
     </main>

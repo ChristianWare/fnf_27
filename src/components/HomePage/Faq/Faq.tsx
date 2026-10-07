@@ -52,7 +52,7 @@ const homeFaqs: FaqItem[] = [
 export default function Faq({
   faqs = homeFaqs,
   eyebrow = "Common questions",
-  heading = "Questions operators ask first.",
+  heading = "Questions Operators Ask First",
 }: {
   faqs?: FaqItem[];
   eyebrow?: string;

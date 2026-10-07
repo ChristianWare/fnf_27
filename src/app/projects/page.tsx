@@ -54,7 +54,7 @@ export default function ProjectsPage() {
       <ProjectsHero />
       <FeatureMarquee />
       <ProjectGrid />
-      <Faq faqs={projectFaqs} heading='Project questions.' />
+      <Faq faqs={projectFaqs} heading='Project Questions' />
       <FinalCta />
       <Footer />
     </main>

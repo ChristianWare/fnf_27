@@ -73,9 +73,8 @@
    the image itself live in the shared SlideInImage component. */
 .imgContainer {
   position: relative;
-  /* max-width: 640px; */
   width: 100%;
-  min-height: 290px;
+  min-height: 550px;
   margin-left: auto;
   --slide-radius: 25px;
   --slide-position: top;
@@ -115,7 +114,7 @@
   .imgContainer {
     min-height: 350px;
   }
-
+/* 
   .imgContainer::after {
     content: "";
     position: absolute;
@@ -123,7 +122,7 @@
     z-index: 1;
     background: linear-gradient(to left, var(--light), transparent);
     pointer-events: none;
-  }
+  } */
 
   .bullets li {
     color: var(--text);
@@ -138,5 +137,6 @@
 @media screen and (max-width: 568px) {
   .imgContainer {
     --slide-radius: 16px;
+    min-height: 450px;
   }
 }

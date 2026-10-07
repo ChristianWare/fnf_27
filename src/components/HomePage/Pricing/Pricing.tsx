@@ -219,7 +219,7 @@ export default function Pricing() {
           <div className={styles.top}>
             <EyeBrow text='Pricing' />
             <h2 className={styles.heading} data-reveal data-reveal-style='fade'>
-              Flat prices, published.
+              Pricing Plans
             </h2>
           </div>
 
