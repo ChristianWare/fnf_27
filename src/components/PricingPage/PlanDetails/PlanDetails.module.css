@@ -34,7 +34,7 @@
   flex: none;
 }
 
-/* Photo, then the colored card and the note, then the three choices. */
+/* Photo, then the colored card and the note, then the four plans. */
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr) minmax(0, 1.5fr);
@@ -125,6 +125,10 @@
   background-color: var(--accent3);
 }
 
+.tone4 {
+  background-color: var(--accent4);
+}
+
 /* Re-mounts on every change, which replays this fade. */
 .statTop {
   display: flex;
@@ -160,6 +164,16 @@
   color: var(--white);
 }
 
+/* The note's icon and text. Re-mounts on every change, which replays the
+   fade. */
+.noteInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  animation: fadeIn 0.5s ease both;
+}
+
 .noteIcon {
   width: 4rem;
   height: 4rem;
@@ -173,7 +187,7 @@
   color: rgb(255 255 255 / 80%);
 }
 
-/* The choices. One is always open. */
+/* The plans. One is always open. */
 .options {
   display: flex;
   flex-direction: column;
@@ -265,7 +279,7 @@
   }
 }
 
-/* The open choice's details slide open. */
+/* The open plan's details slide open. */
 .panel {
   display: grid;
   grid-template-rows: 0fr;
@@ -331,13 +345,14 @@
     transition: none;
   }
 
-  .statTop {
+  .statTop,
+  .noteInner {
     animation: none;
   }
 }
 
 /* 1068px: the colored card and the note side by side, with the photo under
-   them, on the left; the choices on the right. */
+   them, on the left; the plans on the right. */
 @media screen and (max-width: 1068px) {
   .grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
@@ -374,6 +389,10 @@
   .noteText {
     font-size: 12px;
   }
+
+  .noteInner {
+    gap: 2rem;
+  }
 }
 
 @media screen and (max-width: 968px) {
@@ -384,8 +403,8 @@
   }
 }
 
-/* 868px: one column of choices. The open choice holds its own colored card,
-   the note and its photo. */
+/* 868px: one column of plans. The open plan holds its own colored card, the
+   note and its photo. */
 @media screen and (max-width: 868px) {
   .grid {
     display: flex;
@@ -457,4 +476,3 @@
     object-position: top;
   }
 }
-

@@ -141,6 +141,25 @@ tbody tr:last-child .featuredCell {
   color: var(--black);
 }
 
+/* A price with a small note under it, like the leads tool's free month. */
+.textWithNote {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cellNote {
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.listValue .textWithNote {
+  align-items: flex-end;
+}
+
 /* ── One plan at a time (968px and below) ── */
 .mobile {
   display: none;
@@ -248,7 +267,6 @@ tbody tr:last-child .featuredCell {
 }
 
 .listLabel {
-
   color: var(--black);
 }
 

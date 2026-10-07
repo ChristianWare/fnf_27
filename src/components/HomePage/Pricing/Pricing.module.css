@@ -27,6 +27,12 @@
   width: 100%;
 }
 
+/* The pricing page's four plans: four across, two by two at 1468px, one
+   column at 768px. The extra class outranks the home page's rules. */
+.plans.plansFour {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 /* The space above each plan is reserved for its tab, so nothing moves
    when the tab appears. */
 .planWrap {
@@ -108,7 +114,29 @@
   padding: 1.6rem 1.6rem 2rem;
 }
 
+/* The icon, with the plan's badge (if it has one) on the right. */
+.planTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+.badge {
+  padding: 0.7rem 1.1rem;
+  border-radius: 50px;
+  background-color: var(--accent3);
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--black);
+}
+
 .iconTile {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,14 +191,15 @@
   margin-top: 1.2rem;
 }
 
-/* The darker band of features at the bottom of each plan. */
+/* The darker band of features at the bottom of each plan. Tall enough for
+   the longest list (the Full Platform's), so the bands line up. */
 .features {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
   gap: 0.7rem 2rem;
-  min-height: 12.5rem;
+  min-height: 14rem;
   padding: 1.8rem 1.6rem 2rem;
   background-color: var(--light2);
 }
@@ -216,6 +245,22 @@
 
 .featured .features li {
   color: rgb(255 255 255 / 70%);
+}
+
+/* Four across, the cards are narrower: the text gets more room so the
+   prices and buttons still line up, and the features go to one column,
+   tall enough for the longest list so the dark bands line up too. */
+.plansFour .planDesc {
+  min-height: 9rem;
+}
+
+.plansFour .setup {
+  min-height: 4rem;
+}
+
+.plansFour .features {
+  grid-template-columns: repeat(1, 1fr);
+  min-height: 21rem;
 }
 
 /* The black bar under the plans. */
@@ -269,10 +314,27 @@
   color: rgb(255 255 255 / 60%);
 }
 
+/* Two by two. */
+@media screen and (max-width: 1468px) {
+  .plans.plansFour {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plansFour .planDesc {
+    min-height: 6.8rem;
+  }
+
+  .plansFour .features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 14rem;
+  }
+}
+
 @media screen and (max-width: 1268px) {
+  /* One column of features: tall enough for the longest list again. */
   .features {
     grid-template-columns: repeat(1, 1fr);
-    min-height: 0;
+    min-height: 21rem;
   }
 }
 
@@ -302,6 +364,7 @@
 
   .features {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 0;
   }
 }
 
@@ -318,6 +381,17 @@
     flex-direction: column;
     align-items: flex-start;
   }
+
+  /* The four plans go to one column. */
+  .plans.plansFour {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .plansFour .planDesc,
+  .plansFour .setup,
+  .plansFour .features {
+    min-height: 0;
+  }
 }
 
 @media screen and (max-width: 568px) {
@@ -325,7 +399,8 @@
     border-radius: 2rem;
   }
 
-  .features {
+  .features,
+  .plansFour .features {
     grid-template-columns: repeat(1, 1fr);
   }
 

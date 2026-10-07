@@ -7,10 +7,10 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 
 const plans = [
-  { id: "free", name: "Free leads tool", featured: false },
+  { id: "audit", name: "Free website audit", featured: false },
+  { id: "leads", name: "Leads tool", featured: false },
   { id: "website", name: "Website Only", featured: false },
   { id: "platform", name: "Full Platform", featured: true },
-  { id: "leads", name: "Leads on its own", featured: false },
 ];
 
 // The tabs open on the Full Platform, the plan the table highlights.
@@ -18,32 +18,44 @@ const DEFAULT_PLAN = plans.findIndex((plan) => plan.featured);
 
 // true = Included, false = Not included, text = shown as written.
 // { yes, note } = Included, with a note.
-type Value = boolean | string | { yes: true; note: string };
+// { text, note } = Text, with a small note under it.
+type Value =
+  | boolean
+  | string
+  | { yes: true; note: string }
+  | { text: string; note: string };
 
+// One value per plan, in the same order as the plans above.
 const rows: { label: string; values: Value[] }[] = [
   {
     label: "Price",
-    values: ["$0 for 30 days", "$199/mo", "$499/mo", "$125/mo"],
+    values: [
+      "Free",
+      { text: "$125/mo", note: "Free for the first 30 days" },
+      "$199/mo",
+      "$499/mo",
+    ],
   },
   {
     label: "Setup",
-    values: ["None", "$500 one time", "$500 one time", "None"],
+    values: ["None", "None", "$500 one time", "$500 one time"],
   },
   {
-    label: "Leads tool",
-    values: [{ yes: true, note: "For 30 days" }, false, true, true],
+    label: "Website audit",
+    values: [{ yes: true, note: "Results in 60 seconds" }, true, true, true],
   },
-  { label: "Custom website", values: [false, true, true, false] },
+  { label: "Leads tool", values: [false, true, false, true] },
+  { label: "Custom website", values: [false, false, true, true] },
   {
     label: "SEO foundation and rider-search pages",
-    values: [false, true, true, false],
+    values: [false, false, true, true],
   },
-  { label: "Hosting and edits", values: [false, true, true, false] },
-  { label: "Direct booking and dispatch", values: [false, false, true, false] },
-  { label: "Driver and admin portals", values: [false, false, true, false] },
+  { label: "Hosting and edits", values: [false, false, true, true] },
+  { label: "Direct booking and dispatch", values: [false, false, false, true] },
+  { label: "Driver and admin portals", values: [false, false, false, true] },
   {
     label: "Flight tracking and payments",
-    values: [false, false, true, false],
+    values: [false, false, false, true],
   },
   { label: "Per-booking fees", values: ["None", "None", "None", "None"] },
 ];
@@ -79,6 +91,14 @@ function Cell({ value }: { value: Value }) {
         <span className={styles.dash} aria-hidden='true' />
         <span className={styles.srOnly}>Not included</span>
       </>
+    );
+  }
+  if (typeof value === "object" && "text" in value) {
+    return (
+      <span className={styles.textWithNote}>
+        <span className={styles.text}>{value.text}</span>
+        <span className={styles.cellNote}>{value.note}</span>
+      </span>
     );
   }
   if (typeof value === "object") {

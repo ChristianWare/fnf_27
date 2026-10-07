@@ -1,8 +1,10 @@
+import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./Pricing.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
+import AuditIcon from "@/components/shared/icons/AuditIcon/AuditIcon";
 import LeadsIcon from "@/components/shared/icons/LeadsIcon/LeadsIcon";
 import Platform from "@/components/shared/icons/Platform/Platform";
 import Design from "@/components/shared/icons/Design/Design";
@@ -10,14 +12,58 @@ import Chris from "../../../../public/images/chris.png";
 import Logo from "@/components/shared/Logo/Logo";
 import Reveal from "@/components/shared/Reveal/Reveal";
 
-const plans = [
+type Plan = {
+  id: number;
+  name: string;
+  desc: string;
+  price: string;
+  per: string;
+  setup: string;
+  /** A small label beside the icon, for the plan's best detail. */
+  badge?: string;
+  btnText: string;
+  href: string;
+  Icon: ComponentType<SVGProps<SVGSVGElement>>;
+  featured: boolean;
+  /** Slides up above the card on hover. */
+  tab: string;
+  features: string[];
+};
+
+// Shown first on the pricing page only. The home page lists the three paid
+// plans.
+const auditPlan: Plan = {
+  id: 0,
+  name: "Free Website Audit",
+  desc: "See what's costing you bookings: how you show up on Google, how your site works on a phone, and whether riders can book you online.",
+  price: "$0",
+  per: "Always free",
+  setup: "Results in 60 seconds. No card, and no email needed for your score.",
+  btnText: "Run a free website audit",
+  href: "/audit",
+  Icon: AuditIcon,
+  featured: false,
+  tab: "For seeing where you stand",
+  features: [
+    "Score out of 100",
+    "Top three fixes, ranked",
+    "Google visibility",
+    "Speed on a phone",
+    "Online booking check",
+    "AI search readability",
+  ],
+};
+
+const plans: Plan[] = [
   {
     id: 1,
-    name: "Free Leads Tool",
+    name: "Leads Tool",
     desc: "Hotels, venues, corporate accounts and events in your market, each with a contact and an outreach script.",
-    price: "$0",
-    per: "For 30 days",
-    setup: "No card. Then $125/mo, or included with the Full Platform.",
+    price: "$125",
+    per: "Monthly",
+    setup:
+      "Free for the first 30 days, no card. Included with the Full Platform.",
+    badge: "First 30 days free",
     btnText: "Get free leads in your city",
     href: "/leads",
     Icon: LeadsIcon,
@@ -86,13 +132,18 @@ const defaultHelp = {
 
 export function PricingPlans({
   help = defaultHelp,
+  withAudit = false,
 }: {
   help?: { title: string; sub: string; href: string; text: string };
+  /** Adds the free website audit as the first of four cards. */
+  withAudit?: boolean;
 }) {
+  const shown = withAudit ? [auditPlan, ...plans] : plans;
+
   return (
     <>
-      <div className={styles.plans}>
-        {plans.map(({ Icon, ...plan }) => (
+      <div className={`${styles.plans} ${withAudit ? styles.plansFour : ""}`}>
+        {shown.map(({ Icon, ...plan }) => (
           <div className={styles.planWrap} key={plan.id} data-reveal>
             <div
               className={`${styles.tab} ${plan.featured ? styles.tabFeatured : ""}`}
@@ -103,8 +154,13 @@ export function PricingPlans({
               className={`${styles.plan} ${plan.featured ? styles.featured : ""}`}
             >
               <div className={styles.planBody}>
-                <div className={styles.iconTile}>
-                  <Icon className={styles.icon} aria-hidden='true' />
+                <div className={styles.planTop}>
+                  <div className={styles.iconTile}>
+                    <Icon className={styles.icon} aria-hidden='true' />
+                  </div>
+                  {plan.badge && (
+                    <span className={styles.badge}>{plan.badge}</span>
+                  )}
                 </div>
                 <h3 className={`${styles.planName} h5`}>{plan.name}</h3>
                 <p className={styles.planDesc}>{plan.desc}</p>

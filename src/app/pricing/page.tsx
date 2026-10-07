@@ -3,8 +3,7 @@ import styles from "../page.module.css";
 import Nav from "@/components/shared/Nav/Nav";
 import PricingHero from "@/components/PricingPage/PricingHero/PricingHero";
 import ComparePlans from "@/components/PricingPage/ComparePlans/ComparePlans";
-import AfterThirtyDays from "@/components/PricingPage/AfterThirtyDays/AfterThirtyDays";
-import FeeCalculator from "@/components/PricingPage/FeeCalculator/FeeCalculator";
+import PlanDetails from "@/components/PricingPage/PlanDetails/PlanDetails";
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
@@ -12,7 +11,7 @@ import Footer from "@/components/shared/Footer/Footer";
 export const metadata: Metadata = {
   title: { absolute: "Pricing | Fonts & Footers" },
   description:
-    "Every plan side by side: the free leads tool, Website Only at $199/mo and the Full Platform at $499/mo with leads included.",
+    "Every plan side by side: the free website audit, the leads tool at $125/mo (free for 30 days), Website Only at $199/mo and the Full Platform at $499/mo with leads included.",
 };
 
 const pricingFaqs: FaqItem[] = [
@@ -64,8 +63,7 @@ export default function PricingPage() {
       <Nav />
       <PricingHero />
       <ComparePlans />
-      <AfterThirtyDays />
-      <FeeCalculator />
+      <PlanDetails />
       <Faq faqs={pricingFaqs} heading='Pricing questions.' />
       <FinalCta />
       <Footer />

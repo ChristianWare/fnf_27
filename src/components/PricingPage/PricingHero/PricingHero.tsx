@@ -21,9 +21,9 @@ export default function PricingHero() {
                 Pricing
               </h1>
               <p className={styles.copy} data-reveal>
-                Flat monthly prices, published. Start with the free leads tool,
-                and add a website when you&apos;re ready. No plan charges
-                per-booking fees.
+                Flat monthly prices, published. Start with a free website audit
+                or 30 days of free leads, and add a website when you&apos;re
+                ready. No plan charges per-booking fees.
               </p>
             </div>
             <ul className={styles.terms} data-reveal>
@@ -32,8 +32,9 @@ export default function PricingHero() {
             </ul>
           </div>
 
-          {/* The same plan cards as on the home page. */}
+          {/* The home page's plan cards, with the free audit added first. */}
           <PricingPlans
+            withAudit
             help={{
               title: "Want every detail?",
               sub: "See what each plan includes, side by side.",
