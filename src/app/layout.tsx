@@ -1,4 +1,5 @@
 import SmoothScroll from "@/components/shared/SmoothScroll/SmoothScroll";
+import PageTransitions from "@/components/shared/PageTransitions/PageTransitions";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
@@ -94,7 +95,10 @@ export default function RootLayout({
       <body
         className={`${CreatoDisplayMedium.variable} ${CreatoDisplayRegular.variable} ${IBMPlex.variable} ${CreatoDisplayBold.style} ${cdCopy.variable} ${CreatoDisplayBlack.variable} ${CreatoDisplayExtraBold.variable} ${IBMPlexReg.variable} ${IBMPlexMonoBold.variable}`}
       >
-        <SmoothScroll>{children}</SmoothScroll>
+        <SmoothScroll>
+          <PageTransitions />
+          {children}
+        </SmoothScroll>
       </body>
     </html>
   );
