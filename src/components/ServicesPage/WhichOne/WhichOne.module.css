@@ -1,0 +1,373 @@
+/* A tall dark card with the video behind it. The content sits in the
+   bottom half, under a line across the card, so the video shows above. */
+.container {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 76rem;
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+  overflow: hidden;
+  background-color: var(--black);
+  color: var(--white);
+}
+
+/* The page-width wrapper centers itself with auto side margins, and inside
+   a flex column that shrinks it to its content. This puts it back to full
+   width, the same as in the About hero. */
+.container > div:not(.media) {
+  width: 100%;
+}
+
+.media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+/* Darkens the lower half, where the text is. */
+.media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 15%),
+    rgb(0 0 0 / 35%) 45%,
+    rgb(0 0 0 / 80%)
+  );
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.toggle {
+  position: absolute;
+  right: 1.4rem;
+  bottom: 1.4rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 1rem;
+  background-color: rgb(255 255 255 / 25%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--white);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toggle:hover {
+  background-color: rgb(255 255 255 / 40%);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 3px;
+}
+
+.toggle svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* Two columns under the line, with a second line between them. */
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  margin-top: 30rem;
+  border-top: 1px solid rgb(255 255 255 / 18%);
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 5rem;
+  padding: 2.4rem 4rem 4rem 0;
+  border-right: 1px solid rgb(255 255 255 / 18%);
+}
+
+.leftTop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 460px;
+  color: var(--white);
+}
+
+.leftBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.4rem;
+}
+
+.note {
+  max-width: 420px;
+  font-size: max(15px, 1.5rem);
+  line-height: 1.45;
+  color: rgb(255 255 255 / 70%);
+}
+
+/* The right column: one problem at a time. */
+.right {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  padding: 2.4rem 0 4rem 4rem;
+  border-radius: 1rem;
+}
+
+.right:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: -2px;
+}
+
+.rightTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.mono,
+.counter {
+  font-family: var(--IBMPlex);
+  font-size: 13px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 65%);
+}
+
+.counter {
+  color: var(--white);
+}
+
+/* Re-mounts on every change, which replays this fade. */
+.slide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3.2rem;
+  animation: slideIn 0.5s ease both;
+}
+
+.slide[hidden] {
+  display: none;
+}
+
+.problem {
+  max-width: 560px;
+  color: var(--white);
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  width: 100%;
+  max-width: 560px;
+}
+
+.answerRow {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid rgb(255 255 255 / 18%);
+}
+
+.fix {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-size: max(17px, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--white);
+}
+
+.fixIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1rem;
+  background-color: rgb(255 255 255 / 12%);
+  color: var(--white);
+}
+
+.fixIcon svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.price {
+  font-size: max(16px, 1.7rem);
+  line-height: 1.35;
+  color: rgb(255 255 255 / 85%);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--white);
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--white);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 4px;
+}
+
+.linkArrow {
+  width: 1.6rem;
+  height: 1.6rem;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover .linkArrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* The arrows, in the bottom-right corner, clear of the video button. */
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: auto;
+  padding-right: 5rem;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 25%);
+  color: var(--white);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.control:hover {
+  background-color: rgb(255 255 255 / 12%);
+}
+
+.control:active {
+  transform: scale(0.94);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 3px;
+}
+
+.control svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide {
+    animation: none;
+  }
+}
+
+@media screen and (max-width: 1268px) {
+  .content {
+    margin-top: 26rem;
+  }
+
+  .left {
+    padding-right: 3rem;
+  }
+
+  .right {
+    padding-left: 3rem;
+  }
+}
+
+/* One column: the heading and note first, then the problems. */
+@media screen and (max-width: 968px) {
+  .container {
+    min-height: 0;
+  }
+
+  .content {
+    grid-template-columns: repeat(1, 1fr);
+    margin-top: 32rem;
+  }
+
+  .left {
+    gap: 3rem;
+    padding: 2.4rem 0 3rem;
+    border-right: none;
+    border-bottom: 1px solid rgb(255 255 255 / 18%);
+  }
+
+  .right {
+    padding: 2.4rem 0 4rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .content {
+    margin-top: 24rem;
+  }
+
+  .answerRow {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 0.8rem;
+  }
+
+  .controls {
+    padding-right: 4.6rem;
+  }
+}

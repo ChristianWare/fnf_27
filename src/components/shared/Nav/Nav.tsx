@@ -59,6 +59,7 @@ export default function Nav({
 
   const items = [
     { text: "Home", href: "/" },
+    { text: "Services", href: "/services" },
     { text: "Pricing", href: "/pricing" },
     { text: "Projects", href: "/projects" },
     { text: "Journal", href: "/journal" },

@@ -1,0 +1,160 @@
+.container {
+  padding: 12rem 0rem 5rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Heading and intro on the left, the buttons on the right. */
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4rem;
+  padding-bottom: 5rem;
+}
+
+.topLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 980px;
+}
+
+.copy {
+  max-width: 580px;
+}
+
+.btnContainer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+/* Four photo cards, each with a label at the top and a number at the
+   bottom. */
+.cards {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4rem;
+  aspect-ratio: 5 / 6;
+  padding: 2.4rem;
+  border-radius: 2rem;
+  overflow: hidden;
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.img {
+  z-index: -1;
+  object-fit: cover;
+  object-position: center 40%;
+}
+
+/* Shade the top and bottom so the white text reads on any photo. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 65%),
+    rgb(0 0 0 / 0%) 40%,
+    rgb(0 0 0 / 0%) 60%,
+    rgb(0 0 0 / 60%)
+  );
+}
+
+.label {
+  max-width: 18rem;
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 50%);
+}
+
+.value {
+  font-size: 5.6rem;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+/* Two by two. */
+@media screen and (max-width: 968px) {
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 9rem 0rem 4rem;
+  }
+
+  .top {
+    padding-bottom: 4rem;
+  }
+
+  .value {
+    font-size: 4.8rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .btnContainer {
+    width: 100%;
+  }
+
+  .cards {
+    gap: 0.6rem;
+  }
+
+  .card {
+    padding: 1.6rem;
+    border-radius: 1.6rem;
+  }
+
+  .label {
+    font-size: 11px;
+  }
+
+  .value {
+    font-size: 4rem;
+    letter-spacing: -1.5px;
+  }
+}
