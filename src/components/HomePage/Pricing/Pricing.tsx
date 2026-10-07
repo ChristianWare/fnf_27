@@ -75,6 +75,85 @@ const plans = [
   },
 ];
 
+// The plan cards and the black help bar under them. Used by this section on
+// the home page, and by the hero on the pricing page.
+const defaultHelp = {
+  title: "Not sure which plan fits?",
+  sub: "No plan charges per-booking fees. Compare them side by side.",
+  href: "/pricing",
+  text: "See full pricing",
+};
+
+export function PricingPlans({
+  help = defaultHelp,
+}: {
+  help?: { title: string; sub: string; href: string; text: string };
+}) {
+  return (
+    <>
+      <div className={styles.plans}>
+        {plans.map(({ Icon, ...plan }) => (
+          <div className={styles.planWrap} key={plan.id} data-reveal>
+            <div
+              className={`${styles.tab} ${plan.featured ? styles.tabFeatured : ""}`}
+            >
+              {plan.tab}
+            </div>
+            <article
+              className={`${styles.plan} ${plan.featured ? styles.featured : ""}`}
+            >
+              <div className={styles.planBody}>
+                <div className={styles.iconTile}>
+                  <Icon className={styles.icon} aria-hidden='true' />
+                </div>
+                <h3 className={`${styles.planName} h5`}>{plan.name}</h3>
+                <p className={styles.planDesc}>{plan.desc}</p>
+                <div className={styles.priceRow}>
+                  <span className={`${styles.price} h2`}>{plan.price}</span>
+                  <span className={styles.per}>{plan.per}</span>
+                </div>
+                <p className={styles.setup}>{plan.setup}</p>
+                <div className={styles.btnContainer}>
+                  <Button
+                    href={plan.href}
+                    btnType={plan.featured ? "white" : "black"}
+                    text={plan.btnText}
+                  />
+                </div>
+              </div>
+              <ul className={styles.features}>
+                {plan.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+            </article>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.help} data-reveal>
+        <div className={styles.helpLeft}>
+          {/* <div className={styles.avatar}>
+                <Image
+                  src={Chris}
+                  alt='Chris Ware, founder of Fonts & Footers'
+                  fill
+                  sizes='48px'
+                  className={styles.avatarImg}
+                />
+              </div> */}
+          <Logo noText blur='blur' />
+          <div className={styles.helpText}>
+            <span className={styles.helpTitle}>{help.title}</span>
+            <span className={styles.helpSub}>{help.sub}</span>
+          </div>
+        </div>
+        <Button href={help.href} btnType='white' text={help.text} arrow />
+      </div>
+    </>
+  );
+}
+
 export default function Pricing() {
   return (
     <section className={styles.container}>
@@ -88,74 +167,7 @@ export default function Pricing() {
             </h2>
           </div>
 
-          <div className={styles.plans}>
-            {plans.map(({ Icon, ...plan }) => (
-              <div className={styles.planWrap} key={plan.id} data-reveal>
-                <div
-                  className={`${styles.tab} ${plan.featured ? styles.tabFeatured : ""}`}
-                >
-                  {plan.tab}
-                </div>
-                <article
-                  className={`${styles.plan} ${plan.featured ? styles.featured : ""}`}
-                >
-                  <div className={styles.planBody}>
-                    <div className={styles.iconTile}>
-                      <Icon className={styles.icon} aria-hidden='true' />
-                    </div>
-                    <h3 className={`${styles.planName} h5`}>{plan.name}</h3>
-                    <p className={styles.planDesc}>{plan.desc}</p>
-                    <div className={styles.priceRow}>
-                      <span className={`${styles.price} h2`}>{plan.price}</span>
-                      <span className={styles.per}>{plan.per}</span>
-                    </div>
-                    <p className={styles.setup}>{plan.setup}</p>
-                    <div className={styles.btnContainer}>
-                      <Button
-                        href={plan.href}
-                        btnType={plan.featured ? "white" : "black"}
-                        text={plan.btnText}
-                      />
-                    </div>
-                  </div>
-                  <ul className={styles.features}>
-                    {plan.features.map((feature) => (
-                      <li key={feature}>{feature}</li>
-                    ))}
-                  </ul>
-                </article>
-              </div>
-            ))}
-          </div>
-
-          <div className={styles.help} data-reveal>
-            <div className={styles.helpLeft}>
-              {/* <div className={styles.avatar}>
-                <Image
-                  src={Chris}
-                  alt='Chris Ware, founder of Fonts & Footers'
-                  fill
-                  sizes='48px'
-                  className={styles.avatarImg}
-                />
-              </div> */}
-              <Logo noText blur='blur' />
-              <div className={styles.helpText}>
-                <span className={styles.helpTitle}>
-                  Not sure which plan fits?
-                </span>
-                <span className={styles.helpSub}>
-                  No plan charges per-booking fees. Compare them side by side.
-                </span>
-              </div>
-            </div>
-            <Button
-              href='/pricing'
-              btnType='white'
-              text='See full pricing'
-              arrow
-            />
-          </div>
+          <PricingPlans />
         </div>
       </LayoutWrapper>
     </section>

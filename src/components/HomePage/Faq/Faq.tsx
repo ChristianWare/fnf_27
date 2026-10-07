@@ -6,7 +6,10 @@ import styles from "./Faq.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 
-const faqs = [
+export type FaqItem = { id: number; question: string; answer: string };
+
+// The home page's questions. Other pages pass their own with the faqs prop.
+const homeFaqs: FaqItem[] = [
   {
     id: 1,
     question: "Do I own my customers?",
@@ -46,20 +49,28 @@ const faqs = [
   },
 ];
 
-// The same questions as structured data, so search engines can read them.
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqs.map((faq) => ({
-    "@type": "Question",
-    name: faq.question,
-    acceptedAnswer: { "@type": "Answer", text: faq.answer },
-  })),
-};
-
-export default function Faq() {
+export default function Faq({
+  faqs = homeFaqs,
+  eyebrow = "Common questions",
+  heading = "Questions operators ask first.",
+}: {
+  faqs?: FaqItem[];
+  eyebrow?: string;
+  heading?: string;
+}) {
   // One answer open at a time; the first starts open.
-  const [openId, setOpenId] = useState<number | null>(faqs[0].id);
+  const [openId, setOpenId] = useState<number | null>(faqs[0]?.id ?? null);
+
+  // The same questions as structured data, so search engines can read them.
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  };
 
   return (
     <section className={styles.container}>
@@ -70,8 +81,8 @@ export default function Faq() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.left}>
-            <EyeBrow text='Common questions' />
-            <h2 className={styles.heading}>Questions operators ask first.</h2>
+            <EyeBrow text={eyebrow} />
+            <h2 className={styles.heading}>{heading}</h2>
             <div className={styles.btnContainer}>
               <Button
                 href='/contact'

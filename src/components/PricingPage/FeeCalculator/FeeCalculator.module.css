@@ -1,0 +1,244 @@
+.container {
+  padding: 10rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* A centered heading, like the reference. */
+.top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding-bottom: 5rem;
+  text-align: center;
+}
+
+.heading {
+  max-width: 720px;
+}
+
+/* The two inputs on the left, the photo in the middle, the two results on
+   the right. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    "rides photo yearly"
+    "fee photo platform";
+  gap: 0.8rem;
+}
+
+.rides {
+  grid-area: rides;
+}
+
+.fee {
+  grid-area: fee;
+}
+
+.yearly {
+  grid-area: yearly;
+}
+
+.platform {
+  grid-area: platform;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4rem;
+  min-height: 17rem;
+  padding: 2.4rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+  transition: box-shadow 0.2s ease;
+}
+
+/* The input cards show a ring while you type in them. */
+label.card {
+  cursor: text;
+}
+
+label.card:focus-within {
+  box-shadow: inset 0 0 0 2px var(--black);
+}
+
+.label,
+.small,
+.notes p {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.label {
+  max-width: 20rem;
+}
+
+.inputRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+}
+
+.input,
+.prefix,
+.value {
+  font-size: 6rem;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--black);
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input:focus {
+  outline: none;
+}
+
+.value {
+  align-self: flex-end;
+  text-align: right;
+}
+
+.valueGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.photo {
+  grid-area: photo;
+  position: relative;
+  min-height: 35rem;
+  border-radius: 2rem;
+  overflow: hidden;
+  background-color: var(--light);
+}
+
+.img {
+  object-fit: cover;
+}
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.6rem 0.4rem 0;
+}
+
+/* The black bar with the result in a sentence. */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  margin-top: 1.6rem;
+  padding: 1.8rem 2rem;
+  border-radius: 2rem;
+  background-color: var(--black);
+}
+
+.barLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+}
+
+.result {
+  max-width: 820px;
+  font-size: max(15px, 1.6rem);
+  line-height: 1.45;
+  color: rgb(255 255 255 / 85%);
+}
+
+@media screen and (max-width: 1268px) {
+  .input,
+  .prefix,
+  .value {
+    font-size: 5rem;
+  }
+}
+
+/* Inputs left, results right, no photo. */
+@media screen and (max-width: 968px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "rides yearly"
+      "fee platform";
+  }
+
+  .photo {
+    display: none;
+  }
+
+  .bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+}
+
+/* One column. */
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-areas:
+      "rides"
+      "fee"
+      "yearly"
+      "platform";
+  }
+
+  .card {
+    min-height: 14rem;
+  }
+
+  .input,
+  .prefix,
+  .value {
+    font-size: 4.4rem;
+  }
+
+  .barLeft {
+    align-items: flex-start;
+  }
+}

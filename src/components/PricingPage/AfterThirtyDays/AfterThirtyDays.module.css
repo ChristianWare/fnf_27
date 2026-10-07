@@ -1,0 +1,390 @@
+.container {
+  padding: 10rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4rem;
+  padding-bottom: 5rem;
+}
+
+.topLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 640px;
+}
+
+.btnContainer {
+  flex: none;
+}
+
+/* Photo, then the colored card and the note, then the three choices. */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr) minmax(0, 1.5fr);
+  gap: 0.5rem;
+  min-height: 60rem;
+}
+
+.photo {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2.4rem;
+  background-color: var(--light);
+}
+
+.img {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.imgActive {
+  opacity: 1;
+}
+
+.middle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat,
+.note {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 3rem;
+  padding: 2.4rem;
+  border-radius: 2.4rem;
+}
+
+.stat {
+  transition: background-color 0.4s ease;
+}
+
+.tone1 {
+  background-color: var(--accent2);
+}
+
+.tone2 {
+  background-color: var(--accent1);
+}
+
+.tone3 {
+  background-color: var(--accent3);
+}
+
+/* Re-mounts on every change, which replays this fade. */
+.statTop {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: fadeIn 0.5s ease both;
+}
+
+.statValue {
+  font-size: 5.6rem;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--black);
+}
+
+.statLabel,
+.statTag,
+.pill,
+.bullets li {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.statLabel {
+  color: var(--black);
+}
+
+.statTag {
+  color: rgb(13 13 14 / 55%);
+}
+
+.note {
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  text-align: center;
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.noteIcon {
+  width: 4.4rem;
+  height: 4.4rem;
+  color: var(--white);
+}
+
+.noteText {
+  max-width: 26rem;
+  font-size: max(15px, 1.5rem);
+  line-height: 1.4;
+  color: rgb(255 255 255 / 80%);
+}
+
+/* The choices. One is always open. */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.option {
+  border-radius: 2.4rem;
+  background-color: var(--light);
+}
+
+.optionOpen {
+  flex: 1;
+}
+
+.optionHeading {
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+.optionButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+  width: 100%;
+  padding: 2.8rem 3rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.optionOpen .optionButton {
+  flex-direction: column;
+  align-items: flex-start;
+  padding-bottom: 1.4rem;
+  cursor: default;
+}
+
+.optionButton:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: -4px;
+  border-radius: 2.4rem;
+}
+
+.pill {
+  display: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 50px;
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.optionOpen .pill {
+  display: inline-block;
+}
+
+.optionTitle {
+  flex: 1;
+  font-size: max(18px, 2.2rem);
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  color: var(--black);
+}
+
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 3.4rem;
+  height: 2.8rem;
+  border-radius: 50px;
+  background-color: var(--white);
+  color: var(--black);
+  transition: transform 0.2s ease;
+}
+
+.chevron svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.optionOpen .chevron {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .option:not(.optionOpen) .optionButton:hover .chevron {
+    transform: translateY(-2px);
+  }
+}
+
+/* The open choice's details slide open. */
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.4s ease,
+    visibility 0.4s;
+}
+
+.optionOpen .panel {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+
+.panelInner {
+  overflow: hidden;
+}
+
+.desc {
+  max-width: 460px;
+  padding: 0 3rem;
+  font-size: max(16px, 1.6rem);
+  line-height: 1.45;
+}
+
+.bullets {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 4rem 3rem 3rem;
+}
+
+.bullets li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  color: var(--text);
+}
+
+.bullets li::before {
+  content: "+";
+  flex: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.8rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .img,
+  .stat,
+  .panel {
+    transition: none;
+  }
+
+  .statTop {
+    animation: none;
+  }
+}
+
+/* Tablets: no photo. */
+@media screen and (max-width: 1268px) {
+  .grid {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+  }
+
+  .photo {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+}
+
+/* Phones: the choices first, then the two cards side by side. */
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+    min-height: 0;
+  }
+
+  .options {
+    order: 1;
+  }
+
+  .middle {
+    order: 2;
+    flex-direction: row;
+  }
+
+  .stat,
+  .note {
+    min-height: 22rem;
+  }
+
+  .optionButton {
+    padding: 2.4rem;
+  }
+
+  .desc {
+    padding: 0 2.4rem;
+  }
+
+  .bullets {
+    padding: 3rem 2.4rem 2.4rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .middle {
+    flex-direction: column;
+  }
+
+  .option,
+  .stat,
+  .note {
+    border-radius: 2rem;
+  }
+
+  .statValue {
+    font-size: 4.8rem;
+  }
+}
