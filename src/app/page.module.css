@@ -5,11 +5,3 @@
   flex-direction: column;
   gap: .5rem;
 }
-
-/* Everything under the nav. It's what animates between pages, so it keeps
-   the same spacing between sections as the page itself. */
-.pageBody {
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
-}

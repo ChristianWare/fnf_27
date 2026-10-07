@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ViewTransition } from "react";
 import styles from "../page.module.css";
 import Nav from "@/components/shared/Nav/Nav";
 import AboutHero from "@/components/AboutPage/AboutHero/AboutHero";
@@ -22,18 +21,13 @@ export default function AboutPage() {
   return (
     <main className={styles.container}>
       <Nav />
-      {/* The page transition (see the home page). */}
-      <ViewTransition enter='page-enter' exit='page-exit' default='none'>
-        <div className={styles.pageBody}>
-          <AboutHero />
-          <WhyOneIndustry />
-          <FeatureMarquee />
-          <HowIWork />
-          <AboutStory />
-          <Process />
-          <Footer />
-        </div>
-      </ViewTransition>
+      <AboutHero />
+      <WhyOneIndustry />
+      <FeatureMarquee />
+      <HowIWork />
+      <AboutStory />
+      <Process />
+      <Footer />
     </main>
   );
 }

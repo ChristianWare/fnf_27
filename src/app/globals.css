@@ -395,30 +395,85 @@ html [data-reveal-style="fade"] {
 }
 
 /* ── Page transitions ──
-   Each page wraps everything under the nav in React's <ViewTransition>
-   (see page.tsx). On a navigation, the old page fades out and lifts
-   slightly, the new page fades in and rises into place, and the nav stays
-   still. Browsers without view transitions just change pages normally. */
-::view-transition-old(.page-exit) {
-  animation: 240ms cubic-bezier(0.4, 0, 1, 1) both page-out;
+   app/template.tsx starts a view transition on every page change, and the
+   browser animates a snapshot of the whole screen ("root"). The page you're
+   leaving lifts and fades back into the dark while the new page wipes up
+   over it from the bottom of the screen. The nav stays still on top.
+   Browsers without view transitions just change pages normally.
+
+   To change the speed, edit the 1.2s in both rules below. */
+::view-transition {
+  background-color: var(--black);
 }
 
-::view-transition-new(.page-enter) {
-  animation: 520ms cubic-bezier(0.2, 0.7, 0.2, 1) 140ms both page-in;
+::view-transition-old(root) {
+  animation: 1.2s cubic-bezier(0.87, 0, 0.13, 1) both page-lift;
 }
 
-@keyframes page-out {
+::view-transition-new(root) {
+  animation: 1.2s cubic-bezier(0.87, 0, 0.13, 1) both page-wipe;
+}
+
+@keyframes page-lift {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0.2;
+    transform: translateY(-35%);
+  }
+}
+
+@keyframes page-wipe {
+  from {
+    clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%);
+  }
+
+  to {
+    clip-path: polygon(0% 100%, 100% 100%, 100% 0%, 0% 0%);
+  }
+}
+
+/* A second look from the same setup. To try it, swap these two keyframes
+   in for the two above: the old page zooms up as it fades, and the new
+   page opens from a thin band across the middle of the screen.
+
+@keyframes page-lift {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
   to {
     opacity: 0;
-    translate: 0 -1.6rem;
+    transform: translateY(-15%) scale(1.15);
   }
 }
 
-@keyframes page-in {
+@keyframes page-wipe {
   from {
-    opacity: 0;
-    translate: 0 3.2rem;
+    transform: translateY(15%);
+    clip-path: polygon(0% 48%, 100% 48%, 100% 52%, 0% 52%);
   }
+
+  to {
+    transform: translateY(0);
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+  }
+}
+*/
+
+/* The invisible marker that starts the transition doesn't animate. */
+::view-transition-group(.route-change) {
+  animation: none;
+}
+
+::view-transition-old(.route-change),
+::view-transition-new(.route-change) {
+  animation: none;
+  opacity: 0;
 }
 
 /* The nav doesn't move or fade between pages. */

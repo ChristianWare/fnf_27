@@ -1,5 +1,4 @@
 import Nav from "@/components/shared/Nav/Nav";
-import { ViewTransition } from "react";
 import styles from "./page.module.css";
 import Hero from "@/components/HomePage/Hero/Hero";
 import ProofStrip from "@/components/HomePage/ProofStrip/ProofStrip";
@@ -20,26 +19,20 @@ export default function Home() {
   return (
     <main className={styles.container}>
       <Nav />
-      {/* The page transition: everything below the nav fades and rises in
-          on arrival, and fades out on the way to another page. */}
-      <ViewTransition enter='page-enter' exit='page-exit' default='none'>
-        <div className={styles.pageBody}>
-          <Hero />
-          <ProofStrip />
-          <AboutUsIntro />
-          <Problems />
-          <HowItWorks />
-          <FeatureMarquee />
-          <NierCaseStudy />
-          <LeadsTool />
-          <BookingFeatures />
-          <Pricing />
-          <JournalPreview />
-          <Faq />
-          <FinalCta />
-          <Footer />
-        </div>
-      </ViewTransition>
+      <Hero />
+      <ProofStrip />
+      <AboutUsIntro />
+      <Problems />
+      <HowItWorks />
+      <FeatureMarquee />
+      <NierCaseStudy />
+      <LeadsTool />
+      <BookingFeatures />
+      <Pricing />
+      <JournalPreview />
+      <Faq />
+      <FinalCta />
+      <Footer />
     </main>
   );
 }
