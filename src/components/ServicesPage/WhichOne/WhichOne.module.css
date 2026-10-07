@@ -1,13 +1,14 @@
 /* A tall dark card with the video behind it. The content sits in the
-   bottom half, under a line across the card, so the video shows above. */
+   bottom part, so the video shows above. */
 .container {
   position: relative;
   isolation: isolate;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 76rem;
+  min-height: 80rem;
   margin: 0 0.5rem;
+  padding-bottom: 5rem;
   border-radius: 3rem;
   overflow: hidden;
   background-color: var(--black);
@@ -27,7 +28,7 @@
   z-index: -1;
 }
 
-/* Darkens the lower half, where the text is. */
+/* Darkens the lower part, where the text is. */
 .media::after {
   content: "";
   position: absolute;
@@ -35,8 +36,8 @@
   background: linear-gradient(
     to bottom,
     rgb(0 0 0 / 15%),
-    rgb(0 0 0 / 35%) 45%,
-    rgb(0 0 0 / 80%)
+    rgb(0 0 0 / 35%) 0%,
+    rgb(0 0 0 / 75%)
   );
 }
 
@@ -80,24 +81,24 @@
   height: 1.4rem;
 }
 
-/* Two columns under the line, with a second line between them. */
 .content {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  margin-top: 30rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  margin-top: 28rem;
+}
+
+/* Heading on the left, the note and button on the right. */
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 5rem;
+  padding-top: 2.4rem;
   border-top: 1px solid rgb(255 255 255 / 18%);
 }
 
-.left {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 5rem;
-  padding: 2.4rem 4rem 4rem 0;
-  border-right: 1px solid rgb(255 255 255 / 18%);
-}
-
-.leftTop {
+.topLeft {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -105,75 +106,76 @@
 }
 
 .heading {
-  max-width: 460px;
+  max-width: 450px;
   color: var(--white);
 }
 
-.leftBottom {
+.topRight {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+  max-width: 420px;
+}
+
+.note {
+  font-size: max(15px, 1.5rem);
+  line-height: 1.45;
+  color: rgb(255 255 255 / 75%);
+}
+
+/* The three problems, side by side. */
+.cards {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Frosted, like the leads tool cards on the home page. */
+.card {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2.4rem;
+  padding: 2.4rem;
+  border-radius: 2rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  background-color: rgb(255 255 255 / 72%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
 
-.note {
-  max-width: 420px;
-  font-size: max(15px, 1.5rem);
-  line-height: 1.45;
-  color: rgb(255 255 255 / 70%);
-}
-
-/* The right column: one problem at a time. */
-.right {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-  padding: 2.4rem 0 4rem 4rem;
-  border-radius: 1rem;
-}
-
-.right:focus-visible {
-  outline: 2px solid var(--white);
-  outline-offset: -2px;
-}
-
-.rightTop {
+.cardTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
+  width: 100%;
 }
 
-.mono,
-.counter {
+.mono {
   font-family: var(--IBMPlex);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.3;
   text-transform: uppercase;
-  color: rgb(255 255 255 / 65%);
+  color: var(--black);
 }
 
-.counter {
-  color: var(--white);
-}
-
-/* Re-mounts on every change, which replays this fade. */
-.slide {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 3.2rem;
-  animation: slideIn 0.5s ease both;
-}
-
-.slide[hidden] {
-  display: none;
+.number {
+  padding: 0.7rem 1.3rem;
+  border-radius: 50px;
+  background-color: rgb(255 255 255 / 18%);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--black);
 }
 
 .problem {
-  max-width: 560px;
-  color: var(--white);
+  color: var(--black);
 }
 
 .answer {
@@ -181,26 +183,26 @@
   flex-direction: column;
   gap: 1.6rem;
   width: 100%;
-  max-width: 560px;
+  margin-top: auto;
 }
 
 .answerRow {
-  display: grid;
-  grid-template-columns: 12rem minmax(0, 1fr);
-  align-items: center;
-  gap: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
   padding-top: 1.6rem;
-  border-top: 1px solid rgb(255 255 255 / 18%);
+  border-top: 1px solid var(--light2);
 }
 
 .fix {
   display: flex;
   align-items: center;
   gap: 1.2rem;
-  font-size: max(17px, 1.9rem);
+  font-size: max(16px, 1.8rem);
   line-height: 1.2;
   letter-spacing: -0.2px;
-  color: var(--white);
+  color: var(--black);
 }
 
 .fixIcon {
@@ -208,46 +210,28 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 4rem;
-  height: 4rem;
+  width: 3.6rem;
+  height: 3.6rem;
   border-radius: 1rem;
-  background-color: rgb(255 255 255 / 12%);
-  color: var(--white);
+  background-color: rgb(255 255 255 / 14%);
+  color: var(--black);
 }
 
 .fixIcon svg {
-  width: 2rem;
-  height: 2rem;
+  width: 1.8rem;
+  height: 1.8rem;
 }
 
 .price {
-  font-size: max(16px, 1.7rem);
-  line-height: 1.35;
-  color: rgb(255 255 255 / 85%);
+  font-size: max(15px, 1.6rem);
+  line-height: 1.4;
+  color: var(--black);
 }
 
-.link {
-  display: inline-flex;
-  align-items: center;
-  gap: 1rem;
-  padding-bottom: 0.6rem;
-  border-bottom: 1px solid var(--white);
-  font-family: var(--CreatoDisplayExtraBold);
-  font-size: 16px;
-  line-height: 1;
-  color: var(--white);
-}
-
-.link:focus-visible {
-  outline: 2px solid var(--white);
-  outline-offset: 4px;
-}
-
-.linkArrow {
-  width: 1.6rem;
-  height: 1.6rem;
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
+.btnContainer {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  width: 100%;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -256,118 +240,50 @@
   }
 }
 
-/* The arrows, in the bottom-right corner, clear of the video button. */
-.controls {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.8rem;
-  margin-top: auto;
-  padding-right: 5rem;
-}
-
-.control {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 4.4rem;
-  height: 4.4rem;
-  border-radius: 50%;
-  border: 1px solid rgb(255 255 255 / 25%);
-  color: var(--white);
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    transform 0.15s ease;
-}
-
-.control:hover {
-  background-color: rgb(255 255 255 / 12%);
-}
-
-.control:active {
-  transform: scale(0.94);
-}
-
-.control:focus-visible {
-  outline: 2px solid var(--white);
-  outline-offset: 3px;
-}
-
-.control svg {
-  width: 1.8rem;
-  height: 1.8rem;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 1rem, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slide {
-    animation: none;
-  }
-}
-
 @media screen and (max-width: 1268px) {
   .content {
-    margin-top: 26rem;
+    margin-top: 24rem;
   }
 
-  .left {
-    padding-right: 3rem;
-  }
-
-  .right {
-    padding-left: 3rem;
+  .card {
+    padding: 2rem;
   }
 }
 
-/* One column: the heading and note first, then the problems. */
+/* The heading block stacks, and the cards go to one column. */
 @media screen and (max-width: 968px) {
   .container {
     min-height: 0;
   }
 
   .content {
-    grid-template-columns: repeat(1, 1fr);
-    margin-top: 32rem;
-  }
-
-  .left {
     gap: 3rem;
-    padding: 2.4rem 0 3rem;
-    border-right: none;
-    border-bottom: 1px solid rgb(255 255 255 / 18%);
+    margin-top: 30rem;
   }
 
-  .right {
-    padding: 2.4rem 0 4rem;
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+
+  .cards {
+    grid-template-columns: repeat(1, 1fr);
   }
 }
 
 @media screen and (max-width: 568px) {
   .container {
+    padding-bottom: 4rem;
     border-radius: 2rem;
   }
 
   .content {
-    margin-top: 24rem;
+    margin-top: 22rem;
   }
 
-  .answerRow {
-    grid-template-columns: repeat(1, 1fr);
-    gap: 0.8rem;
-  }
-
-  .controls {
-    padding-right: 4.6rem;
+  .card {
+    padding: 2rem 1.8rem;
+    border-radius: 1.6rem;
   }
 }

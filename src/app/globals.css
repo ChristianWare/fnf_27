@@ -208,6 +208,12 @@ textarea:focus {
 }
 
 @media screen and (max-width: 1268px) {
+  h1,
+  .h1 {
+    font-size: 5rem;
+    letter-spacing: -1px;
+  }
+
   .h2,
   .h2 {
     font-size: 46px;
@@ -246,6 +252,12 @@ textarea:focus {
 @media screen and (max-width: 968px) {
   .display1 {
     font-size: 7.5vw;
+  }
+
+  h1,
+  .h1 {
+    font-size: 4rem;
+    letter-spacing: -0.4px;
   }
 
   h2,

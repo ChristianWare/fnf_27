@@ -1,5 +1,5 @@
 .container {
-  padding: 12rem 0rem 5rem;
+  padding: 10rem 0rem 5rem;
   background-color: var(--white);
   margin: 0 0.5rem;
   border-radius: 3rem;
@@ -27,9 +27,9 @@
   gap: 2rem;
 }
 
-.heading {
+/* .heading {
   max-width: 980px;
-}
+} */
 
 .copy {
   max-width: 580px;
@@ -43,8 +43,7 @@
   gap: 1.5rem;
 }
 
-/* Four photo cards, each with a label at the top and a number at the
-   bottom. */
+/* Four photo cards, one per service, each a link to its page. */
 .cards {
   list-style: none;
   display: grid;
@@ -54,6 +53,9 @@
 }
 
 .card {
+  /* How dark the whole photo is. Raise it for more contrast. */
+  --shade: 30%;
+
   position: relative;
   isolation: isolate;
   display: flex;
@@ -64,48 +66,71 @@
   padding: 2.4rem;
   border-radius: 2rem;
   overflow: hidden;
-  background-color: var(--black);
   color: var(--white);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 3px;
 }
 
 .img {
   z-index: -1;
   object-fit: cover;
-  object-position: center 40%;
+  object-position: center 0%;
+  transition: transform 0.6s ease;
 }
 
-/* Shade the top and bottom so the white text reads on any photo. */
-.card::before {
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .img {
+    transform: scale(1.04);
+  }
+}
+
+/* The shade over the photo: a flat layer across all of it, plus darker
+   bands at the top and bottom where the text sits. It has to be ::after,
+   not ::before: the photo is the first child and has the same z-index, so
+   a ::before would end up painted behind it. */
+.card::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(
-    to bottom,
-    rgb(0 0 0 / 65%),
-    rgb(0 0 0 / 0%) 40%,
-    rgb(0 0 0 / 0%) 60%,
-    rgb(0 0 0 / 60%)
-  );
+  background:
+    linear-gradient(rgb(0 0 0 / var(--shade)), rgb(0 0 0 / var(--shade))),
+    linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 45%),
+      rgb(0 0 0 / 0%) 45%,
+      rgb(0 0 0 / 0%) 60%,
+      rgb(0 0 0 / 45%)
+    );
+  pointer-events: none;
 }
 
-.label {
-  max-width: 18rem;
+.cardTop,
+.cardBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.name,
+.note {
   font-family: var(--IBMPlex);
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.4;
   text-transform: uppercase;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 50%);
 }
 
-.value {
-  font-size: 5.6rem;
-  line-height: 1;
-  letter-spacing: -2px;
+.note {
+  max-width: 22rem;
+  color: rgb(255 255 255 / 80%);
 }
 
 /* Two by two. */
-@media screen and (max-width: 968px) {
+@media screen and (max-width: 1268px) {
   .top {
     flex-direction: column;
     align-items: flex-start;
@@ -114,6 +139,15 @@
 
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .card {
+    height: 400px;
+    width: 100%;
+  }
+
+  .img {
+    object-position: top;
   }
 }
 
@@ -126,14 +160,16 @@
     padding-bottom: 4rem;
   }
 
-  .value {
-    font-size: 4.8rem;
+  .br {
+    display: none;
   }
 }
 
+/* One column. */
 @media screen and (max-width: 568px) {
   .container {
     border-radius: 2rem;
+    padding-top: 1rem;
   }
 
   .btnContainer {
@@ -142,19 +178,13 @@
 
   .cards {
     gap: 0.6rem;
+    grid-template-columns: repeat(1, 1fr);
   }
 
   .card {
     padding: 1.6rem;
     border-radius: 1.6rem;
-  }
-
-  .label {
-    font-size: 11px;
-  }
-
-  .value {
-    font-size: 4rem;
-    letter-spacing: -1.5px;
+    height: 300px;
+    width: 100%;
   }
 }

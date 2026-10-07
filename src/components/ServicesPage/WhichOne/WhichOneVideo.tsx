@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./WhichOne.module.css";
 
-const VIDEO_SRC = "/videos/services.mp4";
+const VIDEO_SRC = "/videos/101.mp4";
 
 export default function WhichOneVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
