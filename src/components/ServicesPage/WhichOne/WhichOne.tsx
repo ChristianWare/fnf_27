@@ -86,7 +86,7 @@ export default function WhichOne() {
                   <span className={styles.number}>0{item.id}</span>
                 </div>
 
-                <h3 className={`${styles.problem} h4`}>{item.problem}</h3>
+                <h3 className={`${styles.problem} h5`}>{item.problem}</h3>
 
                 <dl className={styles.answer}>
                   <div className={styles.answerRow}>
@@ -110,7 +110,7 @@ export default function WhichOne() {
                 </Link> */}
                 <div className={styles.btnContainer}>
                   <Button
-                    btnType='gray'
+                    btnType='green'
                     text={item.link}
                     href={item.href}
                     arrow
