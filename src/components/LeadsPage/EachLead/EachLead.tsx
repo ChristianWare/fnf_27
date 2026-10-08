@@ -124,7 +124,7 @@ export default function EachLead() {
             <div className={styles.text} key={current.id}>
               <span className={`${styles.note} h6`}>({current.label})</span>
               <div className={styles.textBottom}>
-                <h3 className={`${styles.title} h2`}>{current.title}</h3>
+                <h3 className={`${styles.title} h4`}>{current.title}</h3>
                 <p className={styles.body}>{current.body}</p>
               </div>
             </div>

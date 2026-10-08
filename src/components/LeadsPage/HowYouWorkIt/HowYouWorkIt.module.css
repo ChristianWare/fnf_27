@@ -82,24 +82,10 @@
   min-height: 32rem;
   padding: 1.2rem 1.2rem 2.4rem;
   border-radius: 2.4rem;
-  background-color: var(--light);
+  background-color: var(--white);
 }
 
-.card:nth-child(1) {
-  background-color: var(--accent1);
-}
 
-.card:nth-child(2) {
-  background-color: var(--accent2);
-}
-
-.card:nth-child(3) {
-  background-color: var(--accent3);
-}
-
-.card:nth-child(4) {
-  background-color: var(--accent4);
-}
 
 .cardTop {
   display: flex;
