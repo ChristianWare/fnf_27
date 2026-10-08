@@ -163,12 +163,12 @@ export default function Problems() {
                     </span>
                     <h3 className={styles.title}>{x.title}</h3>
                     <p className={styles.price}>{x.price}</p>
+                  </div>
                     <ul className={styles.bullets}>
                       {x.bullets.map((bullet) => (
                         <li key={bullet}>{bullet}</li>
                       ))}
                     </ul>
-                  </div>
                   <div className={styles.btnContainer}>
                     <Button href={x.href} btnType='gray' text={x.btnText} />
                   </div>
