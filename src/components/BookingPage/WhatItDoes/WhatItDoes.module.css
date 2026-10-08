@@ -28,7 +28,7 @@
 }
 
 .heading {
-  max-width: 550px;
+  max-width: 650px;
 }
 
 .count {
@@ -45,7 +45,7 @@
 .grid {
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.8rem;
 }
 
@@ -65,9 +65,10 @@
    a screen you're looking at. */
 .art {
   position: relative;
-  aspect-ratio: 4 / 3;
+  /* aspect-ratio: 4 / 3; */
+  height: 350px;
   width: 100%;
-  padding: 2.4rem 2rem 0;
+  padding: 2rem;
   border-radius: 1.5rem;
   overflow: hidden;
   background-color: var(--toneLight, var(--light2));
@@ -85,19 +86,19 @@
 
 /* The accent colors, in order across the row (in globals.css). */
 .toneOne {
-  --toneLight: var(--accent1Light);
+  --toneLight: var(--light2);
 }
 
 .toneTwo {
-  --toneLight: var(--accent2Light);
+  --toneLight: var(--light2);
 }
 
 .toneThree {
-  --toneLight: var(--accent3Light);
+  --toneLight: var(--light2);
 }
 
 .toneFour {
-  --toneLight: var(--accent4Light);
+  --toneLight: var(--light2);
 }
 
 .text {
@@ -127,7 +128,8 @@
 .tag {
   padding: 0.6rem 1rem;
   border-radius: 50px;
-  background-color: var(--light2);
+  background-color: var(--accent4);
+  border: 1px solid var(--text);
   color: var(--black);
 }
 
@@ -144,7 +146,7 @@
 }
 
 /* Two to a row. */
-@media screen and (max-width: 1268px) {
+@media screen and (max-width: 1468px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -160,9 +162,7 @@
   .count {
     padding-bottom: 0;
   }
-}
 
-@media screen and (max-width: 768px) {
   .container {
     padding: 7rem 0rem;
   }
@@ -170,6 +170,13 @@
   .content {
     gap: 4rem;
   }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
 }
 
 /* One column. */
@@ -178,11 +185,7 @@
     border-radius: 2rem;
   }
 
-  .grid {
-    grid-template-columns: repeat(1, 1fr);
-  }
-
   .art {
-    padding: 2rem 1.5rem 0;
+    padding: 1rem;
   }
 }
