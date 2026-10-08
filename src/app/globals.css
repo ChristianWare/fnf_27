@@ -75,6 +75,12 @@ h6,
   -moz-osx-font-smoothing: grayscale;
 }
 
+.heading2 {
+  font-size: 54px;
+  line-height: 1.1;
+  letter-spacing: -1.2px;
+}
+
 h1,
 .h1 {
   font-size: 8rem;
@@ -201,6 +207,11 @@ textarea:focus {
     font-size: 5.5vw;
   }
 
+  .heading2 {
+    font-size: 47px;
+    letter-spacing: -1px;
+  }
+
   h2,
   .h2 {
     font-size: 52px;
@@ -252,6 +263,11 @@ textarea:focus {
 @media screen and (max-width: 968px) {
   .display1 {
     font-size: 7.5vw;
+  }
+
+  .heading2 {
+    font-size: 40px;
+    letter-spacing: -0.4px;
   }
 
   h1,
@@ -336,6 +352,11 @@ textarea:focus {
 }
 
 @media screen and (max-width: 568px) {
+  .heading2 {
+    font-size: 30px;
+    letter-spacing: -0.3px;
+  }
+
   h2,
   .h2 {
     font-size: 32px;

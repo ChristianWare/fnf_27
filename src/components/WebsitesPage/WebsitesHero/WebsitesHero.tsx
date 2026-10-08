@@ -29,7 +29,11 @@ export default function WebsitesHero() {
         <Reveal onLoad step={150} />
         <div className={styles.top}>
           <EyeBrow text='Websites' />
-          <h1 className={styles.heading} data-reveal data-reveal-style='fade'>
+          <h1
+            className={`${styles.heading} heading2`}
+            data-reveal
+            data-reveal-style='fade'
+          >
             Limo Website Design for Black Car &amp; Chauffeur Companies
           </h1>
           <p className={styles.copy} data-reveal>
