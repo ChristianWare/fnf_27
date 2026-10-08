@@ -1,0 +1,487 @@
+.mono {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.copy {
+  font-size: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* ── Overview ── */
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3.2rem;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.overviewMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+.percentRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+}
+
+.percentRow p {
+  font-size: 16px;
+}
+
+.percent {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 6.4rem;
+  line-height: 1;
+  letter-spacing: -2.4px;
+  color: var(--black);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(12rem, 1fr));
+  gap: 0.6rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.8rem 2rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+}
+
+.tileYou {
+  background-color: var(--accent4);
+}
+
+.tileYou .mono {
+  color: var(--black);
+}
+
+.tileValue {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 3.2rem;
+  line-height: 1;
+  letter-spacing: -0.8px;
+  color: var(--black);
+}
+
+/* ── The steps ── */
+.steps {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 1.8rem;
+  padding: 2rem 0;
+}
+
+/* The line that joins one step to the next. */
+.step::before {
+  content: "";
+  position: absolute;
+  top: 6.4rem;
+  bottom: -0.4rem;
+  left: 1.95rem;
+  width: 1px;
+  background-color: var(--light2);
+}
+
+.step:last-child::before {
+  display: none;
+}
+
+.step + .step {
+  border-top: 1px solid var(--light);
+}
+
+.marker {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: var(--white);
+  box-shadow: inset 0 0 0 1px var(--light2);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.marker svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.done .marker {
+  background-color: var(--accent3);
+  box-shadow: none;
+  color: var(--black);
+}
+
+.done .marker svg {
+  stroke-width: 2.4;
+}
+
+.you .marker {
+  background-color: var(--black);
+  box-shadow: 0 0 0 0.5rem var(--accent4);
+  color: var(--white);
+}
+
+.us .marker {
+  background-color: var(--accent1);
+  box-shadow: none;
+  color: var(--black);
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+  padding-top: 0.6rem;
+}
+
+.stepTop {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem 1.4rem;
+}
+
+.stepTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.9rem;
+  line-height: 1.25;
+  letter-spacing: -0.1px;
+  color: var(--black);
+}
+
+.upcoming .stepTitle {
+  color: var(--text);
+}
+
+.stepText {
+  font-size: 16px;
+}
+
+.stepMeta {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--textDark);
+}
+
+.stepAction {
+  padding-top: 0.2rem;
+}
+
+/* Build history: one line per step. */
+.compact .step {
+  grid-template-columns: 3.2rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1.2rem 0;
+}
+
+.compact .step::before {
+  top: 4.4rem;
+  left: 1.55rem;
+}
+
+.compact .marker {
+  width: 3.2rem;
+  height: 3.2rem;
+}
+
+.compact .marker svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.compact .stepBody {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
+  padding-top: 0;
+}
+
+.compact .stepTitle {
+  font-size: 16px;
+  font-family: var(--cdCopy);
+}
+
+/* ── Preview and team ── */
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+}
+
+.previewIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.2rem;
+  height: 5.2rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+  color: var(--black);
+}
+
+.previewIcon svg {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+}
+
+.photo {
+  position: relative;
+  flex: none;
+  width: 5.6rem;
+  height: 5.6rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+.photoImg {
+  object-fit: cover;
+}
+
+.personText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.personName {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--black);
+}
+
+/* ── Live ── */
+.live {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2.4rem;
+  padding: 4.4rem 3.2rem 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--black);
+  overflow: hidden;
+}
+
+.live::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  right: -10%;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(209 255 147 / 18%), transparent 65%);
+  pointer-events: none;
+}
+
+.liveText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+}
+
+.liveTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 6rem;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--white);
+}
+
+.liveCopy {
+  max-width: 560px;
+  font-size: 16px;
+  color: rgb(255 255 255 / 72%);
+}
+
+.liveActions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.included {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.includedItem {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.includedItem:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.includedItem p {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.tick {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background-color: var(--accent3);
+  color: var(--black);
+}
+
+.tick svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-width: 2.4;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+}
+
+.fact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding: 1.2rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.fact:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.fact dd {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--black);
+}
+
+@media screen and (max-width: 1268px) {
+  .overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .overview,
+  .live {
+    padding: 2.8rem 2.4rem 2.4rem;
+  }
+
+  .liveTitle {
+    font-size: 4.4rem;
+  }
+
+  .step {
+    grid-template-columns: 4rem minmax(0, 1fr);
+  }
+
+  .stepAction {
+    grid-column: 2;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .overview,
+  .live {
+    border-radius: 2rem;
+    padding: 2.4rem 1.8rem;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tile {
+    padding: 1.4rem;
+  }
+
+  .tileValue {
+    font-size: 2.6rem;
+  }
+
+  .percent {
+    font-size: 5.2rem;
+  }
+
+  .step {
+    gap: 1.4rem;
+  }
+}

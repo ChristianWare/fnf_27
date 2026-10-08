@@ -1,0 +1,586 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  min-width: 0;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.titles p {
+  max-width: 620px;
+  font-size: 16px;
+}
+
+.heading {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1.2;
+  color: var(--black);
+  letter-spacing: -0.2px;
+}
+
+/* ── This month, in four numbers ── */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 2.4rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.tileHighlight {
+  background-color: var(--black);
+}
+
+.tileLabel {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.tileHighlight .tileLabel {
+  color: var(--accent3);
+}
+
+.tileValue {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 5.2rem;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--black);
+}
+
+.tileHighlight .tileValue {
+  color: var(--white);
+}
+
+.tileNote {
+  font-size: 16px;
+}
+
+.tileHighlight .tileNote {
+  color: rgb(255 255 255 / 70%);
+}
+
+/* ── The chart ── */
+.chartHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.key i {
+  display: inline-block;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.4rem;
+}
+
+.keyBar {
+  background-color: var(--black);
+}
+
+.keyNow {
+  background-color: var(--accent3);
+}
+
+.keyPlan {
+  height: 0 !important;
+  border-top: 2px dashed var(--accent2) !important;
+  border-radius: 0 !important;
+}
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding-left: 5.6rem;
+}
+
+.plotArea {
+  position: relative;
+  height: 32rem;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+}
+
+.gridLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--light);
+}
+
+.gridLabel {
+  position: absolute;
+  top: 0;
+  left: -5.6rem;
+  width: 4.8rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-align: right;
+  color: var(--textDark);
+  transform: translateY(-50%);
+}
+
+.planLine {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.planLine polyline {
+  fill: none;
+  stroke: #8b7cf0;
+  stroke-width: 2;
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+}
+
+.cols {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  list-style: none;
+}
+
+.col {
+  position: relative;
+}
+
+.bar,
+.ghost {
+  position: absolute;
+  bottom: 0;
+  left: 18%;
+  right: 18%;
+  border-radius: 0.8rem 0.8rem 0.3rem 0.3rem;
+}
+
+.bar {
+  z-index: 1;
+  min-height: 0.4rem;
+  background-color: var(--black);
+}
+
+.barNow {
+  background-color: var(--accent3);
+  box-shadow: inset 0 0 0 1px rgb(13 13 14 / 14%);
+}
+
+.ghost {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--accent3Light) 0 6px,
+    transparent 6px 11px
+  );
+  box-shadow: inset 0 0 0 1px var(--accent3);
+}
+
+.barValue {
+  position: absolute;
+  bottom: calc(100% + 0.6rem);
+  left: 50%;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--black);
+  transform: translateX(-50%);
+}
+
+.target {
+  position: absolute;
+  left: 50%;
+  z-index: 3;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid #8b7cf0;
+  border-radius: 50%;
+  background-color: var(--white);
+  transform: translate(-50%, 50%);
+}
+
+.targetMet {
+  border-color: var(--black);
+  background-color: var(--accent3);
+}
+
+.months {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  list-style: none;
+}
+
+.month {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--textDark);
+}
+
+.monthNow {
+  color: var(--black);
+}
+
+.paceRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  padding: 1.6rem 1.8rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+}
+
+.paceRow p {
+  flex: 1;
+  min-width: 24rem;
+  font-size: 16px;
+  color: var(--black);
+}
+
+/* ── What moved and the habits ── */
+.split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  list-style: none;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+}
+
+.note p {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.noteIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  background-color: var(--accent2Light);
+  color: var(--black);
+}
+
+.noteIcon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.habitProgress {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+}
+
+.habitCount {
+  flex: none;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--black);
+}
+
+.habits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.habit {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.4rem;
+  width: 100%;
+  padding: 1.6rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .habit:hover {
+    background-color: var(--light2);
+  }
+}
+
+.habit:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.habitDone {
+  background-color: var(--accent3Light);
+}
+
+.box {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.8rem;
+  background-color: var(--white);
+  box-shadow: inset 0 0 0 1.5px var(--light2);
+  color: var(--black);
+}
+
+.habitDone .box {
+  background-color: var(--accent3);
+  box-shadow: none;
+}
+
+.box svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  stroke-width: 2.6;
+}
+
+.habitText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.habitText p {
+  font-size: 16px;
+}
+
+.habitTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.25;
+  color: var(--black);
+}
+
+.habitDone .habitTitle {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* ── Searches ── */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 0 1.6rem 1.2rem 0;
+  border-bottom: 1px solid var(--light2);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.table td {
+  padding: 1.6rem 1.6rem 1.6rem 0;
+  border-bottom: 1px solid var(--light);
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--black);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
+  text-align: right;
+}
+
+.query {
+  min-width: 22rem;
+}
+
+.position {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+}
+
+.up {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem 0.5rem 0.6rem;
+  border-radius: 50px;
+  background-color: var(--accent3);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--black);
+}
+
+.up svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  transform: rotate(-45deg);
+}
+
+.flat {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+@media screen and (max-width: 1268px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .panel,
+  .tile {
+    padding: 2.4rem;
+  }
+
+  .tileValue {
+    font-size: 4.2rem;
+  }
+
+  .plotArea {
+    height: 26rem;
+  }
+
+  /* On small screens the numbers sit in the tooltip, not over the bars. */
+  .barValue {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .panel,
+  .tile {
+    border-radius: 2rem;
+  }
+
+  .panel {
+    padding: 2.2rem 1.8rem;
+  }
+
+  .tile {
+    padding: 2rem 1.8rem;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tileValue {
+    font-size: 3.6rem;
+    letter-spacing: -1.2px;
+  }
+
+  .query {
+    min-width: 0;
+  }
+
+  .table th,
+  .table td {
+    padding-right: 1rem;
+  }
+
+  .chart {
+    padding-left: 4.4rem;
+  }
+
+  .gridLabel {
+    left: -4.4rem;
+    width: 3.8rem;
+  }
+
+  .bar,
+  .ghost {
+    left: 12%;
+    right: 12%;
+    border-radius: 0.4rem 0.4rem 0.2rem 0.2rem;
+  }
+
+  /* Every other month label, so they don't collide. */
+  .month:nth-child(even) {
+    visibility: hidden;
+  }
+}

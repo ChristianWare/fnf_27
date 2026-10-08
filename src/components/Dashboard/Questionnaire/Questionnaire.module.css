@@ -1,0 +1,251 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
+/* The sections, kept in view while you answer. */
+.side {
+  align-self: stretch;
+}
+
+.sideInner {
+  position: sticky;
+  top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2.4rem 1.6rem 1.6rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.overall {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 0 0.8rem;
+}
+
+.overallRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  list-style: none;
+}
+
+.sectionBtn {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 1.4rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sectionBtn:hover {
+    background-color: var(--light);
+  }
+}
+
+.sectionBtn:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: -2px;
+}
+
+.sectionActive,
+.sectionActive:hover {
+  background-color: var(--light) !important;
+}
+
+.num {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--light2);
+  background-color: var(--white);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--black);
+}
+
+.num svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  stroke-width: 2.4;
+}
+
+.numDone {
+  background-color: var(--accent3);
+  box-shadow: none;
+}
+
+.sectionActive .num:not(.numDone) {
+  background-color: var(--black);
+  box-shadow: none;
+  color: var(--white);
+}
+
+.sectionText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.sectionTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.sectionCount {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* ── The questions ── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
+  min-width: 0;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sectionHead p {
+  font-size: 16px;
+}
+
+.sectionHeading {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 3.4rem;
+  line-height: 1.1;
+  letter-spacing: -0.6px;
+  color: var(--black);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 2.8rem;
+  max-width: 720px;
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  border: none;
+}
+
+.legend {
+  margin-bottom: 0.4rem;
+  padding: 0;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  padding-top: 2.4rem;
+  border-top: 1px solid var(--light);
+}
+
+.footLeft {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.send {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.4rem;
+}
+
+.missing {
+  font-size: 16px;
+}
+
+@media screen and (max-width: 1268px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sideInner {
+    position: static;
+  }
+
+  .sections {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .panel {
+    padding: 2.4rem;
+  }
+
+  .sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sectionHeading {
+    font-size: 2.8rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .sideInner,
+  .panel {
+    border-radius: 2rem;
+  }
+
+  .panel {
+    padding: 2.2rem 1.8rem;
+  }
+
+  .sections {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .foot > button,
+  .send,
+  .send > button {
+    width: 100%;
+  }
+}

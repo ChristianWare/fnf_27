@@ -1,0 +1,713 @@
+/* ── The welcome ── */
+.welcome {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2.4rem;
+  padding: 4.4rem 3.2rem 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.welcomeText {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--black);
+}
+
+.hello {
+  font-size: 5rem;
+  letter-spacing: -1.4px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+  font-size: 16px;
+}
+
+.business {
+  color: var(--black);
+}
+
+.sep {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--textDark);
+}
+
+.welcomeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ── The three plans ── */
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.card {
+  --tone: var(--light);
+  --ink: var(--black);
+  --soft: var(--text);
+  display: flex;
+  flex-direction: column;
+  padding: 0.8rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.platform {
+  --tone: var(--black);
+  --ink: var(--white);
+  --soft: rgb(255 255 255 / 65%);
+}
+
+.website {
+  --tone: var(--accent3);
+}
+
+.leads {
+  --tone: var(--accent2);
+}
+
+/* The plan you're on carries a fine black ring. */
+.current {
+  box-shadow: inset 0 0 0 2px var(--black);
+}
+
+.cardHead {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2.4rem 2.4rem 2.2rem;
+  border-radius: 1.8rem;
+  background-color: var(--tone);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+/* A soft light in the corner of each head. */
+.cardHead::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 255 255 / 28%), transparent 65%);
+  pointer-events: none;
+}
+
+.platform .cardHead::after {
+  background: radial-gradient(circle, rgb(181 242 224 / 22%), transparent 65%);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  min-height: 2.8rem;
+  margin-bottom: 1.6rem;
+}
+
+.cardName {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1.1;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.amount {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 5.4rem;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--ink);
+}
+
+.per {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--soft);
+}
+
+.priceNote {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+
+.cardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2.4rem 1.6rem 1.6rem;
+}
+
+.blurb {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  list-style: none;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.feature p {
+  font-size: 16px;
+}
+
+.tick {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-top: -0.1rem;
+  border-radius: 50%;
+  background-color: var(--light);
+  color: var(--black);
+}
+
+.platform .tick {
+  background-color: var(--accent1);
+}
+
+.website .tick {
+  background-color: var(--accent3);
+}
+
+.leads .tick {
+  background-color: var(--accent2);
+}
+
+.tick svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  stroke-width: 2.6;
+}
+
+.cardFoot {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-top: auto;
+  padding-top: 0.4rem;
+}
+
+.cardFoot > a {
+  width: 100%;
+}
+
+.note {
+  font-size: 16px;
+  text-align: center;
+}
+
+/* ── Below the plans: two columns ── */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* Needs you */
+.todos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.todo {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 1.6rem 1.6rem 1.6rem 1.8rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+  transition: background-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .todo:hover {
+    background-color: var(--light2);
+  }
+
+  .todo:hover .todoArrow {
+    transform: translateX(3px);
+  }
+}
+
+.todo:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.todoDot {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background-color: var(--black);
+  box-shadow: 0 0 0 0.5rem var(--accent4);
+}
+
+.todoText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.todoText p {
+  font-size: 16px;
+}
+
+.todoTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.25;
+  color: var(--black);
+}
+
+.todoCta {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 1.4rem;
+  border-radius: 50px;
+  background-color: var(--white);
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--black);
+}
+
+.todoArrow {
+  width: 1.6rem;
+  height: 1.6rem;
+  transition: transform 0.2s ease;
+}
+
+/* Growth snapshot */
+.snapshot {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.bigStat {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+}
+
+.bigNumber {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 6.4rem;
+  line-height: 1;
+  letter-spacing: -2.4px;
+  color: var(--black);
+}
+
+.mini {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0.8rem;
+  height: 15rem;
+  padding-top: 1rem;
+}
+
+.miniCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.miniBarWrap {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.miniBar {
+  width: 100%;
+  border-radius: 0.8rem;
+  background-color: var(--light2);
+}
+
+.miniNow {
+  background-color: var(--accent3);
+  box-shadow: inset 0 0 0 1px rgb(13 13 14 / 12%);
+}
+
+.miniLabel {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* Build progress */
+.steps {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.stepTitle {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.stepState {
+  flex: none;
+  min-width: 10.4rem;
+  padding: 0.6rem 1rem;
+  border-radius: 50px;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.state_you {
+  background-color: var(--accent4);
+  color: var(--black);
+}
+
+.state_us {
+  background-color: var(--accent1);
+  color: var(--black);
+}
+
+.state_upcoming {
+  background-color: var(--light);
+  color: var(--text);
+}
+
+/* Leads trial */
+.trial {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.trial p {
+  font-size: 16px;
+}
+
+.trialRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mono,
+.monoMuted {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.monoMuted {
+  color: var(--text);
+}
+
+/* Recent activity */
+.feed {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.feedItem {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.4rem;
+  padding: 1.2rem 0.8rem;
+  margin: 0 -0.8rem;
+  border-radius: 1.2rem;
+  transition: background-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.feedItem:hover {
+    background-color: var(--light);
+  }
+}
+
+.feedIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 3.8rem;
+  height: 3.8rem;
+  border-radius: 1.1rem;
+  background-color: var(--light);
+  color: var(--black);
+}
+
+.feedIcon svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.feedText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  padding-top: 0.2rem;
+}
+
+.feedLine {
+  font-size: 16px;
+  color: var(--black);
+}
+
+/* Need a hand? */
+.help {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--black);
+}
+
+.helpTop {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+}
+
+.helpPhoto {
+  position: relative;
+  flex: none;
+  width: 5.6rem;
+  height: 5.6rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+.helpImg {
+  object-fit: cover;
+}
+
+.helpWho {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.helpName {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--white);
+}
+
+.helpRole {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--accent3);
+}
+
+.helpText {
+  font-size: 16px;
+  color: rgb(255 255 255 / 72%);
+}
+
+.helpActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+@media screen and (max-width: 1268px) {
+  .plans {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .amount {
+    font-size: 4.6rem;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The plan cards stack when three no longer fit. */
+@media screen and (max-width: 968px) {
+  .plans {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cardHead {
+    padding: 2.2rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .welcome {
+    padding: 3.2rem 2.4rem 2.4rem;
+  }
+
+  .hello {
+    font-size: 4rem;
+  }
+
+  .help {
+    padding: 2.4rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .welcome,
+  .card,
+  .help {
+    border-radius: 2rem;
+  }
+
+  .welcome {
+    padding: 2.8rem 2rem 2.4rem;
+  }
+
+  .welcomeActions {
+    width: 100%;
+  }
+
+  .welcomeActions > * {
+    flex: 1 1 auto;
+  }
+
+  .hello {
+    font-size: 3.4rem;
+    letter-spacing: -0.8px;
+  }
+
+  .cardHead {
+    border-radius: 1.4rem;
+  }
+
+  .cardBody {
+    padding: 2rem 1rem 1rem;
+  }
+
+  .todo {
+    flex-wrap: wrap;
+    padding: 1.6rem;
+  }
+
+  .todoText {
+    flex-basis: calc(100% - 2.6rem);
+  }
+
+  .todoCta {
+    margin-left: 2.6rem;
+  }
+
+  .sep {
+    display: none;
+  }
+
+  .status {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bigNumber {
+    font-size: 5.2rem;
+  }
+
+  .help {
+    padding: 2.2rem 1.8rem;
+  }
+}

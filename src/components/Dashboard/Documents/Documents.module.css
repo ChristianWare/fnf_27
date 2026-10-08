@@ -1,0 +1,229 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.head p,
+.none {
+  font-size: 16px;
+}
+
+.heading {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1.2;
+  color: var(--black);
+  letter-spacing: -0.2px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+  padding: 1.8rem;
+  border-radius: 1.8rem;
+  background-color: var(--light);
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 5.2rem;
+  height: 5.2rem;
+  border-radius: 1.4rem;
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.icon svg {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.iconWaiting {
+  background-color: var(--accent4);
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.text p {
+  font-size: 16px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.2rem;
+}
+
+.title {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.9rem;
+  line-height: 1.25;
+  color: var(--black);
+  letter-spacing: -0.2px;
+}
+
+/* ── The document ── */
+.modalHead {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.modalMeta {
+  font-size: 16px;
+}
+
+.doc {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  padding: 2.8rem;
+  border-radius: 1.8rem;
+  background-color: var(--light);
+}
+
+.clause {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.clause p {
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.clauseTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 1.2rem;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.9rem;
+  line-height: 1.25;
+  color: var(--black);
+  letter-spacing: -0.2px;
+}
+
+.clauseNum {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.signForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+.agree {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  cursor: pointer;
+}
+
+.agree input {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  margin-top: 0.1rem;
+  accent-color: var(--black);
+  cursor: pointer;
+}
+
+.agree p {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.signature {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 2.4rem 2.8rem;
+  border: 1px dashed var(--light2);
+  border-radius: 1.8rem;
+}
+
+.signature p {
+  font-size: 16px;
+}
+
+.signedName {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 3.2rem;
+  line-height: 1.1;
+  letter-spacing: -0.6px;
+  font-style: italic;
+  color: var(--black);
+}
+
+@media screen and (max-width: 768px) {
+  .panel {
+    padding: 2.4rem;
+  }
+
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .row > button {
+    margin-left: 7rem;
+  }
+
+  .doc {
+    padding: 2rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .panel {
+    padding: 2.2rem 1.8rem;
+    border-radius: 2rem;
+  }
+
+  .row {
+    gap: 1.4rem;
+    padding: 1.6rem;
+  }
+
+  .icon {
+    width: 4.4rem;
+    height: 4.4rem;
+  }
+
+  .row > button {
+    margin-left: 0;
+    width: 100%;
+  }
+}
