@@ -6,6 +6,7 @@ import WhatItChecks from "@/components/AuditPage/WhatItChecks/WhatItChecks";
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
 
 export const metadata: Metadata = {
   title: {
@@ -53,6 +54,7 @@ export default function AuditPage() {
     <main className={styles.container}>
       <Nav />
       <AuditTool />
+      <FeatureMarquee />
       <WhatItChecks />
       <Faq faqs={auditFaqs} heading='Audit Questions' />
       <FinalCta />

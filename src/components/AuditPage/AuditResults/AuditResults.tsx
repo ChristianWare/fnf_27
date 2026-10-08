@@ -121,7 +121,7 @@ export default function AuditResults({ result }: { result: AuditResult }) {
               The full report is on its way to {result.email} as a PDF. Save
               this link too, or send it to whoever handles your website.
             </p>
-            <div>
+            <div className={styles.btnContainer}>
               <Button
                 btnType='white'
                 text={copied ? "Link copied" : "Copy link"}
@@ -142,13 +142,15 @@ export default function AuditResults({ result }: { result: AuditResult }) {
                 riders make, let&apos;s talk.
               </p>
               <div>
-                <Button
-                  href={CALENDAR}
-                  target='_blank'
-                  btnType='white'
-                  text='Book a 20-minute call'
-                  arrow
-                />
+                <div className={styles.btnContainer}>
+                  <Button
+                    href={CALENDAR}
+                    target='_blank'
+                    btnType='white'
+                    text='Book a 20-minute call'
+                    arrow
+                  />
+                </div>
               </div>
             </div>
           ) : (
@@ -159,12 +161,14 @@ export default function AuditResults({ result }: { result: AuditResult }) {
                 accounts. See the hotels, venues and events in your market.
               </p>
               <div>
-                <Button
-                  href='/leads'
-                  btnType='white'
-                  text='Get free leads in your city'
-                  arrow
-                />
+                <div className={styles.btnContainer}>
+                  <Button
+                    href='/leads'
+                    btnType='white'
+                    text='Get free leads in your city'
+                    arrow
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -176,7 +180,7 @@ export default function AuditResults({ result }: { result: AuditResult }) {
                 Your Google Business Profile needs work. Get the free checklist:
                 every field, photo and review step that moves your map ranking.
               </p>
-              <div>
+              <div className={styles.btnContainer}>
                 <Button
                   href='/resources'
                   btnType='black'

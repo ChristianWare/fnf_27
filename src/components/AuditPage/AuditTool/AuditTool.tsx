@@ -1,8 +1,8 @@
 "use client";
 
-// The audit tool: the form at the top of the page, and the results that
-// show under it after a run. Until the real audit is connected, a run
-// returns the placeholder result in audit.ts.
+// The audit tool: the hero at the top of the page, the form under it, and
+// the results that show after a run. Until the real audit is connected, a
+// run returns the placeholder result in audit.ts.
 
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
@@ -18,6 +18,17 @@ import AuditResults from "../AuditResults/AuditResults";
 import { runAudit, type AuditResult } from "./audit";
 import HeroImg from "../../../../public/images/audit.jpg";
 
+// The quick facts along the bottom of the hero's text card.
+const heroFacts = [
+  { label: "Price", value: "Free, no card" },
+  { label: "Time", value: "60 seconds" },
+  { label: "Score", value: "Out of 100" },
+  { label: "Report", value: "The full PDF, by email" },
+  { label: "Checks", value: "6, on your live site" },
+  { label: "Built for", value: "Black car & limo operators" },
+];
+
+// The facts beside the form.
 const facts = [
   {
     id: 1,
@@ -118,12 +129,12 @@ export default function AuditTool() {
 
   return (
     <>
-      <section className={styles.container} aria-labelledby='audit-heading'>
-        <Reveal onLoad step={150} />
-
-        {/* The heading card, with the photo on the right. */}
-        <div className={styles.intro}>
-          <div className={styles.introText}>
+      {/* The hero: two cards side by side, the text on the left and a photo
+          on the right, like the Websites page. */}
+      <section className={styles.hero} aria-labelledby='audit-heading'>
+        <div className={styles.textCard}>
+          <Reveal onLoad step={150} />
+          <div className={styles.top}>
             <EyeBrow text='Free website audit' />
             <h1
               id='audit-heading'
@@ -138,133 +149,159 @@ export default function AuditTool() {
               up on Google, how your site works on a phone, whether riders can
               book you online, and whether AI search can read you.
             </p>
-          </div>
-
-          <div className={styles.photo} data-reveal>
-            <Image
-              src={HeroImg}
-              alt='A chauffeur in a suit checking his phone'
-              fill
-              sizes='(max-width: 968px) 100vw, 38rem'
-              loading='eager'
-              fetchPriority='high'
-              className={styles.img}
-            />
-            <span className={styles.mark} aria-hidden='true'>
-              0~100
-            </span>
-          </div>
-        </div>
-
-        {/* The form card: the quick facts on the left, the form on the right. */}
-        <div className={styles.tool}>
-          <div className={styles.aside} data-reveal>
-            <ul className={styles.facts}>
-              {facts.map(({ id, title, sub, Icon }) => (
-                <li className={styles.fact} key={id}>
-                  <span className={styles.factIcon} aria-hidden='true'>
-                    <Icon className={styles.icon} />
-                  </span>
-                  <span className={styles.factText}>
-                    <span className={styles.factTitle}>{title}</span>
-                    <span className={styles.factSub}>{sub}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <div className={styles.youGet}>
-              <span className={styles.label}>What you get</span>
-              <ul className={styles.youGetList}>
-                {youGet.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+            <div className={styles.btnContainer} data-reveal>
+              <Button
+                href='#audit-form'
+                btnType='black'
+                text='Run my free audit'
+                arrow
+              />
+              <Button
+                href='#what-it-checks'
+                btnType='gray'
+                text='See what it checks'
+              />
             </div>
           </div>
 
-          <form
-            className={styles.form}
-            onSubmit={onSubmit}
-            noValidate
-            data-reveal
-          >
+          <dl className={styles.heroFacts} data-reveal>
+            {heroFacts.map((fact) => (
+              <div className={styles.heroFact} key={fact.label}>
+                <dt className={styles.heroFactLabel}>{fact.label}:</dt>
+                <dd className={styles.heroFactValue}>{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className={styles.photo}>
+          <Image
+            src={HeroImg}
+            alt='A chauffeur in a suit checking his phone'
+            fill
+            sizes='(max-width: 968px) 100vw, 50vw'
+            loading='eager'
+            fetchPriority='high'
+            className={styles.img}
+          />
+        </div>
+      </section>
+
+      {/* The form card: the quick facts on the left, the form on the right. */}
+      <section
+        className={styles.tool}
+        id='audit-form'
+        aria-label='Run your free audit'
+      >
+        <Reveal />
+        <div className={styles.aside} data-reveal>
+          <ul className={styles.facts}>
+            {facts.map(({ id, title, sub, Icon }) => (
+              <li className={styles.fact} key={id}>
+                <span className={styles.factIcon} aria-hidden='true'>
+                  <Icon className={styles.icon} />
+                </span>
+                <span className={styles.factText}>
+                  <span className={`${styles.factTitle} subHeading`}>
+                    {title}
+                  </span>
+                  <span className={styles.factSub}>{sub}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <div className={styles.youGet}>
+            <span className={styles.label}>What you get</span>
+            <ul className={styles.youGetList}>
+              {youGet.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <form
+          className={styles.form}
+          onSubmit={onSubmit}
+          noValidate
+          data-reveal
+        >
+          <label className={styles.field}>
+            <span className={styles.label}>Full name*</span>
+            <input
+              className={styles.input}
+              type='text'
+              name='name'
+              autoComplete='name'
+              placeholder='Enter your name'
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              aria-invalid={invalid("name")}
+              disabled={running}
+            />
+          </label>
+
+          <div className={styles.row}>
             <label className={styles.field}>
-              <span className={styles.label}>Full name*</span>
+              <span className={styles.label}>Your website*</span>
               <input
                 className={styles.input}
                 type='text'
-                name='name'
-                autoComplete='name'
-                placeholder='Enter your name'
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                aria-invalid={invalid("name")}
+                name='website'
+                inputMode='url'
+                autoComplete='url'
+                placeholder='www.yourcompany.com'
+                value={website}
+                onChange={(event) => setWebsite(event.target.value)}
+                aria-invalid={invalid("website")}
                 disabled={running}
               />
             </label>
 
-            <div className={styles.row}>
-              <label className={styles.field}>
-                <span className={styles.label}>Your website*</span>
-                <input
-                  className={styles.input}
-                  type='text'
-                  name='website'
-                  inputMode='url'
-                  autoComplete='url'
-                  placeholder='www.yourcompany.com'
-                  value={website}
-                  onChange={(event) => setWebsite(event.target.value)}
-                  aria-invalid={invalid("website")}
-                  disabled={running}
-                />
-              </label>
-
-              <label className={styles.field}>
-                <span className={styles.label}>Email address*</span>
-                <input
-                  className={styles.input}
-                  type='email'
-                  name='email'
-                  inputMode='email'
-                  autoComplete='email'
-                  placeholder='you@yourcompany.com'
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  aria-invalid={invalid("email")}
-                  aria-describedby='audit-email-note'
-                  disabled={running}
-                />
-              </label>
-            </div>
-
-            <p id='audit-email-note' className={styles.emailNote}>
-              The full report goes to this address as a PDF. I read the audits
-              that come through and sometimes follow up personally to walk an
-              operator through the results. No pitch if it&apos;s not a fit.
-            </p>
-
-            {error && (
-              <p className={styles.error} role='alert'>
-                {error.text}
-              </p>
-            )}
-
-            <div className={styles.submit}>
-              <Button
-                type='submit'
-                btnType='black'
-                text={running ? "Running your audit…" : "Run my free audit"}
+            <label className={styles.field}>
+              <span className={styles.label}>Email address*</span>
+              <input
+                className={styles.input}
+                type='email'
+                name='email'
+                inputMode='email'
+                autoComplete='email'
+                placeholder='you@yourcompany.com'
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                aria-invalid={invalid("email")}
+                aria-describedby='audit-email-note'
                 disabled={running}
-                arrow
               />
-            </div>
-            <p className={styles.note}>
-              Free, and built for black car and limo operators.
+            </label>
+          </div>
+
+          <p id='audit-email-note' className={styles.emailNote}>
+            The full report goes to this address as a PDF. I read the audits
+            that come through and sometimes follow up personally to walk an
+            operator through the results. No pitch if it&apos;s not a fit.
+          </p>
+
+          {error && (
+            <p className={styles.error} role='alert'>
+              {error.text}
             </p>
-          </form>
-        </div>
+          )}
+
+          <div className={styles.submit}>
+            <Button
+              type='submit'
+              btnType='black'
+              text={running ? "Running your audit…" : "Run my free audit"}
+              disabled={running}
+              arrow
+            />
+          </div>
+          <p className={styles.note}>
+            Free, and built for black car and limo operators.
+          </p>
+        </form>
       </section>
 
       {result && <AuditResults result={result} />}

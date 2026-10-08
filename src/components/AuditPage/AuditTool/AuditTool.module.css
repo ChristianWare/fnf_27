@@ -1,22 +1,26 @@
-/* Two light cards: the heading, then the form. */
-.container {
-  display: flex;
-  flex-direction: column;
+/* ── The hero: two cards side by side, as tall as most screens. The same
+   layout as the hero on the Websites page. ── */
+.hero {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
   margin: 0 0.5rem;
+  min-height: clamp(64rem, calc(100svh - 9rem), 90rem);
 }
 
-.intro {
+/* The text card: heading and buttons at the top, quick facts at the
+   bottom. */
+.textCard {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
   justify-content: space-between;
-  gap: 4rem;
-  padding: 12rem 3rem 6rem;
+  gap: 6rem;
+  padding: 8rem 3rem 4rem;
   border-radius: 3rem;
-  background-color: var(--light);
+  background-color: var(--white);
 }
 
-.introText {
+.top {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -24,22 +28,56 @@
 }
 
 .heading {
-  max-width: 700px;
+  max-width: 680px;
 }
 
 .copy {
-  max-width: 620px;
+  max-width: 540px;
 }
 
-/* The photo on the right, with the score range in its corner. */
+.btnContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Label over value, three to a row, with a line between the rows. */
+.heroFacts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 2.4rem;
+}
+
+.heroFact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 2rem 0;
+}
+
+.heroFact:nth-child(n + 4) {
+  border-top: 1px solid var(--light2);
+}
+
+.heroFactLabel {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.heroFactValue {
+  font-size: 1.6rem;
+  color: var(--black);
+}
+
 .photo {
   position: relative;
-  flex: none;
-  width: 38rem;
-  aspect-ratio: 4 / 3;
-  border-radius: 2rem;
   overflow: hidden;
-  background-color: var(--light2);
+  border-radius: 3rem;
+  background-color: var(--light);
 }
 
 .img {
@@ -47,33 +85,16 @@
   object-position: center top;
 }
 
-/* Darkens the photo so the white mark reads clearly. */
-.photo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgb(0 0 0 / 15%), rgb(0 0 0 / 45%));
-}
-
-.mark {
-  position: absolute;
-  right: 2rem;
-  bottom: 1.6rem;
-  z-index: 1;
-  font-size: 3.4rem;
-  line-height: 1;
-  letter-spacing: -1px;
-  color: var(--white);
-}
-
-/* The quick facts on the left, the form on the right. */
+/* ── The form card: the quick facts on the left, the form on the right. ── */
 .tool {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6rem;
-  padding: 6rem 3rem;
+  margin: 0.5rem 0.5rem 0;
+  padding: 8rem 3rem;
   border-radius: 3rem;
   background-color: var(--light);
+  scroll-margin-top: 1rem;
 }
 
 .aside {
@@ -101,16 +122,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 4.4rem;
-  height: 4.4rem;
+  width: 6rem;
+  height: 6rem;
   border-radius: 1rem;
   background-color: var(--white);
   color: var(--black);
 }
 
 .icon {
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .factText {
@@ -120,14 +141,12 @@
 }
 
 .factTitle {
-  font-size: 1.6rem;
-  line-height: 1.3;
-  color: var(--black);
+  margin-bottom: 0.6rem;
 }
 
 .factSub {
   font-family: var(--cdCopy);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.4;
   color: var(--text);
 }
@@ -157,7 +176,7 @@
   color: var(--black);
 }
 
-/* ── The form. The field is a white card, like the reference. ── */
+/* ── The form. Each field is a white card. ── */
 .form {
   display: flex;
   flex-direction: column;
@@ -174,8 +193,8 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 1.4rem;
-  padding: 2.2rem 2rem;
+  gap: 2rem;
+  padding: 2.5rem;
   border-radius: 1.6rem;
   background-color: var(--white);
   cursor: text;
@@ -203,7 +222,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  font-size: 1.8rem;
+  font-size: 2rem;
   line-height: 1.3;
   color: var(--black);
 }
@@ -225,7 +244,7 @@
   color: #b42318;
 }
 
-/* The button fills the width, like the reference. */
+/* The button fills the width. */
 .submit {
   display: flex;
   margin-top: 0.8rem;
@@ -247,19 +266,27 @@
   text-align: center;
 }
 
+@media screen and (max-width: 1268px) {
+  .heroFacts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .heroFact:nth-child(n + 3) {
+    border-top: 1px solid var(--light2);
+  }
+}
+
+/* The photo under the text card, and the form before the facts. */
 @media screen and (max-width: 968px) {
-  .intro {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 10rem 3rem 3rem;
+  .hero {
+    grid-template-columns: repeat(1, 1fr);
+    min-height: 0;
   }
 
   .photo {
-    width: 100%;
-    aspect-ratio: 16 / 9;
+    height: 70vw;
   }
 
-  /* The form first, the facts under it. */
   .tool {
     grid-template-columns: repeat(1, 1fr);
     gap: 5rem;
@@ -273,18 +300,36 @@
 }
 
 @media screen and (max-width: 568px) {
-  .intro {
-    padding: 8rem 1.5rem 4rem;
+  .textCard {
+    gap: 4rem;
+    padding: 6rem 1.5rem 2rem;
     border-radius: 2rem;
+  }
+
+  .heading {
+    letter-spacing: -0.8px;
+  }
+
+  .photo {
+    height: 100vw;
+    border-radius: 2rem;
+  }
+
+  .heroFacts {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .heroFact {
+    padding: 1.6rem 0;
+  }
+
+  .heroFact:nth-child(n + 2) {
+    border-top: 1px solid var(--light2);
   }
 
   .tool {
     padding: 2rem 1.5rem 3rem;
     border-radius: 2rem;
-  }
-
-  .photo {
-    aspect-ratio: 4 / 3;
   }
 
   .row {

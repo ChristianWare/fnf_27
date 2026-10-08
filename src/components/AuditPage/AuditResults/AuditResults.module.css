@@ -245,6 +245,11 @@
 
 .keepText {
   color: var(--black);
+  max-width: 700px;
+}
+
+.btnContainer {
+  margin-top: 7rem;
 }
 
 /* The next step, by score: one card, or two when the Google Business
@@ -327,5 +332,12 @@
 
   .nextCard {
     padding: 2.4rem 2rem;
+  }
+
+  .btnContainer {
+    margin-top: 4rem;
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(1, 1fr);
   }
 }
