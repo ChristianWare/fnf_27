@@ -212,8 +212,7 @@ a.link:hover {
 
 .about p {
   font-size: 16px;
-  color: rgb(255 255 255 / 55%);
-  max-width: 1300px;
+  color: var(--textDark);
 }
 
 .bottom {
