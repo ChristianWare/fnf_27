@@ -63,14 +63,14 @@
   line-height: 1.2;
   letter-spacing: -0.2px;
   color: var(--black);
-  border-bottom: 1px solid var(--black) !important;
+  background-color: var(--tone);
+  border-radius: 1.6rem 1.6rem 0 0;
+  border-bottom: 1px solid transparent !important;
 }
 
-/* The Full Platform column stands out, like its card on the pricing page. */
+/* The Full Platform's head is black, like its card on the pricing page. */
 .featuredHead {
-  background-color: var(--black);
   color: var(--white);
-  border-radius: 1.6rem 1.6rem 0 0;
 }
 
 .badge {
@@ -83,12 +83,43 @@
   color: rgb(255 255 255 / 70%);
 }
 
-.featuredCell {
-  background-color: var(--light);
+/* ── Column colors ──
+   Each column's accent on its head, and the lighter version of it (both in
+   globals.css) on the cells under it. */
+.toneOne {
+  --tone: var(--accent1);
+  --toneLight: var(--accent1Light);
 }
 
-tbody tr:last-child .featuredCell {
+.toneTwo {
+  --tone: var(--accent2);
+  --toneLight: var(--accent2Light);
+}
+
+.toneFeatured {
+  --tone: var(--black);
+  --toneLight: var(--light);
+}
+
+.cell {
+  background-color: var(--toneLight);
+}
+
+tbody tr:last-child .cell {
   border-radius: 0 0 1.6rem 1.6rem;
+}
+
+/* A small gap between the columns, so each one reads as its own card. */
+.planHead,
+.cell {
+  border-left: 0.3rem solid transparent;
+  border-right: 0.3rem solid transparent;
+  background-clip: padding-box;
+}
+
+.planHead:last-child,
+.cell:last-child {
+  border-right-width: 0;
 }
 
 .rowLabel {
@@ -154,10 +185,12 @@ tbody tr:last-child .featuredCell {
   color: var(--white);
 }
 
+/* The selected column's colors: the accent on the head, the lighter
+   version behind the rows. */
 .panel {
   border-radius: 2rem;
   overflow: hidden;
-  background-color: var(--light);
+  background-color: var(--toneLight, var(--light));
 }
 
 .panelHead {
@@ -167,7 +200,7 @@ tbody tr:last-child .featuredCell {
   flex-wrap: wrap;
   gap: 1rem 2rem;
   padding: 2.2rem 2.4rem;
-  background-color: var(--light2);
+  background-color: var(--tone, var(--light2));
 }
 
 .panelName {
@@ -185,11 +218,7 @@ tbody tr:last-child .featuredCell {
   color: rgb(255 255 255 / 70%);
 }
 
-/* The Full Platform's panel gets the black header, like its column. */
-.panelFeatured .panelHead {
-  background-color: var(--black);
-}
-
+/* The Full Platform's panel has the black header, like its column. */
 .panelFeatured .panelName {
   color: var(--white);
 }

@@ -9,6 +9,11 @@
   --accent2: #c1b7ff;
   --accent3: #d1ff93;
   --accent4: #fff78b;
+  /* Lighter versions of the accents (half accent, half white), for
+     large areas like the comparison table cells. */
+  --accent1Light: #daf9f0;
+  --accent2Light: #e0dbff;
+  --accent3Light: #e8ffc9;
   --white: #ffffff;
 }
 

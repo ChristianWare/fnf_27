@@ -6,11 +6,29 @@ import styles from "./ComparePlans.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 
+// Each column has its own color: the accent on its head and a lighter
+// version on the cells under it. The Full Platform stays black, like its
+// card.
 const plans = [
-  { id: "audit", name: "Free website audit", featured: false },
-  { id: "leads", name: "Leads tool", featured: false },
-  { id: "website", name: "Website Only", featured: false },
-  { id: "platform", name: "Full Platform", featured: true },
+  {
+    id: "audit",
+    name: "Free website audit",
+    featured: false,
+    tone: styles.toneOne,
+  },
+  { id: "leads", name: "Leads tool", featured: false, tone: styles.toneTwo },
+  {
+    id: "website",
+    name: "Website Only",
+    featured: false,
+    tone: styles.toneThree,
+  },
+  {
+    id: "platform",
+    name: "Full Platform",
+    featured: true,
+    tone: styles.toneFeatured,
+  },
 ];
 
 // The tabs open on the Full Platform, the plan the table highlights.
@@ -158,7 +176,7 @@ export default function ComparePlans() {
                     <th
                       key={p.id}
                       scope='col'
-                      className={`${styles.planHead} ${p.featured ? styles.featuredHead : ""}`}
+                      className={`${styles.planHead} ${p.tone} ${p.featured ? styles.featuredHead : ""}`}
                     >
                       {p.name}
                       {p.featured && (
@@ -177,7 +195,7 @@ export default function ComparePlans() {
                     {row.values.map((value, i) => (
                       <td
                         key={plans[i].id}
-                        className={plans[i].featured ? styles.featuredCell : ""}
+                        className={`${styles.cell} ${plans[i].tone}`}
                       >
                         <Cell value={value} />
                       </td>
@@ -214,7 +232,7 @@ export default function ComparePlans() {
             </div>
 
             <div
-              className={`${styles.panel} ${plan.featured ? styles.panelFeatured : ""}`}
+              className={`${styles.panel} ${plan.tone} ${plan.featured ? styles.panelFeatured : ""}`}
               role='tabpanel'
               id='compare-panel'
               aria-labelledby={`compare-tab-${plan.id}`}

@@ -9,10 +9,28 @@ import styles from "./HowItCompares.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 
+// Each column has its own color: the accent on its head and a lighter
+// version on the cells under it. The Full Platform stays black, the same
+// as in the pricing page's comparison.
 const options = [
-  { id: "marketplace", name: "Booking marketplaces", featured: false },
-  { id: "dispatch", name: "Standalone dispatch software", featured: false },
-  { id: "platform", name: "Fonts & Footers Full Platform", featured: true },
+  {
+    id: "marketplace",
+    name: "Booking marketplaces",
+    featured: false,
+    tone: styles.toneOne,
+  },
+  {
+    id: "dispatch",
+    name: "Standalone dispatch software",
+    featured: false,
+    tone: styles.toneTwo,
+  },
+  {
+    id: "platform",
+    name: "Fonts & Footers Full Platform",
+    featured: true,
+    tone: styles.toneFeatured,
+  },
 ];
 
 // The tabs open on the Full Platform, the column the table highlights.
@@ -95,7 +113,7 @@ export default function HowItCompares() {
                     <th
                       key={o.id}
                       scope='col'
-                      className={`${styles.planHead} ${o.featured ? styles.featuredHead : ""}`}
+                      className={`${styles.planHead} ${o.tone} ${o.featured ? styles.featuredHead : ""}`}
                     >
                       {o.name}
                       {o.featured && (
@@ -116,9 +134,7 @@ export default function HowItCompares() {
                     {row.values.map((value, i) => (
                       <td
                         key={options[i].id}
-                        className={
-                          options[i].featured ? styles.featuredCell : ""
-                        }
+                        className={`${styles.cell} ${options[i].tone}`}
                       >
                         <span className={styles.text}>{value}</span>
                       </td>
@@ -155,7 +171,7 @@ export default function HowItCompares() {
             </div>
 
             <div
-              className={`${styles.panel} ${option.featured ? styles.panelFeatured : ""}`}
+              className={`${styles.panel} ${option.tone} ${option.featured ? styles.panelFeatured : ""}`}
               role='tabpanel'
               id='compares-panel'
               aria-labelledby={`compares-tab-${option.id}`}
