@@ -78,7 +78,7 @@
   width: 100%;
   min-height: 580px;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 14%);
+  /* border: 1px solid rgb(255 255 255 / 14%); */
   border-radius: 1.6rem;
   /* The Templates vs Custom frost, over a dark base so a card hides the
      one under it while they're stacked. */

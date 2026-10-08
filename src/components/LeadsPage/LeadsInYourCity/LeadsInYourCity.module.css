@@ -1,0 +1,232 @@
+.container {
+  padding: 10rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+/* The eyebrow and heading on the left, the tool on the right. */
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  gap: 4rem;
+  width: 100%;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 360px;
+}
+
+.copy {
+  max-width: 320px;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* The bar across the top, with the field and the button. */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1rem 1rem 1rem 2rem;
+  border-radius: 1.2rem;
+  background-color: var(--light);
+}
+
+.field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  min-width: 0;
+  cursor: text;
+}
+
+.label {
+  flex: none;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 1rem 0;
+  border: none;
+  background: transparent;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+.input::placeholder {
+  color: var(--textDark);
+}
+
+.input:focus {
+  outline: none;
+}
+
+.field:has(.input:focus) {
+  box-shadow: none;
+}
+
+.error {
+  padding: 0 0.4rem;
+  color: #b42318;
+}
+
+/* One card per kind of lead: the count in a colored block, the name
+   under it. */
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 0.6rem 0.6rem 1.4rem;
+  border-radius: 1.2rem;
+  background-color: var(--light);
+}
+
+.swatch {
+  display: flex;
+  align-items: flex-end;
+  padding: 1.6rem 1.8rem;
+  min-height: 12rem;
+  border-radius: 0.8rem;
+  background-color: var(--light2);
+  font-size: 5.2rem;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--black);
+  transition: background-color 0.3s ease;
+}
+
+.toneHotels {
+  background-color: var(--accent1);
+}
+
+.toneVenues {
+  background-color: var(--accent2);
+}
+
+.toneCorporate {
+  background-color: var(--accent3);
+}
+
+.toneEvents {
+  background-color: var(--accent4);
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0 1rem;
+}
+
+.cardName {
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.cardSub {
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+/* Under the result: the line that sums it up, and the way in. */
+.unlock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  margin-top: 1rem;
+  padding: 2rem 2.4rem;
+  border-radius: 1.2rem;
+  background-color: var(--black);
+}
+
+.unlockText {
+  max-width: 720px;
+  color: rgb(255 255 255 / 85%);
+}
+
+/* The heading on top. */
+@media screen and (max-width: 1268px) {
+  .content {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .heading,
+  .copy {
+    max-width: 560px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  .bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.6rem;
+  }
+
+  .bar > * {
+    justify-content: center;
+  }
+
+  .field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .unlock {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .swatch {
+    min-height: 10rem;
+    font-size: 4.4rem;
+  }
+}
