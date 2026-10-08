@@ -70,7 +70,7 @@ export default function PlatformWhy() {
                 <span className={styles.number}>01</span>
               </div>
 
-              <h3 className={`${styles.problem} h4`}>
+              <h3 className={`${styles.problem} h5`}>
                 No per-booking fees, and you own the customer
               </h3>
 
@@ -85,7 +85,12 @@ export default function PlatformWhy() {
               </div>
 
               <div className={styles.btnContainer}>
-                <Button btnType='gray' text='See the price' href='#pricing' />
+                <Button
+                  btnType='green'
+                  text='See the price'
+                  href='#pricing'
+                  arrow
+                />
               </div>
             </li>
 
@@ -95,7 +100,7 @@ export default function PlatformWhy() {
                 <span className={styles.number}>02</span>
               </div>
 
-              <h3 className={`${styles.problem} h4`}>
+              <h3 className={`${styles.problem} h5`}>
                 The software comes with your website
               </h3>
 
@@ -110,7 +115,7 @@ export default function PlatformWhy() {
 
               <div className={styles.btnContainer}>
                 <Button
-                  btnType='gray'
+                  btnType='green'
                   text='See what the site includes'
                   href='/services/websites'
                   arrow
@@ -124,7 +129,7 @@ export default function PlatformWhy() {
                 <span className={styles.number}>03</span>
               </div>
 
-              <h3 className={`${styles.problem} h4`}>
+              <h3 className={`${styles.problem} h5`}>
                 Switching from your current system
               </h3>
 
@@ -141,7 +146,7 @@ export default function PlatformWhy() {
 
               <div className={styles.btnContainer}>
                 <Button
-                  btnType='gray'
+                  btnType='green'
                   text='Plan the switch'
                   href={CALENDAR}
                   target='_blank'

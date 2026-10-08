@@ -224,7 +224,7 @@
 }
 
 /* The heading block stacks, and the cards go to one column. */
-@media screen and (max-width: 968px) {
+@media screen and (max-width: 1268px) {
   .container {
     min-height: 0;
   }
@@ -241,18 +241,30 @@
   }
 
   .cards {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .card:nth-child(3) {
+    grid-column: span 2;
   }
 }
 
-@media screen and (max-width: 568px) {
+@media screen and (max-width: 668px) {
   .container {
     padding-bottom: 4rem;
     border-radius: 2rem;
   }
 
   .content {
-    margin-top: 22rem;
+    margin-top: 10rem;
+  }
+
+  .cards {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .card:nth-child(3) {
+    grid-column: span 1;
   }
 
   .card {

@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./PlatformWhy.module.css";
 
-const VIDEO_SRC = "/videos/101.mp4";
+const VIDEO_SRC = "/videos/phx.mp4";
 
 export default function PlatformWhyVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
