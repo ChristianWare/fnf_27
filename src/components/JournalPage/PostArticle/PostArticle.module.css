@@ -73,8 +73,10 @@
   gap: 6rem;
 }
 
+/* Stretches to the full height of the row, so the sticky block inside it
+   has room to stay in view. */
 .side {
-  align-self: start;
+  align-self: stretch;
 }
 
 /* Stays in view while the article scrolls. */
