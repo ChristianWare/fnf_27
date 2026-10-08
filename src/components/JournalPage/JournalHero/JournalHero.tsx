@@ -6,7 +6,7 @@ import styles from "./JournalHero.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import FeaturedPost from "../FeaturedPost/FeaturedPost";
-import type { Post } from "../posts";
+import type { Post } from "@/lib/journal";
 
 export default function JournalHero({
   featured,

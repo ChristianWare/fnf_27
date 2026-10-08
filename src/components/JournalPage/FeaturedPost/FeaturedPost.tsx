@@ -6,7 +6,7 @@ import Link from "next/link";
 import styles from "./FeaturedPost.module.css";
 import Button from "@/components/shared/Button/Button";
 import Chris from "../../../../public/images/chris.png";
-import { postHref, type Post } from "../posts";
+import { postHref, type Post } from "@/lib/journal";
 
 export default function FeaturedPost({ post }: { post: Post }) {
   const href = postHref(post);
@@ -18,8 +18,8 @@ export default function FeaturedPost({ post }: { post: Post }) {
     >
       <Link href={href} className={styles.imgContainer}>
         <Image
-          src={post.src}
-          alt={post.alt}
+          src={post.image}
+          alt={post.imageAlt}
           fill
           sizes='(max-width: 968px) 100vw, 45vw'
           className={styles.img}
@@ -30,7 +30,7 @@ export default function FeaturedPost({ post }: { post: Post }) {
         <div className={styles.textTop}>
           <div className={styles.meta}>
             <span className={styles.category}>{post.category}</span>
-            <span className={styles.date}>{post.date}</span>
+            <span className={styles.date}>{post.dateLabel}</span>
           </div>
           <h2 id='featured-post' className={`${styles.title} h3`}>
             <Link href={href} className={styles.titleLink}>

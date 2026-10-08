@@ -5,7 +5,7 @@ import JournalHero from "@/components/JournalPage/JournalHero/JournalHero";
 import MorePosts from "@/components/JournalPage/MorePosts/MorePosts";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
-import { categories, posts } from "@/components/JournalPage/posts";
+import { categories, getPosts } from "@/lib/journal";
 
 export const metadata: Metadata = {
   title: { absolute: "Journal | Fonts & Footers" },
@@ -21,6 +21,7 @@ export default async function JournalPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category: slug } = await searchParams;
+  const posts = getPosts();
   const category = categories.find((c) => c.slug === slug);
   const matching = category
     ? posts.filter((post) => post.categorySlug === category.slug)
