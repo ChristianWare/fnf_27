@@ -14,11 +14,11 @@ export default function Hero() {
           <div className={styles.left}>
             <EyeBrow text='Black car & limo operators' />
             <h1
-              className={`${styles.heading} display1`}
+              className={`${styles.heading} `}
               data-reveal
               data-reveal-style='fade'
             >
-              Expand your 👨‍✈️ <br /> Black Car Business.
+              Expand your 👨‍✈️ <br /> Black Car Business
             </h1>
             <p className={styles.copy} data-reveal>
               Get found on Google, take bookings directly with no per-booking

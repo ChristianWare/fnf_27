@@ -4,6 +4,7 @@ import Nav from "@/components/shared/Nav/Nav";
 import ServicesHero from "@/components/ServicesPage/ServicesHero/ServicesHero";
 import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
 import WhichOne from "@/components/ServicesPage/WhichOne/WhichOne";
+import WhatWeDo from "@/components/ServicesPage/WhatWeDo/WhatWeDo";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
 
@@ -22,6 +23,7 @@ export default function ServicesPage() {
       <ServicesHero />
       <FeatureMarquee />
       <WhichOne />
+      <WhatWeDo />
       <FinalCta />
       <Footer />
     </main>
