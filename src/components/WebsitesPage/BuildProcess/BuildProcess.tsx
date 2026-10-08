@@ -82,7 +82,7 @@ export default function BuildProcess() {
                 src={BuildImg}
                 alt=''
                 fill
-                sizes='(max-width: 968px) 1px, 32vw'
+                sizes='(max-width: 968px) 100vw, 32vw'
                 className={styles.img}
               />
             </li>
