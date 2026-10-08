@@ -133,16 +133,28 @@ const defaultHelp = {
 export function PricingPlans({
   help = defaultHelp,
   withAudit = false,
+  only,
 }: {
   help?: { title: string; sub: string; href: string; text: string };
   /** Adds the free website audit as the first of four cards. */
   withAudit?: boolean;
+  /** Shows just these plans, by id, in this order. */
+  only?: number[];
 }) {
-  const shown = withAudit ? [auditPlan, ...plans] : plans;
+  const all = withAudit ? [auditPlan, ...plans] : plans;
+  const shown = only
+    ? only.flatMap((id) => all.filter((plan) => plan.id === id))
+    : all;
+  const columns =
+    shown.length === 4
+      ? styles.plansFour
+      : shown.length === 2
+        ? styles.plansTwo
+        : "";
 
   return (
     <>
-      <div className={`${styles.plans} ${withAudit ? styles.plansFour : ""}`}>
+      <div className={`${styles.plans} ${columns}`}>
         {shown.map(({ Icon, ...plan }) => (
           <div className={styles.planWrap} key={plan.id} data-reveal>
             <div

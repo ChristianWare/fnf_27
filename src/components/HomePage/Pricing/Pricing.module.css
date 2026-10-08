@@ -33,6 +33,10 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.plans.plansTwo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 /* The space above each plan is reserved for its tab, so nothing moves
    when the tab appears. */
 .planWrap {
@@ -343,7 +347,8 @@
     padding-bottom: 5rem;
   }
 
-  .plans {
+  .plans,
+  .plans.plansTwo {
     grid-template-columns: repeat(1, 1fr);
     gap: 1.2rem;
   }
