@@ -84,6 +84,22 @@
   background-color: var(--light);
 }
 
+.card:nth-child(1) {
+  background-color: var(--accent1);
+}
+
+.card:nth-child(2) {
+  background-color: var(--accent2);
+}
+
+.card:nth-child(7) {
+  background-color: var(--accent3);
+}
+
+.card:nth-child(8) {
+  background-color: var(--accent4);
+}
+
 .cardTop {
   display: flex;
   align-items: flex-start;
@@ -132,11 +148,11 @@
   padding: 0 1.2rem;
 }
 
-.feature {
+/* .feature {
   font-size: max(18px, 2rem);
   line-height: 1.25;
   letter-spacing: -0.2px;
-}
+} */
 
 /* Each plan's answer, under a line. */
 .values {
@@ -153,15 +169,15 @@
 }
 
 .planName {
-  font-family: var(--IBMPlex);
-  font-size: 12px;
+  font-family: var(--IBMPlexMonoBold);
+  font-size: 14px;
   line-height: 1;
   text-transform: uppercase;
   color: var(--text);
 }
 
 .planValue {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.35;
   color: var(--black);
 }

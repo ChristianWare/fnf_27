@@ -323,16 +323,13 @@ export default function WhatWeDo() {
                     </span>
                   </div>
                   <div className={styles.cardBody}>
-                    <h3 className={styles.title}>{service.title}</h3>
+                    <h3 className={`${styles.title} h6`}>
+                      {service.title}{" "}
+                      <Arrow className={styles.linkArrow} aria-hidden='true' />
+                    </h3>
                     <p className={styles.desc}>{service.desc}</p>
                   </div>
-                  <div className={styles.cardFoot}>
-                    <span className={styles.price}>{service.price}</span>
-                    <Link href={service.href} className={styles.link}>
-                      {service.link}
-                      <Arrow className={styles.linkArrow} aria-hidden='true' />
-                    </Link>
-                  </div>
+                  
                 </div>
               </li>
             ))}

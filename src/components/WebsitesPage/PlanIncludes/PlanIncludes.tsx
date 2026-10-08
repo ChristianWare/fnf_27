@@ -141,7 +141,7 @@ export default function PlanIncludes() {
               </div>
 
               <div className={styles.cardBottom}>
-                <h3 className={styles.feature}>{row.feature}</h3>
+                <h3 className={`${styles.feature} h6`}>{row.feature}</h3>
                 <dl className={styles.values}>
                   {plans.map((plan) => {
                     const value = row[plan.key];

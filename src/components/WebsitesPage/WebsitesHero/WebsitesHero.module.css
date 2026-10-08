@@ -61,15 +61,14 @@
 
 .factLabel {
   font-family: var(--IBMPlex);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
   text-transform: uppercase;
   color: var(--text);
 }
 
 .factValue {
-  font-size: 15px;
-  line-height: 1.35;
+  font-size: 1.6rem;
   color: var(--black);
 }
 

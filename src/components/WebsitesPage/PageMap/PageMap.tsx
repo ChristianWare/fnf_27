@@ -125,7 +125,7 @@ export default function PageMap() {
                     <Icon className={styles.icon} />
                   </span>
                   <span className={styles.rowText}>
-                    <span className={styles.rowName}>{page.name}</span>
+                    <span className={`${styles.rowName} h6`}>{page.name}</span>
                     <span className={styles.rowDesc}>{page.desc}</span>
                   </span>
                   <span className={styles.count}>

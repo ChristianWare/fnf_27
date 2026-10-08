@@ -63,7 +63,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.8rem;
   width: 100%;
-  max-width: 96rem;
+  max-width: 100rem;
 }
 
 .card {
@@ -103,15 +103,12 @@
 }
 
 .title {
-  font-size: max(22px, 2.6rem);
-  line-height: 1.15;
-  letter-spacing: -0.4px;
   color: var(--white);
 }
 
 .tag {
   font-family: var(--IBMPlex);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
   text-transform: uppercase;
   color: var(--white);
@@ -139,14 +136,14 @@
 .rowLabel {
   padding-top: 0.3rem;
   font-family: var(--IBMPlex);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.2;
   text-transform: uppercase;
   color: rgb(255 255 255 / 70%);
 }
 
 .rowValue {
-  font-size: 15px;
+  font-size: 1.6rem;
   line-height: 1.4;
   color: var(--white);
 }
