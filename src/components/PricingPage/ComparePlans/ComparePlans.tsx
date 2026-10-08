@@ -12,11 +12,11 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 const plans = [
   {
     id: "audit",
-    name: "Free website audit",
+    name: "Free Website Audit",
     featured: false,
     tone: styles.toneOne,
   },
-  { id: "leads", name: "Leads tool", featured: false, tone: styles.toneTwo },
+  { id: "leads", name: "Leads Tool", featured: false, tone: styles.toneTwo },
   {
     id: "website",
     name: "Website Only",
