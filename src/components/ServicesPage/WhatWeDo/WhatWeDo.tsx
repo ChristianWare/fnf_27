@@ -280,7 +280,7 @@ export default function WhatWeDo() {
 
         <LayoutWrapper>
           <div ref={centerRef} className={styles.center}>
-            <EyeBrow text='What we do' />
+            <EyeBrow text='we help you ' />
             <h2
               id='what-we-do-heading'
               className={styles.heading}

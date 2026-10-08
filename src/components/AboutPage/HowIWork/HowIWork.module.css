@@ -64,7 +64,7 @@
 .card1 {
   grid-column: 1;
   grid-row: 1 / span 2;
-  background-color: var(--accent1);
+  background-color: var(--light);
 }
 
 .card2 {
@@ -82,7 +82,7 @@
 .card4 {
   grid-column: 3;
   grid-row: 1 / span 2;
-  background-color: var(--accent4);
+  background-color: var(--light2);
 }
 
 .icon {
@@ -100,7 +100,6 @@
   height: 12rem;
   border-radius: 1.4rem;
   overflow: hidden;
-  background-color: var(--black);
 }
 
 .thumbImg {
