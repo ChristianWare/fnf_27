@@ -1,0 +1,151 @@
+/* The toasts stack in the bottom-right corner, newest at the bottom. */
+.stack {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 100000002;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.8rem;
+  width: min(40rem, calc(100vw - 4rem));
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  width: 100%;
+  padding: 1.4rem 1.2rem 1.4rem 1.6rem;
+  border-radius: 1.6rem;
+  background-color: var(--black);
+  box-shadow: 0 1.2rem 3.2rem rgb(13 13 14 / 25%);
+  color: var(--white);
+  pointer-events: auto;
+  animation: toastIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.leaving {
+  opacity: 0;
+  transform: translateY(0.6rem) scale(0.98);
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(1.2rem) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+
+  .leaving {
+    transition: none;
+  }
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  margin-top: 0.1rem;
+  border-radius: 50%;
+  color: var(--black);
+}
+
+.icon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  stroke-width: 2.6;
+}
+
+.success .icon {
+  background-color: var(--accent3);
+}
+
+.info .icon {
+  background-color: var(--accent1);
+}
+
+.error .icon {
+  background-color: #ff9f8c;
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+  padding-top: 0.4rem;
+}
+
+.message {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--white);
+}
+
+.detail {
+  font-size: 16px;
+  line-height: 1.4;
+  color: rgb(255 255 255 / 70%);
+}
+
+.close {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 1rem;
+  color: rgb(255 255 255 / 60%);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.close svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.close:hover {
+  background-color: rgb(255 255 255 / 12%);
+  color: var(--white);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
+
+@media screen and (max-width: 568px) {
+  .stack {
+    right: 1.2rem;
+    bottom: 1.2rem;
+    width: calc(100vw - 2.4rem);
+  }
+
+  .toast {
+    border-radius: 1.4rem;
+  }
+}

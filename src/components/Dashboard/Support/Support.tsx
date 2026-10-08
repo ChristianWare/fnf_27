@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Icon from "../icons";
 import { Pill, ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./Support.module.css";
 import { fmtShort, fmtTime } from "@/lib/dashboard/format";
 import type { Thread } from "@/lib/dashboard/types";
@@ -22,6 +23,7 @@ export default function Support({
   initial: Thread[];
   you: string;
 }) {
+  const toast = useToast();
   // The first conversation opens on arrival, so it counts as read.
   const [threads, setThreads] = useState(() =>
     initial.map((t, i) => (i === 0 ? { ...t, unread: false } : t)),
@@ -73,6 +75,7 @@ export default function Support({
       ),
     );
     setReply("");
+    toast("Reply sent", { detail: "Chris replies within one business day." });
   };
 
   const start = () => {
@@ -90,6 +93,7 @@ export default function Support({
     setSubject("");
     setBody("");
     setActiveId(id);
+    toast("Message sent", { detail: "Chris replies within one business day." });
   };
 
   return (

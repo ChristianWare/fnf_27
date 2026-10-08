@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLenis } from "lenis/react";
 import Icon from "../icons";
 import { Progress, ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./Questionnaire.module.css";
 import {
   isAnswered,
@@ -25,6 +26,7 @@ export default function Questionnaire({
   initialSection?: string;
 }) {
   const lenis = useLenis();
+  const toast = useToast();
   const [answers, setAnswers] = useState<Answers>(initialAnswers);
   const [active, setActive] = useState(() =>
     Math.max(
@@ -48,9 +50,14 @@ export default function Questionnaire({
     setStatus("dirty");
   };
 
+  const save = (message = "Answers saved") => {
+    setStatus("saved");
+    toast(message);
+  };
+
   const go = (index: number) => {
     setActive(index);
-    if (status === "dirty") setStatus("saved");
+    if (status === "dirty") save();
     const top = document.getElementById("questionnaire-top");
     if (top) {
       if (lenis) lenis.scrollTo(top, { offset: -12 });
@@ -213,17 +220,11 @@ export default function Questionnaire({
                 Back
               </button>
             )}
-            {status === "saved" && (
-              <span className={ui.saved}>
-                <Icon name='check' />
-                Saved
-              </span>
-            )}
             {status === "dirty" && (
               <button
                 type='button'
                 className={`${ui.btn} ${ui.btn_outline}`}
-                onClick={() => setStatus("saved")}
+                onClick={() => save()}
               >
                 Save
               </button>
@@ -235,7 +236,9 @@ export default function Questionnaire({
               <button
                 type='button'
                 className={`${ui.btn} ${ui.btn_black}`}
-                onClick={() => setStatus("saved")}
+                onClick={() =>
+                  save("Changes saved. Chris will see them before the build.")
+                }
                 disabled={status !== "dirty"}
               >
                 Save changes
@@ -255,6 +258,10 @@ export default function Questionnaire({
                   onClick={() => {
                     setSent(new Date().toISOString());
                     setStatus("saved");
+                    toast("Questionnaire sent", {
+                      detail:
+                        "Thank you. Chris reads it before writing your blueprint.",
+                    });
                   }}
                 >
                   Send questionnaire

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 import Icon from "../icons";
 import { ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./Profile.module.css";
 import { signOut } from "@/app/login/actions";
 
@@ -16,16 +17,6 @@ type Details = {
   domain?: string;
 };
 
-function Saved({ show, children }: { show: boolean; children?: ReactNode }) {
-  if (!show) return null;
-  return (
-    <span className={ui.saved} role='status'>
-      <Icon name='check' />
-      {children ?? "Saved"}
-    </span>
-  );
-}
-
 export default function Profile({
   initial,
   leads,
@@ -35,50 +26,46 @@ export default function Profile({
   leads: boolean;
   sample?: boolean;
 }) {
+  const toast = useToast();
   const [details, setDetails] = useState(initial);
-  const [savedPart, setSavedPart] = useState<"you" | "business" | null>(null);
   const [password, setPassword] = useState({
     current: "",
     next: "",
     confirm: "",
   });
-  const [passwordMsg, setPasswordMsg] = useState<{
-    ok: boolean;
-    text: string;
-  } | null>(null);
+  const [passwordMsg, setPasswordMsg] = useState<{ text: string } | null>(null);
   const [notify, setNotify] = useState({
     replies: true,
     changes: true,
     report: true,
+    invoices: true,
     digest: leads,
   });
 
-  const edit = (key: keyof Details, value: string) => {
+  const edit = (key: keyof Details, value: string) =>
     setDetails((d) => ({ ...d, [key]: value }));
-    setSavedPart(null);
-  };
 
   const save = (part: "you" | "business") => (e: FormEvent) => {
     e.preventDefault();
-    setSavedPart(part);
+    toast(part === "you" ? "Your details are saved" : "Business details saved");
   };
 
   const changePassword = (e: FormEvent) => {
     e.preventDefault();
     if (!password.current) {
-      setPasswordMsg({ ok: false, text: "Enter your current password." });
+      setPasswordMsg({ text: "Enter your current password." });
     } else if (password.next.length < 8) {
-      setPasswordMsg({ ok: false, text: "Use at least 8 characters." });
+      setPasswordMsg({ text: "Use at least 8 characters." });
     } else if (password.next !== password.confirm) {
-      setPasswordMsg({ ok: false, text: "The new passwords don't match." });
+      setPasswordMsg({ text: "The new passwords don't match." });
     } else {
-      setPasswordMsg({
-        ok: true,
-        text: sample
-          ? "Looks good. Sample accounts keep the password fonts2026."
-          : "Password updated.",
-      });
+      setPasswordMsg(null);
       setPassword({ current: "", next: "", confirm: "" });
+      toast("Password updated", {
+        detail: sample
+          ? "Sample accounts keep the password fonts2026."
+          : "Use it the next time you sign in.",
+      });
     }
   };
 
@@ -97,6 +84,11 @@ export default function Profile({
       key: "report",
       label: "Monthly growth report",
       text: "Your numbers and what moved, on the 1st.",
+    },
+    {
+      key: "invoices",
+      label: "Invoices and receipts",
+      text: "A PDF invoice each time a payment goes through.",
     },
     ...(leads
       ? [
@@ -153,7 +145,6 @@ export default function Profile({
           </label>
         </div>
         <div className={styles.actions}>
-          <Saved show={savedPart === "you"} />
           <button type='submit' className={`${ui.btn} ${ui.btn_black}`}>
             Save
           </button>
@@ -192,7 +183,6 @@ export default function Profile({
           )}
         </div>
         <div className={styles.actions}>
-          <Saved show={savedPart === "business"} />
           <button type='submit' className={`${ui.btn} ${ui.btn_black}`}>
             Save
           </button>
@@ -241,10 +231,7 @@ export default function Profile({
         </div>
         <div className={styles.actions}>
           {passwordMsg && (
-            <p
-              className={passwordMsg.ok ? styles.ok : styles.error}
-              role={passwordMsg.ok ? "status" : "alert"}
-            >
+            <p className={styles.error} role='alert'>
               {passwordMsg.text}
             </p>
           )}
@@ -269,9 +256,16 @@ export default function Profile({
                 aria-checked={notify[toggle.key]}
                 aria-label={toggle.label}
                 className={ui.switch}
-                onClick={() =>
-                  setNotify((n) => ({ ...n, [toggle.key]: !n[toggle.key] }))
-                }
+                onClick={() => {
+                  const on = !notify[toggle.key];
+                  setNotify((n) => ({ ...n, [toggle.key]: on }));
+                  toast(
+                    on
+                      ? `You'll get emails about ${toggle.label.toLowerCase()}`
+                      : `No more emails about ${toggle.label.toLowerCase()}`,
+                    { tone: "info" },
+                  );
+                }}
               />
             </li>
           ))}

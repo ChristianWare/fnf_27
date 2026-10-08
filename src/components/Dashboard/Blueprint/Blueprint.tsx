@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Icon from "../icons";
 import { Pill, Progress, ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./Blueprint.module.css";
 import { blueprintCounts } from "@/lib/dashboard/helpers";
 import { fmtShort } from "@/lib/dashboard/format";
@@ -28,6 +29,7 @@ export default function Blueprint({
   initial: BlueprintPage[];
   you: string;
 }) {
+  const toast = useToast();
   const [pages, setPages] = useState(initial);
   const [activeId, setActiveId] = useState(
     () =>
@@ -51,13 +53,22 @@ export default function Blueprint({
       })),
     );
 
-  const approve = (sectionId: string) =>
+  const markApproved = (sectionId: string) =>
     update(sectionId, (s) => ({ ...s, status: "APPROVED" }));
 
-  const approveAll = () =>
-    page.sections
-      .filter((s) => s.status === "REVIEW")
-      .forEach((s) => approve(s.id));
+  const approve = (section: BlueprintSection) => {
+    markApproved(section.id);
+    toast(`Approved: ${section.title}`);
+  };
+
+  const approveAll = () => {
+    const waiting = page.sections.filter((s) => s.status === "REVIEW");
+    waiting.forEach((s) => markApproved(s.id));
+    toast(
+      `${waiting.length} section${waiting.length === 1 ? "" : "s"} approved`,
+      { detail: `${page.name} is ready to build.` },
+    );
+  };
 
   const sendChange = (sectionId: string) => {
     if (!draft.trim()) return;
@@ -77,6 +88,9 @@ export default function Blueprint({
     }));
     setDraft("");
     setCommenting(null);
+    toast("Sent to Chris", {
+      detail: "He'll rewrite the section and send it back for approval.",
+    });
   };
 
   if (!page) {
@@ -285,7 +299,7 @@ export default function Blueprint({
                         <button
                           type='button'
                           className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-                          onClick={() => approve(section.id)}
+                          onClick={() => approve(section)}
                         >
                           Approve
                           <Icon name='check' className={ui.btnIcon} />

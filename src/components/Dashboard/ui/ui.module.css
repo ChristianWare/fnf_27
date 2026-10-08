@@ -466,26 +466,6 @@
   outline-offset: 2px;
 }
 
-/* A quiet line of feedback after saving. */
-.saved {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-family: var(--IBMPlex);
-  font-size: 14px;
-  line-height: 1;
-  text-transform: uppercase;
-  color: var(--black);
-}
-
-.saved svg {
-  width: 1.6rem;
-  height: 1.6rem;
-  padding: 0.2rem;
-  border-radius: 50%;
-  background-color: var(--accent3);
-}
-
 /* ── Notices ── */
 .notice {
   display: flex;
@@ -508,7 +488,9 @@
 }
 
 /* ── Tables ── */
+/* Relative, so hidden labels inside the table stay inside it. */
 .tableWrap {
+  position: relative;
   width: 100%;
   overflow-x: auto;
 }

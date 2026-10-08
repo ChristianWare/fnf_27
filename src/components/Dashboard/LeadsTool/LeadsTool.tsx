@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import Icon, { type IconName } from "../icons";
 import { Pill, Progress, ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./LeadsTool.module.css";
 import { fmtDate, money } from "@/lib/dashboard/format";
 import type { LeadsAccess } from "@/lib/dashboard";
@@ -46,6 +47,7 @@ export default function LeadsTool({
   toolUrl: string;
   now: string;
 }) {
+  const toast = useToast();
   const [state, setState] = useState(access);
   const [ends, setEnds] = useState(trialEndsAt);
 
@@ -98,6 +100,9 @@ export default function LeadsTool({
                     new Date(now).getTime() + trialDays * 86_400_000,
                   ).toISOString(),
                 );
+                toast(`Your ${trialDays}-day free trial has started`, {
+                  detail: "Your first leads arrive tomorrow morning.",
+                });
               }}
             >
               Start free trial

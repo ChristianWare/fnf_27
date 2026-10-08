@@ -10,6 +10,7 @@ import { useLenis } from "lenis/react";
 import Logo from "@/components/shared/Logo/Logo";
 import Icon from "../icons";
 import { signOut } from "@/app/login/actions";
+import { ToastProvider } from "../Toast/Toast";
 import type { NavGroup, NavItem } from "./nav";
 import styles from "./Shell.module.css";
 
@@ -101,168 +102,170 @@ export default function Shell({
   };
 
   return (
-    <div className={styles.shell}>
-      <a href='#dashboard-main' className={styles.skip}>
-        Skip to content
-      </a>
+    <ToastProvider>
+      <div className={styles.shell}>
+        <a href='#dashboard-main' className={styles.skip}>
+          Skip to content
+        </a>
 
-      {/* Phones and tablets: a bar with the menu button. */}
-      <div className={styles.mobileBar}>
-        <button
-          type='button'
-          className={styles.menuBtn}
-          onClick={() => setOpen(true)}
-          aria-label='Open menu'
-          aria-expanded={open}
-          aria-controls='dashboard-sidebar'
-        >
-          <Icon name='menu' />
-        </button>
-        <Logo />
-        <span
-          className={`${styles.avatar} ${styles.avatarSmall}`}
+        {/* Phones and tablets: a bar with the menu button. */}
+        <div className={styles.mobileBar}>
+          <button
+            type='button'
+            className={styles.menuBtn}
+            onClick={() => setOpen(true)}
+            aria-label='Open menu'
+            aria-expanded={open}
+            aria-controls='dashboard-sidebar'
+          >
+            <Icon name='menu' />
+          </button>
+          <Logo />
+          <span
+            className={`${styles.avatar} ${styles.avatarSmall}`}
+            aria-hidden='true'
+          >
+            {user.initials}
+          </span>
+        </div>
+
+        <div
+          className={`${styles.scrim} ${open ? styles.scrimOpen : ""}`}
+          onClick={close}
           aria-hidden='true'
+        />
+
+        <aside
+          id='dashboard-sidebar'
+          className={`${styles.side} ${open ? styles.sideOpen : ""}`}
+          aria-label='Dashboard'
         >
-          {user.initials}
-        </span>
-      </div>
-
-      <div
-        className={`${styles.scrim} ${open ? styles.scrimOpen : ""}`}
-        onClick={close}
-        aria-hidden='true'
-      />
-
-      <aside
-        id='dashboard-sidebar'
-        className={`${styles.side} ${open ? styles.sideOpen : ""}`}
-        aria-label='Dashboard'
-      >
-        <div className={styles.sideTop}>
-          <div className={styles.logoRow}>
-            <Logo />
-            <button
-              type='button'
-              className={styles.closeBtn}
-              onClick={close}
-              aria-label='Close menu'
-            >
-              <Icon name='close' />
-            </button>
-          </div>
-
-          <div className={styles.workspace}>
-            <span
-              className={`${styles.mark} ${styles[tone]}`}
-              aria-hidden='true'
-            >
-              {business
-                .split(/\s+/)
-                .slice(0, 2)
-                .map((word) => word[0])
-                .join("")}
-            </span>
-            <span className={styles.wsText}>
-              <span className={styles.wsName}>{business}</span>
-              <span className={styles.wsPlan}>{plan}</span>
-            </span>
-          </div>
-        </div>
-
-        <nav className={styles.nav} data-lenis-prevent>
-          {nav.map((group, index) => {
-            const foldActive = group.fold?.items.some(
-              (item) => item.href === pathname,
-            );
-            const showFold = foldOpen || foldActive;
-            return (
-              <div key={group.title ?? index} className={styles.group}>
-                {group.title && (
-                  <span className={styles.groupTitle}>{group.title}</span>
-                )}
-                <ul className={styles.list}>{group.items.map(link)}</ul>
-                {group.fold && (
-                  <div className={styles.fold}>
-                    <button
-                      type='button'
-                      className={styles.foldBtn}
-                      onClick={() => setFoldOpen((value) => !value)}
-                      aria-expanded={Boolean(showFold)}
-                    >
-                      <Icon name='history' className={styles.icon} />
-                      <span className={styles.linkLabel}>
-                        {group.fold.label}
-                      </span>
-                      <Icon
-                        name='chevron'
-                        className={`${styles.trailing} ${styles.chevron} ${showFold ? styles.chevronOpen : ""}`}
-                      />
-                    </button>
-                    {showFold && (
-                      <ul className={`${styles.list} ${styles.foldList}`}>
-                        {group.fold.items.map(link)}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-
-        <div className={styles.sideBottom}>
-          {promo && (
-            <div className={styles.promo}>
-              <span className={styles.promoMono}>Fonts & Footers</span>
-              <p className={styles.promoText}>
-                Want a website that books rides while you sleep?
-              </p>
-              <a
-                href={CALENDAR}
-                target='_blank'
-                rel='noopener noreferrer'
-                className={styles.promoLink}
-              >
-                Book a call
-                <Icon name='arrowUpRight' className={styles.promoIcon} />
-              </a>
-            </div>
-          )}
-
-          <div className={styles.me}>
-            <span className={styles.avatar} aria-hidden='true'>
-              {user.initials}
-            </span>
-            <span className={styles.meText}>
-              <span className={styles.meName}>{user.name}</span>
-              {user.sample ? (
-                <span
-                  className={styles.sample}
-                  title='A sample account: changes you make here last until you reload.'
-                >
-                  Sample data
-                </span>
-              ) : (
-                <span className={styles.meEmail}>{user.email}</span>
-              )}
-            </span>
-            <form action={signOut}>
+          <div className={styles.sideTop}>
+            <div className={styles.logoRow}>
+              <Logo />
               <button
-                type='submit'
-                className={styles.signOut}
-                aria-label='Sign out'
-                title='Sign out'
+                type='button'
+                className={styles.closeBtn}
+                onClick={close}
+                aria-label='Close menu'
               >
-                <Icon name='logout' />
+                <Icon name='close' />
               </button>
-            </form>
-          </div>
-        </div>
-      </aside>
+            </div>
 
-      <main id='dashboard-main' className={styles.main}>
-        {children}
-      </main>
-    </div>
+            <div className={styles.workspace}>
+              <span
+                className={`${styles.mark} ${styles[tone]}`}
+                aria-hidden='true'
+              >
+                {business
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((word) => word[0])
+                  .join("")}
+              </span>
+              <span className={styles.wsText}>
+                <span className={styles.wsName}>{business}</span>
+                <span className={styles.wsPlan}>{plan}</span>
+              </span>
+            </div>
+          </div>
+
+          <nav className={styles.nav} data-lenis-prevent>
+            {nav.map((group, index) => {
+              const foldActive = group.fold?.items.some(
+                (item) => item.href === pathname,
+              );
+              const showFold = foldOpen || foldActive;
+              return (
+                <div key={group.title ?? index} className={styles.group}>
+                  {group.title && (
+                    <span className={styles.groupTitle}>{group.title}</span>
+                  )}
+                  <ul className={styles.list}>{group.items.map(link)}</ul>
+                  {group.fold && (
+                    <div className={styles.fold}>
+                      <button
+                        type='button'
+                        className={styles.foldBtn}
+                        onClick={() => setFoldOpen((value) => !value)}
+                        aria-expanded={Boolean(showFold)}
+                      >
+                        <Icon name='history' className={styles.icon} />
+                        <span className={styles.linkLabel}>
+                          {group.fold.label}
+                        </span>
+                        <Icon
+                          name='chevron'
+                          className={`${styles.trailing} ${styles.chevron} ${showFold ? styles.chevronOpen : ""}`}
+                        />
+                      </button>
+                      {showFold && (
+                        <ul className={`${styles.list} ${styles.foldList}`}>
+                          {group.fold.items.map(link)}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+
+          <div className={styles.sideBottom}>
+            {promo && (
+              <div className={styles.promo}>
+                <span className={styles.promoMono}>Fonts & Footers</span>
+                <p className={styles.promoText}>
+                  Want a website that books rides while you sleep?
+                </p>
+                <a
+                  href={CALENDAR}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className={styles.promoLink}
+                >
+                  Book a call
+                  <Icon name='arrowUpRight' className={styles.promoIcon} />
+                </a>
+              </div>
+            )}
+
+            <div className={styles.me}>
+              <span className={styles.avatar} aria-hidden='true'>
+                {user.initials}
+              </span>
+              <span className={styles.meText}>
+                <span className={styles.meName}>{user.name}</span>
+                {user.sample ? (
+                  <span
+                    className={styles.sample}
+                    title='A sample account: changes you make here last until you reload.'
+                  >
+                    Sample data
+                  </span>
+                ) : (
+                  <span className={styles.meEmail}>{user.email}</span>
+                )}
+              </span>
+              <form action={signOut}>
+                <button
+                  type='submit'
+                  className={styles.signOut}
+                  aria-label='Sign out'
+                  title='Sign out'
+                >
+                  <Icon name='logout' />
+                </button>
+              </form>
+            </div>
+          </div>
+        </aside>
+
+        <main id='dashboard-main' className={styles.main}>
+          {children}
+        </main>
+      </div>
+    </ToastProvider>
   );
 }

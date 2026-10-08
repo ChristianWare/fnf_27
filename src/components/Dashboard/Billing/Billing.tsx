@@ -5,6 +5,7 @@ import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "../icons";
 import { Pill, Progress, ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./Billing.module.css";
 import { fmtDate, money } from "@/lib/dashboard/format";
 import type { Card, Invoice, LeadsStatus, PlanId } from "@/lib/dashboard/types";
@@ -41,12 +42,12 @@ export default function Billing({
   invoices,
   now,
 }: Props) {
+  const toast = useToast();
   const [cancelling, setCancelling] = useState(false);
   const [cancelled, setCancelled] = useState(false);
   const [upgradeAsked, setUpgradeAsked] = useState(false);
   const [leadsState, setLeadsState] = useState(leads.access);
   const [trialEnds, setTrialEnds] = useState(leads.trialEndsAt);
-  const [cardNote, setCardNote] = useState(false);
   const [keepLeads, setKeepLeads] = useState(false);
 
   const startTrial = () => {
@@ -56,6 +57,9 @@ export default function Billing({
         new Date(now).getTime() + leads.trialDays * 86_400_000,
       ).toISOString(),
     );
+    toast(`Your ${leads.trialDays}-day free trial has started`, {
+      detail: "Your first leads arrive tomorrow morning.",
+    });
   };
 
   const daysLeft =
@@ -133,7 +137,12 @@ export default function Billing({
                   <button
                     type='button'
                     className={`${ui.btn} ${ui.btn_black}`}
-                    onClick={() => setCancelled(false)}
+                    onClick={() => {
+                      setCancelled(false);
+                      toast("Your plan stays on", {
+                        detail: "Nothing changes. Glad you're staying.",
+                      });
+                    }}
                   >
                     Keep my plan
                   </button>
@@ -196,16 +205,16 @@ export default function Billing({
           <button
             type='button'
             className={`${ui.btn} ${ui.btn_light}`}
-            onClick={() => setCardNote(true)}
+            onClick={() =>
+              toast("Card updates open soon", {
+                tone: "info",
+                detail:
+                  "This will open Stripe's secure page once billing moves over. Card details never touch our servers.",
+              })
+            }
           >
             {card ? "Update card" : "Add a card"}
           </button>
-          {cardNote && (
-            <p className={styles.small}>
-              This opens Stripe&apos;s secure page once billing moves over. Card
-              details never touch our servers.
-            </p>
-          )}
         </section>
       </div>
 
@@ -258,7 +267,12 @@ export default function Billing({
               <button
                 type='button'
                 className={`${ui.btn} ${ui.btn_white}`}
-                onClick={() => setKeepLeads(true)}
+                onClick={() => {
+                  setKeepLeads(true);
+                  toast("Card added", {
+                    detail: `Your Leads Tool carries on after the trial at ${money(leads.monthly)} a month.`,
+                  });
+                }}
               >
                 Add a card
               </button>
@@ -315,7 +329,12 @@ export default function Billing({
               <button
                 type='button'
                 className={`${ui.btn} ${ui.btn_lime}`}
-                onClick={() => setUpgradeAsked(true)}
+                onClick={() => {
+                  setUpgradeAsked(true);
+                  toast("Upgrade requested", {
+                    detail: "Chris will email you within one business day.",
+                  });
+                }}
               >
                 Request the upgrade
                 <Icon name='arrow' className={ui.btnIcon} />
@@ -327,7 +346,13 @@ export default function Billing({
 
       {/* Invoices */}
       <section className={styles.panel}>
-        <h2 className={styles.heading}>Invoices</h2>
+        <div className={styles.titles}>
+          <h2 className={styles.heading}>Invoices</h2>
+          <p>
+            A PDF for every payment, with your business name on it. Each one is
+            also emailed to you the day the payment goes through.
+          </p>
+        </div>
         {invoices.length ? (
           <div className={ui.tableWrap}>
             <table className={ui.table}>
@@ -338,6 +363,9 @@ export default function Billing({
                   <th scope='col'>Description</th>
                   <th scope='col'>Status</th>
                   <th scope='col'>Amount</th>
+                  <th scope='col'>
+                    <span className={ui.srOnly}>Download</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -356,7 +384,18 @@ export default function Billing({
                         {invoice.status === "PAID" ? "Paid" : "Due"}
                       </Pill>
                     </td>
-                    <td>{money(invoice.amount)}</td>
+                    <td className={styles.amount}>{money(invoice.amount)}</td>
+                    <td>
+                      <a
+                        href={`/dashboard/billing/invoices/${invoice.id}`}
+                        download={`${invoice.number}.pdf`}
+                        className={styles.download}
+                        data-no-transition
+                      >
+                        <Icon name='download' />
+                        <span>PDF</span>
+                      </a>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -394,6 +433,13 @@ export default function Billing({
                 onClick={() => {
                   setCancelled(true);
                   setCancelling(false);
+                  toast("Plan cancelled", {
+                    tone: "info",
+                    detail:
+                      plan.live && plan.nextBillingAt
+                        ? `It ends on ${fmtDate(plan.nextBillingAt)}. Change your mind anytime before then.`
+                        : "We've stopped the build. Change your mind anytime.",
+                  });
                 }}
               >
                 Cancel plan

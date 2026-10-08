@@ -5,6 +5,7 @@ import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "../icons";
 import { Pill, ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./Design.module.css";
 import { fmtDate } from "@/lib/dashboard/format";
 import type { DesignId, Designs } from "@/lib/dashboard/types";
@@ -84,6 +85,7 @@ export default function Design({
   /** After launch the choice is history, not a decision. */
   locked: boolean;
 }) {
+  const toast = useToast();
   const [chosen, setChosen] = useState(designs.chosen);
   const [chosenAt, setChosenAt] = useState(designs.chosenAt);
   const [confirm, setConfirm] = useState<DesignId | null>(null);
@@ -207,6 +209,9 @@ export default function Design({
                   setChosen(pending.id);
                   setChosenAt(new Date().toISOString());
                   setConfirm(null);
+                  toast(`${pending.name} it is`, {
+                    detail: "We'll build your site in this direction.",
+                  });
                 }}
               >
                 Choose {pending.name}

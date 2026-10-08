@@ -158,11 +158,17 @@ export type Growth = {
 
 export type Invoice = {
   id: string;
+  /** Sequential and never reused, e.g. "FNF-1004". */
   number: string;
   date: string;
   description: string;
+  /** For a monthly plan: the month it covers. */
+  period?: { from: string; to: string };
   amount: number;
   status: "PAID" | "DUE";
+  paidAt?: string;
+  /** How it was paid, e.g. "Visa ending 4242". */
+  method?: string;
 };
 
 export type Card = { brand: string; last4: string; exp: string };

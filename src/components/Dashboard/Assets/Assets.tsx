@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRef, useState, type DragEvent } from "react";
 import Icon from "../icons";
 import { Progress, ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./Assets.module.css";
 import { assetNeeds } from "@/lib/dashboard/helpers";
 import { fmtShort } from "@/lib/dashboard/format";
@@ -38,6 +39,7 @@ const guessLabel = (file: File): AssetLabel => {
 };
 
 export default function Assets({ initial }: { initial: Asset[] }) {
+  const toast = useToast();
   const [assets, setAssets] = useState(initial);
   const [dragging, setDragging] = useState(false);
   const input = useRef<HTMLInputElement>(null);
@@ -60,11 +62,18 @@ export default function Assets({ initial }: { initial: Asset[] }) {
         : undefined,
     }));
     setAssets((list) => [...list, ...added]);
+    toast(
+      added.length === 1
+        ? `Added ${added[0].name}`
+        : `Added ${added.length} files`,
+      { detail: "Check the label on each one so we know what it is." },
+    );
   };
 
   const remove = (asset: Asset) => {
     if (asset.src?.startsWith("blob:")) URL.revokeObjectURL(asset.src);
     setAssets((list) => list.filter((item) => item.id !== asset.id));
+    toast(`Removed ${asset.name}`, { tone: "info" });
   };
 
   const relabel = (id: string, label: AssetLabel) =>

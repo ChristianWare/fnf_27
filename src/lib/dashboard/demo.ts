@@ -110,6 +110,7 @@ function desertStar(now: Date, ago: Ago): Client {
   const before = (days: number) =>
     new Date(new Date(launched).getTime() - days * DAY).toISOString();
 
+  const method = "Visa ending 4242";
   const invoices: Invoice[] = [
     {
       id: "inv-setup",
@@ -118,6 +119,8 @@ function desertStar(now: Date, ago: Ago): Client {
       description: "Full Platform setup",
       amount: 500,
       status: "PAID",
+      paidAt: before(52),
+      method,
     },
   ];
   let nextBillingAt = "";
@@ -136,8 +139,11 @@ function desertStar(now: Date, ago: Ago): Client {
       number: `FNF-${1002 + k}`,
       date,
       description: `Full Platform, ${label}`,
+      period: { from: date, to: azDate(y, m - 5 + k + 1, 11, 8) },
       amount: 499,
       status: "PAID",
+      paidAt: date,
+      method,
     });
   }
 
@@ -950,6 +956,8 @@ function copperState(ago: Ago, ahead: Ahead): Client {
         description: "Website Only setup",
         amount: 500,
         status: "PAID",
+        paidAt: ago(27),
+        method: "Mastercard ending 4444",
       },
     ],
     card: { brand: "Mastercard", last4: "4444", exp: "11/27" },

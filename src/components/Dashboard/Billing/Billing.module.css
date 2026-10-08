@@ -34,8 +34,42 @@
   font-size: 16px;
 }
 
-.nowrap {
+.nowrap,
+.amount {
   white-space: nowrap;
+}
+
+/* The PDF for each invoice. */
+.download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 3.6rem;
+  padding: 0 1.4rem 0 1.1rem;
+  border-radius: 50px;
+  background-color: var(--light);
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--black);
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.download svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .download:hover {
+    background-color: var(--accent3);
+  }
+}
+
+.download:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
 }
 
 /* ── The plan ── */

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "../icons";
 import { Pill, ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./Changes.module.css";
 import { fmtShort } from "@/lib/dashboard/format";
 import type { ChangeRequest, ChangeStatus } from "@/lib/dashboard/types";
@@ -38,6 +39,7 @@ export default function Changes({
   initial: ChangeRequest[];
   you: string;
 }) {
+  const toast = useToast();
   const [requests, setRequests] = useState(initial);
   const [filter, setFilter] = useState<Filter>("all");
   const [open, setOpen] = useState(false);
@@ -76,6 +78,9 @@ export default function Changes({
     setDetails("");
     setArea(AREAS[0]);
     setOpen(false);
+    toast(`Request #${number} sent`, {
+      detail: `You'll hear back within one business day, ${you.split(" ")[0]}.`,
+    });
   };
 
   return (
@@ -154,19 +159,11 @@ export default function Changes({
                     : ""}
                 </span>
                 <p className={styles.details}>{r.details}</p>
-                {r.reply ? (
+                {r.reply && (
                   <div className={styles.reply}>
                     <span className={ui.mono}>Chris</span>
                     <p>{r.reply}</p>
                   </div>
-                ) : (
-                  r.id === sentId && (
-                    <span className={ui.saved}>
-                      <Icon name='check' />
-                      Sent. You&apos;ll hear back within one business day,{" "}
-                      {you.split(" ")[0]}.
-                    </span>
-                  )
                 )}
               </li>
             ))}

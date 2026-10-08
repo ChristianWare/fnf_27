@@ -4,6 +4,7 @@ import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "../icons";
 import { Pill, ui } from "../ui/ui";
+import { useToast } from "../Toast/Toast";
 import styles from "./Documents.module.css";
 import { fmtDate } from "@/lib/dashboard/format";
 import type { Doc } from "@/lib/dashboard/types";
@@ -15,11 +16,11 @@ export default function Documents({
   documents: Doc[];
   signer: string;
 }) {
+  const toast = useToast();
   const [docs, setDocs] = useState(documents);
   const [openId, setOpenId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [agree, setAgree] = useState(false);
-  const [justSigned, setJustSigned] = useState<string | null>(null);
 
   const open = docs.find((doc) => doc.id === openId);
   const canSign = name.trim().length > 2 && agree;
@@ -28,7 +29,6 @@ export default function Documents({
     setOpenId(id);
     setName("");
     setAgree(false);
-    setJustSigned(null);
   };
 
   const sign = () => {
@@ -41,7 +41,9 @@ export default function Documents({
           : doc,
       ),
     );
-    setJustSigned(open.id);
+    toast(`Signed: ${open.title}`, {
+      detail: "Thank you. A copy stays here in Documents.",
+    });
   };
 
   const waiting = docs.filter((doc) => doc.status === "AWAITING");
@@ -140,12 +142,6 @@ export default function Documents({
 
             {open.status === "SIGNED" ? (
               <div className={styles.signature}>
-                {justSigned === open.id && (
-                  <span className={ui.saved}>
-                    <Icon name='check' />
-                    Signed. Thank you.
-                  </span>
-                )}
                 <span className={ui.monoMuted}>Signed by</span>
                 <span className={styles.signedName}>{open.signedBy}</span>
                 <p>{open.signedAt ? fmtDate(open.signedAt) : ""}</p>
