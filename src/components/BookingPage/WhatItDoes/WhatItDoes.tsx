@@ -99,7 +99,7 @@ export default function WhatItDoes() {
                 data-reveal
                 data-reveal-style='fade'
               >
-                Everything a Ride Needs, in One System
+                Everything a Ride Needs in One System
               </h2>
             </div>
             <span className={styles.count} data-reveal>
