@@ -1,0 +1,196 @@
+.container {
+  padding: 6rem 0rem 10rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+/* Everything sits in one reading column in the middle. */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+/* ── The numbers ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4rem;
+  min-height: 17rem;
+  padding: 2.2rem 2.2rem 1.6rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.statLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.statLine {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.statValue {
+  align-self: flex-end;
+  font-size: 5.4rem;
+  line-height: 1;
+  letter-spacing: -1.5px;
+  color: var(--black);
+}
+
+/* ── The story ── */
+.story {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.heading {
+  color: var(--black);
+}
+
+.p {
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+/* The client's words, on a light card. */
+.quote {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  padding: 3rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.quoteText {
+  font-size: 2rem;
+  line-height: 1.4;
+  color: var(--black);
+}
+
+.quoteBy {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.quoteAvatar {
+  position: relative;
+  flex: none;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: var(--black);
+}
+
+.quoteAvatarImg {
+  object-fit: cover;
+  object-position: center 15%;
+}
+
+.quoteWho {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quoteName {
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+.quoteRole {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* A photo in the story, two to one. */
+.photo {
+  position: relative;
+  aspect-ratio: 2 / 1;
+  width: 100%;
+  border-radius: 2rem;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+.img {
+  object-fit: cover;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 4rem 0rem 7rem;
+  }
+
+  .content {
+    gap: 5rem;
+  }
+
+  .stat {
+    min-height: 14rem;
+    padding: 1.8rem 1.8rem 1.4rem;
+  }
+
+  .statValue {
+    font-size: 4.4rem;
+  }
+
+  .photo {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .stats {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .stat {
+    min-height: 12rem;
+  }
+
+  .quote {
+    padding: 2.4rem 2rem;
+    border-radius: 1.6rem;
+  }
+
+  .photo {
+    border-radius: 1.6rem;
+  }
+}
