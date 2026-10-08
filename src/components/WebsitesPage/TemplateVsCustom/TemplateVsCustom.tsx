@@ -77,7 +77,7 @@ export default function TemplateVsCustom() {
                   <span className={styles.number} aria-hidden='true'>
                     0{option.id}
                   </span>
-                  <h3 className={`${styles.title} h4`}>{option.title}</h3>
+                  <h3 className={`${styles.title} h5`}>{option.title}</h3>
                   <span className={styles.tag}>{option.tag}</span>
                 </div>
 
