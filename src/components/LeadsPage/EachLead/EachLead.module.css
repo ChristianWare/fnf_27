@@ -68,23 +68,16 @@
   background-color: var(--light);
 }
 
-.imgContainer {
-  position: relative;
-  min-height: 54rem;
+/* The picture: a piece of the leads tool on a grey box, the same as the
+   "What it does" cards on the booking software page. The box is a flex
+   container so the piece fills it top to bottom. */
+.art {
+  display: flex;
+  min-height: 50rem;
+  padding: 2rem;
   border-radius: 1.6rem;
   overflow: hidden;
   background-color: var(--light2);
-}
-
-.img {
-  object-fit: cover;
-  object-position: center top;
-  opacity: 0;
-  transition: opacity 0.6s ease;
-}
-
-.imgActive {
-  opacity: 1;
 }
 
 /* The text re-mounts on every tab change, which replays this fade. */
@@ -128,10 +121,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .img {
-    transition: none;
-  }
-
   .text {
     animation: none;
   }
@@ -149,7 +138,7 @@
     gap: 0;
   }
 
-  .imgContainer {
+  .art {
     min-height: 44rem;
   }
 
@@ -176,8 +165,9 @@
     border-radius: 2rem;
   }
 
-  .imgContainer {
+  .art {
     min-height: 34rem;
+    padding: 1rem;
   }
 
   .text {

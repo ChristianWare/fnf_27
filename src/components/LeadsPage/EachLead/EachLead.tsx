@@ -1,17 +1,19 @@
 "use client";
 
-// What comes with each lead, in four tabs. Each tab swaps the screenshot
-// and the text, the same as the story section on the About page.
+// What comes with each lead, in four tabs. Each tab swaps the picture (a
+// piece of the leads tool built in HTML, in LeadVignettes.tsx) and the
+// text, the same as the story section on the About page.
 
 import { useState, type KeyboardEvent } from "react";
-import Image from "next/image";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./EachLead.module.css";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import ContactImg from "../../../../public/images/leadColdLeads.png";
-import ScriptImg from "../../../../public/images/leadsEmail.png";
-import BriefImg from "../../../../public/images/coldLeadsDetails.png";
-import NextImg from "../../../../public/images/savedLeadsDetails.png";
+import {
+  BriefArt,
+  DecisionMakerArt,
+  NextStepArt,
+  ScriptArt,
+} from "./LeadVignettes";
 
 const tabs = [
   {
@@ -19,32 +21,28 @@ const tabs = [
     label: "The Decision-Maker",
     title: "Name, title, and a way to reach them",
     body: "The decision-maker: name, title, and a verified email or phone when one is available. You reach the person who books the rides, not a front desk.",
-    src: ContactImg,
-    alt: "A list of leads in the tool, each with the decision-maker's name and title",
+    Art: DecisionMakerArt,
   },
   {
     id: "script",
     label: "The Outreach Script",
     title: "Written for that business",
     body: "An outreach script written for that business. It names what they do, why their guests or staff need rides, and what to offer first, so your first message reads like you already know them.",
-    src: ScriptImg,
-    alt: "An outreach script, ready to send",
+    Art: ScriptArt,
   },
   {
     id: "brief",
     label: "The Strategic Brief",
     title: "Why they need you, and how to pitch",
     body: "A strategic brief: why they need transportation and how to pitch them. Who they use now, when their busy season is, and the angle that wins the account.",
-    src: BriefImg,
-    alt: "A lead's strategic brief in the tool",
+    Art: BriefArt,
   },
   {
     id: "next",
     label: "The Next Step",
     title: "Where it sits, and what to do today",
     body: "Where the lead sits in your pipeline, from first contact to won account, and who to follow up with today. Nothing goes cold because you forgot.",
-    src: NextImg,
-    alt: "Saved leads in the pipeline, with the next action for each",
+    Art: NextStepArt,
   },
 ];
 
@@ -106,19 +104,10 @@ export default function EachLead() {
             aria-labelledby={`lead-tab-${current.id}`}
             data-reveal
           >
-            {/* All four screenshots are stacked; the active one fades in. */}
-            <div className={styles.imgContainer}>
-              {tabs.map((tab, i) => (
-                <Image
-                  key={tab.id}
-                  src={tab.src}
-                  alt={i === active ? tab.alt : ""}
-                  aria-hidden={i !== active}
-                  fill
-                  sizes='(max-width: 968px) 100vw, 45vw'
-                  className={`${styles.img} ${i === active ? styles.imgActive : ""}`}
-                />
-              ))}
+            {/* Decorative: the text beside it says what it is. Re-mounts on
+                every tab change, which replays the fade. */}
+            <div className={styles.art} aria-hidden='true'>
+              <current.Art key={current.id} />
             </div>
 
             <div className={styles.text} key={current.id}>

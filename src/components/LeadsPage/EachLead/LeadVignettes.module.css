@@ -1,0 +1,307 @@
+/* The pieces of the leads tool on the "What comes with each lead" tabs. The
+   base rules (.ui, .head, .mono, .value, .pill, .rows, .button) are the same
+   as the "What it does" vignettes on the booking software page, so the two
+   sections look alike. Nothing here is under 14px. */
+
+.ui {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  width: 100%;
+  padding: 2rem 2.2rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: var(--white);
+  box-shadow: 0 1rem 3rem rgb(13 13 14 / 8%);
+  text-align: left;
+  animation: artIn 0.6s ease both;
+}
+
+/* The label on the left, a pill on the right. */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mono {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.value {
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--black);
+}
+
+.pill {
+  flex: none;
+  padding: 0.6rem 1rem;
+  border-radius: 50px;
+  background-color: var(--accent2);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--black);
+}
+
+/* A section label inside the card. */
+.label {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+/* Label and value on one line, a line between rows. */
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.row dt {
+  flex: none;
+}
+
+.row dd {
+  text-align: right;
+}
+
+.button {
+  margin-top: auto;
+  padding: 1.2rem 1.6rem;
+  border-radius: 50px;
+  background-color: var(--black);
+  font-size: 16px;
+  line-height: 1;
+  text-align: center;
+  color: var(--white);
+}
+
+/* ── The decision-maker ── */
+.business {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.name {
+  font-size: 2.2rem;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+  color: var(--black);
+}
+
+/* The person, in a light box. */
+.contact {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1.4rem 1.6rem;
+  border-radius: 1rem;
+  background-color: var(--light);
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 50%;
+  background-color: var(--black);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--white);
+}
+
+.contactText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.contactName {
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+/* An email or a link: mono, but not uppercase. */
+.link {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+/* ── The outreach script ── */
+.formats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.format {
+  padding: 0.6rem 1rem;
+  border-radius: 50px;
+  border: 1px solid var(--light2);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.formatActive {
+  border-color: var(--black);
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.subject {
+  display: flex;
+  align-items: baseline;
+  gap: 1.2rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--light);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.para {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--black);
+}
+
+/* The pitch ideas, as chips. */
+.ideas {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.idea {
+  padding: 0.7rem 1.1rem;
+  border-radius: 50px;
+  background-color: var(--light);
+  font-size: 16px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--black);
+}
+
+/* ── The next step ── */
+.stages {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.stage {
+  padding: 0.7rem 1.1rem;
+  border-radius: 50px;
+  border: 1px solid var(--light2);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.stageDone {
+  border-color: var(--light);
+  background-color: var(--light);
+  color: var(--black);
+}
+
+.stageActive {
+  border-color: var(--black);
+  background-color: var(--black);
+  color: var(--white);
+}
+
+/* The move for today, in a light box. */
+.move {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.4rem 1.6rem;
+  border-radius: 1rem;
+  background-color: var(--light);
+}
+
+.moveTitle {
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+/* Each tab's piece fades in as the text does. */
+@keyframes artIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.2rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui {
+    animation: none;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .ui {
+    padding: 1.6rem 1.5rem;
+  }
+
+  .row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .row dd {
+    text-align: left;
+  }
+
+  .subject {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
