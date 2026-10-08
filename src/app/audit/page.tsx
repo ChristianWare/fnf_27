@@ -26,7 +26,7 @@ const auditFaqs: FaqItem[] = [
     id: 2,
     question: "Do I need to give you my email?",
     answer:
-      "Not for your score. You only need it if you want the full report as a PDF.",
+      "Yes, so the full report can be sent to you as a PDF. Your score and your top fixes show on this page right away, and the PDF lands in your inbox a minute or two later.",
   },
   {
     id: 3,
@@ -44,7 +44,7 @@ const auditFaqs: FaqItem[] = [
     id: 5,
     question: "Can I share the results?",
     answer:
-      "Yes. Every report gets its own link you can copy and send to whoever handles your website, and you can have the full report emailed as a PDF.",
+      "Yes. Every report gets its own link you can copy and send to whoever handles your website, and the PDF in your inbox forwards like any other.",
   },
 ];
 

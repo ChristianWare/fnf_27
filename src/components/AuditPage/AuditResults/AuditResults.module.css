@@ -145,6 +145,12 @@
 }
 
 /* Every check, in rows. */
+.all {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
 .checks {
   list-style: none;
   display: flex;
@@ -211,10 +217,10 @@
   color: var(--white);
 }
 
-/* The link and the PDF, side by side. */
+/* Where the report is, and the link to it. */
 .keep {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(1, 1fr);
   gap: 0.8rem;
 }
 
@@ -239,43 +245,6 @@
 
 .keepText {
   color: var(--black);
-}
-
-.emailRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  width: 100%;
-}
-
-.emailInput {
-  flex: 1 1 24rem;
-  min-width: 0;
-  padding: 0 1.8rem;
-  border: none;
-  border-radius: 50px;
-  background-color: var(--white);
-  font-size: 1.6rem;
-  line-height: 1;
-  color: var(--black);
-}
-
-.emailInput::placeholder {
-  color: var(--textDark);
-}
-
-.emailInput:focus {
-  outline: 2px solid var(--black);
-  outline-offset: -2px;
-}
-
-.sent {
-  color: var(--black);
-}
-
-.emailNote {
-  max-width: 520px;
-  font-size: 1.6rem;
 }
 
 /* The next step, by score: one card, or two when the Google Business
@@ -329,10 +298,6 @@
   .top {
     grid-template-columns: repeat(1, 1fr);
     gap: 4rem;
-  }
-
-  .keep {
-    grid-template-columns: repeat(1, 1fr);
   }
 }
 

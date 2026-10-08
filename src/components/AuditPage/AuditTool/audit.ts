@@ -22,8 +22,13 @@ export type Check = {
   why: string;
 };
 
-export type AuditResult = {
+export type AuditRequest = {
+  name: string;
   url: string;
+  email: string;
+};
+
+export type AuditResult = AuditRequest & {
   score: number;
   checks: Check[];
 };
@@ -46,11 +51,12 @@ export function topThree(result: AuditResult) {
 }
 
 // PLACEHOLDER. The sample report's numbers, returned for any URL until the
-// real audit is connected. Swap this for the API call.
-export async function runAudit(url: string): Promise<AuditResult> {
+// real audit is connected. Swap this for the API call, which also sends the
+// full report to the email.
+export async function runAudit(request: AuditRequest): Promise<AuditResult> {
   await new Promise((resolve) => setTimeout(resolve, 1800));
   return {
-    url,
+    ...request,
     score: 41,
     checks: [
       {

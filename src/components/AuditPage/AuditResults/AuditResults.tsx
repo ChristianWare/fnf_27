@@ -1,9 +1,10 @@
 "use client";
 
-// A finished audit: the score and the top three fixes, every check behind
-// a button, ways to keep the report, and the next step for this score.
+// A finished audit: the score and the top three fixes, every check, the
+// report link, and the next step for this score. The full report goes to
+// the email from the form on its own.
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import styles from "./AuditResults.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
@@ -12,10 +13,7 @@ import { checkIcons, topThree, type AuditResult } from "../AuditTool/audit";
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 
 export default function AuditResults({ result }: { result: AuditResult }) {
-  const [showAll, setShowAll] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
 
   const top = topThree(result);
   const passed = result.checks.filter((check) => check.passed).length;
@@ -33,12 +31,6 @@ export default function AuditResults({ result }: { result: AuditResult }) {
     } catch {
       setCopied(false);
     }
-  }
-
-  function sendReport(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    // PLACEHOLDER: send the report to the email.
-    if (email.trim()) setSent(true);
   }
 
   return (
@@ -68,16 +60,8 @@ export default function AuditResults({ result }: { result: AuditResult }) {
             </h2>
             <p className={styles.copy}>
               Each one comes with a line on why it matters. Fix them in this
-              order.
+              order. Every check is listed underneath.
             </p>
-            <div>
-              <Button
-                btnType='black'
-                text={showAll ? "Hide the full list" : "See every check"}
-                onClick={() => setShowAll((open) => !open)}
-                arrow
-              />
-            </div>
           </div>
         </div>
 
@@ -101,8 +85,9 @@ export default function AuditResults({ result }: { result: AuditResult }) {
           })}
         </ol>
 
-        {/* Every check, behind the button. */}
-        {showAll && (
+        {/* Every check. */}
+        <div className={styles.all}>
+          <span className={styles.label}>Every check</span>
           <ul className={styles.checks} aria-label='Every check'>
             {result.checks.map((check) => {
               const Icon = checkIcons[check.id];
@@ -126,14 +111,15 @@ export default function AuditResults({ result }: { result: AuditResult }) {
               );
             })}
           </ul>
-        )}
+        </div>
 
-        {/* Keep the report: the link, or the PDF by email. */}
+        {/* Keep the report: the PDF is on its way, and the link is here. */}
         <div className={styles.keep}>
           <div className={styles.keepCard}>
-            <span className={styles.label}>Saved report link</span>
+            <span className={styles.label}>Your report</span>
             <p className={styles.keepText}>
-              Save this link, or send it to whoever handles your website.
+              The full report is on its way to {result.email} as a PDF. Save
+              this link too, or send it to whoever handles your website.
             </p>
             <div>
               <Button
@@ -143,40 +129,6 @@ export default function AuditResults({ result }: { result: AuditResult }) {
               />
             </div>
           </div>
-
-          <form className={styles.keepCard} onSubmit={sendReport} noValidate>
-            <span className={styles.label}>PDF by email</span>
-            <p className={styles.keepText}>Get the full report as a PDF.</p>
-            {sent ? (
-              <p className={styles.sent} role='status'>
-                Sent. Check your inbox in a minute or two.
-              </p>
-            ) : (
-              <div className={styles.emailRow}>
-                <input
-                  className={styles.emailInput}
-                  type='email'
-                  name='email'
-                  autoComplete='email'
-                  placeholder='you@yourcompany.com'
-                  aria-label='Email'
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  required
-                />
-                <Button
-                  type='submit'
-                  btnType='black'
-                  text='Email me the report'
-                />
-              </div>
-            )}
-            <p className={styles.emailNote}>
-              I read the audits that come through and sometimes follow up
-              personally to walk an operator through the results. No pitch if
-              it&apos;s not a fit.
-            </p>
-          </form>
         </div>
 
         {/* The next step, by score. */}
