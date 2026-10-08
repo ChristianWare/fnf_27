@@ -1,0 +1,318 @@
+/* The small pieces of software on the "What it does" cards. Each one is a
+   white card on the feature's accent color. Nothing here is under 14px. */
+
+.ui {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  padding: 1.6rem 1.8rem;
+  border-radius: 1.4rem;
+  background-color: var(--white);
+  box-shadow: 0 1rem 3rem rgb(13 13 14 / 8%);
+  text-align: left;
+}
+
+/* The label on the left, a pill on the right. */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mono {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.value {
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--black);
+}
+
+.pill {
+  flex: none;
+  padding: 0.6rem 1rem;
+  border-radius: 50px;
+  background-color: var(--black);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--white);
+}
+
+.pillLanded {
+  background-color: var(--accent1);
+  color: var(--black);
+}
+
+.status {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.big {
+  font-size: 3.2rem;
+  line-height: 1;
+  letter-spacing: -0.8px;
+  color: var(--black);
+}
+
+/* Label and value on one line, a line between rows. */
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.row dt {
+  flex: none;
+}
+
+.row dd {
+  text-align: right;
+}
+
+/* The amount with its status under it. */
+.rowRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.button {
+  margin-top: 0.4rem;
+  padding: 1.2rem 1.6rem;
+  border-radius: 50px;
+  background-color: var(--black);
+  font-size: 16px;
+  line-height: 1;
+  text-align: center;
+  color: var(--white);
+}
+
+/* ── Multi-ride ── */
+.rides {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.ride {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background-color: var(--black);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--white);
+}
+
+.rideText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--black);
+}
+
+/* ── Driver portal ── */
+.phone {
+  width: min(100%, 27rem);
+  margin: 0 auto;
+  border-radius: 2rem;
+}
+
+.route {
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+/* The five statuses as segments; the done ones are black. */
+.steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.step {
+  height: 0.6rem;
+  border-radius: 50px;
+  background-color: var(--light2);
+}
+
+.stepDone {
+  background-color: var(--black);
+}
+
+.stepLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* ── Flight tracking ── */
+.airline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.8rem;
+  background-color: var(--black);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--white);
+}
+
+.flightRoute {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0;
+}
+
+.plane {
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--text);
+}
+
+/* ── Reminders: three messages stacked ── */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.note {
+  flex-direction: row;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 1.4rem;
+}
+
+.bell {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background-color: var(--accent2);
+  box-shadow: 0 0 0 0.4rem rgb(193 183 255 / 35%);
+}
+
+.noteText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* ── Corporate and admin ── */
+.company {
+  font-size: 2.2rem;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+  color: var(--black);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--light);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.stat dt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statValue {
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: -0.3px;
+  color: var(--black);
+}
+
+/* Fourteen days of net earnings. */
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  height: 7rem;
+}
+
+.bar {
+  flex: 1;
+  border-radius: 0.3rem 0.3rem 0 0;
+  background-color: var(--light2);
+}
+
+.barTop {
+  background-color: var(--black);
+}

@@ -1,86 +1,88 @@
-// What the Full Platform does: eight cards, each with a screenshot of that
-// part of the software on top, the same shape as the Journal cards.
+// What the Full Platform does: eight cards, each with a small piece of the
+// software on top (built in HTML, in Vignettes.tsx), the same shape as the
+// Journal cards.
 
-import Image from "next/image";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./WhatItDoes.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import DirectBookingImg from "../../../../public/images/directBooking.png";
-import MultiRideImg from "../../../../public/images/nierConfirmationPage.png";
-import DriverPortalImg from "../../../../public/images/driverPortal.png";
-import FlightTrackingImg from "../../../../public/images/flightTracking.png";
-import PaymentsImg from "../../../../public/images/payment.png";
-import RemindersImg from "../../../../public/images/notifications.png";
-import CorporateImg from "../../../../public/images/corpDashboard.png";
-import AdminImg from "../../../../public/images/adminDashboard.png";
+import {
+  AdminArt,
+  CorporateArt,
+  DirectBookingArt,
+  DriverPortalArt,
+  FlightTrackingArt,
+  MultiRideArt,
+  PaymentsArt,
+  RemindersArt,
+} from "./Vignettes";
 
+// Each card's picture sits on one of the accent colors, in order across
+// the row.
 const features = [
   {
     id: 1,
     tag: "Booking",
     title: "Direct booking",
     desc: "Riders choose the service, pickup time, route and vehicle, and see the price before they book.",
-    src: DirectBookingImg,
-    alt: "The trip details step of the booking form on an operator's own site",
+    Art: DirectBookingArt,
+    tone: styles.toneOne,
   },
   {
     id: 2,
     tag: "Booking",
     title: "Multi-ride trips",
     desc: "Round trips and multi-day itineraries in one booking, with one payment.",
-    src: MultiRideImg,
-    alt: "The confirmation step of a booking, with every ride listed",
+    Art: MultiRideArt,
+    tone: styles.toneTwo,
   },
   {
     id: 3,
     tag: "Dispatch",
     title: "Dispatch and the driver portal",
     desc: "Assign rides, and drivers see their schedule and update each trip's status from their phone.",
-    src: DriverPortalImg,
-    alt: "A driver's dashboard, showing the next trip and its details",
+    Art: DriverPortalArt,
+    tone: styles.toneThree,
   },
   {
     id: 4,
     tag: "Dispatch",
     title: "Flight tracking",
     desc: "Airport pickups follow the actual landing time.",
-    src: FlightTrackingImg,
-    alt: "Live flight tracking for an airport pickup",
-    // A landscape screenshot: keep its left side, where the heading is.
-    position: "left top",
+    Art: FlightTrackingArt,
+    tone: styles.toneFour,
   },
   {
     id: 5,
     tag: "Payments",
     title: "Payments",
     desc: "Deposits, full payment, card on file, payment links by email, cash recorded by hand, and refunds.",
-    src: PaymentsImg,
-    alt: "The payment page for a booking, with the trip summary beside it",
+    Art: PaymentsArt,
+    tone: styles.toneOne,
   },
   {
     id: 6,
     tag: "Riders",
     title: "Automatic reminders",
     desc: "Riders get a reminder 24 hours and 2 hours before pickup, and a payment reminder if a link goes unpaid.",
-    src: RemindersImg,
-    alt: "The email notification settings, with each reminder switched on",
+    Art: RemindersArt,
+    tone: styles.toneTwo,
   },
   {
     id: 7,
     tag: "Accounts",
     title: "Corporate accounts",
     desc: "Company accounts, their passengers, and invoices.",
-    src: CorporateImg,
-    alt: "A corporate account's dashboard, with its rides and billing",
+    Art: CorporateArt,
+    tone: styles.toneThree,
   },
   {
     id: 8,
     tag: "Admin",
     title: "Admin dashboard",
     desc: "Bookings, calendar, earnings, driver pay, reports and discount codes.",
-    src: AdminImg,
-    alt: "The admin dashboard, with the month's earnings and new booking requests",
+    Art: AdminArt,
+    tone: styles.toneFour,
   },
 ];
 
@@ -108,21 +110,14 @@ export default function WhatItDoes() {
           </div>
 
           <ul className={styles.grid}>
-            {features.map((feature) => (
+            {features.map(({ Art, ...feature }) => (
               <li className={styles.card} key={feature.id} data-reveal='each'>
-                <div className={styles.imgContainer}>
-                  <Image
-                    src={feature.src}
-                    alt={feature.alt}
-                    fill
-                    sizes='(max-width: 568px) 100vw, (max-width: 1268px) 50vw, 25vw'
-                    className={styles.img}
-                    style={
-                      "position" in feature
-                        ? { objectPosition: feature.position }
-                        : undefined
-                    }
-                  />
+                {/* Decorative: the title and text under it say what it is. */}
+                <div
+                  className={`${styles.art} ${feature.tone}`}
+                  aria-hidden='true'
+                >
+                  <Art />
                 </div>
                 <div className={styles.text}>
                   <div className={styles.meta}>

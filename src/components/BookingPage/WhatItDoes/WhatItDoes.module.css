@@ -60,26 +60,44 @@
   background-color: var(--light);
 }
 
-/* The top of a full-page screenshot, cropped to a landscape frame. */
-.imgContainer {
+/* The picture: a piece of the software on the feature's accent color. It
+   starts near the top and anything too tall is cut off at the bottom, like
+   a screen you're looking at. */
+.art {
   position: relative;
   aspect-ratio: 4 / 3;
   width: 100%;
+  padding: 2.4rem 2rem 0;
   border-radius: 1.5rem;
   overflow: hidden;
-  background-color: var(--light2);
+  background-color: var(--toneLight, var(--light2));
 }
 
-.img {
-  object-fit: cover;
-  object-position: center top;
+.art > * {
   transition: transform 0.5s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .card:hover .img {
-    transform: scale(1.04);
+  .card:hover .art > * {
+    transform: translateY(-0.6rem);
   }
+}
+
+/* The accent colors, in order across the row (in globals.css). */
+.toneOne {
+  --toneLight: var(--accent1Light);
+}
+
+.toneTwo {
+  --toneLight: var(--accent2Light);
+}
+
+.toneThree {
+  --toneLight: var(--accent3Light);
+}
+
+.toneFour {
+  --toneLight: var(--accent4Light);
 }
 
 .text {
@@ -164,7 +182,7 @@
     grid-template-columns: repeat(1, 1fr);
   }
 
-  .imgContainer {
-    aspect-ratio: 3 / 2;
+  .art {
+    padding: 2rem 1.5rem 0;
   }
 }
