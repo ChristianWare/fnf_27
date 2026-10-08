@@ -34,13 +34,10 @@ export default function HowItWorks() {
               <p className={styles.note}>Free for 30 days · No card</p>
             </div>
             <div className={styles.topMiddle}>
-              <h2 className={`${styles.heading} h3`}>
-                Three steps, starting free.
-              </h2>
-              <p className={`${styles.statement} h3`}>
+              <h2 className={`${styles.statement} h3`}>
                 Win accounts this month with free leads. Then fix what they find
                 on Google, and let your site bring in bookings.
-              </p>
+              </h2>
               <div className={styles.btnContainer}>
                 <Button
                   href='/leads'

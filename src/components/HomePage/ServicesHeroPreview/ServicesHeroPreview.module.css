@@ -35,7 +35,7 @@
 }
 
 .copy {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   width: 300px;
 }
 
@@ -67,7 +67,8 @@
     width: 100%;
   }
 
-  .imgContainer:nth-child(1), .imgContainer:nth-child(2) {
-display: none;
+  .imgContainer:nth-child(1),
+  .imgContainer:nth-child(2) {
+    display: none;
   }
 }

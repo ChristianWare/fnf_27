@@ -78,7 +78,7 @@
 .statLabel {
   max-width: 22rem;
   font-family: var(--IBMPlex);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.4;
   text-transform: uppercase;
   text-align: right;
@@ -136,7 +136,7 @@
   border-radius: 0.6rem;
   background-color: var(--light2);
   font-family: var(--IBMPlex);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;

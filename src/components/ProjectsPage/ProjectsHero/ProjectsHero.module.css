@@ -75,7 +75,7 @@
 
 .clientText {
   font-family: var(--IBMPlex);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   text-transform: uppercase;
   text-align: right;
@@ -166,7 +166,7 @@
 
 .quoteRole {
   font-family: var(--IBMPlex);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.2;
   text-transform: uppercase;
   color: rgb(255 255 255 / 70%);
