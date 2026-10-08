@@ -188,7 +188,7 @@ export default function WhatItFinds() {
         <div className={styles.top}>
           <EyeBrow text='What it finds' color='white' />
           <h2 id='what-it-finds' className={styles.heading}>
-            Three Kinds of Leads, Every Day
+            Three Kinds of Leads Sent to your Inbox Every Day
           </h2>
         </div>
 
