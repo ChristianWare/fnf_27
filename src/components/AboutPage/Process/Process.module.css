@@ -209,11 +209,6 @@
   .info {
     padding: 1.8rem 1.4rem 2rem;
   }
-}
-
-/* The carousel: the row slides inside a clipped window. Swipe it, drag it
-   with a mouse, or use the arrows. Vertical scrolling still moves the page. */
-@media screen and (max-width: 968px) {
   .head {
     padding-bottom: 8rem;
   }

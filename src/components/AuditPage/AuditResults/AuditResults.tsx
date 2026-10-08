@@ -118,8 +118,11 @@ export default function AuditResults({ result }: { result: AuditResult }) {
           <div className={styles.keepCard}>
             <span className={styles.label}>Your report</span>
             <p className={styles.keepText}>
-              The full report is on its way to {result.email} as a PDF. Save
-              this link too, or send it to whoever handles your website.
+              The full report is on its way to{" "}
+              <div className={styles.result}>{result.email}</div>
+              {""}
+              as a PDF. Save this link too, or send it to whoever handles your
+              website.
             </p>
             <div className={styles.btnContainer}>
               <Button

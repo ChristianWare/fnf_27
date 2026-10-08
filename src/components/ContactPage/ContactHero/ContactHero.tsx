@@ -10,7 +10,7 @@ import styles from "./ContactHero.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import HeroImg from "../../../../public/images/call.jpg";
+import HeroImg from "../../../../public/images/newHero.png";
 import Barry from "../../../../public/images/barry.png";
 
 type Field = "name" | "email" | "company" | "role" | "message";

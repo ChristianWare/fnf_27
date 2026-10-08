@@ -131,7 +131,7 @@
 }
 
 .quoteText {
-  font-size: max(15px, 1.5rem);
+  font-size: 1.6rem;
   line-height: 1.45;
   color: var(--white);
 }

@@ -176,7 +176,7 @@
   line-height: 1.3;
   letter-spacing: -0.3px;
   text-transform: uppercase;
-  color: var(--white);
+  color: var(--accent3);
 }
 
 .desc {

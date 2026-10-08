@@ -108,7 +108,7 @@
   font-size: 14px;
   line-height: 1;
   text-transform: uppercase;
-  color: var(--white);
+  color: var(--accent3);
 }
 
 /* What the check looks at, in a darker band along the bottom. */

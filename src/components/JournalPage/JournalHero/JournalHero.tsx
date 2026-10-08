@@ -28,7 +28,7 @@ export default function JournalHero({
                 data-reveal
                 data-reveal-style='fade'
               >
-                Guides for Operators
+                News and Insights
               </h1>
               <p className={styles.copy} data-reveal>
                 Straight answers on booking software, getting found and winning

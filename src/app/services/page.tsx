@@ -8,6 +8,8 @@ import WhatWeDo from "@/components/ServicesPage/WhatWeDo/WhatWeDo";
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+import ComparePlans from "@/components/PricingPage/ComparePlans/ComparePlans";
+import PlanDetails from "@/components/PricingPage/PlanDetails/PlanDetails";
 
 export const metadata: Metadata = {
   title: {
@@ -77,6 +79,8 @@ export default function ServicesPage() {
       <FeatureMarquee />
       <WhichOne />
       <WhatWeDo />
+      <ComparePlans />
+      <PlanDetails />
       <Faq faqs={servicesFaqs} heading='Service Questions' />
       <FinalCta />
       <Footer />
