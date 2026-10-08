@@ -1,0 +1,170 @@
+.container {
+  padding: 8rem 0rem 10rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  width: 100%;
+}
+
+/* The eyebrow on the left, the count on the right. */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.count {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--black);
+}
+
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+/* One post: the photo on top, the text under it. The whole card is the
+   link. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  height: 100%;
+  padding: 1rem 1rem 2rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+  color: var(--black);
+}
+
+.imgContainer {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+.img {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .img {
+    transform: scale(1.04);
+  }
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  padding: 0 1.5rem;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.category,
+.date,
+.authorRole {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.category {
+  padding: 0.6rem 1rem;
+  border-radius: 50px;
+  background-color: var(--light2);
+  color: var(--black);
+}
+
+.date,
+.authorRole {
+  color: var(--text);
+}
+
+.title {
+  display: block;
+  color: var(--black);
+}
+
+/* The author sits at the bottom, so the cards line up. */
+.author {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.avatar {
+  position: relative;
+  flex: none;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: var(--black);
+}
+
+.avatarImg {
+  object-fit: cover;
+}
+
+.authorText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.authorName {
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+/* Two to a row. */
+@media screen and (max-width: 1268px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* One column. */
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 6rem 0rem 7rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+}

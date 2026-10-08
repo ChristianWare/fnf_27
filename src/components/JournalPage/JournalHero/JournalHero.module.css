@@ -1,0 +1,71 @@
+.container {
+  padding: 12rem 0rem 6rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+  width: 100%;
+}
+
+/* Heading and intro on the left, the year mark on the right. */
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4rem;
+}
+
+.topLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 760px;
+}
+
+.copy {
+  max-width: 580px;
+}
+
+.mark {
+  flex: none;
+  font-size: 3.4rem;
+  line-height: 1;
+  letter-spacing: -0.8px;
+  color: var(--black);
+}
+
+@media screen and (max-width: 968px) {
+  .container {
+    padding: 10rem 0rem 5rem;
+  }
+
+  .content {
+    gap: 4rem;
+  }
+
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    padding: 8rem 0rem 4rem;
+    border-radius: 2rem;
+  }
+
+  .mark {
+    font-size: 2.6rem;
+  }
+}

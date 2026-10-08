@@ -1,0 +1,170 @@
+/* The photo on the left, the text on the right, in one light card. */
+.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 5rem;
+  width: 100%;
+  padding: 1.5rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.imgContainer {
+  position: relative;
+  display: block;
+  min-height: 50rem;
+  border-radius: 1.6rem;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+.img {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .imgContainer:hover .img {
+    transform: scale(1.04);
+  }
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6rem;
+  padding: 2rem 3rem 2rem 0;
+}
+
+.textTop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.category,
+.date,
+.authorRole {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.category {
+  padding: 0.6rem 1rem;
+  border-radius: 50px;
+  background-color: var(--light2);
+  color: var(--black);
+}
+
+.date,
+.authorRole {
+  color: var(--text);
+}
+
+.title {
+  max-width: 640px;
+}
+
+.titleLink {
+  color: var(--black);
+}
+
+.excerpt {
+  max-width: 600px;
+}
+
+/* The author on the left, the button on the right. */
+.bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.avatar {
+  position: relative;
+  flex: none;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: var(--black);
+}
+
+.avatarImg {
+  object-fit: cover;
+}
+
+.authorText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.authorName {
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+@media screen and (max-width: 1268px) {
+  .card {
+    gap: 3rem;
+  }
+
+  .imgContainer {
+    min-height: 42rem;
+  }
+}
+
+/* The photo on top. */
+@media screen and (max-width: 968px) {
+  .card {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 2rem;
+  }
+
+  .imgContainer {
+    min-height: 0;
+    height: 60vw;
+  }
+
+  .text {
+    gap: 4rem;
+    padding: 1rem 1.5rem 1.5rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .card {
+    padding: 1rem;
+    border-radius: 1.6rem;
+  }
+
+  .imgContainer {
+    height: 70vw;
+    border-radius: 1.2rem;
+  }
+
+  .text {
+    padding: 1rem 0.8rem 1.2rem;
+  }
+}
