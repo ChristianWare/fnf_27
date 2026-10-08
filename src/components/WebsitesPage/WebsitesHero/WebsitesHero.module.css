@@ -87,11 +87,11 @@
   position: relative;
   overflow: hidden;
   border-radius: 3rem;
-  background-color: var(--light);
+  background-color: var(--white);
 }
 
 .img {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 @media screen and (max-width: 1268px) {

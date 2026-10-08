@@ -3,7 +3,7 @@ import styles from "./WebsitesHero.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import HeroImg from "../../../../public/images/brandedWebsite.png";
+import HeroImg from "../../../../public/images/subLap.png";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 
