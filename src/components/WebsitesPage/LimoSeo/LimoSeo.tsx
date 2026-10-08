@@ -13,11 +13,11 @@ import Button from "@/components/shared/Button/Button";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import SlideInImage from "@/components/shared/SlideInImage/SlideInImage";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import SearchImg from "../../../../public/images/audit.jpg";
-import ProfileImg from "../../../../public/images/mapImg.jpg";
-import ReviewsImg from "../../../../public/images/clients.jpg";
-import AiImg from "../../../../public/images/connected.jpg";
-import TimeImg from "../../../../public/images/buildImg.jpg";
+import SearchImg from "../../../../public/images/userSearch.jpg";
+import ProfileImg from "../../../../public/images/google.jpg";
+import ReviewsImg from "../../../../public/images/reviews.jpg";
+import AiImg from "../../../../public/images/ai.jpg";
+import TimeImg from "../../../../public/images/time.jpg";
 
 const factors = [
   {
@@ -126,7 +126,7 @@ export default function LimoSeo() {
               <Button
                 href='/journal/seo-for-limo-companies'
                 btnType='black'
-                text='Read the SEO guide for limo companies'
+                text='SEO guide for limo companies'
                 arrow
               />
             </div>
