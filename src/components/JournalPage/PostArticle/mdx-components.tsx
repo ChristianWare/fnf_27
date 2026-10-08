@@ -45,8 +45,8 @@ export function Quote({ children }: { children: ReactNode }) {
 export const mdxComponents: MDXComponents = {
   Figure,
   Quote,
-  h2: (props) => <h2 className={`${styles.h2} h5`} {...props} />,
-  h3: (props) => <h3 className={`${styles.h3} h6`} {...props} />,
+  h2: (props) => <h2 className={`${styles.h2} h6`} {...props} />,
+  h3: (props) => <h3 className={`${styles.h3} subHeading`} {...props} />,
   p: (props) => <p className={styles.p} {...props} />,
   ul: (props) => <ul className={styles.ul} {...props} />,
   ol: (props) => <ol className={styles.ol} {...props} />,
