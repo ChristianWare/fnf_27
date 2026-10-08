@@ -20,7 +20,7 @@
 
 .img {
   object-fit: cover;
-  object-position: var(--slide-position, center);
+  object-position:top;
   border-radius: var(--slide-radius, 25px);
 }
 

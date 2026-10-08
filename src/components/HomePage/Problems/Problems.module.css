@@ -1,142 +1,249 @@
+.container {
+  margin: 0 0.5rem;
+  padding: 10rem 0rem;
+  border-radius: 3rem;
+  background-color: var(--white);
+}
+
+/* The intro and list on the left, the cards on the right. */
 .content {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 6rem;
   width: 100%;
 }
 
-.mapDataContainer {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 0.5rem;
+/* Sticks while the cards scroll past. */
+.left {
+  position: sticky;
+  top: 10rem;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5rem;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 460px;
+}
+
+.copy {
+  max-width: 420px;
+}
+
+/* ── The list of services. The one in view is black with an arrow. ── */
+.nav {
   width: 100%;
-  margin-left: .5rem;
+  max-width: 36rem;
+}
+
+.navList {
+  list-style: none;
+  border-top: 1px solid var(--light2);
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid var(--light2);
+  font-size: 1.8rem;
+  line-height: 1.3;
+  color: var(--text);
+  transition: color 0.3s ease;
+}
+
+.navArrow {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  opacity: 0;
+  transform: translateX(-0.6rem) rotate(90deg);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.navLinkActive {
+  color: var(--black);
+}
+
+.navLinkActive .navArrow {
+  opacity: 1;
+  transform: translateX(0) rotate(90deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .navLink:hover {
+    color: var(--black);
+  }
+}
+
+.navLink:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+/* ── The cards: one row per service, the text card next to its photo. ── */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  scroll-margin-top: 8rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  scroll-margin-top: 10rem;
+  min-height: 500px;
 }
 
 .card {
-  background-color: var(--light);
-  padding: 1rem;
-  border-radius: 3rem;
-  width: 100%;
-}
-
-.cardContent {
-  display: grid;
-  grid-template-columns: 4fr 2fr;
-  gap: 2rem;
-  width: 100%;
-}
-
-.left {
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 3rem;
-  padding-top: 5rem;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4rem;
+  min-height: 42rem;
+  padding: 2.4rem;
+  border-radius: 2.4rem;
+  background-color: var(--light);
 }
 
-/* Two columns that fill top to bottom: the first three bullets go on the
-   left, and the rest go on the right. */
+.cardTop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.2rem;
+}
+
+.number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.4rem;
+  height: 3.4rem;
+  padding: 0 1rem;
+  border-radius: 50px;
+  background-color: var(--white);
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  line-height: 1;
+  color: var(--black);
+}
+
+.title {
+  margin-top: 1.4rem;
+  font-size: max(22px, 2.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+  color: var(--black);
+}
+
+.price {
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
 .bullets {
-  margin-top: 4rem;
   list-style: none;
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-rows: repeat(3, auto);
-  justify-content: start;
-  gap: .5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
 }
 
 .bullets li {
   display: flex;
   align-items: flex-start;
-  gap: 0.8rem;
-  font-family: var(--IBMPlexMonoBold);
-  text-transform: uppercase;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  gap: 2rem;
+  font-family: var(--cdCopy);
   font-size: 14px;
+  line-height: 1.45;
   color: var(--text);
-  line-height: 1.4;
-  /* width: 60%; */
+  font-family: var(--IBMPlex);
+  text-transform: uppercase;
 }
 
 /* The plus sign in place of the dot. */
 .bullets li::before {
-  content: "+";
+  content: "-";
   flex: none;
+  color: var(--black);
 }
 
-.right {
-  width: 100%;
-  height: 100%;
+.btnContainer {
+  display: flex;
 }
 
-/* The image frame's size in this section. The sliding, the clipping and
-   the image itself live in the shared SlideInImage component. */
+/* The photo's frame. The sliding, the clipping and the image itself live
+   in the shared SlideInImage component. */
 .imgContainer {
   position: relative;
   width: 100%;
-  min-height: 550px;
-  margin-left: auto;
-  --slide-radius: 25px;
-  --slide-position: top;
+  min-height: 100%;
+  --slide-radius: 24px;
+  --slide-position: center;
 }
 
+/* The intro on top, the cards under it. */
 @media screen and (max-width: 1268px) {
-  .bullets {
-    grid-auto-flow: row;
-    grid-template-rows: none;
+  .content {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 5rem;
   }
 
-  .imgContainer {
-    height: 100%;
-  }
-
-  .cardContent {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media screen and (max-width: 968px) {
   .left {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .bullets {
-    margin-top: 2rem;
+    position: static;
+    gap: 3rem;
   }
 }
 
 @media screen and (max-width: 768px) {
-  .cardContent {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  /* The photo under the text card. */
+  .row {
     grid-template-columns: repeat(1, 1fr);
   }
 
+  .card {
+    min-height: 0;
+    padding: 2rem 1.6rem;
+  }
+
   .imgContainer {
-    min-height: 350px;
-  }
-/* 
-  .imgContainer::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(to left, var(--light), transparent);
-    pointer-events: none;
-  } */
-
-  .bullets li {
-    color: var(--text);
-    width: 100%;
-  }
-
-  .left {
-    padding-top: 2rem;
+    min-height: 56rem;
   }
 }
 
 @media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .card {
+    border-radius: 2rem;
+  }
+
   .imgContainer {
-    --slide-radius: 16px;
-    min-height: 450px;
+    --slide-radius: 20px;
+    min-height: 45rem;
   }
 }
