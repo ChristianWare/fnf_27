@@ -1,0 +1,317 @@
+.container {
+  padding: 10rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+  scroll-margin-top: 1rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+  padding-bottom: 5rem;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── The table (wide screens) ── */
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.table th,
+.table td {
+  padding: 2rem 1.6rem;
+  border-bottom: 1px solid var(--light2);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.corner {
+  width: 25%;
+  border-bottom: none !important;
+}
+
+.planHead {
+  font-size: max(17px, 1.8rem);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--black);
+  border-bottom: 1px solid var(--black) !important;
+}
+
+/* The Full Platform column stands out, like its card on the pricing page. */
+.featuredHead {
+  background-color: var(--black);
+  color: var(--white);
+  border-radius: 1.6rem 1.6rem 0 0;
+}
+
+.badge {
+  display: block;
+  margin-top: 0.8rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 70%);
+}
+
+.featuredCell {
+  background-color: var(--light);
+}
+
+tbody tr:last-child .featuredCell {
+  border-radius: 0 0 1.6rem 1.6rem;
+}
+
+.rowLabel {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--white);
+  font-family: var(--CreatoDisplayExtraBold);
+}
+
+/* ── Values (both versions) ── */
+.text {
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--black);
+}
+
+/* ── One column at a time (968px and below) ── */
+.mobile {
+  display: none;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.tab {
+  padding: 1.2rem 1.8rem;
+  border-radius: 50px;
+  border: 1px solid var(--light2);
+  background-color: var(--white);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--black);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tab:not(.tabActive):hover {
+    background-color: var(--light);
+  }
+}
+
+.tabActive {
+  border-color: var(--black);
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.panel {
+  border-radius: 2rem;
+  overflow: hidden;
+  background-color: var(--light);
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  padding: 2.2rem 2.4rem;
+  background-color: var(--light2);
+}
+
+.panelName {
+  font-size: max(18px, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--black);
+}
+
+.panelBadge {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 70%);
+}
+
+/* The Full Platform's panel gets the black header, like its column. */
+.panelFeatured .panelHead {
+  background-color: var(--black);
+}
+
+.panelFeatured .panelName {
+  color: var(--white);
+}
+
+.list {
+  animation: listIn 0.4s ease both;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  min-height: 6.4rem;
+  padding: 1.4rem 2.4rem;
+  border-top: 1px solid var(--light2);
+}
+
+.listRow:first-child {
+  border-top: none;
+}
+
+.listLabel {
+  color: var(--black);
+}
+
+.listValue {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: none;
+  max-width: 50%;
+  text-align: right;
+}
+
+@keyframes listIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.8rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list {
+    animation: none;
+  }
+}
+
+/* 1068px: the table fits the screen with tighter spacing, no scrolling. */
+@media screen and (max-width: 1068px) {
+  .table {
+    min-width: 0;
+  }
+
+  .corner {
+    width: 24%;
+  }
+
+  .table th,
+  .table td {
+    padding: 1.6rem 1.2rem;
+  }
+
+  .planHead {
+    font-size: 16px;
+  }
+}
+
+/* 968px: the tabs replace the table. */
+@media screen and (max-width: 968px) {
+  .tableWrap {
+    display: none;
+  }
+
+  .mobile {
+    display: flex;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  .top {
+    padding-bottom: 4rem;
+  }
+}
+
+/* 568px: the tabs stack, and the rows tighten up. */
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .tab {
+    padding: 1.2rem 1rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .panel {
+    border-radius: 1.6rem;
+  }
+
+  .panelHead {
+    padding: 1.8rem;
+  }
+
+  .listRow {
+    min-height: 5.6rem;
+    padding: 1.2rem 1.8rem;
+    gap: 1.6rem;
+  }
+}

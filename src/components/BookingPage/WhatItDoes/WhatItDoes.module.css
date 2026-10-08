@@ -1,0 +1,170 @@
+.container {
+  padding: 10rem 0rem;
+  background-color: var(--white);
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 5rem;
+  width: 100%;
+}
+
+/* The eyebrow and heading on the left, the count on the right. */
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3rem;
+}
+
+.topLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 640px;
+}
+
+.count {
+  flex: none;
+  padding-bottom: 0.6rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* Four cards to a row. */
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+/* One feature: the screenshot on top, the text under it, the same shape as
+   the Journal cards. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem 1rem 2rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+/* The top of a full-page screenshot, cropped to a landscape frame. */
+.imgContainer {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+.img {
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.5s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .img {
+    transform: scale(1.04);
+  }
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  padding: 0 1.5rem;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.tag,
+.number {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.tag {
+  padding: 0.6rem 1rem;
+  border-radius: 50px;
+  background-color: var(--light2);
+  color: var(--black);
+}
+
+.number {
+  color: var(--text);
+}
+
+.title {
+  color: var(--black);
+}
+
+.desc {
+  font-size: 16px;
+}
+
+/* Two to a row. */
+@media screen and (max-width: 1268px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+
+  .count {
+    padding-bottom: 0;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  .content {
+    gap: 4rem;
+  }
+}
+
+/* One column. */
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .imgContainer {
+    aspect-ratio: 3 / 2;
+  }
+}
