@@ -1,0 +1,359 @@
+.container {
+  margin: 0 0.5rem;
+  padding: 8rem 3rem;
+  border-radius: 3rem;
+  background-color: var(--white);
+  scroll-margin-top: 2rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 5rem;
+  width: 100%;
+}
+
+/* The score on the left, the headline on the right. */
+.top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 6rem;
+  padding-bottom: 1rem;
+}
+
+.scoreBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.2rem;
+}
+
+.counter {
+  width: 100%;
+  max-width: 22rem;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--light2);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding-top: 1.4rem;
+  font-family:
+    var(--CreatoDisplayMedium, "Creato Display"), system-ui, sans-serif;
+  font-size: 8rem;
+  line-height: 0.9;
+  letter-spacing: -3px;
+  color: var(--black);
+}
+
+.scoreOf {
+  font-size: 3rem;
+  letter-spacing: -1px;
+  color: var(--text);
+}
+
+.scoreLabel {
+  font-size: 1.6rem;
+  color: var(--text);
+}
+
+.headline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 760px;
+  font-size: max(30px, 4.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.8px;
+}
+
+.copy {
+  max-width: 560px;
+}
+
+/* The top three, as cards with an icon. */
+.cards {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4rem;
+  min-height: 24rem;
+  padding: 2.2rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardIcon {
+  width: 2.6rem;
+  height: 2.6rem;
+  color: var(--black);
+}
+
+.cardNumber {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cardTitle {
+  font-size: max(18px, 2rem);
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+}
+
+.cardFound {
+  color: var(--black);
+}
+
+/* Every check, in rows. */
+.checks {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--light2);
+}
+
+.check {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.8rem 0;
+  border-bottom: 1px solid var(--light2);
+}
+
+.checkIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1rem;
+  background-color: var(--light);
+}
+
+.checkText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.checkName {
+  font-size: 1.8rem;
+  line-height: 1.3;
+  color: var(--black);
+}
+
+.checkFound {
+  font-family: var(--cdCopy);
+  font-size: 1.6rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.status {
+  flex: none;
+  padding: 0.8rem 1.2rem;
+  border-radius: 50px;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.statusPass {
+  background-color: var(--accent1);
+  color: var(--black);
+}
+
+.statusFail {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+/* The link and the PDF, side by side. */
+.keep {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.keepCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  padding: 2.2rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.label {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.keepText {
+  color: var(--black);
+}
+
+.emailRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.emailInput {
+  flex: 1 1 24rem;
+  min-width: 0;
+  padding: 0 1.8rem;
+  border: none;
+  border-radius: 50px;
+  background-color: var(--white);
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+.emailInput::placeholder {
+  color: var(--textDark);
+}
+
+.emailInput:focus {
+  outline: 2px solid var(--black);
+  outline-offset: -2px;
+}
+
+.sent {
+  color: var(--black);
+}
+
+.emailNote {
+  max-width: 520px;
+  font-size: 1.6rem;
+}
+
+/* The next step, by score: one card, or two when the Google Business
+   Profile check failed too. */
+.next {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+  gap: 0.8rem;
+}
+
+.nextCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 3rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.nextDark {
+  background-color: var(--black);
+}
+
+.nextDark .label {
+  color: rgb(255 255 255 / 70%);
+}
+
+.nextText {
+  max-width: 620px;
+  font-size: max(18px, 2rem);
+  line-height: 1.35;
+  color: var(--black);
+}
+
+.nextDark .nextText {
+  color: var(--white);
+}
+
+@media screen and (max-width: 1268px) {
+  .cards {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .card {
+    min-height: 0;
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .top {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 4rem;
+  }
+
+  .keep {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 6rem 1.5rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+  }
+
+  .score {
+    font-size: 6.4rem;
+  }
+
+  .check {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .status {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .nextCard {
+    padding: 2.4rem 2rem;
+  }
+}
