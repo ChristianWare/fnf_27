@@ -99,7 +99,15 @@
   min-height: 24rem;
   padding: 2.2rem;
   border-radius: 2rem;
-  background-color: var(--light);
+  background-color: var(--accent1);
+}
+
+.card:nth-child(2) {
+  background-color: var(--accent2);
+}
+
+.card:nth-child(3) {
+  background-color: var(--accent3);
 }
 
 .cardTop {
@@ -127,14 +135,13 @@
   gap: 1rem;
 }
 
-.cardTitle {
-  font-size: max(18px, 2rem);
-  line-height: 1.25;
-  letter-spacing: -0.2px;
-}
-
 .cardFound {
   color: var(--black);
+  font-family: var(--IBMPlex);
+  text-transform: uppercase;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 7rem;
 }
 
 /* Every check, in rows. */

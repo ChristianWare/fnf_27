@@ -81,7 +81,7 @@ export default function WhatItChecks() {
                   <span className={styles.number} aria-hidden='true'>
                     0{check.id}
                   </span>
-                  <h3 className={`${styles.title} h4`}>{check.title}</h3>
+                  <h3 className={`${styles.title} h5`}>{check.title}</h3>
                   <span className={styles.tag}>{check.tag}</span>
                 </div>
                 <div className={styles.band}>

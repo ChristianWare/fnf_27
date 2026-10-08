@@ -99,7 +99,7 @@ export default function AuditTool() {
             <EyeBrow text='Free website audit' />
             <h1
               id='audit-heading'
-              className={styles.heading}
+              className={`${styles.heading} heading2`}
               data-reveal
               data-reveal-style='fade'
             >

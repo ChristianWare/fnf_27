@@ -88,11 +88,11 @@ export default function AuditResults({ result }: { result: AuditResult }) {
             return (
               <li className={styles.card} key={check.id}>
                 <div className={styles.cardTop}>
-                  <Icon className={styles.cardIcon} aria-hidden='true' />
+                  {/* <Icon className={styles.cardIcon} aria-hidden='true' /> */}
                   <span className={styles.cardNumber}>0{index + 1}</span>
                 </div>
                 <div className={styles.cardText}>
-                  <h3 className={styles.cardTitle}>{check.name}</h3>
+                  <h3 className={`${styles.cardTitle} h5`}>{check.name}</h3>
                   <p className={styles.cardFound}>{check.found}</p>
                   <p className={styles.cardWhy}>{check.why}</p>
                 </div>
