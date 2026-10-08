@@ -1,0 +1,142 @@
+/* Two cards side by side, as tall as most screens. */
+.container {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0 0.5rem;
+  min-height: clamp(64rem, calc(100svh - 9rem), 90rem);
+}
+
+/* The text card: heading and buttons at the top, quick facts at the
+   bottom. */
+.textCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6rem;
+  padding: 8rem 3rem 4rem;
+  border-radius: 3rem;
+  background-color: var(--white);
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 680px;
+}
+
+.copy {
+  max-width: 540px;
+}
+
+.btnContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Label over value, three to a row, with a line between the rows. */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 2.4rem;
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 2rem 0;
+}
+
+.fact:nth-child(n + 4) {
+  border-top: 1px solid var(--light2);
+}
+
+.factLabel {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.factValue {
+  font-size: 1.6rem;
+  color: var(--black);
+}
+
+.factLink {
+  color: var(--black);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.photo {
+  position: relative;
+  overflow: hidden;
+  border-radius: 3rem;
+  background-color: var(--white);
+}
+
+.img {
+  object-fit: cover;
+  object-position: center top;
+}
+
+@media screen and (max-width: 1268px) {
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fact:nth-child(n + 3) {
+    border-top: 1px solid var(--light2);
+  }
+}
+
+/* The photo under the text card. */
+@media screen and (max-width: 968px) {
+  .container {
+    grid-template-columns: repeat(1, 1fr);
+    min-height: 0;
+  }
+
+  .photo {
+    height: 70vw;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .textCard {
+    gap: 4rem;
+    padding: 6rem 1.5rem 2rem;
+    border-radius: 2rem;
+  }
+
+  .heading {
+    letter-spacing: -0.8px;
+  }
+
+  .photo {
+    height: 100vw;
+    border-radius: 2rem;
+  }
+
+  .facts {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .fact {
+    padding: 1.6rem 0;
+  }
+
+  .fact:nth-child(n + 2) {
+    border-top: 1px solid var(--light2);
+  }
+}

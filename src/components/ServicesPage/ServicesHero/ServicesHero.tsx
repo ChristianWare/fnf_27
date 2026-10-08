@@ -29,7 +29,7 @@ const services = [
     desc: "Hotels, venues, corporate accounts and events in your market.",
     value: "30 days",
     note: "Free, no card",
-    href: "/leads",
+    href: "/services/leads",
     src: LeadsImg,
     alt: "An operator at his desk with a tablet",
   },

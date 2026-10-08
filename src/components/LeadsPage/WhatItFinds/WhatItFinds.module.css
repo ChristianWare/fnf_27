@@ -1,0 +1,236 @@
+/* The dark card with the fixed background behind it, the same as Templates
+   vs Custom on the Websites page. The component sets its height while the
+   section is pinned. */
+.container {
+  position: relative;
+  isolation: isolate;
+  margin: 0 0.5rem;
+  border-radius: 3rem;
+  clip-path: inset(0 round 3rem);
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.bgImg {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Darkens the image so the white text stays readable. */
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 10%);
+}
+
+/* ── The normal layout: the heading, then the cards in a column. Used at
+   968px and below, and with motion turned off. ── */
+.stage {
+  --card-w: min(34rem, calc(100vw - 4rem));
+  --gap: 0.8rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rem;
+  padding: 10rem 3rem;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  text-align: center;
+}
+
+.heading {
+  max-width: 640px;
+  color: var(--white);
+  text-wrap: balance;
+}
+
+.cards {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+  max-width: var(--card-w);
+}
+
+/* One kind of lead: a frosted card, with the list in a darker band along
+   the bottom. */
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6rem;
+  width: 100%;
+  min-height: 44rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 1.6rem;
+  /* The Templates vs Custom frost, over a dark base so a card hides the
+     one under it while they're stacked. */
+  background: linear-gradient(#ffffff26, #ffffff26) rgb(13 13 14 / 55%);
+  backdrop-filter: blur(42px);
+  -webkit-backdrop-filter: blur(42px);
+}
+
+.cardTop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.4rem;
+  padding: 2.2rem 2.2rem 0;
+}
+
+.number {
+  padding: 0.7rem 1rem;
+  border-radius: 50px;
+  background-color: rgb(255 255 255 / 18%);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--white);
+}
+
+.title {
+  color: var(--white);
+}
+
+.tag {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.desc {
+  margin-top: 1rem;
+  color: rgb(255 255 255 / 80%);
+}
+
+/* The list, two to a row, in the darker band. */
+.items {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem 1.6rem;
+  padding: 1.8rem 2.2rem;
+  background-color: rgb(0 0 0 / 14%);
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--white);
+}
+
+/* The plus sign in place of the dot. */
+.item::before {
+  content: "+";
+  flex: none;
+  color: rgb(255 255 255 / 60%);
+}
+
+/* ── The pinned layout. The component turns it on (data-pinned) on wide
+   screens and sets these each frame:
+     --y1 --y2 --y3   1 while the card is below the screen, 0 in place
+     --o1 --o2        0 while the card is covered by the next one
+     --spread         0 while the cards are stacked, 1 in a row ── */
+.container[data-pinned="true"] .stage {
+  --card-w: min(34rem, calc((100vw - 6rem) / 3));
+  /* How far the outer cards slide: one card plus the gap. */
+  --shift: calc(var(--card-w) + var(--gap));
+
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  padding: 8rem 3rem 0;
+  overflow: hidden;
+}
+
+/* The stack sits just past the middle of the screen. */
+.container[data-pinned="true"] .cards {
+  position: absolute;
+  top: 56%;
+  left: 50%;
+  display: block;
+  width: var(--card-w);
+  max-width: none;
+  height: 0;
+  transform: translate(-50%, 0);
+}
+
+/* Each card starts below the screen, rises into the same spot, and then
+   slides sideways by its share of --spread. Later cards sit on top. */
+.container[data-pinned="true"] .card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: var(--o, 1);
+  transform: translate3d(
+    calc(var(--dx, 0px) * var(--spread, 0)),
+    calc(-50% + var(--y, 1) * 110vh),
+    0
+  );
+  will-change: transform, opacity;
+}
+
+.container[data-pinned="true"] .card:nth-child(1) {
+  --y: var(--y1, 1);
+  --o: var(--o1, 1);
+  --dx: calc(-1 * var(--shift));
+  z-index: 1;
+}
+
+.container[data-pinned="true"] .card:nth-child(2) {
+  --y: var(--y2, 1);
+  --o: var(--o2, 1);
+  --dx: 0px;
+  z-index: 2;
+}
+
+.container[data-pinned="true"] .card:nth-child(3) {
+  --y: var(--y3, 1);
+  --dx: var(--shift);
+  z-index: 3;
+}
+
+@media screen and (max-width: 968px) {
+  .stage {
+    padding: 7rem 3rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .container {
+    border-radius: 2rem;
+    clip-path: inset(0 round 2rem);
+  }
+
+  .stage {
+    --card-w: calc(100vw - 4rem);
+
+    padding: 6rem 1.5rem;
+  }
+
+  .items {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
