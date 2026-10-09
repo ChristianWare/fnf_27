@@ -43,6 +43,21 @@ export default function Blueprint({
   const counts = blueprintCounts(pages);
   const page = pages.find((p) => p.id === activeId) ?? pages[0];
 
+  // Nothing written yet. This comes before anything that reads `page`:
+  // the React Compiler checks what the functions below depend on
+  // (page.name, page.sections) on every render, so with no page at all
+  // those checks would throw before we ever got here.
+  if (!page) {
+    return (
+      <section className={styles.panel}>
+        <p className={styles.copy}>
+          We&apos;re writing your blueprint. It shows up here, page by page, as
+          soon as it&apos;s ready for you.
+        </p>
+      </section>
+    );
+  }
+
   const update = (
     sectionId: string,
     change: (section: BlueprintSection) => BlueprintSection,
@@ -109,17 +124,6 @@ export default function Blueprint({
       },
     );
   };
-
-  if (!page) {
-    return (
-      <section className={styles.panel}>
-        <p className={styles.copy}>
-          We&apos;re writing your blueprint. It shows up here, page by page, as
-          soon as it&apos;s ready for you.
-        </p>
-      </section>
-    );
-  }
 
   const inReview = page.sections.filter((s) => s.status === "REVIEW").length;
 
