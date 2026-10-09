@@ -14,6 +14,8 @@ type Angle = {
   icon: IconName;
   /** Who to ask for. */
   who: string;
+  /** Their job titles, for finding them (most likely first). */
+  titles: string[];
   why: string;
   season: string;
   /** What to offer first. */
@@ -30,6 +32,13 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     short: "Hotel",
     icon: "home",
     who: "the Director of Sales or the Chief Concierge",
+    titles: [
+      "Director of Sales",
+      "Chief Concierge",
+      "Concierge",
+      "Director of Sales and Marketing",
+      "General Manager",
+    ],
     why: "Guests need airport runs, dinner reservations and tee times, and the concierge needs a car they can count on at short notice.",
     season:
       "January to April is peak season in the Valley. Summer is quieter, but corporate groups keep coming.",
@@ -44,6 +53,13 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     short: "Venue",
     icon: "star",
     who: "the Events Manager or Venue Coordinator",
+    titles: [
+      "Events Manager",
+      "Venue Coordinator",
+      "Event Coordinator",
+      "Venue Manager",
+      "Director of Events",
+    ],
     why: "Every wedding and party needs the couple, the wedding party and the guests moved between hotels and the venue, and couples ask the venue who to call.",
     season:
       "Wedding season runs October to May here. Couples book transportation 3 to 6 months out.",
@@ -58,6 +74,12 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     short: "Corporate",
     icon: "users",
     who: "the Travel Manager or the CEO's Executive Assistant",
+    titles: [
+      "Travel Manager",
+      "Executive Assistant to the CEO",
+      "Executive Assistant",
+      "Office Manager",
+    ],
     why: "Executives and visiting clients need rides between the airport, the office and dinners, and one account can mean rides every week.",
     season:
       "Steady all year, with peaks around quarterly meetings, board visits and conference season.",
@@ -71,6 +93,12 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     short: "Law firm",
     icon: "shield",
     who: "the Office Manager or the Managing Partner's assistant",
+    titles: [
+      "Office Manager",
+      "Firm Administrator",
+      "Office Administrator",
+      "Executive Assistant",
+    ],
     why: "Partners, out-of-town clients and expert witnesses need discreet, on-time rides to court, depositions and the airport.",
     season: "Steady all year. Trial dates bring busy weeks.",
     offer:
@@ -84,6 +112,7 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     short: "Funeral home",
     icon: "clock",
     who: "the Funeral Director",
+    titles: ["Funeral Director", "General Manager", "Owner"],
     why: "Families need a limousine to and from the service and the cemetery, often at a few days' notice.",
     season: "All year, always at short notice.",
     offer: "family limousines on short notice, with a flat rate per service",
@@ -96,6 +125,12 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     short: "Golf club",
     icon: "target",
     who: "the Director of Membership or the Events Director",
+    titles: [
+      "Director of Membership",
+      "Membership Director",
+      "Events Director",
+      "General Manager",
+    ],
     why: "Members, guests and tournament players need rides between the club, resorts and the airport.",
     season:
       "Tournament and member-guest season runs January to April, the busiest stretch of the year.",
@@ -109,6 +144,11 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     short: "Casino",
     icon: "sparkle",
     who: "the VIP Host Manager",
+    titles: [
+      "VIP Host Manager",
+      "Executive Host",
+      "Director of Player Development",
+    ],
     why: "VIP hosts comp rides for their best players, from the airport and home after a late night.",
     season: "All year, with big weekends around concerts and holidays.",
     offer: "on-call cars for the VIP hosts, billed to the casino",
@@ -121,6 +161,11 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     short: "Senior living",
     icon: "user",
     who: "the Executive Director or the Life Enrichment Director",
+    titles: [
+      "Executive Director",
+      "Life Enrichment Director",
+      "Activities Director",
+    ],
     why: "Residents need rides to appointments, family events and the airport, and families pay for a service they trust.",
     season: "All year, with outings around the holidays.",
     offer: "a resident rate and a standing weekly appointment run",
@@ -133,6 +178,7 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     short: "Tours",
     icon: "globe",
     who: "the Owner or the Tour Operations Manager",
+    titles: ["Owner", "Tour Operations Manager", "Operations Manager"],
     why: "Tour and tasting groups need a driver for the day, and they send work to the car services they trust.",
     season: "Spring and fall are the busy seasons.",
     offer: "day-trip packages for their groups, and referrals both ways",
@@ -148,6 +194,12 @@ export const EVENT_TYPES: Record<EventType, Angle> = {
     short: "Gala",
     icon: "sparkle",
     who: "the Event Chair or the Development Director",
+    titles: [
+      "Event Chair",
+      "Development Director",
+      "Director of Development",
+      "Events Manager",
+    ],
     why: "Sponsors and honorees arrive together and want a proper entrance, and after an open bar everyone needs a safe ride home.",
     season: "",
     offer:
@@ -161,6 +213,12 @@ export const EVENT_TYPES: Record<EventType, Angle> = {
     short: "Conference",
     icon: "users",
     who: "the Event Manager or the speaker coordinator",
+    titles: [
+      "Event Manager",
+      "Conference Manager",
+      "Speaker Coordinator",
+      "Director of Events",
+    ],
     why: "Speakers and executives fly in and need to get between the airport, their hotel and the venue on time.",
     season: "",
     offer:
@@ -174,6 +232,7 @@ export const EVENT_TYPES: Record<EventType, Angle> = {
     short: "Business",
     icon: "users",
     who: "the Events Director",
+    titles: ["Events Director", "Event Manager", "Director of Events"],
     why: "Honorees, board members and guests want to arrive together and get home safely.",
     season: "",
     offer: "rides for honorees and the board, with a member rate",
@@ -186,6 +245,7 @@ export const EVENT_TYPES: Record<EventType, Angle> = {
     short: "Festival",
     icon: "zap",
     who: "the Festival Director or the VIP and hospitality lead",
+    titles: ["Festival Director", "Hospitality Manager", "VIP Manager"],
     why: "Parking is the worst part of a festival, so groups and VIP guests would rather ride together.",
     season: "",
     offer:
@@ -199,6 +259,11 @@ export const EVENT_TYPES: Record<EventType, Angle> = {
     short: "Concert",
     icon: "zap",
     who: "the venue's Premium Seating or Suites Manager",
+    titles: [
+      "Premium Seating Manager",
+      "Suites Manager",
+      "Director of Premium Seating",
+    ],
     why: "Suite holders and groups want to arrive together and skip the parking lots.",
     season: "",
     offer: "group rides for suite holders and a pickup point after the show",
@@ -211,6 +276,11 @@ export const EVENT_TYPES: Record<EventType, Angle> = {
     short: "Graduation",
     icon: "star",
     who: "the Events Office or Parent and Family Programs",
+    titles: [
+      "Events Coordinator",
+      "Director of Events",
+      "Parent and Family Programs Director",
+    ],
     why: "Families fly in for the day and need to get between the airport, hotels and the ceremony.",
     season: "",
     offer: "family packages from the airport and the hotels near campus",
@@ -223,6 +293,7 @@ export const EVENT_TYPES: Record<EventType, Angle> = {
     short: "Wedding show",
     icon: "star",
     who: "the Show Producer or Vendor Coordinator",
+    titles: ["Show Producer", "Vendor Coordinator", "Owner"],
     why: "Hundreds of couples book their vendors at these shows, and the producer decides who gets a booth.",
     season: "",
     offer: "a booth or featured-vendor spot, with a show-only rate for couples",
@@ -235,6 +306,11 @@ export const EVENT_TYPES: Record<EventType, Angle> = {
     short: "Tournament",
     icon: "target",
     who: "the Tournament Director or the Sponsorship Manager",
+    titles: [
+      "Tournament Director",
+      "Sponsorship Manager",
+      "Executive Director",
+    ],
     why: "Sponsors and players move between the course, resorts and the airport all week.",
     season: "",
     offer: "player and sponsor transportation for the week of the tournament",
@@ -247,6 +323,11 @@ export const EVENT_TYPES: Record<EventType, Angle> = {
     short: "Auction",
     icon: "zap",
     who: "the VIP Services or Bidder Relations Manager",
+    titles: [
+      "VIP Services Manager",
+      "Bidder Relations Manager",
+      "Director of Events",
+    ],
     why: "Bidders fly in from all over and expect a car from the airport to the auction and back.",
     season: "",
     offer: "airport-to-auction cars for VIP bidders all week",
@@ -300,6 +381,49 @@ export const SOURCES: Record<
     text: "Pro-ams and charity tournaments with sponsors and players to move.",
     icon: "target",
   },
+  GOOGLE: {
+    label: "Google Events",
+    text: "Galas, conferences and fundraisers listed on Google, checked weekly.",
+    icon: "search",
+  },
+};
+
+/**
+ * How the nightly run finds each kind of account on Google. A search that
+ * comes back full is split into four smaller areas, `depth` times at most.
+ */
+export const SEARCHES: Record<
+  AccountCategory,
+  { text: string; type?: string; pages: number; depth: number }[]
+> = {
+  HOTEL: [
+    { text: "hotel", type: "lodging", pages: 3, depth: 4 },
+    { text: "resort", type: "resort_hotel", pages: 2, depth: 3 },
+  ],
+  VENUE: [
+    { text: "wedding venue", type: "wedding_venue", pages: 3, depth: 3 },
+    { text: "event venue", type: "event_venue", pages: 2, depth: 3 },
+  ],
+  CORPORATE: [
+    {
+      text: "corporate headquarters",
+      type: "corporate_office",
+      pages: 2,
+      depth: 2,
+    },
+  ],
+  LAW: [{ text: "law firm", type: "lawyer", pages: 2, depth: 2 }],
+  FUNERAL: [{ text: "funeral home", type: "funeral_home", pages: 2, depth: 3 }],
+  GOLF: [
+    { text: "golf club", type: "golf_course", pages: 2, depth: 3 },
+    { text: "country club", pages: 1, depth: 2 },
+  ],
+  CASINO: [{ text: "casino", type: "casino", pages: 1, depth: 2 }],
+  SENIOR: [{ text: "senior living community", pages: 2, depth: 3 }],
+  TOURS: [
+    { text: "tour company", type: "tour_agency", pages: 1, depth: 2 },
+    { text: "winery", type: "winery", pages: 1, depth: 2 },
+  ],
 };
 
 export const STAGES: {

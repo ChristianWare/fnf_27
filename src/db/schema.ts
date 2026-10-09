@@ -6,12 +6,24 @@
 // migration into /drizzle, then `npm run db:migrate`.
 
 import type { Growth } from "@/lib/dashboard/types";
+import type { Contact, Operator, Script } from "@/lib/leads/types";
+import {
+  ACCOUNT_CATEGORIES,
+  ACTIVITY_KINDS,
+  CALENDAR_SOURCES,
+  EVENT_KINDS,
+  LEAD_STAGES,
+  SOURCE_IDS,
+} from "../lib/leads/kinds";
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  doublePrecision,
   index,
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -60,6 +72,12 @@ export const clients = pgTable(
     leadsStartedAt: at("leads_started_at"),
     leadsTrialEndsAt: at("leads_trial_ends_at"),
     leadsSubscriptionId: text("leads_subscription_id").unique(),
+    /** The next 1st (or when it stops, if cancelling), as Stripe last told us. */
+    leadsNextBillingAt: at("leads_next_billing_at"),
+    /** When the trial or plan ended. Saved leads are kept 90 days after. */
+    leadsEndedAt: at("leads_ended_at"),
+    /** The studio's switch: off shows "being set up" instead of the tool. */
+    leadsEnabled: boolean("leads_enabled").notNull().default(true),
     createdAt: created(),
     updatedAt: updated(),
   },
@@ -429,4 +447,301 @@ export const appSettings = pgTable("app_settings", {
   key: text("key").primaryKey(),
   value: jsonb("value").notNull(),
   updatedAt: updated(),
+});
+
+/* ── The Leads Tool ──
+ *
+ * Shared by everyone: markets (the areas the nightly jobs cover), the
+ * places and events found in them, and what we've learned about each
+ * business. Per client: their settings, the leads they saved and what
+ * they did with them.
+ *
+ * Google's terms: a place ID can be kept for good; everything else Google
+ * tells us about a place (name, address, location, phone, rating) is kept
+ * at most 30 days, then refreshed or cleared. */
+
+export const leadsMarkets = pgTable("leads_markets", {
+  id: text("id").primaryKey(),
+  /** "Phoenix area". */
+  name: text("name").notNull(),
+  /** The city and state it's searched by: "Phoenix", "AZ". */
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  lat: doublePrecision("lat").notNull(),
+  lng: doublePrecision("lng").notNull(),
+  radiusMiles: integer("radius_miles").notNull().default(75),
+  /** An admin paused it: no nightly runs, even with clients in it. */
+  paused: boolean("paused").notNull().default(false),
+  /** Until its first run finishes, its clients see "being set up". */
+  firstLoadedAt: at("first_loaded_at"),
+  lastRunAt: at("last_run_at"),
+  createdAt: created(),
+});
+
+/** Accounts: businesses found on Google, by place ID. */
+export const leadsPlaces = pgTable(
+  "leads_places",
+  {
+    /** Google's place ID. */
+    id: text("id").primaryKey(),
+    marketId: text("market_id")
+      .notNull()
+      .references(() => leadsMarkets.id, { onDelete: "cascade" }),
+    category: text("category", { enum: ACCOUNT_CATEGORIES }).notNull(),
+    firstSeenAt: at("first_seen_at").notNull().defaultNow(),
+    /** The last night a search still returned it. */
+    lastSeenAt: at("last_seen_at").notNull().defaultNow(),
+    /** Google's details, all cleared together after 30 days. */
+    name: text("name"),
+    address: text("address"),
+    city: text("city"),
+    lat: doublePrecision("lat"),
+    lng: doublePrecision("lng"),
+    rating: doublePrecision("rating"),
+    reviews: integer("reviews"),
+    phone: text("phone"),
+    website: text("website"),
+    types: jsonb("types").$type<string[]>(),
+    detailsAt: at("details_at"),
+    /** Closed for good, says Google. Hidden. */
+    closed: boolean("closed").notNull().default(false),
+    /** In the news lately (an opening, a move), from the weekly check. */
+    news: jsonb("news").$type<{ title: string; url: string; at: string }>(),
+  },
+  (t) => [
+    index("leads_places_market_idx").on(t.marketId),
+    index("leads_places_details_idx").on(t.detailsAt),
+  ],
+);
+
+/** Events: dates with an organizer to pitch, from every source. */
+export const leadsEvents = pgTable(
+  "leads_events",
+  {
+    id: text("id").primaryKey(),
+    marketId: text("market_id")
+      .notNull()
+      .references(() => leadsMarkets.id, { onDelete: "cascade" }),
+    type: text("type", { enum: EVENT_KINDS }).notNull(),
+    source: text("source", { enum: SOURCE_IDS }).notNull(),
+    /** Each source's id for it ("TICKETMASTER:abc"), so it's added once. */
+    keys: jsonb("keys").$type<string[]>().notNull().default([]),
+    name: text("name").notNull(),
+    startsAt: at("starts_at").notNull(),
+    endsAt: at("ends_at"),
+    /** Only the day is known. */
+    allDay: boolean("all_day").notNull().default(false),
+    venue: text("venue").notNull().default(""),
+    address: text("address"),
+    city: text("city").notNull().default(""),
+    /** From the source, or from Google for the venue (then 30 days). */
+    lat: doublePrecision("lat"),
+    lng: doublePrecision("lng"),
+    geoFromGoogleAt: at("geo_from_google_at"),
+    /** The venue on Google, for its photo and the map. Kept for good. */
+    venuePlaceId: text("venue_place_id"),
+    organizer: text("organizer").notNull().default(""),
+    organizerUrl: text("organizer_url"),
+    url: text("url"),
+    guests: integer("guests"),
+    phone: text("phone"),
+    description: text("description"),
+    foundAt: at("found_at").notNull().defaultNow(),
+    updatedAt: updated(),
+  },
+  (t) => [index("leads_events_market_idx").on(t.marketId, t.startsAt)],
+);
+
+/** Venues we've looked up on Google, so each one is looked up once. */
+export const leadsVenues = pgTable("leads_venues", {
+  /** The venue's name and city, lowercased. */
+  key: text("key").primaryKey(),
+  placeId: text("place_id"),
+  lastLookedAt: at("last_looked_at").notNull().defaultNow(),
+});
+
+/**
+ * What we've learned about a business, shared by every client and
+ * refreshed every 90 days: whether they have a car service, a line about
+ * them, and the decision-maker. Keyed by place ID, or "org:" and the
+ * organizer's website for events.
+ */
+export const leadsResearch = pgTable("leads_research", {
+  key: text("key").primaryKey(),
+  domain: text("domain"),
+  carService: text("car_service", { enum: ["NONE", "HAS", "UNKNOWN"] }),
+  carServiceNote: text("car_service_note"),
+  /** A line or two about them, from their website. */
+  brief: text("brief"),
+  checkedAt: at("checked_at"),
+  /** The person who books the rides. Work emails only. */
+  contact: jsonb("contact").$type<
+    Contact & { source: "TEAM_PAGE" | "APOLLO" }
+  >(),
+  contactCheckedAt: at("contact_checked_at"),
+  error: text("error"),
+});
+
+/** Calendars an admin added for a market: iCal, RSS or event pages. */
+export const leadsSources = pgTable(
+  "leads_sources",
+  {
+    id: text("id").primaryKey(),
+    marketId: text("market_id")
+      .notNull()
+      .references(() => leadsMarkets.id, { onDelete: "cascade" }),
+    label: text("label").notNull(),
+    url: text("url").notNull(),
+    /** How it's labeled on the leads it finds. */
+    source: text("source", { enum: CALENDAR_SOURCES }).notNull(),
+    /** The kind of event, when its titles don't say. */
+    eventType: text("event_type", { enum: EVENT_KINDS }),
+    enabled: boolean("enabled").notNull().default(true),
+    lastRunAt: at("last_run_at"),
+    lastCount: integer("last_count"),
+    lastError: text("last_error"),
+    createdAt: created(),
+  },
+  (t) => [index("leads_sources_market_idx").on(t.marketId)],
+);
+
+/** Each market's nightly run (or "Run now"), step by step. */
+export const leadsRuns = pgTable(
+  "leads_runs",
+  {
+    id: text("id").primaryKey(),
+    marketId: text("market_id")
+      .notNull()
+      .references(() => leadsMarkets.id, { onDelete: "cascade" }),
+    /** The Arizona date it ran for, "2026-10-09". */
+    day: text("day").notNull(),
+    trigger: text("trigger", { enum: ["NIGHTLY", "MANUAL"] }).notNull(),
+    status: text("status", { enum: ["RUNNING", "DONE", "FAILED"] })
+      .notNull()
+      .default("RUNNING"),
+    /** The steps finished so far, and where the current one got to. */
+    cursor: jsonb("cursor")
+      .$type<{ done: string[]; queue?: unknown[] }>()
+      .notNull()
+      .default({ done: [] }),
+    counts: jsonb("counts")
+      .$type<Record<string, number>>()
+      .notNull()
+      .default({}),
+    errors: jsonb("errors").$type<string[]>().notNull().default([]),
+    /** One worker at a time: whoever holds this, until it passes. */
+    lockedUntil: at("locked_until"),
+    startedAt: at("started_at").notNull().defaultNow(),
+    finishedAt: at("finished_at"),
+  },
+  (t) => [
+    index("leads_runs_market_idx").on(t.marketId, t.startedAt),
+    // One run under way per market at a time.
+    uniqueIndex("leads_runs_one_running_idx")
+      .on(t.marketId)
+      .where(sql`${t.status} = 'RUNNING'`),
+  ],
+);
+
+/** A client's Leads Tool settings. */
+export const leadsSettings = pgTable("leads_settings", {
+  clientId: text("client_id")
+    .primaryKey()
+    .references(() => clients.id, { onDelete: "cascade" }),
+  baseCity: text("base_city").notNull(),
+  baseLat: doublePrecision("base_lat").notNull(),
+  baseLng: doublePrecision("base_lng").notNull(),
+  radius: integer("radius").notNull().default(50),
+  categories: jsonb("categories")
+    .$type<(typeof ACCOUNT_CATEGORIES)[number][]>()
+    .notNull(),
+  eventTypes: jsonb("event_types")
+    .$type<(typeof EVENT_KINDS)[number][]>()
+    .notNull(),
+  /** How their scripts introduce them. */
+  operator: jsonb("operator").$type<Operator>().notNull(),
+  marketId: text("market_id").references(() => leadsMarkets.id, {
+    onDelete: "set null",
+  }),
+  updatedAt: updated(),
+});
+
+/** The leads a client saved. */
+export const leadsSaved = pgTable(
+  "leads_saved",
+  {
+    clientId: text("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    /** A place ID (account) or an event id. */
+    targetId: text("target_id").notNull(),
+    kind: text("kind", { enum: ["ACCOUNT", "EVENT"] }).notNull(),
+    stage: text("stage", { enum: LEAD_STAGES }).notNull().default("NEW"),
+    savedAt: at("saved_at").notNull().defaultNow(),
+    remindAt: at("remind_at"),
+    valueCents: integer("value_cents"),
+    per: text("per", { enum: ["MONTH", "ONCE"] }),
+    wonAt: at("won_at"),
+    /** The email, text and call opener, written for this client. */
+    scripts: jsonb("scripts").$type<Script>(),
+    scriptsAt: at("scripts_at"),
+    /** How many times they asked for new scripts today, and which day. */
+    rewrites: jsonb("rewrites").$type<{ day: string; count: number }>(),
+    updatedAt: updated(),
+  },
+  (t) => [primaryKey({ columns: [t.clientId, t.targetId] })],
+);
+
+export const leadsActivity = pgTable(
+  "leads_activity",
+  {
+    id: text("id").primaryKey(),
+    clientId: text("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    targetId: text("target_id").notNull(),
+    kind: text("kind", { enum: ACTIVITY_KINDS }).notNull(),
+    text: text("text").notNull(),
+    at: at("at").notNull().defaultNow(),
+  },
+  (t) => [index("leads_activity_lead_idx").on(t.clientId, t.targetId)],
+);
+
+/** Drive times from a base to a lead, from Google (kept 30 days). */
+export const leadsDrives = pgTable(
+  "leads_drives",
+  {
+    /** The base, rounded: "33.449,-112.074". */
+    fromKey: text("from_key").notNull(),
+    targetId: text("target_id").notNull(),
+    minutes: integer("minutes").notNull(),
+    miles: integer("miles").notNull(),
+    at: at("at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.fromKey, t.targetId] })],
+);
+
+/**
+ * What the Leads Tool's outside services were used for, per day: by a
+ * client (saving a lead) or by a market's nightly run (clientId empty).
+ * Costs are estimates, in millionths of a dollar.
+ */
+export const leadsUsage = pgTable(
+  "leads_usage",
+  {
+    /** Arizona date. */
+    day: text("day").notNull(),
+    clientId: text("client_id").notNull().default(""),
+    marketId: text("market_id").notNull().default(""),
+    api: text("api").notNull(),
+    calls: integer("calls").notNull().default(0),
+    costMicros: integer("cost_micros").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.day, t.clientId, t.marketId, t.api] })],
+);
+
+/** Emails that go out once (a reminder, a morning email), by a key. */
+export const sentNotices = pgTable("sent_notices", {
+  key: text("key").primaryKey(),
+  sentAt: at("sent_at").notNull().defaultNow(),
 });

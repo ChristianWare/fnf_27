@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Icon, { type IconName } from "../icons";
 import { Pill, Progress, ui } from "../ui/ui";
@@ -36,13 +37,70 @@ export default function LeadsTool({
   trialDays,
   monthly,
   now,
+  ended,
+  readOnly = false,
 }: {
   trialDays: number;
   monthly: number;
   now: string;
+  /** They had it before: when the trial or plan ended. */
+  ended?: { at?: string; trial: boolean };
+  readOnly?: boolean;
 }) {
   const { run, pending } = useAction();
+  const router = useRouter();
   const [ends, setEnds] = useState<string>();
+
+  if (ended) {
+    return (
+      <>
+        <section className={styles.hero}>
+          <div className={styles.heroText}>
+            <span className={styles.eyebrow}>Leads Tool</span>
+            <h1 className={`h3 ${styles.title}`}>Pick up where you left off</h1>
+            <Pill tone='white' dot>
+              {ended.trial ? "Trial ended" : "Plan ended"}
+              {ended.at ? ` · ${fmtDate(ended.at)}` : ""}
+            </Pill>
+            <p className={styles.copy}>
+              Your saved leads, notes and scripts are kept for 90 days. Add a
+              card to switch it back on: the first charge covers the rest of
+              this month, then {money(monthly)} on the 1st.
+            </p>
+          </div>
+          <div className={styles.heroActions}>
+            {!readOnly && (
+              <a
+                href='/dashboard/billing/leads'
+                className={`${ui.btn} ${ui.btn_black}`}
+                data-no-transition
+              >
+                Add a card
+                <Icon name='arrow' className={ui.btnIcon} />
+              </a>
+            )}
+            <Link
+              href='/dashboard/support'
+              className={`${ui.btn} ${ui.btn_white}`}
+            >
+              Ask a question
+            </Link>
+          </div>
+        </section>
+        <section className={styles.features}>
+          {features.map((feature) => (
+            <div key={feature.title} className={styles.feature}>
+              <span className={styles.featureIcon}>
+                <Icon name={feature.icon} />
+              </span>
+              <h2 className={styles.featureTitle}>{feature.title}</h2>
+              <p>{feature.text}</p>
+            </div>
+          ))}
+        </section>
+      </>
+    );
+  }
 
   return (
     <>
@@ -64,7 +122,7 @@ export default function LeadsTool({
           </p>
         </div>
         <div className={styles.heroActions}>
-          {!ends && (
+          {!ends && !readOnly && (
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black}`}
@@ -79,9 +137,10 @@ export default function LeadsTool({
                           new Date(now).getTime() + trialDays * 86_400_000,
                         ).toISOString(),
                     );
+                    router.refresh();
                     return {
                       message: `Your ${trialDays}-day free trial has started`,
-                      detail: "Your first leads arrive tomorrow morning.",
+                      detail: "Your leads are on their way.",
                     };
                   },
                 )
@@ -113,13 +172,14 @@ export default function LeadsTool({
                 Nothing is charged before then.
               </p>
             </div>
-            <Link
-              href='/dashboard/billing#leads'
+            <a
+              href='/dashboard/billing/leads'
               className={`${ui.btn} ${ui.btn_light}`}
+              data-no-transition
             >
               Add a card
               <Icon name='arrow' className={ui.btnIcon} />
-            </Link>
+            </a>
           </div>
           <Progress
             value={0}

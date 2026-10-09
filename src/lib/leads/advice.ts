@@ -2,10 +2,10 @@
 // a look, the order to show them in, the brief, and the scripts. Pure
 // functions, safe in server and client components.
 //
-// SAMPLE: the brief and scripts are written from the notes in catalog.ts.
-// After the move, the AI writes them from the same notes plus what it
-// reads on the business's website, once per business, and only the
-// scripts are written per client.
+// The brief is written from the notes in catalog.ts plus what we read on
+// the business's website (research.ts). Saving a lead has the AI write
+// the scripts for that client (scripts.ts); writeScripts here is what it
+// falls back to.
 
 import { CATEGORIES, EVENT_TYPES, FOLLOW_UP_DAYS, SOURCES } from "./catalog";
 import type {
@@ -82,6 +82,9 @@ const count = (n: number) => n.toLocaleString("en-US");
 export function reasonsFor(target: Located, now: string): Reason[] {
   const reasons: Reason[] = [];
   if (target.kind === "ACCOUNT") {
+    if (target.news) {
+      reasons.push({ text: "In the news", tone: "yellow" });
+    }
     if (target.carService === "NONE") {
       reasons.push({ text: "No car service yet", tone: "lime" });
     } else if (target.carService === "HAS") {
@@ -104,7 +107,7 @@ export function reasonsFor(target: Located, now: string): Reason[] {
     }
   }
   reasons.push({ text: `${target.miles} mi away`, tone: "white" });
-  if (target.contact?.verified) {
+  if (target.contact?.verified || (!target.contact && target.contactReady)) {
     reasons.push({ text: "Contact ready", tone: "lime" });
   }
   return reasons;
@@ -138,8 +141,15 @@ const typeWeight: Record<EventLead["type"], number> = {
 
 /** Higher first. Not shown to anyone: the reasons are. */
 export function rank(target: Located, now: string) {
-  const contact = target.contact ? (target.contact.verified ? 10 : 5) : 0;
+  const contact = target.contact
+    ? target.contact.verified
+      ? 10
+      : 5
+    : target.contactReady
+      ? 8
+      : 0;
   if (target.kind === "ACCOUNT") {
+    const news = target.news ? 12 : 0;
     const service = { NONE: 40, UNKNOWN: 22, HAS: 6 }[target.carService];
     const size = Math.min(25, Math.log10((target.reviews ?? 0) + 1) * 8);
     const rating = ((target.rating ?? 4) - 4) * 10;
@@ -150,6 +160,7 @@ export function rank(target: Located, now: string) {
       rating +
       distance +
       contact +
+      news +
       categoryWeight[target.category]
     );
   }
@@ -171,12 +182,22 @@ export function briefFor(target: Target, now: string): BriefLine[] {
         ? `${target.carServiceNote ? `${target.carServiceNote}. ` : ""}Nothing on their website about a car service partner, so you'd be the first.`
         : target.carService === "HAS"
           ? `${target.carServiceNote}. Pitch yourself as the backup for busy weekends and the trips they can't cover.`
-          : "Their website doesn't say. Ask who they call today, and offer to be the backup.";
+          : target.website
+            ? "Their website doesn't say. Ask who they call today, and offer to be the backup."
+            : "We couldn't check: they don't list a website. Ask who they call today.";
     return [
       {
         label: "Why they need you",
         text: `${angle.why}${target.note ? ` ${target.note}` : ""}`,
       },
+      ...(target.news
+        ? [
+            {
+              label: "In the news",
+              text: `${target.news.title}. A new opening or a move is the best time to introduce yourself.`,
+            },
+          ]
+        : []),
       { label: "Who they use now", text: service },
       { label: "Busy season", text: angle.season },
       {
@@ -190,6 +211,7 @@ export function briefFor(target: Target, now: string): BriefLine[] {
   }
 
   const angle = EVENT_TYPES[target.type];
+  const organizer = target.organizer || "the organizer";
   const days = daysUntil(target.date, now);
   const timing =
     days <= 7
@@ -208,8 +230,8 @@ export function briefFor(target: Target, now: string): BriefLine[] {
     {
       label: "Who to ask for",
       text: target.contact
-        ? `${target.contact.name}, ${target.contact.title} at ${target.organizer}.`
-        : `Ask ${target.organizer} for ${angle.who}${target.phone ? ` at ${target.phone}` : ""}.`,
+        ? `${target.contact.name}, ${target.contact.title}${target.organizer ? ` at ${target.organizer}` : ""}.`
+        : `Ask ${organizer} for ${angle.who}${target.phone ? ` at ${target.phone}` : ""}.`,
     },
     { label: "The angle", text: `Lead with ${angle.offer}.` },
     {
@@ -271,12 +293,13 @@ If they're interested: "Great. What's the best email for our rates? And is there
 
   const angle = EVENT_TYPES[target.type];
   const day = fmtWeekday(target.date);
+  const at = target.venue ? ` at ${target.venue}` : "";
   return {
     email: {
       subject: angle.subject.replace("{event}", target.name),
       body: `${hi}
 
-I saw ${target.name} is coming up on ${day} at ${target.venue}. ${sentence(angle.hook)}.
+I saw ${target.name} is coming up on ${day}${at}. ${sentence(angle.hook)}.
 
 I run ${op.company}, a black car service in ${where}, and I'd like to offer ${angle.offer}. We run ${op.fleet}, and we're at our best with ${op.strength}.
 

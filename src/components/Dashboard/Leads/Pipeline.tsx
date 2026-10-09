@@ -21,7 +21,7 @@ const cell = (value: string) =>
 
 export default function Pipeline() {
   const leads = useLeads();
-  const { now, saved, target, monthly, access } = leads;
+  const { now, saved, target, monthly, access, href } = leads;
   const toast = useToast();
   const [winning, setWinning] = useState<string | null>(null);
 
@@ -36,15 +36,15 @@ export default function Pipeline() {
   ).length;
   const talking = saved.filter((l) => l.stage === "TALKING").length;
 
-  const move = (id: string, stage: LeadStage) => {
+  const move = async (id: string, stage: LeadStage) => {
     if (stage === "WON") {
       setWinning(id);
       return;
     }
-    leads.setStage(id, stage);
-    toast(`Moved to ${STAGES.find((s) => s.id === stage)?.label}`, {
-      tone: "info",
-    });
+    if (await leads.setStage(id, stage))
+      toast(`Moved to ${STAGES.find((s) => s.id === stage)?.label}`, {
+        tone: "info",
+      });
   };
 
   const exportCsv = () => {
@@ -100,7 +100,7 @@ export default function Pipeline() {
           Export CSV
           <Icon name='download' className={ui.btnIcon} />
         </button>
-        <ButtonLink href='/dashboard/leads/find' icon='search'>
+        <ButtonLink href={href("find")} icon='search'>
           Find leads
         </ButtonLink>
       </PageHead>
@@ -125,11 +125,13 @@ export default function Pipeline() {
             <span>/mo</span>
           </dd>
           <dd className={styles.sumNote}>
-            {access === "INCLUDED"
-              ? "Included with your plan"
-              : won.monthly
-                ? `About ${won.monthly / monthly >= 10 ? Math.round(won.monthly / monthly) : (won.monthly / monthly).toFixed(1)}× the tool's cost`
-                : "Your first win shows here"}
+            {access === "STUDIO"
+              ? "Free for the studio"
+              : access === "INCLUDED"
+                ? "Included with your plan"
+                : won.monthly
+                  ? `About ${won.monthly / monthly >= 10 ? Math.round(won.monthly / monthly) : (won.monthly / monthly).toFixed(1)}× the tool's cost`
+                  : "Your first win shows here"}
           </dd>
         </div>
       </dl>
@@ -150,10 +152,7 @@ export default function Pipeline() {
                       lead.remindAt && dayKey(lead.remindAt) < dayKey(now);
                     return (
                       <li key={lead.targetId} className={styles.card}>
-                        <Link
-                          href={`/dashboard/leads/${t.id}`}
-                          className={styles.cardMain}
-                        >
+                        <Link href={href(t.id)} className={styles.cardMain}>
                           <Tile target={t} now={now} />
                           <span className={styles.itemText}>
                             <span className={styles.itemName}>{t.name}</span>

@@ -9,10 +9,13 @@ import { useAction } from "../useAction";
 import styles from "./Billing.module.css";
 import {
   cancelPlan,
+  keepLeadsWithCard,
   keepPlan,
   requestUpgrade,
+  setLeadsPlan,
   startLeadsTrial,
 } from "@/app/dashboard/actions";
+import { prorate } from "@/lib/dashboard/billing";
 import { fmtDate, money } from "@/lib/dashboard/format";
 import type { Card, Invoice, LeadsStatus, PlanId } from "@/lib/dashboard/types";
 
@@ -35,9 +38,17 @@ type Props = {
   upgrade: { name: string; monthly: number };
   leads: {
     access: "INCLUDED" | LeadsStatus;
+    raw: "NONE" | "TRIAL" | "ACTIVE" | "CANCELLING" | "PAST_DUE" | "ENDED";
     monthly: number;
     trialDays: number;
     trialEndsAt?: string;
+    nextBillingAt?: string;
+    /** A card is set up to keep it after the trial. */
+    subscribed: boolean;
+    /** They've had it before (a trial or a plan). */
+    hadIt: boolean;
+    /** An admin viewing as them: no buttons that go to Stripe. */
+    viewing: boolean;
   };
   card?: Card;
   invoices: Invoice[];
@@ -60,6 +71,11 @@ export default function Billing({
   );
   const [leadsState, setLeadsState] = useState(leads.access);
   const [trialEnds, setTrialEnds] = useState(leads.trialEndsAt);
+  const [leadsRaw, setLeadsRaw] = useState(leads.raw);
+  const [subscribed, setSubscribed] = useState(leads.subscribed);
+  const usable = card && !card.expired ? card : undefined;
+  const [leadsEnds, setLeadsEnds] = useState(leads.nextBillingAt);
+  const [stoppingLeads, setStoppingLeads] = useState(false);
   const ended = plan?.status === "CANCELLED";
 
   const startTrial = () =>
@@ -67,6 +83,7 @@ export default function Billing({
       () => startLeadsTrial(),
       (data) => {
         setLeadsState("TRIAL");
+        setLeadsRaw("TRIAL");
         setTrialEnds(data?.trialEndsAt);
         return {
           message: `Your ${leads.trialDays}-day free trial has started`,
@@ -292,44 +309,181 @@ export default function Billing({
               {leadsState === "INCLUDED"
                 ? "Included with your Full Platform plan"
                 : leadsState === "TRIAL"
-                  ? `Free trial · ${daysLeft} days left`
+                  ? leadsRaw === "CANCELLING"
+                    ? `Free trial · ends ${trialEnds ? fmtDate(trialEnds) : "soon"}`
+                    : `Free trial · ${daysLeft} days left`
                   : leadsState === "ACTIVE"
-                    ? `${money(leads.monthly)} a month`
-                    : `Try it free for ${leads.trialDays} days`}
+                    ? leadsRaw === "CANCELLING"
+                      ? `Ends ${leadsEnds ? fmtDate(leadsEnds) : "at the end of the month"}`
+                      : leadsRaw === "PAST_DUE"
+                        ? "Your last payment didn't go through"
+                        : `${money(leads.monthly)} a month`
+                    : leads.hadIt
+                      ? "Switch it back on"
+                      : `Try it free for ${leads.trialDays} days`}
             </h2>
             <p>
               {leadsState === "INCLUDED"
                 ? "Fresh leads every morning, at no extra cost."
                 : leadsState === "TRIAL"
-                  ? `Your trial ends ${trialEnds ? fmtDate(trialEnds) : "soon"}. To keep it, add a card before then: the first charge covers the rest of that month, then ${money(leads.monthly)} on the 1st of every month. Nothing is charged before then.`
+                  ? leadsRaw === "CANCELLING"
+                    ? "You cancelled, so it stops when the trial ends and nothing is charged. Changed your mind? Keep it below."
+                    : subscribed && trialEnds
+                      ? `Your card is set up. When your trial ends on ${fmtDate(trialEnds)}, it's charged ${money(prorate(leads.monthly, trialEnds))} for the rest of that month, then ${money(leads.monthly)} on the 1st of every month.`
+                      : `Your trial ends ${trialEnds ? fmtDate(trialEnds) : "soon"}. To keep it, ${usable ? `use your ${usable.brand} ending ${usable.last4} or add a card` : "add a card"} before then: the first charge covers the rest of that month, then ${money(leads.monthly)} on the 1st of every month. Nothing is charged before then.`
                   : leadsState === "ACTIVE"
-                    ? "Billed monthly with your plan. Cancel anytime."
-                    : `The hotels, venues and companies near you that book rides, every morning. No card needed. If you keep it, it's ${money(leads.monthly)} a month, billed on the 1st.`}
+                    ? leadsRaw === "CANCELLING"
+                      ? "You cancelled, so nothing more is charged. Your saved leads are kept for 90 days after it ends."
+                      : leadsRaw === "PAST_DUE"
+                        ? "Update your card and we'll try again straight away. Your leads keep coming while you sort it out."
+                        : `Billed on the 1st of every month${leadsEnds ? `, next on ${fmtDate(leadsEnds)}` : ""}. Cancel anytime.`
+                    : leads.hadIt
+                      ? `Your saved leads are kept for 90 days. ${usable ? `Switch it back on with your ${usable.brand} ending ${usable.last4}, or add a card,` : "Add a card"} to pick up where you left off: the first charge covers the rest of this month, then ${money(leads.monthly)} on the 1st.`
+                      : `The hotels, venues and companies near you that book rides, every morning. No card needed. If you keep it, it's ${money(leads.monthly)} a month, billed on the 1st.`}
             </p>
           </div>
           <div className={styles.leadsActions}>
             {leadsState === "NONE" ? (
-              <button
-                type='button'
-                className={`${ui.btn} ${ui.btn_black}`}
-                onClick={startTrial}
-                disabled={pending}
-              >
-                Start free trial
-                <Icon name='arrow' className={ui.btnIcon} />
-              </button>
+              leads.hadIt ? (
+                !leads.viewing && (
+                  <>
+                    {usable && (
+                      <button
+                        type='button'
+                        className={`${ui.btn} ${ui.btn_black}`}
+                        disabled={pending}
+                        onClick={() =>
+                          run(
+                            () => keepLeadsWithCard(),
+                            () => {
+                              setSubscribed(true);
+                              setLeadsState("ACTIVE");
+                              setLeadsRaw("ACTIVE");
+                              return {
+                                message: "Your Leads Tool is back on",
+                                detail: `Charged to your ${usable.brand} ending ${usable.last4}. Your saved leads are right where you left them.`,
+                              };
+                            },
+                          )
+                        }
+                      >
+                        Switch it back on
+                        <Icon name='arrow' className={ui.btnIcon} />
+                      </button>
+                    )}
+                    <a
+                      href='/dashboard/billing/leads'
+                      className={`${ui.btn} ${usable ? ui.btn_light : ui.btn_black}`}
+                      data-no-transition
+                    >
+                      {usable ? "Use another card" : "Add a card"}
+                      <Icon name='arrow' className={ui.btnIcon} />
+                    </a>
+                  </>
+                )
+              ) : (
+                <button
+                  type='button'
+                  className={`${ui.btn} ${ui.btn_black}`}
+                  onClick={startTrial}
+                  disabled={pending}
+                >
+                  Start free trial
+                  <Icon name='arrow' className={ui.btnIcon} />
+                </button>
+              )
             ) : (
-              <Link
-                href='/dashboard/leads'
-                className={`${ui.btn} ${ui.btn_black}`}
-              >
-                Open Leads Tool
-                <Icon name='arrow' className={ui.btnIcon} />
-              </Link>
+              <>
+                {leadsState === "TRIAL" &&
+                  !subscribed &&
+                  !leads.viewing &&
+                  usable && (
+                    <button
+                      type='button'
+                      className={`${ui.btn} ${ui.btn_black}`}
+                      disabled={pending}
+                      onClick={() =>
+                        run(
+                          () => keepLeadsWithCard(),
+                          () => {
+                            setSubscribed(true);
+                            return {
+                              message: "You're keeping the Leads Tool",
+                              detail: `Your ${usable.brand} ending ${usable.last4} is charged when the trial ends${trialEnds ? `, on ${fmtDate(trialEnds)}` : ""}.`,
+                            };
+                          },
+                        )
+                      }
+                    >
+                      Keep it with my {usable.brand}
+                      <Icon name='arrow' className={ui.btnIcon} />
+                    </button>
+                  )}
+                {leadsState === "TRIAL" && !subscribed && !leads.viewing && (
+                  <a
+                    href='/dashboard/billing/leads'
+                    className={`${ui.btn} ${usable ? ui.btn_light : ui.btn_black}`}
+                    data-no-transition
+                  >
+                    {usable ? "Use another card" : "Add a card"}
+                    <Icon name='arrow' className={ui.btnIcon} />
+                  </a>
+                )}
+                {leadsRaw === "PAST_DUE" && !leads.viewing && (
+                  <a
+                    href='/dashboard/billing/card'
+                    className={`${ui.btn} ${ui.btn_black}`}
+                    data-no-transition
+                  >
+                    Update card
+                    <Icon name='arrow' className={ui.btnIcon} />
+                  </a>
+                )}
+                <Link
+                  href='/dashboard/leads'
+                  className={`${ui.btn} ${leadsState === "TRIAL" && !subscribed ? ui.btn_light : ui.btn_black}`}
+                >
+                  Open Leads Tool
+                  <Icon name='arrow' className={ui.btnIcon} />
+                </Link>
+                {leadsState !== "INCLUDED" &&
+                  subscribed &&
+                  (leadsRaw === "CANCELLING" ? (
+                    <button
+                      type='button'
+                      className={`${ui.btn} ${ui.btn_light}`}
+                      disabled={pending}
+                      onClick={() =>
+                        run(
+                          () => setLeadsPlan(false),
+                          (data) => {
+                            setLeadsRaw(
+                              (data?.status as typeof leadsRaw) ?? "ACTIVE",
+                            );
+                            return {
+                              message: "Your Leads Tool stays on",
+                              detail: "Nothing changes. Glad you're staying.",
+                            };
+                          },
+                        )
+                      }
+                    >
+                      Keep it
+                    </button>
+                  ) : (
+                    <button
+                      type='button'
+                      className={`${ui.btn} ${ui.btn_outline}`}
+                      onClick={() => setStoppingLeads(true)}
+                    >
+                      Cancel
+                    </button>
+                  ))}
+              </>
             )}
           </div>
         </div>
-        {leadsState === "TRIAL" && (
+        {leadsState === "TRIAL" && leadsRaw !== "CANCELLING" && (
           <Progress
             value={leads.trialDays - daysLeft}
             max={leads.trialDays}
@@ -338,6 +492,52 @@ export default function Billing({
           />
         )}
       </section>
+
+      <Modal isOpen={stoppingLeads} onClose={() => setStoppingLeads(false)}>
+        <div className={ui.modalBody}>
+          <span className={ui.monoMuted}>Leads Tool</span>
+          <h2 className={ui.modalTitle}>Cancel the Leads Tool?</h2>
+          <p className={styles.small}>
+            {leadsState === "TRIAL"
+              ? `It stops when your trial ends${trialEnds ? `, on ${fmtDate(trialEnds)}` : ""}, and your card isn't charged.`
+              : `It runs to the end of this month${leadsEnds ? `, until ${fmtDate(leadsEnds)}` : ""}, and nothing more is charged.`}{" "}
+            Your saved leads are kept for 90 days after that.
+          </p>
+          <div className={ui.modalActions}>
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_light}`}
+              onClick={() => setStoppingLeads(false)}
+            >
+              Keep it
+            </button>
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_black}`}
+              disabled={pending}
+              onClick={() =>
+                run(
+                  () => setLeadsPlan(true),
+                  (data) => {
+                    setLeadsRaw("CANCELLING");
+                    if (data?.endsAt) setLeadsEnds(data.endsAt);
+                    setStoppingLeads(false);
+                    return {
+                      message: "Leads Tool cancelled",
+                      tone: "info",
+                      detail: data?.endsAt
+                        ? `It runs until ${fmtDate(data.endsAt)}. Change your mind anytime before then.`
+                        : "Change your mind anytime before it ends.",
+                    };
+                  },
+                )
+              }
+            >
+              Cancel the Leads Tool
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Upgrade */}
       {plan?.id === "WEBSITE_ONLY" && (

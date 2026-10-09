@@ -27,7 +27,7 @@ const WINDOWS = [
 ];
 
 export default function Find({ initialTab }: { initialTab: Tab }) {
-  const { now, settings, accounts, events } = useLeads();
+  const { now, settings, accounts, events, href, market } = useLeads();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [query, setQuery] = useState("");
   const [radius, setRadius] = useState(settings.radius);
@@ -97,7 +97,11 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
       <PageHead
         crumb='Leads'
         title='Find leads'
-        text={`Everything within ${radius} miles of ${settings.base.city}. Open any of them for free; saving one finds the decision-maker and writes your scripts.`}
+        text={
+          market.ready
+            ? `Everything within ${radius} miles of ${settings.base.city}. Open any of them for free; saving one finds the decision-maker and writes your scripts.`
+            : `Your first leads are on the way: tonight's run (1 to 5 AM Arizona time) finds everything around ${settings.base.city}.`
+        }
       />
 
       <section className={ui.panel}>
@@ -277,10 +281,7 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
             <ul className={styles.results}>
               {shownAccounts.map((a) => (
                 <li key={a.id} className={styles.result}>
-                  <Link
-                    href={`/dashboard/leads/${a.id}`}
-                    className={styles.resultMain}
-                  >
+                  <Link href={href(a.id)} className={styles.resultMain}>
                     <Tile target={a} now={now} />
                     <span className={styles.itemText}>
                       <span className={styles.itemName}>{a.name}</span>
@@ -310,15 +311,17 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
           <ul className={styles.results}>
             {shownEvents.map((e) => (
               <li key={e.id} className={styles.result}>
-                <Link
-                  href={`/dashboard/leads/${e.id}`}
-                  className={styles.resultMain}
-                >
+                <Link href={href(e.id)} className={styles.resultMain}>
                   <DateBlock date={e.date} />
                   <span className={styles.itemText}>
                     <span className={styles.itemName}>{e.name}</span>
                     <span className={styles.itemKind}>
-                      {eventDates(e)} · {e.venue}, {e.city}
+                      {[
+                        eventDates(e),
+                        [e.venue, e.city].filter(Boolean).join(", "),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
                     <Reasons target={e} now={now} />
                   </span>
@@ -341,6 +344,11 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
             }}
           />
         )}
+        <p className={styles.credit}>
+          {tab === "accounts"
+            ? "Places, photos and ratings from Google"
+            : "Events from the sources above · Venue photos from Google"}
+        </p>
       </section>
     </>
   );

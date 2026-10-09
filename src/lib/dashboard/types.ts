@@ -243,7 +243,21 @@ export type Client = {
   /** Archived: hidden, signed out, billing stopped. In the future: scheduled. */
   archivedAt?: string;
   website?: Website;
-  leads: { status: LeadsStatus; startedAt?: string; trialEndsAt?: string };
+  leads: {
+    /** On a trial, on (paid), or off. A trial past its end is off. */
+    status: LeadsStatus;
+    /** Exactly where billing is. */
+    raw: "NONE" | "TRIAL" | "ACTIVE" | "CANCELLING" | "PAST_DUE" | "ENDED";
+    startedAt?: string;
+    trialEndsAt?: string;
+    /** The next bill, or when it stops if cancelling. */
+    nextBillingAt?: string;
+    endedAt?: string;
+    /** A card is set up to keep it after the trial. */
+    subscribed: boolean;
+    /** The studio's switch: off shows "being set up". */
+    enabled: boolean;
+  };
   documents: Doc[];
   answers: Answers;
   assets: Asset[];

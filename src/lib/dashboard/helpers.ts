@@ -68,9 +68,16 @@ export function blueprintCounts(pages: BlueprintPage[]) {
 
 export type LeadsAccess = "INCLUDED" | "TRIAL" | "ACTIVE" | "NONE";
 
-/** Full Platform includes the Leads Tool; anyone else trials or pays. */
+/**
+ * Full Platform includes the Leads Tool (until that plan ends); anyone else
+ * trials or pays.
+ */
 export function leadsAccess(client: Client): LeadsAccess {
-  if (client.website?.plan === "FULL_PLATFORM") return "INCLUDED";
+  if (
+    client.website?.plan === "FULL_PLATFORM" &&
+    client.website.status !== "CANCELLED"
+  )
+    return "INCLUDED";
   return client.leads.status;
 }
 
@@ -325,7 +332,12 @@ export function todos(client: Client, now: string): Todo[] {
     }
   }
 
-  if (client.leads.status === "TRIAL" && client.leads.trialEndsAt) {
+  if (
+    client.leads.status === "TRIAL" &&
+    client.leads.trialEndsAt &&
+    !client.leads.subscribed &&
+    client.website?.plan !== "FULL_PLATFORM"
+  ) {
     const days = trialDaysLeft(client, now);
     list.push({
       id: "leads-trial",

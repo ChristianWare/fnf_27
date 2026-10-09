@@ -20,9 +20,11 @@ import {
   setWebsiteCancel,
   syncWithStripe,
 } from "@/lib/billing/website";
+import { stopLeadsPlanForFullPlatform } from "@/lib/billing/leads";
 import { nextFirst } from "@/lib/dashboard/billing";
 import { fmtDate, money } from "@/lib/dashboard/format";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
+import { ensureSettings } from "@/lib/leads/workspace";
 import type { PlanId } from "@/lib/dashboard/types";
 
 const s = schema;
@@ -91,6 +93,17 @@ export async function saveRates(
       ],
       button: { label: "Open Billing", href: url("/dashboard/billing") },
     });
+  }
+  // The Full Platform includes the Leads Tool: its own plan stops.
+  if (input.plan === "FULL_PLATFORM" && w.plan !== "FULL_PLATFORM") {
+    try {
+      await stopLeadsPlanForFullPlatform(clientId);
+    } catch (error) {
+      refresh();
+      return fail(
+        `Their plan changed, but their Leads Tool plan didn't stop: ${errorText(error)}`,
+      );
+    }
   }
   refresh();
   return done();
@@ -237,6 +250,10 @@ export async function extendTrial(
     .limit(1);
   if (!row || row.leadsStatus !== "TRIAL")
     return fail("They aren't on a trial.");
+  if (row.leadsSubscriptionId)
+    return fail(
+      "They've added a card, so Stripe bills them when the trial ends. Change it in Stripe if you need to.",
+    );
   const from =
     row.leadsTrialEndsAt && row.leadsTrialEndsAt > new Date()
       ? row.leadsTrialEndsAt
@@ -286,6 +303,8 @@ export async function startTrialFor(
       leadsStatus: "TRIAL",
       leadsStartedAt: now,
       leadsTrialEndsAt: ends,
+      leadsEndedAt: null,
+      leadsNextBillingAt: null,
       updatedAt: now,
     })
     .where(eq(s.clients.id, clientId));
@@ -295,6 +314,7 @@ export async function startTrialFor(
     `Your ${LEADS.trialDays}-day Leads Tool trial started`,
     "/dashboard/leads",
   );
+  await ensureSettings(clientId).catch(() => undefined);
   await emailClient(clientId, "Your Leads Tool trial has started", {
     eyebrow: LEADS.name,
     heading: `${LEADS.trialDays} days of leads, on us`,
@@ -327,7 +347,11 @@ export async function endLeads(clientId: string): Promise<ActionResult> {
     } else {
       await db
         .update(s.clients)
-        .set({ leadsStatus: "ENDED", updatedAt: new Date() })
+        .set({
+          leadsStatus: "ENDED",
+          leadsEndedAt: new Date(),
+          updatedAt: new Date(),
+        })
         .where(eq(s.clients.id, clientId));
     }
   } catch (error) {

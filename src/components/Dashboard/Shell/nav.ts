@@ -32,8 +32,14 @@ export type NavGroup = {
   fold?: { label: string; items: NavItem[] };
 };
 
-/** `leadsDue`: leads to reach or follow up with today. */
-export function buildNav(client: Client, leadsDue = 0): NavGroup[] {
+/**
+ * `leads.ready`: their Leads Tool is on and has leads in it. `leads.due`:
+ * leads to reach or follow up with today.
+ */
+export function buildNav(
+  client: Client,
+  leads: { ready: boolean; due: number } = { ready: false, due: 0 },
+): NavGroup[] {
   const groups: NavGroup[] = [
     { items: [{ href: "/dashboard", label: "Dashboard", icon: "home" }] },
   ];
@@ -123,9 +129,8 @@ export function buildNav(client: Client, leadsDue = 0): NavGroup[] {
     );
   }
 
-  // The Leads Tool's full set of pages (Today, Find, Pipeline, Settings)
-  // comes back with its nightly jobs; until then, one page.
-  if (leadsAccess(client) !== "NONE" && leadsDue > 0) {
+  // The Leads Tool's pages, once it's on and its first leads are in.
+  if (leadsAccess(client) !== "NONE" && leads.ready) {
     groups.push({
       title: "Leads",
       items: [
@@ -133,7 +138,7 @@ export function buildNav(client: Client, leadsDue = 0): NavGroup[] {
           href: "/dashboard/leads",
           label: "Today",
           icon: "target",
-          badge: leadsDue || undefined,
+          badge: leads.due || undefined,
         },
         { href: "/dashboard/leads/find", label: "Find leads", icon: "search" },
         { href: "/dashboard/leads/pipeline", label: "Pipeline", icon: "chart" },
@@ -155,7 +160,7 @@ export function buildNav(client: Client, leadsDue = 0): NavGroup[] {
       external: true,
     });
   }
-  if (leadsAccess(client) === "NONE" || leadsDue === 0) {
+  if (leadsAccess(client) === "NONE" || !leads.ready) {
     tools.push({
       href: "/dashboard/leads",
       label: "Leads Tool",

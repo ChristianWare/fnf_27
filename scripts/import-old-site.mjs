@@ -734,6 +734,13 @@ export async function importOldSite(client, log = console.log) {
     if (types.has(e))
       await client.query(`alter type "${e}" set schema old_site`);
 
+  // The Leads Tool starts switched off for Full Platform clients, until
+  // their market's first run is in (Admin → Leads Tool switches it on).
+  await client.query(
+    `update clients set leads_enabled = false
+     where id in (select client_id from websites where plan = 'FULL_PLATFORM')`,
+  );
+
   await client.query(
     `insert into app_settings (key, value) values ('imported_from_old_site', $1)
      on conflict (key) do update set value = excluded.value, updated_at = now()`,

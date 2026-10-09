@@ -25,6 +25,7 @@ import { createId } from "@/lib/server/ids";
 import { url } from "@/lib/server/config";
 import { emailClient, emailPerson } from "@/lib/server/notify";
 import { errorText } from "@/lib/billing/stripe";
+import { stopLeadsPlanForFullPlatform } from "@/lib/billing/leads";
 import { cancelEverythingNow, setWebsiteCancel } from "@/lib/billing/website";
 import { serviceAgreement } from "@/lib/dashboard/agreement";
 import { nextFirst } from "@/lib/dashboard/billing";
@@ -289,6 +290,18 @@ export async function approveClient(
       ],
     },
   );
+  // Already paying for the Leads Tool on its own? The Full Platform
+  // includes it, so that plan stops.
+  if (input.plan === "FULL_PLATFORM") {
+    try {
+      await stopLeadsPlanForFullPlatform(clientId);
+    } catch (error) {
+      refresh();
+      return fail(
+        `Approved, but their Leads Tool plan didn't stop: ${errorText(error)}`,
+      );
+    }
+  }
   refresh();
   return done();
 }
@@ -612,6 +625,7 @@ const ADMIN_ALERTS = [
   "document",
   "blueprint",
   "digest",
+  "leads",
 ];
 
 export async function saveNotifications(

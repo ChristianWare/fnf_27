@@ -256,7 +256,12 @@ export function adminQueue(clients: Client[], now: string): QueueItem[] {
       });
     }
 
-    if (c.leads.status === "TRIAL" && c.leads.trialEndsAt && !c.card) {
+    if (
+      c.leads.status === "TRIAL" &&
+      c.leads.trialEndsAt &&
+      !c.leads.subscribed &&
+      c.website?.plan !== "FULL_PLATFORM"
+    ) {
       const days = Math.ceil(
         (new Date(c.leads.trialEndsAt).getTime() - nowMs) / 86_400_000,
       );
@@ -268,7 +273,7 @@ export function adminQueue(clients: Client[], now: string): QueueItem[] {
           tone: "gray",
           icon: "target",
           title: `Trial ends in ${days} day${days === 1 ? "" : "s"}: ${c.business}`,
-          detail: "No card yet. A short note usually does it.",
+          detail: "Not set up to keep it yet. A short note usually does it.",
           at: c.leads.trialEndsAt,
           href: `${page}?tab=billing`,
           cta: "Nudge",
@@ -517,7 +522,12 @@ export function billingAttention(clients: Client[], now: string): MoneyFlag[] {
       }
     }
 
-    if (c.leads.status === "TRIAL" && c.leads.trialEndsAt && !c.card) {
+    if (
+      c.leads.status === "TRIAL" &&
+      c.leads.trialEndsAt &&
+      !c.leads.subscribed &&
+      c.website?.plan !== "FULL_PLATFORM"
+    ) {
       const days = Math.ceil(
         (new Date(c.leads.trialEndsAt).getTime() - new Date(now).getTime()) /
           86_400_000,
@@ -529,7 +539,7 @@ export function billingAttention(clients: Client[], now: string): MoneyFlag[] {
           tone: "purple",
           icon: "target",
           title: `Leads trial ends ${fmtShort(c.leads.trialEndsAt)}`,
-          detail: `No card yet. If they keep it: ${money(prorate(LEADS.monthly, c.leads.trialEndsAt))} for the rest of that month, then ${money(LEADS.monthly)} on the 1st.`,
+          detail: `Not set up to keep it yet. If they do: ${money(prorate(LEADS.monthly, c.leads.trialEndsAt))} for the rest of that month, then ${money(LEADS.monthly)} on the 1st.`,
         });
       }
     }

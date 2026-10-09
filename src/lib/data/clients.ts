@@ -12,11 +12,13 @@ import {
   isNotNull,
   isNull,
   lte,
+  ne,
   or,
   type SQL,
 } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
 import { db, schema } from "@/db";
+import { STUDIO_ID } from "@/lib/leads/kinds";
 import type {
   Activity,
   Asset,
@@ -82,11 +84,24 @@ function card(c: typeof s.clients.$inferSelect, now: Date): Card | undefined {
   };
 }
 
-/** The Leads Tool as the dashboard sees it: on trial, on, or off. */
-function leadsView(c: typeof s.clients.$inferSelect): Client["leads"] {
+/**
+ * The Leads Tool as the dashboard sees it: on trial, on, or off. A trial
+ * past its end is off, unless a card is set up to keep it (Stripe charges
+ * at the end of the trial).
+ */
+function leadsView(
+  c: typeof s.clients.$inferSelect,
+  now: Date,
+): Client["leads"] {
+  const trialOver =
+    c.leadsStatus === "TRIAL" &&
+    !c.leadsSubscriptionId &&
+    (!c.leadsTrialEndsAt || c.leadsTrialEndsAt <= now);
   const status: LeadsStatus =
     c.leadsStatus === "TRIAL"
-      ? "TRIAL"
+      ? trialOver
+        ? "NONE"
+        : "TRIAL"
       : c.leadsStatus === "ACTIVE" ||
           c.leadsStatus === "CANCELLING" ||
           c.leadsStatus === "PAST_DUE"
@@ -94,8 +109,13 @@ function leadsView(c: typeof s.clients.$inferSelect): Client["leads"] {
         : "NONE";
   return {
     status,
+    raw: trialOver ? "ENDED" : c.leadsStatus,
     startedAt: iso(c.leadsStartedAt),
     trialEndsAt: iso(c.leadsTrialEndsAt),
+    nextBillingAt: iso(c.leadsNextBillingAt),
+    endedAt: iso(c.leadsEndedAt ?? (trialOver ? c.leadsTrialEndsAt : null)),
+    subscribed: Boolean(c.leadsSubscriptionId),
+    enabled: c.leadsEnabled,
   };
 }
 
@@ -104,7 +124,7 @@ export type ClientScope =
 
 export async function loadClients(scope: ClientScope): Promise<Client[]> {
   const now = new Date();
-  const where =
+  const which =
     "id" in scope
       ? eq(s.clients.id, scope.id)
       : "ids" in scope
@@ -112,6 +132,8 @@ export async function loadClients(scope: ClientScope): Promise<Client[]> {
         : scope.archived
           ? and(isNotNull(s.clients.archivedAt), lte(s.clients.archivedAt, now))
           : or(isNull(s.clients.archivedAt), gt(s.clients.archivedAt, now));
+  // The studio's own Leads Tool isn't a client.
+  const where = and(which, ne(s.clients.id, STUDIO_ID));
 
   const rows = await db
     .select()
@@ -365,7 +387,7 @@ export async function loadClients(scope: ClientScope): Promise<Client[]> {
             facts: site.facts ?? {},
           }
         : undefined,
-      leads: leadsView(c),
+      leads: leadsView(c, now),
       documents,
       answers: quest?.answers ?? {},
       assets,

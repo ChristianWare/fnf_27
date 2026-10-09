@@ -50,6 +50,11 @@ const options = [
     title: "A morning summary",
     text: "Everything waiting on you, at 7am Arizona time.",
   },
+  {
+    id: "leads",
+    title: "The studio's morning leads",
+    text: "Your own Leads Tool's Today page, at 6am Arizona time.",
+  },
 ];
 
 export default function Notifications({

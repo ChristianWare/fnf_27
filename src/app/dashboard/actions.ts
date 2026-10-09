@@ -37,12 +37,14 @@ import {
   destroyUpload,
 } from "@/lib/server/cloudinary";
 import { alertAdmins, emailClient, emailPerson } from "@/lib/server/notify";
-import { errorText } from "@/lib/billing/stripe";
+import { errorText, stripe } from "@/lib/billing/stripe";
 import { setWebsiteCancel } from "@/lib/billing/website";
+import { setLeadsCancel, startLeadsSubscription } from "@/lib/billing/leads";
 import { assetsComplete, isLive, leadsAccess } from "@/lib/dashboard/helpers";
 import { fmtDate } from "@/lib/dashboard/format";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
 import type { Answers, Asset, AssetLabel } from "@/lib/dashboard/types";
+import { ensureSettings } from "@/lib/leads/workspace";
 
 const s = schema;
 
@@ -857,6 +859,8 @@ export async function startLeadsTrial(): Promise<
     `Your ${LEADS.trialDays}-day Leads Tool trial started`,
     "/dashboard/leads",
   );
+  // Their base and market, so tonight's run includes them.
+  await ensureSettings(a.clientId).catch(() => undefined);
   await alertAdmins("signup", `${client.business} started a Leads Tool trial`, {
     eyebrow: "Leads Tool",
     heading: `${client.business} started a free trial`,
@@ -868,6 +872,92 @@ export async function startLeadsTrial(): Promise<
   });
   refresh();
   return done({ trialEndsAt: ends.toISOString() });
+}
+
+/* ── The Leads Tool's billing ── */
+
+/** Stops the Leads Tool at the end of the month (or trial), or undoes it. */
+export async function setLeadsPlan(
+  cancel: boolean,
+): Promise<ActionResult<{ status: string; endsAt?: string }>> {
+  const a = await actor();
+  if (!a.ok) return fail(a.error);
+  try {
+    const result = await setLeadsCancel(a.clientId, cancel);
+    const business = await businessName(a.clientId);
+    if (cancel) {
+      await emailClient(a.clientId, "Your Leads Tool is cancelled", {
+        eyebrow: "Leads Tool",
+        heading: "Your Leads Tool is cancelled",
+        paragraphs: [
+          `It runs until ${result.endsAt ? fmtDate(result.endsAt) : "the end of the month"}, and nothing more is charged. Your saved leads are kept for 90 days after that.`,
+          "Changed your mind? Keep it from Billing anytime before then.",
+        ],
+        button: {
+          label: "Open Billing",
+          href: url("/dashboard/billing#leads"),
+        },
+      });
+    }
+    await alertAdmins(
+      "failed",
+      cancel
+        ? `${business} cancelled the Leads Tool`
+        : `${business} is keeping the Leads Tool`,
+      {
+        eyebrow: "Leads Tool",
+        heading: cancel
+          ? `${business} cancelled the Leads Tool`
+          : `${business} changed their mind: the Leads Tool stays on`,
+        paragraphs: [
+          cancel
+            ? `It runs until ${result.endsAt ? fmtDate(result.endsAt) : "the end of the month"}.`
+            : "Nothing changes for them.",
+        ],
+        button: {
+          label: "Open their billing",
+          href: url(`/admin/clients/${a.clientId}?tab=billing`),
+        },
+      },
+    );
+    refresh();
+    return done(result);
+  } catch (error) {
+    return fail(errorText(error));
+  }
+}
+
+/** Keeps the Leads Tool with the card already on file: no Stripe page. */
+export async function keepLeadsWithCard(): Promise<
+  ActionResult<{ status: string }>
+> {
+  const a = await actor();
+  if (!a.ok) return fail(a.error);
+  try {
+    const [row] = await db
+      .select()
+      .from(s.clients)
+      .where(eq(s.clients.id, a.clientId))
+      .limit(1);
+    if (!row?.stripeCustomerId) return fail("Add a card first.");
+    const customer = await stripe().customers.retrieve(row.stripeCustomerId);
+    const method =
+      !customer.deleted && customer.invoice_settings?.default_payment_method;
+    if (!method) return fail("Add a card first.");
+    await startLeadsSubscription(
+      a.clientId,
+      typeof method === "string" ? method : method.id,
+    );
+    const [now] = await db
+      .select({ status: s.clients.leadsStatus })
+      .from(s.clients)
+      .where(eq(s.clients.id, a.clientId))
+      .limit(1);
+    refresh();
+    return done({ status: now?.status ?? "TRIAL" });
+  } catch (error) {
+    return fail(errorText(error));
+  }
 }
 
 export async function cancelPlan(): Promise<ActionResult<{ endsAt?: string }>> {

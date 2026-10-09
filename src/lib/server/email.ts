@@ -116,6 +116,8 @@ export type EmailContent = {
   button?: { label: string; href: string };
   /** Paragraphs after the button. */
   after?: string[];
+  /** Rich rows of our own (the morning leads email), after the paragraphs. */
+  blocks?: { html: string; text: string };
   /** Why they get this email, and where to change it. */
   reason?: string;
   manage?: string;
@@ -169,7 +171,7 @@ export function render(c: EmailContent) {
 <tr><td style="background:#ffffff;border-radius:28px;padding:36px 32px 20px;">
 ${c.eyebrow ? `<p style="margin:0 0 14px;font-family:${MONO};font-size:14px;text-transform:uppercase;letter-spacing:0.2px;color:#0d0d0e;">&#9679; ${esc(c.eyebrow)}</p>` : ""}
 <h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;letter-spacing:-0.5px;color:#0d0d0e;">${esc(c.heading)}</h1>
-${c.paragraphs.map(para).join("")}${quote}${details}${button}${(c.after ?? []).map(para).join("")}
+${c.paragraphs.map(para).join("")}${c.blocks?.html ?? ""}${quote}${details}${button}${(c.after ?? []).map(para).join("")}
 </td></tr>
 <tr><td style="padding:20px 8px 0;font-size:14px;line-height:1.6;color:#6b6b70;">
 ${foot ? `<p style="margin:0 0 8px;">${foot}</p>` : ""}<p style="margin:0;">${esc(STUDIO.name)} · ${esc(STUDIO.address)}</p>
@@ -180,6 +182,7 @@ ${foot ? `<p style="margin:0 0 8px;">${foot}</p>` : ""}<p style="margin:0;">${es
     c.heading,
     "",
     ...c.paragraphs.flatMap((p) => [p, ""]),
+    ...(c.blocks ? [c.blocks.text, ""] : []),
     ...(c.quote
       ? [`"${c.quote.text}"${c.quote.by ? ` (${c.quote.by})` : ""}`, ""]
       : []),

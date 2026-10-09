@@ -28,19 +28,16 @@ export const lastDayOf = (first: string) =>
 /** The next 1st after `now`. */
 export const nextFirst = (now: string | Date) => firstOfMonth(now, 1);
 
-/** Days in the month that `date` falls in, and the day of the month. */
-function monthDays(date: string) {
-  const local = new Date(new Date(date).getTime() - AZ);
-  const days = new Date(
-    Date.UTC(local.getUTCFullYear(), local.getUTCMonth() + 1, 0),
-  ).getUTCDate();
-  return { days, day: local.getUTCDate() };
-}
-
-/** The prorated charge for the rest of a month, from `from` to its end. */
+/**
+ * The prorated charge for the rest of a month, from `from` (a trial's end,
+ * say) to the next 1st. Worked out to the second, the way Stripe does it,
+ * so what we quote is what the card is charged.
+ */
 export function prorate(monthly: number, from: string) {
-  const { days, day } = monthDays(from);
-  return Math.round(((monthly * (days - day + 1)) / days) * 100) / 100;
+  const start = new Date(from).getTime();
+  const begin = new Date(firstOfMonth(from)).getTime();
+  const end = new Date(firstOfMonth(from, 1)).getTime();
+  return Math.round((monthly * 100 * (end - start)) / (end - begin)) / 100;
 }
 
 /**

@@ -3,10 +3,9 @@ import type { ReactNode } from "react";
 import Shell from "@/components/Dashboard/Shell/Shell";
 import { buildNav } from "@/components/Dashboard/Shell/nav";
 import ViewAs from "@/components/Dashboard/ViewAs/ViewAs";
-import { getDashboard, planName } from "@/lib/dashboard";
+import { getDashboard, leadsAccess, planName } from "@/lib/dashboard";
 import { initials } from "@/lib/dashboard/format";
-import { todaysMoves } from "@/lib/leads/advice";
-import { getLeads } from "@/lib/leads/server";
+import { leadsSidebar } from "@/lib/leads/workspace";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -19,16 +18,10 @@ export default async function DashboardLayout({
   children: ReactNode;
 }) {
   const { user, client, viewingAs } = await getDashboard();
-  const { workspace, now } = await getLeads();
-  const leadsDue = workspace
-    ? todaysMoves(
-        workspace.saved,
-        (id) =>
-          workspace.accounts.find((a) => a.id === id) ??
-          workspace.events.find((e) => e.id === id),
-        now,
-      ).length
-    : 0;
+  const leads =
+    leadsAccess(client) !== "NONE" && client.leads.enabled
+      ? await leadsSidebar(client.id)
+      : { ready: false, due: 0 };
   const tone =
     client.website?.plan === "FULL_PLATFORM"
       ? "platform"
@@ -38,7 +31,7 @@ export default async function DashboardLayout({
 
   return (
     <Shell
-      nav={buildNav(client, leadsDue)}
+      nav={buildNav(client, leads)}
       business={client.business}
       plan={planName(client)}
       tone={tone}

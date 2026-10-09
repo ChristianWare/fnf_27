@@ -1,10 +1,11 @@
 "use client";
 
-// Small pieces every leads page uses: the lead's icon tile, its reasons,
-// its stage, an event's date, the save button and the "won" dialog.
+// Small pieces every leads page uses: the lead's photo (or icon) tile, its
+// reasons, its stage, an event's date, the save button and the "won"
+// dialog.
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "../icons";
 import { Pill, ui } from "../ui/ui";
@@ -18,7 +19,37 @@ import { fmtMonth, money } from "@/lib/dashboard/format";
 
 /** "Hotel · Scottsdale" or "Gala · Phoenix". */
 export const kindOf = (target: Target) =>
-  `${target.kind === "ACCOUNT" ? CATEGORIES[target.category].short : EVENT_TYPES[target.type].short} · ${target.city}`;
+  `${target.kind === "ACCOUNT" ? CATEGORIES[target.category].short : EVENT_TYPES[target.type].short}${target.city ? ` · ${target.city}` : ""}`;
+
+/** A Google photo that steps aside for something else if it won't load. */
+export function Photo({
+  src,
+  className,
+  fallback = null,
+}: {
+  src?: string;
+  className?: string;
+  fallback?: ReactNode;
+}) {
+  const [broken, setBroken] = useState(false);
+  // A photo that failed before the page came to life never says so: check.
+  const check = useCallback((img: HTMLImageElement | null) => {
+    if (img?.complete && img.naturalWidth === 0) setBroken(true);
+  }, []);
+  if (!src || broken) return <>{fallback}</>;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- Google's photos come through our own proxy, not next/image.
+    <img
+      ref={check}
+      src={src}
+      alt=''
+      className={className}
+      loading='lazy'
+      decoding='async'
+      onError={() => setBroken(true)}
+    />
+  );
+}
 
 export function Tile({
   target,
@@ -44,7 +75,11 @@ export function Tile({
       className={`${styles.tile} ${tone} ${size === "lg" ? styles.tileLg : ""}`}
       aria-hidden='true'
     >
-      <Icon name={icon} />
+      <Photo
+        src={target.photo}
+        className={styles.tilePhoto}
+        fallback={<Icon name={icon} />}
+      />
     </span>
   );
 }
@@ -106,12 +141,13 @@ export function SaveButton({
   from: string;
   small?: boolean;
 }) {
-  const { save, savedFor, target } = useLeads();
+  const { save, savedFor, target, saving, href } = useLeads();
   const toast = useToast();
   const lead = savedFor(id);
+  const busy = saving.includes(id);
   if (lead) {
     return (
-      <Link href={`/dashboard/leads/${id}`} className={styles.savedLink}>
+      <Link href={href(id)} className={styles.savedLink}>
         <StagePill stage={lead.stage} />
       </Link>
     );
@@ -120,20 +156,24 @@ export function SaveButton({
     <button
       type='button'
       className={`${ui.btn} ${ui.btn_black} ${small ? ui.btnSmall : ""}`}
-      onClick={(e) => {
+      disabled={busy}
+      aria-busy={busy}
+      onClick={async (e) => {
         e.preventDefault();
         e.stopPropagation();
         const t = target(id);
-        if (!t || !save(id, from)) return;
+        if (!t) return;
+        const result = await save(id, from);
+        if (!result) return;
         toast(`Saved ${t.name}`, {
-          detail: t.contact
-            ? `We found ${t.contact.name}, ${t.contact.title}, and wrote your scripts.`
+          detail: result.contact
+            ? `We found ${result.contact.name}, ${result.contact.title}, and wrote your scripts.`
             : "We wrote your scripts. No contact yet, so start with their main line.",
         });
       }}
     >
-      Save
-      <Icon name='plus' className={ui.btnIcon} />
+      {busy ? "Saving…" : "Save"}
+      {!busy && <Icon name='plus' className={ui.btnIcon} />}
     </button>
   );
 }
@@ -152,6 +192,7 @@ export function WinDialog({
   const toast = useToast();
   const [amount, setAmount] = useState("");
   const [per, setPer] = useState<"MONTH" | "ONCE">("MONTH");
+  const [busy, setBusy] = useState(false);
   const t = target(id);
   const value = Number(amount);
 
@@ -160,10 +201,13 @@ export function WinDialog({
       {open && t && (
         <form
           className={ui.modalBody}
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            if (!value) return;
-            win(id, value, per);
+            if (!value || busy) return;
+            setBusy(true);
+            const ok = await win(id, value, per);
+            setBusy(false);
+            if (!ok) return;
             onClose();
             setAmount("");
             toast(`Won ${t.name}`, {
@@ -232,7 +276,7 @@ export function WinDialog({
             <button
               type='submit'
               className={`${ui.btn} ${ui.btn_black}`}
-              disabled={!value}
+              disabled={!value || busy}
             >
               Mark won
               <Icon name='check' className={ui.btnIcon} />

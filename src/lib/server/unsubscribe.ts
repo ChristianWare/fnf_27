@@ -11,6 +11,7 @@ export const EMAIL_NAMES: Record<string, string> = {
   changes: "updates on your change requests",
   invoices: "invoices and receipts",
   digest: "the morning leads email",
+  leads: "the studio's morning leads email",
 };
 
 export function checkLink(u?: string, k?: string, s?: string) {

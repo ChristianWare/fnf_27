@@ -155,7 +155,7 @@ export function HowBilling({
             when: `${fmtShort(trialEnds)} – ${fmtShort(restOfMonth)}`,
             amount: money(prorate(leadsMonthly, trialEnds)),
             title: "The rest of that month",
-            text: "If they add a card, prorated by the day.",
+            text: "If they add a card, prorated from when the trial ends.",
             tone: "white",
           },
           {

@@ -12,6 +12,7 @@ import { useToast } from "../Toast/Toast";
 import { useLeads } from "./Store";
 import {
   kindOf,
+  Photo,
   Reasons,
   SaveButton,
   StagePill,
@@ -21,8 +22,7 @@ import {
 import styles from "./Leads.module.css";
 import { briefFor, eventDates, writeScripts } from "@/lib/leads/advice";
 import { CATEGORIES, EVENT_TYPES, SOURCES, STAGES } from "@/lib/leads/catalog";
-import { lastRun } from "@/lib/leads/market";
-import type { ActivityKind, LeadStage } from "@/lib/leads/types";
+import type { ActivityKind, LeadExtras, LeadStage } from "@/lib/leads/types";
 import {
   dayKey,
   fmtAgo,
@@ -49,26 +49,41 @@ const activityIcon: Record<ActivityKind, IconName> = {
 
 const DAY = 86_400_000;
 
-export default function Lead({ id }: { id: string }) {
+const siteLabel = (url: string) =>
+  url
+    .replace(/^https?:\/\//i, "")
+    .replace(/^www\./i, "")
+    .replace(/\/$/, "");
+
+export default function Lead({
+  id,
+  extras = {},
+}: {
+  id: string;
+  extras?: LeadExtras;
+}) {
   const leads = useLeads();
-  const { now, settings, target, savedFor } = leads;
+  const { now, settings, target, savedFor, href, newSince } = leads;
   const toast = useToast();
   const [tab, setTab] = useState<ScriptTab>("email");
   const [winning, setWinning] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [logNote, setLogNote] = useState("");
   const [removing, setRemoving] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
 
   const t = target(id);
   if (!t) return null;
   const lead = savedFor(id);
   const brief = briefFor(t, now);
-  const scripts = lead ? writeScripts(t, settings) : undefined;
+  const scripts = lead
+    ? (lead.scripts ?? writeScripts(t, settings))
+    : undefined;
   const angle =
     t.kind === "ACCOUNT" ? CATEGORIES[t.category] : EVENT_TYPES[t.type];
   const first = t.contact?.name.split(" ")[0];
   const phone = t.contact?.phone ?? t.phone;
-  const isNew = t.foundAt >= lastRun(new Date(now)) && !lead;
+  const isNew = t.foundAt > newSince && !lead;
 
   const copy = async (text: string, what: string) => {
     try {
@@ -79,23 +94,38 @@ export default function Lead({ id }: { id: string }) {
     }
   };
 
-  const logged = (how: "EMAIL" | "TEXT" | "CALL" | "MET", note?: string) => {
-    const at = leads.log(id, how, note);
-    toast("Logged", {
-      detail: `We'll remind you to follow up ${fmtWeekday(at)}.`,
-    });
+  /** Runs one change at a time, with its button showing it's busy. */
+  const doing = async (what: string, work: () => Promise<unknown>) => {
+    if (busy) return;
+    setBusy(what);
+    try {
+      await work();
+    } finally {
+      setBusy(null);
+    }
   };
 
-  const remindIn = (days?: number) => {
-    const at =
-      days === undefined
-        ? undefined
-        : new Date(new Date().getTime() + days * DAY).toISOString();
-    leads.remind(id, at);
-    toast(at ? `Reminder set for ${fmtWeekday(at)}` : "Reminder cleared", {
-      tone: at ? "success" : "info",
+  const logged = (how: "EMAIL" | "TEXT" | "CALL" | "MET", note?: string) =>
+    doing(`log-${how}`, async () => {
+      const at = await leads.log(id, how, note);
+      if (!at) return;
+      setLogNote("");
+      toast("Logged", {
+        detail: `We'll remind you to follow up ${fmtWeekday(at)}.`,
+      });
     });
-  };
+
+  const remindIn = (days?: number) =>
+    doing(`remind-${days ?? "clear"}`, async () => {
+      const at =
+        days === undefined
+          ? undefined
+          : new Date(new Date().getTime() + days * DAY).toISOString();
+      if (!(await leads.remind(id, at))) return;
+      toast(at ? `Reminder set for ${fmtWeekday(at)}` : "Reminder cleared", {
+        tone: at ? "success" : "info",
+      });
+    });
 
   const due = lead?.remindAt
     ? dayKey(lead.remindAt) < dayKey(now)
@@ -105,10 +135,20 @@ export default function Lead({ id }: { id: string }) {
         : fmtWeekday(lead.remindAt)
     : undefined;
 
+  const drive = extras.drive
+    ? [
+        {
+          label: "Drive",
+          value: `${extras.drive.minutes} min · ${extras.drive.miles} mi from ${settings.base.city}`,
+        },
+      ]
+    : [];
+
   const facts: { label: string; value: string; href?: string }[] =
     t.kind === "ACCOUNT"
       ? [
-          { label: "Address", value: t.address },
+          ...(t.address ? [{ label: "Address", value: t.address }] : []),
+          ...drive,
           ...(t.rating
             ? [
                 {
@@ -124,8 +164,10 @@ export default function Lead({ id }: { id: string }) {
             ? [
                 {
                   label: "Website",
-                  value: t.website,
-                  href: `https://${t.website}`,
+                  value: siteLabel(t.website),
+                  href: /^https?:/i.test(t.website)
+                    ? t.website
+                    : `https://${t.website}`,
                 },
               ]
             : []),
@@ -133,15 +175,30 @@ export default function Lead({ id }: { id: string }) {
       : [
           {
             label: "When",
-            value: `${eventDates(t)} · ${fmtTime(t.date)}`,
+            value: t.allDay
+              ? eventDates(t)
+              : `${eventDates(t)} · ${fmtTime(t.date)}`,
           },
-          { label: "Where", value: `${t.venue}, ${t.city}` },
-          { label: "Organizer", value: t.organizer },
+          {
+            label: "Where",
+            value: [t.venue, t.city].filter(Boolean).join(", ") || "Not listed",
+          },
+          ...drive,
+          ...(t.organizer ? [{ label: "Organizer", value: t.organizer }] : []),
           ...(t.guests
             ? [
                 {
                   label: t.type === "WEDDING_SHOW" ? "Couples" : "Guests",
                   value: t.guests.toLocaleString("en-US"),
+                },
+              ]
+            : []),
+          ...(t.website
+            ? [
+                {
+                  label: "Event page",
+                  value: siteLabel(t.website),
+                  href: t.website,
                 },
               ]
             : []),
@@ -168,7 +225,7 @@ export default function Lead({ id }: { id: string }) {
   return (
     <>
       <Link
-        href={`/dashboard/leads/find${t.kind === "EVENT" ? "?tab=events" : ""}`}
+        href={href(`find${t.kind === "EVENT" ? "?tab=events" : ""}`)}
         className={styles.back}
       >
         <Icon name='arrow' className={styles.backIcon} />
@@ -177,8 +234,35 @@ export default function Lead({ id }: { id: string }) {
 
       {/* ── The lead ── */}
       <header className={styles.leadHead}>
+        {extras.photo && (
+          <figure className={styles.leadPhoto}>
+            <Photo src={extras.photo.src} className={styles.leadPhotoImg} />
+            <figcaption className={styles.photoCredit}>
+              {t.kind === "EVENT" ? `${t.venue || "The venue"} · ` : ""}
+              Photo
+              {extras.photo.credit ? (
+                <>
+                  {" "}
+                  by{" "}
+                  {extras.photo.creditUrl ? (
+                    <a
+                      href={extras.photo.creditUrl}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      {extras.photo.credit}
+                    </a>
+                  ) : (
+                    extras.photo.credit
+                  )}
+                </>
+              ) : null}{" "}
+              on Google
+            </figcaption>
+          </figure>
+        )}
         <div className={styles.leadTop}>
-          <Tile target={t} now={now} size='lg' />
+          <Tile target={{ ...t, photo: undefined }} now={now} size='lg' />
           <div className={styles.leadTitles}>
             <span className={ui.monoMuted}>
               {kindOf(t)} · {t.miles} mi away
@@ -263,8 +347,12 @@ export default function Lead({ id }: { id: string }) {
                 <span className={styles.personText}>
                   <span className={styles.personName}>{t.contact.name}</span>
                   <span className={styles.rowMeta}>
-                    {t.contact.title} ·{" "}
-                    {t.kind === "EVENT" ? t.organizer : t.name}
+                    {t.contact.title}
+                    {t.kind === "EVENT"
+                      ? t.organizer
+                        ? ` · ${t.organizer}`
+                        : ""
+                      : ` · ${t.name}`}
                   </span>
                   <span className={styles.personLinks}>
                     {t.contact.email && (
@@ -277,8 +365,15 @@ export default function Lead({ id }: { id: string }) {
                     )}
                   </span>
                 </span>
-                <Pill tone={t.contact.verified ? "lime" : "gray"} dot>
-                  {t.contact.verified ? "Email verified" : "Not verified"}
+                <Pill
+                  tone={t.contact.email && t.contact.verified ? "lime" : "gray"}
+                  dot
+                >
+                  {!t.contact.email
+                    ? "No email yet"
+                    : t.contact.verified
+                      ? "Email verified"
+                      : "Not verified"}
                 </Pill>
               </div>
             ) : (
@@ -389,6 +484,7 @@ export default function Lead({ id }: { id: string }) {
                   <button
                     type='button'
                     className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+                    disabled={Boolean(busy)}
                     onClick={() =>
                       logged(
                         tab === "email"
@@ -406,7 +502,23 @@ export default function Lead({ id }: { id: string }) {
                 <p className={styles.scriptNote}>
                   These introduce you as {settings.operator.company} with{" "}
                   {settings.operator.fleet}.{" "}
-                  <Link href='/dashboard/leads/settings'>Change that</Link>
+                  <Link href={href("settings")}>Change that</Link>
+                  {" · "}
+                  <button
+                    type='button'
+                    className={styles.linkButton}
+                    disabled={Boolean(busy)}
+                    onClick={() =>
+                      doing("rewrite", async () => {
+                        if (await leads.rewrite(id))
+                          toast("New scripts written", {
+                            detail: "Same lead, a fresh take.",
+                          });
+                      })
+                    }
+                  >
+                    {busy === "rewrite" ? "Writing…" : "Write new ones"}
+                  </button>
                 </p>
               </>
             ) : (
@@ -430,11 +542,51 @@ export default function Lead({ id }: { id: string }) {
               {brief.map((line) => (
                 <div key={line.label} className={styles.briefRow}>
                   <dt>{line.label}</dt>
-                  <dd>{line.text}</dd>
+                  <dd>
+                    {line.label === "In the news" &&
+                    t.kind === "ACCOUNT" &&
+                    t.news ? (
+                      <>
+                        <a
+                          href={t.news.url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
+                          {t.news.title}
+                        </a>
+                        . A new opening or a move is the best time to introduce
+                        yourself.
+                      </>
+                    ) : (
+                      line.text
+                    )}
+                  </dd>
                 </div>
               ))}
             </dl>
           </section>
+
+          {/* ── Getting there ── */}
+          {extras.map && (
+            <section className={ui.panel}>
+              <div className={ui.panelTitles}>
+                <h2 className={ui.panelTitle}>Getting there</h2>
+                <p>
+                  {extras.drive
+                    ? `About ${extras.drive.minutes} minutes from ${settings.base.city}, without traffic.`
+                    : `${t.miles} miles from ${settings.base.city} as the crow flies.`}
+                </p>
+              </div>
+              <iframe
+                title={`Map of ${t.name}`}
+                src={extras.map}
+                className={styles.map}
+                loading='lazy'
+                referrerPolicy='no-referrer-when-downgrade'
+                allowFullScreen
+              />
+            </section>
+          )}
         </div>
 
         <div className={styles.column}>
@@ -458,14 +610,14 @@ export default function Lead({ id }: { id: string }) {
                       role='radio'
                       aria-checked={lead.stage === s.id}
                       className={`${styles.stageOption} ${lead.stage === s.id ? styles[`stageOn_${s.tone}`] : ""}`}
-                      onClick={() => {
+                      onClick={async () => {
                         if (s.id === lead.stage) return;
                         if (s.id === "WON") {
                           setWinning(true);
                           return;
                         }
-                        leads.setStage(id, s.id as LeadStage);
-                        toast(`Moved to ${s.label}`, { tone: "info" });
+                        if (await leads.setStage(id, s.id as LeadStage))
+                          toast(`Moved to ${s.label}`, { tone: "info" });
                       }}
                     >
                       <span
@@ -504,6 +656,7 @@ export default function Lead({ id }: { id: string }) {
                         key={days}
                         type='button'
                         className={ui.chip}
+                        disabled={Boolean(busy)}
                         onClick={() => remindIn(days)}
                       >
                         {label}
@@ -513,6 +666,7 @@ export default function Lead({ id }: { id: string }) {
                       <button
                         type='button'
                         className={ui.chip}
+                        disabled={Boolean(busy)}
                         onClick={() => remindIn()}
                       >
                         Clear
@@ -548,10 +702,8 @@ export default function Lead({ id }: { id: string }) {
                       key={how}
                       type='button'
                       className={styles.logButton}
-                      onClick={() => {
-                        logged(how, logNote);
-                        setLogNote("");
-                      }}
+                      disabled={Boolean(busy)}
+                      onClick={() => logged(how, logNote)}
                     >
                       <Icon name={icon} />
                       {label}
@@ -571,9 +723,11 @@ export default function Lead({ id }: { id: string }) {
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!noteText.trim()) return;
-                    leads.note(id, noteText);
-                    setNoteText("");
-                    toast("Note added");
+                    doing("note", async () => {
+                      if (!(await leads.note(id, noteText))) return;
+                      setNoteText("");
+                      toast("Note added");
+                    });
                   }}
                 >
                   <input
@@ -586,7 +740,7 @@ export default function Lead({ id }: { id: string }) {
                   <button
                     type='submit'
                     className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-                    disabled={!noteText.trim()}
+                    disabled={!noteText.trim() || Boolean(busy)}
                   >
                     Add
                   </button>
@@ -618,11 +772,13 @@ export default function Lead({ id }: { id: string }) {
                     setRemoving(true);
                     return;
                   }
-                  leads.remove(id);
-                  setRemoving(false);
-                  toast(`Removed ${t.name}`, {
-                    tone: "info",
-                    detail: "It's back in Find if you change your mind.",
+                  doing("remove", async () => {
+                    setRemoving(false);
+                    if (!(await leads.remove(id))) return;
+                    toast(`Removed ${t.name}`, {
+                      tone: "info",
+                      detail: "It's back in Find if you change your mind.",
+                    });
                   });
                 }}
                 onBlur={() => setRemoving(false)}

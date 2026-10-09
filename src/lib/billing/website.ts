@@ -18,9 +18,15 @@ import { money } from "@/lib/dashboard/format";
 import { PLANS } from "@/lib/dashboard/plans";
 import { recordPaidInvoice } from "./invoices";
 import {
+  retryLeadsPayment,
+  startLeadsSubscription,
+  syncLeadsSubscription,
+} from "./leads";
+import {
   BillingError,
   cacheCard,
   ensureCustomer,
+  errorText,
   periodEnd,
   productFor,
   stripe,
@@ -259,6 +265,20 @@ export async function completeCardCheckout(sessionId: string) {
     );
   }
   if (row?.site.status === "PAST_DUE") await retryWebsitePayment(clientId);
+  if (client.leadsStatus === "PAST_DUE")
+    await retryLeadsPayment(clientId).catch(() => undefined);
+  // Added to keep the Leads Tool: its subscription starts now. A declined
+  // card is the client's to fix, not a webhook to retry.
+  if (session.metadata?.purpose === "leads") {
+    try {
+      await startLeadsSubscription(clientId, method.id, session.id);
+      return { leads: "ok" as const };
+    } catch (error) {
+      console.error("[billing] Leads Tool subscription failed:", error);
+      return { leads: errorText(error) };
+    }
+  }
+  return {};
 }
 
 /** Starts billing again after a plan ended: first bill on the next 1st. */
@@ -555,25 +575,5 @@ export async function syncSubscription(subId: string) {
     }
     return;
   }
-  const [client] = await db
-    .select()
-    .from(clients)
-    .where(eq(clients.leadsSubscriptionId, subId))
-    .limit(1);
-  if (client) {
-    const leadsStatus =
-      sub.status === "canceled"
-        ? "ENDED"
-        : sub.status === "past_due" || sub.status === "unpaid"
-          ? "PAST_DUE"
-          : sub.cancel_at_period_end || sub.cancel_at
-            ? "CANCELLING"
-            : sub.status === "trialing"
-              ? "TRIAL"
-              : "ACTIVE";
-    await db
-      .update(clients)
-      .set({ leadsStatus, updatedAt: new Date() })
-      .where(eq(clients.id, client.id));
-  }
+  await syncLeadsSubscription(sub);
 }

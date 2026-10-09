@@ -6,6 +6,8 @@ import type { studioStats } from "@/lib/admin/derive";
 export function adminNav(
   stats: ReturnType<typeof studioStats>,
   queue: number,
+  /** Studio leads to reach or follow up with today. */
+  leadsDue = 0,
 ): NavGroup[] {
   return [
     {
@@ -43,6 +45,24 @@ export function adminNav(
       ],
     },
     {
+      title: "Your leads",
+      items: [
+        {
+          href: "/admin/leads",
+          label: "Today",
+          icon: "target",
+          badge: leadsDue || undefined,
+        },
+        { href: "/admin/leads/find", label: "Find leads", icon: "search" },
+        { href: "/admin/leads/pipeline", label: "Pipeline", icon: "chart" },
+        {
+          href: "/admin/leads/settings",
+          label: "Lead settings",
+          icon: "settings",
+        },
+      ],
+    },
+    {
       title: "Money",
       items: [
         {
@@ -57,6 +77,7 @@ export function adminNav(
       title: "Settings",
       items: [
         { href: "/admin/team", label: "Team and roles", icon: "shield" },
+        { href: "/admin/leads-tool", label: "Leads Tool", icon: "globe" },
         {
           href: "/admin/settings",
           label: "Plans and billing",

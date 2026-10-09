@@ -274,14 +274,30 @@ export async function recordPaidInvoice(invoiceId: string) {
       })
       .where(eq(websites.clientId, client.id));
   }
-  if (product === "LEADS") {
+  const leadsSub = subscriptionOf(inv);
+  // Only the plan they have now: a late bill from one that ended changes
+  // nothing.
+  if (product === "LEADS" && leadsSub) {
+    const line = serviceLine(inv);
     await db
       .update(clients)
       .set({
         leadsStatus: sql`case when ${clients.leadsStatus} in ('PAST_DUE', 'TRIAL') then 'ACTIVE' else ${clients.leadsStatus} end`,
+        ...(line?.period?.end
+          ? {
+              leadsNextBillingAt: asBillingDay(
+                new Date(line.period.end * 1000),
+              ),
+            }
+          : {}),
         updatedAt: new Date(),
       })
-      .where(eq(clients.id, client.id));
+      .where(
+        and(
+          eq(clients.id, client.id),
+          eq(clients.leadsSubscriptionId, leadsSub),
+        ),
+      );
   }
 
   await addActivity(
@@ -328,11 +344,19 @@ export async function recordFailedInvoice(invoiceId: string) {
         ),
       );
   }
-  if (product === "LEADS") {
+  // Only the plan they have now: a late failure from one that ended can't
+  // switch the tool back on.
+  const leadsSub = subscriptionOf(inv);
+  if (product === "LEADS" && leadsSub) {
     await db
       .update(clients)
       .set({ leadsStatus: "PAST_DUE", updatedAt: new Date() })
-      .where(eq(clients.id, client.id));
+      .where(
+        and(
+          eq(clients.id, client.id),
+          eq(clients.leadsSubscriptionId, leadsSub),
+        ),
+      );
   }
   // Stripe retries a failed charge a few times: only speak up the first time.
   if (!created) return;

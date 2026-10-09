@@ -1,24 +1,17 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import Lead from "@/components/Dashboard/Leads/Lead";
-import { requireLeads } from "@/lib/leads/server";
-
-async function findTarget(id: string) {
-  const workspace = await requireLeads();
-  const target =
-    workspace.accounts.find((a) => a.id === id) ??
-    workspace.events.find((e) => e.id === id);
-  if (!target) notFound();
-  return target;
-}
+import { getLeads, requireLeads, targetIn } from "@/lib/leads/server";
+import { leadExtras } from "@/lib/leads/workspace";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const target = await findTarget((await params).id);
-  return { title: target.name };
+  const workspace = await requireLeads();
+  return {
+    title: targetIn(workspace, decodeURIComponent((await params).id)).name,
+  };
 }
 
 export default async function LeadPage({
@@ -26,6 +19,9 @@ export default async function LeadPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const target = await findTarget((await params).id);
-  return <Lead id={target.id} />;
+  const workspace = await requireLeads();
+  const { client } = await getLeads();
+  const target = targetIn(workspace, decodeURIComponent((await params).id));
+  const extras = await leadExtras(client.id, target, workspace.settings.base);
+  return <Lead id={target.id} extras={extras} />;
 }

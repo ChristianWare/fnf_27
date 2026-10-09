@@ -21,7 +21,14 @@ export async function GET(request: Request) {
       return back("/dashboard/billing");
     }
     if (session.mode === "setup") {
-      await completeCardCheckout(id);
+      const result = await completeCardCheckout(id);
+      if (session.metadata?.purpose === "leads") {
+        return back(
+          result?.leads && result.leads !== "ok"
+            ? `/dashboard/billing?error=${encodeURIComponent(result.leads)}#leads`
+            : "/dashboard/billing?done=leads#leads",
+        );
+      }
       return back("/dashboard/billing?done=card");
     }
     await completeSetupCheckout(id);

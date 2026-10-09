@@ -1,8 +1,7 @@
 "use client";
 
 // Where the client works, what they're after, how their scripts introduce
-// them, and the morning email. SAMPLE: saving keeps the changes until you
-// reload; after the move it saves them.
+// them, and the morning email.
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -20,16 +19,29 @@ import type {
   LeadsSettings,
   SourceId,
 } from "@/lib/leads/types";
+import { prorate } from "@/lib/dashboard/billing";
 import { fmtDate, money } from "@/lib/dashboard/format";
 
 const RADII = [10, 25, 50, 75];
 
 export default function Settings() {
   const leads = useLeads();
-  const { now, access, trialEndsAt, monthly } = leads;
+  const { now, access, trialEndsAt, monthly, billing, readOnly } = leads;
   const toast = useToast();
   const [draft, setDraft] = useState<LeadsSettings>(leads.settings);
+  const [saving, setSaving] = useState(false);
+  const known = Object.keys(CITIES);
+  const [elsewhere, setElsewhere] = useState(
+    !known.includes(leads.settings.base.city),
+  );
+  const [typed, setTyped] = useState(
+    known.includes(leads.settings.base.city) ? "" : leads.settings.base.city,
+  );
   const changed = JSON.stringify(draft) !== JSON.stringify(leads.settings);
+  // A city typed in is found when it's saved; until then, no counts.
+  const located =
+    known.includes(draft.base.city) ||
+    draft.base.city === leads.settings.base.city;
 
   const set = (patch: Partial<LeadsSettings>) =>
     setDraft((d) => ({ ...d, ...patch }));
@@ -82,22 +94,46 @@ export default function Settings() {
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_light}`}
-              onClick={() => setDraft(leads.settings)}
+              onClick={() => {
+                setDraft(leads.settings);
+                setElsewhere(!known.includes(leads.settings.base.city));
+                setTyped(
+                  known.includes(leads.settings.base.city)
+                    ? ""
+                    : leads.settings.base.city,
+                );
+              }}
             >
               Undo
             </button>
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black}`}
-              disabled={!draft.categories.length && !draft.eventTypes.length}
-              onClick={() => {
-                leads.updateSettings(draft);
+              disabled={
+                saving ||
+                readOnly ||
+                !draft.base.city.trim() ||
+                (!draft.categories.length && !draft.eventTypes.length)
+              }
+              onClick={async () => {
+                setSaving(true);
+                const saved = await leads.updateSettings(draft);
+                setSaving(false);
+                if (!saved) return;
+                setDraft(saved);
+                setElsewhere(!known.includes(saved.base.city));
+                setTyped(
+                  known.includes(saved.base.city) ? "" : saved.base.city,
+                );
                 toast("Settings saved", {
-                  detail: `${inRange.accounts.length} accounts and ${inRange.events.length} events in range. Tomorrow's email uses them.`,
+                  detail:
+                    saved.base.city !== leads.settings.base.city
+                      ? `Your base is ${saved.base.city} now. Your lists are catching up.`
+                      : `${inRange.accounts.length} accounts and ${inRange.events.length} events in range. Tomorrow's email uses them.`,
                 });
               }}
             >
-              Save changes
+              {saving ? "Saving…" : "Save changes"}
               <Icon name='check' className={ui.btnIcon} />
             </button>
           </>
@@ -117,29 +153,53 @@ export default function Settings() {
                 </p>
               </div>
               <span className={styles.rangeTag}>
-                {inRange.accounts.length} accounts · {inRange.events.length}{" "}
-                events
+                {located
+                  ? `${inRange.accounts.length} accounts · ${inRange.events.length} events`
+                  : "Found when you save"}
               </span>
             </div>
             <div className={styles.formRow}>
-              <label className={ui.field}>
-                <span className={ui.label}>Your base</span>
+              <div className={ui.field}>
+                <label className={ui.label} htmlFor='lead-base'>
+                  Your base
+                </label>
                 <select
+                  id='lead-base'
                   className={ui.select}
-                  value={draft.base.city}
-                  onChange={(e) =>
+                  value={elsewhere ? "" : draft.base.city}
+                  onChange={(e) => {
+                    if (!e.target.value) {
+                      setElsewhere(true);
+                      set({ base: { ...draft.base, city: typed } });
+                      return;
+                    }
+                    setElsewhere(false);
                     set({
                       base: { city: e.target.value, ...CITIES[e.target.value] },
-                    })
-                  }
+                    });
+                  }}
                 >
-                  {Object.keys(CITIES).map((city) => (
+                  {known.map((city) => (
                     <option key={city} value={city}>
                       {city}, AZ
                     </option>
                   ))}
+                  <option value=''>Somewhere else…</option>
                 </select>
-              </label>
+                {elsewhere && (
+                  <input
+                    className={ui.input}
+                    value={typed}
+                    onChange={(e) => {
+                      setTyped(e.target.value);
+                      set({ base: { ...draft.base, city: e.target.value } });
+                    }}
+                    placeholder='City, State'
+                    aria-label='Your city'
+                    autoFocus
+                  />
+                )}
+              </div>
               <div className={ui.field}>
                 <span className={ui.label}>How far you&apos;ll drive</span>
                 <div className={ui.chips} role='radiogroup' aria-label='Radius'>
@@ -345,24 +405,43 @@ export default function Settings() {
           {/* ── Plan ── */}
           <section className={ui.panel}>
             <div className={ui.panelTitles}>
-              <h2 className={ui.panelTitle}>Your plan</h2>
+              <h2 className={ui.panelTitle}>
+                {access === "STUDIO" ? "The studio's Leads Tool" : "Your plan"}
+              </h2>
               <p>
-                {access === "INCLUDED"
-                  ? "The Leads Tool is included with your Full Platform plan."
-                  : access === "TRIAL"
-                    ? `Free trial, ${trialDays} ${trialDays === 1 ? "day" : "days"} left${trialEndsAt ? `, until ${fmtDate(trialEndsAt)}` : ""}. To keep it, add a card: the first charge covers the rest of that month, then ${money(monthly)} on the 1st.`
-                    : `${money(monthly)} a month, billed on the 1st. Cancel anytime.`}
+                {access === "STUDIO"
+                  ? "Free for admins and always on: your own market, your own saved leads, separate from every client's."
+                  : access === "INCLUDED"
+                    ? "The Leads Tool is included with your Full Platform plan."
+                    : access === "TRIAL"
+                      ? billing.subscribed && trialEndsAt
+                        ? `Free trial, ${trialDays} ${trialDays === 1 ? "day" : "days"} left. Your card is set up: on ${fmtDate(trialEndsAt)} it's charged ${money(prorate(monthly, trialEndsAt))} for the rest of that month, then ${money(monthly)} on the 1st.`
+                        : `Free trial, ${trialDays} ${trialDays === 1 ? "day" : "days"} left${trialEndsAt ? `, until ${fmtDate(trialEndsAt)}` : ""}. To keep it, add a card: the first charge covers the rest of that month, then ${money(monthly)} on the 1st.`
+                      : billing.raw === "CANCELLING"
+                        ? `Cancelled. It runs until ${billing.nextBillingAt ? fmtDate(billing.nextBillingAt) : "the end of the month"}, and nothing more is charged.`
+                        : billing.raw === "PAST_DUE"
+                          ? "Your last payment didn't go through. Update your card to keep it."
+                          : `${money(monthly)} a month, billed on the 1st. Cancel anytime.`}
               </p>
             </div>
-            {access !== "INCLUDED" && (
+            {access === "TRIAL" && !billing.subscribed && !readOnly ? (
+              <a
+                href='/dashboard/billing/leads'
+                className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall} ${styles.selfStart}`}
+                data-no-transition
+              >
+                Add a card
+                <Icon name='arrow' className={ui.btnIcon} />
+              </a>
+            ) : access === "TRIAL" || access === "ACTIVE" ? (
               <Link
                 href='/dashboard/billing#leads'
                 className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall} ${styles.selfStart}`}
               >
-                {access === "TRIAL" ? "Add a card" : "Billing"}
+                Billing
                 <Icon name='arrow' className={ui.btnIcon} />
               </Link>
-            )}
+            ) : null}
           </section>
         </div>
       </div>

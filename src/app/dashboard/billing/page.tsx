@@ -12,6 +12,10 @@ const BACK: Record<string, { tone: "good" | "info"; text: string }> = {
     text: "Setup fee paid. Thank you! Your receipt is on its way by email, and monthly billing starts on the 1st.",
   },
   card: { tone: "good", text: "Card saved. We'll use it from now on." },
+  leads: {
+    tone: "good",
+    text: "Card saved. Your Leads Tool is all set to keep going.",
+  },
   pending: {
     tone: "info",
     text: "Stripe is confirming your payment. This page catches up in a minute.",
@@ -23,7 +27,7 @@ export default async function BillingPage({
 }: {
   searchParams: Promise<{ done?: string; error?: string }>;
 }) {
-  const { client, now } = await getDashboard();
+  const { client, now, viewingAs } = await getDashboard();
   const website = client.website;
   const { done, error } = await searchParams;
   const back = done ? BACK[done] : undefined;
@@ -64,9 +68,14 @@ export default async function BillingPage({
         }}
         leads={{
           access: leadsAccess(client),
+          raw: client.leads.raw,
           monthly: LEADS.monthly,
           trialDays: LEADS.trialDays,
           trialEndsAt: client.leads.trialEndsAt,
+          nextBillingAt: client.leads.nextBillingAt,
+          subscribed: client.leads.subscribed,
+          hadIt: Boolean(client.leads.startedAt),
+          viewing: viewingAs,
         }}
         card={client.card}
         invoices={client.invoices}
