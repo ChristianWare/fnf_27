@@ -128,11 +128,13 @@ export async function ticketmasterEvents(
 
 const APIFY = "https://api.apify.com/v2";
 export const apifyReady = () => Boolean(process.env.APIFY_API_TOKEN);
-const actor = () =>
+/** The actor's id the way Apify's API wants it: "scrapio~eventbrite-scraper". */
+export const eventbriteActor = () =>
   (process.env.APIFY_EVENTBRITE_ACTOR ?? "scrapio/eventbrite-scraper").replace(
     "/",
     "~",
   );
+const actor = eventbriteActor;
 
 /** Eventbrite's address for a city: "az--phoenix". */
 export const eventbriteSlug = (city: string, state: string) =>

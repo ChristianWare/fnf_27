@@ -422,6 +422,25 @@
   border-top: none;
 }
 
+.checkOk,
+.checkBad {
+  padding: 0.8rem 1.2rem;
+  border-radius: 1rem;
+  font-size: 16px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.checkOk {
+  background-color: var(--accent3Light);
+  color: var(--black);
+}
+
+.checkBad {
+  background-color: #ffe4de;
+  color: #a2301c;
+}
+
 @media (max-width: 1100px) {
   .tiles,
   .facts {

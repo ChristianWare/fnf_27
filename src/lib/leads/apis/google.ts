@@ -193,13 +193,26 @@ export async function placeDetails(
   }
 }
 
-/** Where a venue is: its address, city and location (Essentials, $5/1,000). */
+/**
+ * Where a venue is: its address, city and location (Essentials, $5/1,000).
+ * Undefined when Google no longer has the place.
+ */
 export async function placeBasics(id: string, who: Who) {
-  const p = await callJson<GooglePlace>(
-    "Google details",
-    `${PLACES}/places/${encodeURIComponent(id)}`,
-    { headers: headers("id,formattedAddress,addressComponents,location") },
-  );
+  let p: GooglePlace;
+  try {
+    p = await callJson<GooglePlace>(
+      "Google details",
+      `${PLACES}/places/${encodeURIComponent(id)}`,
+      { headers: headers("id,formattedAddress,addressComponents,location") },
+    );
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      (error.status === 404 || error.status === 400)
+    )
+      return undefined;
+    throw error;
+  }
   track("places_basic", who);
   if (!p.location) return undefined;
   return {

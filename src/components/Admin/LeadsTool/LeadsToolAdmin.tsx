@@ -11,12 +11,14 @@ import { useAction } from "@/components/Dashboard/useAction";
 import {
   addMarket,
   addSource,
+  checkServices,
   removeSource,
   runMarketNow,
   setClientLeads,
   setMarketPaused,
   setSourceEnabled,
   testSource,
+  type Check,
   type SourceTest,
 } from "@/app/admin/leads-actions";
 import type {
@@ -192,31 +194,93 @@ export default function LeadsToolAdmin({ data }: { data: LeadsAdmin }) {
           )}
         </section>
 
-        <section className={styles.panel}>
-          <div className={styles.titles}>
-            <h2 className={styles.heading}>Services</h2>
-            <p>
-              Set in Vercel&apos;s environment variables. Names only, never
-              values.
-            </p>
-          </div>
-          <ul className={styles.services}>
-            {data.services.map((s) => (
-              <li key={s.env} className={styles.service}>
-                <span className={styles.serviceText}>
-                  <span className={styles.serviceName}>{s.name}</span>
-                  <span className={styles.meta}>{s.env}</span>
-                  <p>{s.note}</p>
-                </span>
-                <Pill tone={s.ready ? "lime" : "red"} dot>
-                  {s.ready ? "Set" : "Missing"}
-                </Pill>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <Services data={data} />
       </div>
     </div>
+  );
+}
+
+/* ── Services: which keys are set, and what each one can do ── */
+
+function Services({ data }: { data: LeadsAdmin }) {
+  const { run, pending } = useAction();
+  const [checks, setChecks] = useState<Record<string, Check>>({});
+  const checked = Object.keys(checks).length > 0;
+  return (
+    <section className={styles.panel}>
+      <div className={styles.panelHead}>
+        <div className={styles.titles}>
+          <h2 className={styles.heading}>Services</h2>
+          <p>
+            Set in Vercel&apos;s environment variables. Names only, never
+            values. A key that&apos;s set can still be missing an API on
+            Google&apos;s side, or a permission: Check asks each one.
+          </p>
+        </div>
+        <button
+          type='button'
+          className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+          disabled={pending}
+          onClick={() =>
+            run(
+              () => checkServices(),
+              (results) => {
+                if (results) setChecks(results);
+                const bad = Object.values(results ?? {}).filter(
+                  (c) => !c.ok,
+                ).length;
+                return bad
+                  ? {
+                      message: `${bad} ${bad === 1 ? "service needs" : "services need"} a look`,
+                      detail: "Each one says what it needs below.",
+                      tone: "info",
+                    }
+                  : {
+                      message: "Every service answers",
+                      detail: "Keys, APIs and permissions all look right.",
+                    };
+              },
+            )
+          }
+        >
+          {pending ? "Checking…" : checked ? "Check again" : "Check them all"}
+          <Icon name='zap' className={ui.btnIcon} />
+        </button>
+      </div>
+      <ul className={styles.services}>
+        {data.services.map((s) => {
+          const check = checks[s.env];
+          return (
+            <li key={s.env} className={styles.service}>
+              <span className={styles.serviceText}>
+                <span className={styles.serviceName}>{s.name}</span>
+                <span className={styles.meta}>{s.env}</span>
+                <p>{s.note}</p>
+                {check && (
+                  <p className={check.ok ? styles.checkOk : styles.checkBad}>
+                    {check.text}
+                  </p>
+                )}
+              </span>
+              <Pill
+                tone={
+                  check ? (check.ok ? "lime" : "red") : s.ready ? "lime" : "red"
+                }
+                dot
+              >
+                {check
+                  ? check.ok
+                    ? "Works"
+                    : "Needs a look"
+                  : s.ready
+                    ? "Set"
+                    : "Missing"}
+              </Pill>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 

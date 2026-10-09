@@ -14,6 +14,10 @@ import { addActivity } from "@/lib/data/write";
 import { emailClient } from "@/lib/server/notify";
 import { url } from "@/lib/server/config";
 import { readCalendar } from "@/lib/leads/apis/calendars";
+import {
+  checkServices as checkEach,
+  type Check,
+} from "@/lib/leads/apis/checks";
 import { publicUrl } from "@/lib/leads/apis/http";
 import { eventKind } from "@/lib/leads/classify";
 import { CALENDAR_SOURCES, EVENT_KINDS, STUDIO_ID } from "@/lib/leads/kinds";
@@ -64,6 +68,18 @@ export async function runMarketNow(marketId: string): Promise<ActionResult> {
     }
   });
   return done();
+}
+
+export type { Check };
+
+/** Asks each service a small question, to show what its key can do. */
+export async function checkServices(): Promise<
+  ActionResult<Record<string, Check>>
+> {
+  if (!(await admin())) return fail("Only admins can do that.");
+  const results = await checkEach();
+  await flushUsage();
+  return done(results);
 }
 
 export async function setMarketPaused(

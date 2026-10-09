@@ -782,6 +782,9 @@ async function stepVenues(ctx: Ctx) {
 
 async function venuesFromGoogle(ctx: Ctx) {
   const stale = new Date(ctx.now.getTime() - 29 * DAY);
+  // Lookups that failed tonight aren't tried again until tomorrow, so one
+  // venue Google keeps refusing can't eat the whole run.
+  const failed = new Set<string>();
   while (ctx.left() > 20_000) {
     const rows = await db
       .select()
@@ -800,6 +803,7 @@ async function venuesFromGoogle(ctx: Ctx) {
           ),
           sql`(${s.leadsEvents.venue} <> '' or ${s.leadsEvents.address} is not null)`,
           sql`not (${s.leadsEvents.keys} @> '["NOVENUE"]'::jsonb)`,
+          ...(failed.size ? [notInArray(s.leadsEvents.id, [...failed])] : []),
         ),
       )
       .limit(25);
@@ -843,8 +847,18 @@ async function venuesFromGoogle(ctx: Ctx) {
             // Google doesn't know the venue: it goes by its city instead.
             await db
               .update(s.leadsEvents)
-              .set({ keys: sql`${s.leadsEvents.keys} || '["NOVENUE"]'::jsonb` })
+              .set({
+                venuePlaceId: null,
+                keys: sql`${s.leadsEvents.keys} || '["NOVENUE"]'::jsonb`,
+              })
               .where(eq(s.leadsEvents.id, event.id));
+            // A place Google retired: forget it, so the next event there
+            // searches again.
+            if (placeId)
+              await db
+                .update(s.leadsVenues)
+                .set({ placeId: null, lastLookedAt: ctx.now })
+                .where(eq(s.leadsVenues.placeId, placeId));
             ctx.count("venuesMissing");
             return;
           }
@@ -861,6 +875,7 @@ async function venuesFromGoogle(ctx: Ctx) {
             .where(eq(s.leadsEvents.id, event.id));
           ctx.count("venues");
         } catch (e) {
+          failed.add(event.id);
           ctx.count("venueErrors");
           if ((ctx.run.counts.venueErrors ?? 0) <= 3)
             ctx.fail(`Venue lookup: ${message(e)}`);
