@@ -9,12 +9,15 @@ export default function NotReady({
   market,
   trialEndsAt,
   action,
+  title = "Leads Tool",
 }: {
   state: "OFF" | "LOADING";
   market?: string;
   trialEndsAt?: string;
   /** Somewhere to go from here: support, or the admin's run button. */
   action?: { href: string; label: string };
+  /** The page it stands in for. */
+  title?: string;
 }) {
   const trial = trialEndsAt
     ? ` Your free trial runs until ${fmtDate(trialEndsAt)}.`
@@ -23,7 +26,7 @@ export default function NotReady({
     <>
       <PageHead
         crumb='Leads'
-        title='Leads Tool'
+        title={title}
         text='The hotels, venues, companies and events near you that book rides, every morning.'
       />
       <Panel>

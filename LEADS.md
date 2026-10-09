@@ -32,8 +32,10 @@ and anything older is cleared.
 1. `npm run db:migrate` adds the tables, the **Phoenix area** market and 8
    Phoenix-area calendars to start from. Full Platform clients start with
    the Leads Tool switched off.
-2. **Admin → Leads Tool → Run now.** It works for about four minutes; if
-   it's still going after that, click again (or it finishes tonight).
+2. **Admin → Leads Tool → Run now.** It works in rounds of about four
+   minutes (a first load takes a few) and starts the next round itself
+   while that page is open. Close it and the run finishes tonight; a run
+   left part done shows **Keep going**.
 3. **Test** each calendar. Switch off any that find nothing, and add your
    own (iCal files, RSS feeds, or any events page: the AI reads those).
 4. Turn Nier on under **Who has it**. They get a "your leads are in" email.

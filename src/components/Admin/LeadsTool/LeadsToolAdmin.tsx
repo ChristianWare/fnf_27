@@ -3,7 +3,7 @@
 // The Leads Tool's engine room: each market's runs (and "Run now"), the
 // calendars it reads, who has the tool switched on, and what it costs.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/Dashboard/icons";
 import { Pill, ui } from "@/components/Dashboard/ui/ui";
@@ -29,6 +29,7 @@ import { EVENT_TYPES, SOURCES } from "@/lib/leads/catalog";
 import { CALENDAR_SOURCES, EVENT_KINDS } from "@/lib/leads/kinds";
 import type { CalendarSource, EventType } from "@/lib/leads/types";
 import {
+  dayKey,
   fmtAgo,
   fmtDate,
   fmtShort,
@@ -38,6 +39,8 @@ import {
 import styles from "./LeadsToolAdmin.module.css";
 
 const STEPS = 11;
+/** Rounds of "Run now" this page carries on by itself, per market. */
+const MAX_ROUNDS = 8;
 
 /** "just now", "3 hours ago", "yesterday", or "on Oct 2", for mid-sentence. */
 const ago = (value: string, now: string) => {
@@ -59,13 +62,29 @@ const COUNT_NAMES: [string, string][] = [
 
 export default function LeadsToolAdmin({ data }: { data: LeadsAdmin }) {
   const router = useRouter();
-  const running = data.markets.some((m) =>
-    m.runs.some(
-      (r) =>
-        r.status === "RUNNING" &&
-        Date.now() - new Date(r.startedAt).getTime() < 6 * 3_600_000,
-    ),
-  );
+
+  // A "Run now" takes a few rounds of about four minutes to load a market
+  // the first time. While this page is open it starts the next round
+  // itself; closed, the run finishes tonight.
+  const today = dayKey(data.now);
+  const resting = data.markets
+    .filter((m) => {
+      const latest = m.runs[0];
+      return (
+        !m.paused &&
+        latest?.status === "RUNNING" &&
+        latest.trigger === "MANUAL" &&
+        !latest.working &&
+        latest.day === today
+      );
+    })
+    .map((m) => m.id)
+    .join(" ");
+  const running =
+    Boolean(resting) ||
+    data.markets.some((m) =>
+      m.runs.some((r) => r.status === "RUNNING" && r.working),
+    );
 
   // While a run is going, keep the numbers fresh.
   useEffect(() => {
@@ -73,6 +92,19 @@ export default function LeadsToolAdmin({ data }: { data: LeadsAdmin }) {
     const timer = setInterval(() => router.refresh(), 15_000);
     return () => clearInterval(timer);
   }, [running, router]);
+
+  const rounds = useRef(new Map<string, number>());
+  useEffect(() => {
+    if (!resting) return;
+    for (const id of resting.split(" ")) {
+      const done = rounds.current.get(id) ?? 0;
+      if (done >= MAX_ROUNDS) continue;
+      rounds.current.set(id, done + 1);
+      runMarketNow(id).catch(() => undefined);
+    }
+    const later = setTimeout(() => router.refresh(), 3_000);
+    return () => clearTimeout(later);
+  }, [resting, router]);
 
   const clientsOn = data.clients.filter(
     (c) => c.access !== "NONE" && (c.enabled || c.access === "STUDIO"),
@@ -195,13 +227,18 @@ function Market({ market, now }: { market: AdminMarket; now: string }) {
   const router = useRouter();
   const [paused, setPaused] = useState(market.paused);
   const latest = market.runs[0];
+  const working = latest?.status === "RUNNING" && latest.working;
+  // Part done: the round ended before the run did.
+  const partDone = latest?.status === "RUNNING" && !latest.working;
   const state = paused
     ? { tone: "gray" as const, text: "Paused" }
-    : latest?.status === "RUNNING"
+    : working
       ? { tone: "yellow" as const, text: "Running" }
-      : market.active
-        ? { tone: "lime" as const, text: "Runs nightly" }
-        : { tone: "gray" as const, text: "Nobody using it" };
+      : partDone
+        ? { tone: "yellow" as const, text: "Part done" }
+        : market.active
+          ? { tone: "lime" as const, text: "Runs nightly" }
+          : { tone: "gray" as const, text: "Nobody using it" };
 
   return (
     <section className={styles.panel} id={`market-${market.id}`}>
@@ -214,7 +251,9 @@ function Market({ market, now }: { market: AdminMarket; now: string }) {
           <p>
             {market.firstLoadedAt
               ? `First loaded ${fmtDate(market.firstLoadedAt)}. Last full run ${market.lastRunAt ? ago(market.lastRunAt, now) : "not yet"}.`
-              : "Not loaded yet: its clients see “on the way” until the first run finishes. Run it now, or it runs tonight once someone uses it."}
+              : latest?.status === "RUNNING"
+                ? `Loading for the first time: step ${Math.min(latest.stepsDone + 1, STEPS)} of ${STEPS}. It works in rounds of a few minutes and carries on while this page is open; close it and it finishes tonight.`
+                : "Not loaded yet: its clients see “on the way” until the first run finishes. Run it now, or it runs tonight once someone uses it."}
           </p>
         </div>
         <div className={styles.headActions}>
@@ -224,7 +263,7 @@ function Market({ market, now }: { market: AdminMarket; now: string }) {
           <button
             type='button'
             className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-            disabled={pending || latest?.status === "RUNNING"}
+            disabled={pending || working}
             onClick={() =>
               run(
                 () => runMarketNow(market.id),
@@ -233,13 +272,13 @@ function Market({ market, now }: { market: AdminMarket; now: string }) {
                   return {
                     message: `${market.name} is running`,
                     detail:
-                      "It keeps going in the background for a few minutes. This page updates as it goes.",
+                      "It works in rounds of a few minutes and carries on while this page is open. The numbers update as it goes.",
                   };
                 },
               )
             }
           >
-            {latest?.status === "RUNNING" ? "Running…" : "Run now"}
+            {working ? "Running…" : partDone ? "Keep going" : "Run now"}
             <Icon name='zap' className={ui.btnIcon} />
           </button>
         </div>

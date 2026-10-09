@@ -12,6 +12,7 @@ import Icon from "../icons";
 import { PageHead, ui } from "../ui/ui";
 import { useLeads } from "./Store";
 import { DateBlock, kindOf, Reasons, SaveButton, Tile } from "./bits";
+import NotReady from "./NotReady";
 import styles from "./Leads.module.css";
 import { daysUntil, eventDates, rank } from "@/lib/leads/advice";
 import { CATEGORIES, EVENT_TYPES, SOURCES } from "@/lib/leads/catalog";
@@ -27,7 +28,17 @@ const WINDOWS = [
 ];
 
 export default function Find({ initialTab }: { initialTab: Tab }) {
-  const { now, settings, accounts, events, href, market } = useLeads();
+  const {
+    now,
+    settings,
+    accounts,
+    events,
+    href,
+    market,
+    where,
+    access,
+    trialEndsAt,
+  } = useLeads();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [query, setQuery] = useState("");
   const [radius, setRadius] = useState(settings.radius);
@@ -85,6 +96,24 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
     }))
     .filter((t) => t.count > 0);
 
+  // Before the market's first run brings anything in, say so (rather than
+  // "nothing matches").
+  if (!market.ready && !accounts.length && !events.length) {
+    return (
+      <NotReady
+        state='LOADING'
+        title='Find leads'
+        market={settings.base.city}
+        trialEndsAt={access === "TRIAL" ? trialEndsAt : undefined}
+        action={
+          where === "studio"
+            ? { href: "/admin/leads-tool", label: "Run the market now" }
+            : { href: href("settings"), label: "Lead settings" }
+        }
+      />
+    );
+  }
+
   const switchTab = (next: Tab) => {
     setTab(next);
     setQuery("");
@@ -100,7 +129,7 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
         text={
           market.ready
             ? `Everything within ${radius} miles of ${settings.base.city}. Open any of them for free; saving one finds the decision-maker and writes your scripts.`
-            : `Your first leads are on the way: tonight's run (1 to 5 AM Arizona time) finds everything around ${settings.base.city}.`
+            : `Still loading the area around ${settings.base.city}: here's what's in so far, and the rest is here by tomorrow morning.`
         }
       />
 

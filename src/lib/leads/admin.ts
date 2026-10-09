@@ -47,6 +47,8 @@ export type AdminRun = {
   counts: Record<string, number>;
   errors: string[];
   stepsDone: number;
+  /** Being worked on right now, not just part done between rounds. */
+  working: boolean;
 };
 
 export type AdminMarket = {
@@ -310,6 +312,7 @@ export async function getLeadsAdmin() {
           counts: r.counts,
           errors: r.errors,
           stepsDone: r.cursor?.done?.length ?? 0,
+          working: Boolean(r.lockedUntil && r.lockedUntil > now),
         })),
       sources: sources
         .filter((x) => x.marketId === m.id)
