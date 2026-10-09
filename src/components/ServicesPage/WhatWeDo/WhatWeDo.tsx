@@ -63,7 +63,7 @@ const services = [
   {
     id: 3,
     title: "Leads",
-    desc: "Hotels, wedding and event venues, corporate travel managers and funeral homes in your market, plus upcoming events and people asking for rides online. Every lead comes with the decision-maker's contact and an outreach script written for that business.",
+    desc: "Hotels, wedding and event venues, corporate travel managers and funeral homes in your market, plus upcoming events from Eventbrite, convention centers and city calendars. Every lead comes with the decision-maker's contact and an outreach script written for that business.",
     price:
       "Free for 30 days, no card. Then included with the $499 plan, or $125/mo on its own.",
     link: "See how the leads tool works",
@@ -329,7 +329,6 @@ export default function WhatWeDo() {
                     </h3>
                     <p className={styles.desc}>{service.desc}</p>
                   </div>
-                  
                 </div>
               </li>
             ))}

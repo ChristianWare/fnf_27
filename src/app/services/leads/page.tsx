@@ -29,7 +29,7 @@ const leadsFaqs: FaqItem[] = [
     id: 2,
     question: "Where do the leads come from?",
     answer:
-      "Public sources in your market: the hotels, wedding and event venues, corporate travel managers and funeral homes that book rides, the events coming up on local calendars, and the local groups and forums where people ask for transportation.",
+      "Public sources in your market: the hotels, wedding and event venues, corporate travel managers and funeral homes that book rides, and the events coming up on Eventbrite, Ticketmaster and the calendars of convention centers, tourism boards, chambers of commerce and universities.",
   },
   {
     id: 3,

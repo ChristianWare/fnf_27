@@ -1,12 +1,17 @@
 // The sidebar, worked out from the client's plan and where their build is.
 // Before launch, the website group follows the build in order. After
 // launch, it leads with what matters now, and the build pages fold away
-// under "Build history". There's no Leads group: the Leads Tool opens on
-// its own page.
+// under "Build history". Clients with the Leads Tool get a Leads group;
+// everyone else gets one link to try it.
 
 import type { IconName } from "../icons";
 import type { Client } from "@/lib/dashboard/types";
-import { blueprintCounts, isLive, projectSteps } from "@/lib/dashboard";
+import {
+  blueprintCounts,
+  isLive,
+  leadsAccess,
+  projectSteps,
+} from "@/lib/dashboard";
 
 export type NavItem = {
   href: string;
@@ -27,7 +32,8 @@ export type NavGroup = {
   fold?: { label: string; items: NavItem[] };
 };
 
-export function buildNav(client: Client): NavGroup[] {
+/** `leadsDue`: leads to reach or follow up with today. */
+export function buildNav(client: Client, leadsDue = 0): NavGroup[] {
   const groups: NavGroup[] = [
     { items: [{ href: "/dashboard", label: "Dashboard", icon: "home" }] },
   ];
@@ -117,6 +123,27 @@ export function buildNav(client: Client): NavGroup[] {
     );
   }
 
+  if (leadsAccess(client) !== "NONE") {
+    groups.push({
+      title: "Leads",
+      items: [
+        {
+          href: "/dashboard/leads",
+          label: "Today",
+          icon: "target",
+          badge: leadsDue || undefined,
+        },
+        { href: "/dashboard/leads/find", label: "Find leads", icon: "search" },
+        { href: "/dashboard/leads/pipeline", label: "Pipeline", icon: "chart" },
+        {
+          href: "/dashboard/leads/settings",
+          label: "Lead settings",
+          icon: "settings",
+        },
+      ],
+    });
+  }
+
   const tools: NavItem[] = [];
   if (website?.plan === "FULL_PLATFORM" && live && website.bookingAdminUrl) {
     tools.push({
@@ -126,12 +153,14 @@ export function buildNav(client: Client): NavGroup[] {
       external: true,
     });
   }
-  tools.push({
-    href: "/dashboard/leads",
-    label: "Open Leads Tool",
-    icon: "target",
-  });
-  groups.push({ title: "Tools", items: tools });
+  if (leadsAccess(client) === "NONE") {
+    tools.push({
+      href: "/dashboard/leads",
+      label: "Leads Tool",
+      icon: "target",
+    });
+  }
+  if (tools.length) groups.push({ title: "Tools", items: tools });
 
   groups.push({
     title: "Account",

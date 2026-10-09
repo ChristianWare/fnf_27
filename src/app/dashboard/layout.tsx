@@ -5,6 +5,8 @@ import { buildNav } from "@/components/Dashboard/Shell/nav";
 import ViewAs from "@/components/Dashboard/ViewAs/ViewAs";
 import { getDashboard, planName } from "@/lib/dashboard";
 import { initials } from "@/lib/dashboard/format";
+import { todaysMoves } from "@/lib/leads/advice";
+import { getLeads } from "@/lib/leads/server";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -17,6 +19,16 @@ export default async function DashboardLayout({
   children: ReactNode;
 }) {
   const { user, client, viewingAs } = await getDashboard();
+  const { workspace, now } = await getLeads();
+  const leadsDue = workspace
+    ? todaysMoves(
+        workspace.saved,
+        (id) =>
+          workspace.accounts.find((a) => a.id === id) ??
+          workspace.events.find((e) => e.id === id),
+        now,
+      ).length
+    : 0;
   const tone =
     client.website?.plan === "FULL_PLATFORM"
       ? "platform"
@@ -26,7 +38,7 @@ export default async function DashboardLayout({
 
   return (
     <Shell
-      nav={buildNav(client)}
+      nav={buildNav(client, leadsDue)}
       business={client.business}
       plan={planName(client)}
       tone={tone}

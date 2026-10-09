@@ -49,13 +49,13 @@ const leads = [
   {
     id: 3,
     title: "Hot leads",
-    tag: "Right now",
-    desc: "People asking online for transportation right now, in local groups and forums.",
+    tag: "This week",
+    desc: "Events in the next two weeks, while there's still time to get booked. They reach you first.",
     items: [
-      "Local groups",
-      "Forums",
-      "Asking right now",
-      "A script to reply with",
+      "The next 14 days",
+      "Galas and conferences",
+      "The organizer to call",
+      "A script to send",
     ],
   },
 ];

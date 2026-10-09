@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
 import LeadsTool from "@/components/Dashboard/LeadsTool/LeadsTool";
-import { getDashboard, leadsAccess } from "@/lib/dashboard";
-import { LEADS, LEADS_TOOL_URL } from "@/lib/dashboard/plans";
+import Today from "@/components/Dashboard/Leads/Today";
+import { LEADS } from "@/lib/dashboard/plans";
+import { getLeads } from "@/lib/leads/server";
 
-export const metadata: Metadata = { title: "Leads Tool" };
+export const metadata: Metadata = { title: "Leads" };
 
 export default async function LeadsPage() {
-  const { client, now } = await getDashboard();
-  return (
-    <LeadsTool
-      access={leadsAccess(client)}
-      trialDays={LEADS.trialDays}
-      trialEndsAt={client.leads.trialEndsAt}
-      monthly={LEADS.monthly}
-      toolUrl={LEADS_TOOL_URL}
-      now={now}
-    />
-  );
+  const { client, now, workspace } = await getLeads();
+  if (!workspace) {
+    return (
+      <LeadsTool
+        trialDays={LEADS.trialDays}
+        monthly={LEADS.monthly}
+        now={now}
+      />
+    );
+  }
+  return <Today firstName={client.contact.name.split(" ")[0]} />;
 }

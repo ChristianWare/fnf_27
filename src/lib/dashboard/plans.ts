@@ -25,8 +25,3 @@ export const LEADS = { name: "Leads Tool", monthly: 125, trialDays: 30 };
 
 export const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 export const SUPPORT_EMAIL = "hello@fontsandfooters.com";
-
-// The Leads Tool still runs on the current site. When it moves here, point
-// the sidebar at the new page instead.
-export const LEADS_TOOL_URL =
-  "https://www.fontsandfooters.com/dashboard/leads/search";

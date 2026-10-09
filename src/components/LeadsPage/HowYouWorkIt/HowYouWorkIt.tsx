@@ -34,8 +34,8 @@ const steps: Step[] = [
   {
     id: 3,
     title: "Hot-lead alerts",
-    tag: "Right now",
-    desc: "Ride requests expire fast, so they reach you first.",
+    tag: "This week",
+    desc: "Events in the next two weeks reach you first, while there's still time to book them.",
     Icon: Bell,
   },
   {

@@ -34,6 +34,12 @@ const dayFmt = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   timeZone: TZ,
 });
+const weekdayFmt = new Intl.DateTimeFormat("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  timeZone: TZ,
+});
 const hourFmt = new Intl.DateTimeFormat("en-US", {
   hour: "numeric",
   hourCycle: "h23",
@@ -57,6 +63,8 @@ export const fmtMonth = (value: DateLike) => monthFmt.format(toDate(value));
 /** "October 2026" */
 export const fmtMonthLong = (value: DateLike) =>
   monthLongFmt.format(toDate(value));
+/** "Thu, Oct 15" */
+export const fmtWeekday = (value: DateLike) => weekdayFmt.format(toDate(value));
 /** "Thursday, October 8" */
 export const fmtDay = (value: DateLike) => dayFmt.format(toDate(value));
 

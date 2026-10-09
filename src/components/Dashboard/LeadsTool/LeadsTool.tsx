@@ -7,7 +7,6 @@ import { Pill, Progress, ui } from "../ui/ui";
 import { useToast } from "../Toast/Toast";
 import styles from "./LeadsTool.module.css";
 import { fmtDate, money } from "@/lib/dashboard/format";
-import type { LeadsAccess } from "@/lib/dashboard";
 
 const features: { icon: IconName; title: string; text: string }[] = [
   {
@@ -33,41 +32,18 @@ const features: { icon: IconName; title: string; text: string }[] = [
 ];
 
 export default function LeadsTool({
-  access,
   trialDays,
-  trialEndsAt,
   monthly,
-  toolUrl,
   now,
 }: {
-  access: LeadsAccess;
   trialDays: number;
-  trialEndsAt?: string;
   monthly: number;
-  toolUrl: string;
   now: string;
 }) {
   const toast = useToast();
-  const [state, setState] = useState(access);
-  const [ends, setEnds] = useState(trialEndsAt);
-
-  const daysLeft = ends
-    ? Math.max(
-        0,
-        Math.ceil(
-          (new Date(ends).getTime() - new Date(now).getTime()) / 86_400_000,
-        ),
-      )
-    : trialDays;
-
-  const pill =
-    state === "INCLUDED"
-      ? { text: "Included in Full Platform", tone: "black" as const }
-      : state === "TRIAL"
-        ? { text: `Free trial · ${daysLeft} days left`, tone: "black" as const }
-        : state === "ACTIVE"
-          ? { text: "Active", tone: "black" as const }
-          : { text: `${trialDays} days free`, tone: "white" as const };
+  // SAMPLE: starting the trial lasts until you reload. After the move it
+  // starts the trial and opens Lead settings to pick a market.
+  const [ends, setEnds] = useState<string>();
 
   return (
     <>
@@ -75,26 +51,25 @@ export default function LeadsTool({
         <div className={styles.heroText}>
           <span className={styles.eyebrow}>Leads Tool</span>
           <h1 className={`h3 ${styles.title}`}>
-            {state === "NONE"
-              ? "Find the companies that book rides"
-              : "Your Leads Tool"}
+            {ends ? "You're in" : "Find the companies that book rides"}
           </h1>
-          <Pill tone={pill.tone} dot>
-            {pill.text}
+          <Pill tone={ends ? "black" : "white"} dot>
+            {ends
+              ? `Free trial · ${trialDays} days left`
+              : `${trialDays} days free`}
           </Pill>
           <p className={styles.copy}>
-            {state === "NONE"
-              ? `Try it free for ${trialDays} days, no card needed. If it earns its keep, it's ${money(monthly)} a month after that, billed on the 1st.`
-              : "The Leads Tool is moving into this dashboard. Until it lands here, it runs on the current site with the same account and the same leads."}
+            {ends
+              ? `Your trial runs until ${fmtDate(ends)}. Your first leads land tomorrow morning at 6, with the decision-maker and a script for each one.`
+              : `Try it free for ${trialDays} days, no card needed. If it earns its keep, it's ${money(monthly)} a month after that, billed on the 1st.`}
           </p>
         </div>
         <div className={styles.heroActions}>
-          {state === "NONE" ? (
+          {!ends && (
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black}`}
               onClick={() => {
-                setState("TRIAL");
                 setEnds(
                   new Date(
                     new Date(now).getTime() + trialDays * 86_400_000,
@@ -108,16 +83,6 @@ export default function LeadsTool({
               Start free trial
               <Icon name='arrow' className={ui.btnIcon} />
             </button>
-          ) : (
-            <a
-              href={toolUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className={`${ui.btn} ${ui.btn_black}`}
-            >
-              Open Leads Tool
-              <Icon name='arrowUpRight' className={ui.btnIcon} />
-            </a>
           )}
           <Link
             href='/dashboard/support'
@@ -128,17 +93,16 @@ export default function LeadsTool({
         </div>
       </section>
 
-      {state === "TRIAL" && (
+      {ends && (
         <section className={styles.panel}>
           <div className={styles.trialHead}>
             <div className={styles.trialText}>
               <h2 className={styles.heading}>
-                {daysLeft} of {trialDays} days left
+                {trialDays} of {trialDays} days left
               </h2>
               <p>
-                Your trial ends {ends ? fmtDate(ends) : "soon"}. Add a card
-                anytime to keep it: the first charge covers the rest of that
-                month, then {money(monthly)} on the 1st of every month.
+                Add a card anytime to keep it: the first charge covers the rest
+                of that month, then {money(monthly)} on the 1st of every month.
                 Nothing is charged before then.
               </p>
             </div>
@@ -151,7 +115,7 @@ export default function LeadsTool({
             </Link>
           </div>
           <Progress
-            value={trialDays - daysLeft}
+            value={0}
             max={trialDays}
             label='Trial days used'
             tone='purple'

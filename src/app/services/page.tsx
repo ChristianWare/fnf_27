@@ -49,7 +49,7 @@ const servicesFaqs: FaqItem[] = [
     id: 5,
     question: "How does the free leads tool work?",
     answer:
-      "You get 30 days free, no card. It finds hotels, wedding and event venues, corporate travel managers and funeral homes in your market, plus upcoming events and people asking for rides online. Every lead comes with the decision-maker's contact and an outreach script written for that business.",
+      "You get 30 days free, no card. It finds hotels, wedding and event venues, corporate travel managers and funeral homes in your market, plus upcoming events from Eventbrite, convention centers and city calendars. Every lead comes with the decision-maker's contact and an outreach script written for that business.",
   },
   {
     id: 6,
