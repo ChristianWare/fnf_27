@@ -28,7 +28,8 @@ export type ProjectFacts = {
 
 export type Website = {
   plan: PlanId;
-  status: "ACTIVE" | "CANCELLING";
+  /** PAST_DUE: the last monthly charge failed. */
+  status: "ACTIVE" | "PAST_DUE" | "CANCELLING";
   monthly: number;
   setupFee: number;
   domain: string;
@@ -38,7 +39,7 @@ export type Website = {
   previewUrl?: string;
   /** Full Platform: the booking software's admin. */
   bookingAdminUrl?: string;
-  /** Monthly billing starts at launch. */
+  /** The next 1st. Monthly billing starts the 1st after the setup fee. */
   nextBillingAt?: string;
   facts: ProjectFacts;
 };
@@ -171,7 +172,12 @@ export type Invoice = {
   method?: string;
 };
 
-export type Card = { brand: string; last4: string; exp: string };
+export type Card = {
+  brand: string;
+  last4: string;
+  exp: string;
+  expired?: boolean;
+};
 
 export type Message = {
   id: string;
@@ -205,6 +211,14 @@ export type Client = {
   business: string;
   city: string;
   contact: { name: string; email: string; phone: string; role: string };
+  /** Clients sign themselves up; website plans then wait for approval. */
+  signedUpAt: string;
+  /** When an admin approved them and set their plan and prices. */
+  approvedAt?: string;
+  /** What they asked for when they signed up. */
+  request?: { plan?: PlanId | "LEADS"; message?: string };
+  /** Admin-only notes. Clients never see these. */
+  notes?: string;
   website?: Website;
   leads: { status: LeadsStatus; startedAt?: string; trialEndsAt?: string };
   documents: Doc[];

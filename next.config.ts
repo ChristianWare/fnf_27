@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
       "./public/fonts/**/*",
       "./public/logos/**/*",
     ],
+    "/admin/clients/[id]/invoices/[invoiceId]": [
+      "./public/fonts/**/*",
+      "./public/logos/**/*",
+    ],
   },
   async redirects() {
     return [

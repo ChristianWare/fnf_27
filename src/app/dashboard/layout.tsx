@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Shell from "@/components/Dashboard/Shell/Shell";
 import { buildNav } from "@/components/Dashboard/Shell/nav";
+import ViewAs from "@/components/Dashboard/ViewAs/ViewAs";
 import { getDashboard, planName } from "@/lib/dashboard";
 import { initials } from "@/lib/dashboard/format";
 
@@ -15,7 +16,7 @@ export default async function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
-  const { user, client } = await getDashboard();
+  const { user, client, viewingAs } = await getDashboard();
   const tone =
     client.website?.plan === "FULL_PLATFORM"
       ? "platform"
@@ -36,6 +37,11 @@ export default async function DashboardLayout({
         sample: user.sample,
       }}
       promo={!client.website}
+      banner={
+        viewingAs ? (
+          <ViewAs business={client.business} clientId={client.id} />
+        ) : undefined
+      }
     >
       {children}
     </Shell>

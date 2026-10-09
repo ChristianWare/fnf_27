@@ -27,6 +27,7 @@ export default async function BillingPage() {
             setupPaidAt: website.facts.setupFeePaidAt,
             nextBillingAt: website.nextBillingAt,
             live: isLive(client),
+            status: website.status,
           }
         }
         upgrade={{

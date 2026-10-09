@@ -4,14 +4,9 @@
 // and this file goes away.
 
 import { profileAccess, serviceAgreement } from "./agreement";
+import { websiteInvoices } from "./billing";
 import { PLANS } from "./plans";
-import type {
-  Answers,
-  BlueprintPage,
-  Client,
-  DesignOption,
-  Invoice,
-} from "./types";
+import type { Answers, BlueprintPage, Client, DesignOption } from "./types";
 
 const DAY = 86_400_000;
 const HOUR = 3_600_000;
@@ -87,7 +82,7 @@ export function demoClient(id: string, now: Date): Client | undefined {
     new Date(now.getTime() + days * DAY).toISOString();
 
   if (id === "desert-star") return desertStar(now, ago);
-  if (id === "copper-state") return copperState(ago, ahead);
+  if (id === "copper-state") return copperState(now, ago, ahead);
   if (id === "mesa-executive") return mesaExecutive(ago, ahead);
   return undefined;
 }
@@ -105,47 +100,21 @@ function desertStar(now: Date, ago: Ago): Client {
   const today = local.getUTCDate();
   const daysInMonth = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
 
-  // Launched on the 12th, five months ago; billed on the 12th since.
+  // Launched on the 12th, five months ago.
   const launched = azDate(y, m - 5, 12, 10);
   const before = (days: number) =>
     new Date(new Date(launched).getTime() - days * DAY).toISOString();
 
-  const method = "Visa ending 4242";
-  const invoices: Invoice[] = [
-    {
-      id: "inv-setup",
-      number: "FNF-1001",
-      date: before(52),
-      description: "Full Platform setup",
-      amount: 500,
-      status: "PAID",
-      paidAt: before(52),
-      method,
-    },
-  ];
-  let nextBillingAt = "";
-  for (let k = 0; k < 13; k++) {
-    const date = azDate(y, m - 5 + k, 12, 8);
-    if (new Date(date) > now) {
-      nextBillingAt = date;
-      break;
-    }
-    const label = new Intl.DateTimeFormat("en-US", {
-      month: "long",
-      timeZone: "America/Phoenix",
-    }).format(new Date(date));
-    invoices.unshift({
-      id: `inv-${k}`,
-      number: `FNF-${1002 + k}`,
-      date,
-      description: `Full Platform, ${label}`,
-      period: { from: date, to: azDate(y, m - 5 + k + 1, 11, 8) },
-      amount: 499,
-      status: "PAID",
-      paidAt: date,
-      method,
-    });
-  }
+  // The setup fee, then the monthly fee on every 1st after it.
+  const { invoices, nextBillingAt } = websiteInvoices({
+    plan: PLANS.FULL_PLATFORM.name,
+    setupFee: PLANS.FULL_PLATFORM.setup,
+    setupPaidAt: before(52),
+    monthly: PLANS.FULL_PLATFORM.monthly,
+    method: "Visa ending 4242",
+    now,
+    numbering: { start: 1001 },
+  });
 
   const actuals = [112, 171, 263, 431, 648];
   const months = TARGETS.map((target, i) => ({
@@ -246,6 +215,11 @@ function desertStar(now: Date, ago: Ago): Client {
       phone: "(602) 555-0118",
       role: "Owner",
     },
+    signedUpAt: before(60),
+    approvedAt: before(56),
+    request: { plan: "FULL_PLATFORM" },
+    notes:
+      "Wants more corporate accounts. Ask about the Scottsdale hotel concierges at the next check-in.",
     website: {
       plan: "FULL_PLATFORM",
       status: "ACTIVE",
@@ -654,7 +628,18 @@ function desertStar(now: Date, ago: Ago): Client {
 /* ─────────────────────────────────────────────────────────────────────
    Copper State Limo: Website Only, four weeks into the build.
    ───────────────────────────────────────────────────────────────────── */
-function copperState(ago: Ago, ahead: Ahead): Client {
+function copperState(now: Date, ago: Ago, ahead: Ahead): Client {
+  // The setup fee, then the monthly fee on every 1st after it.
+  const { invoices, nextBillingAt } = websiteInvoices({
+    plan: PLANS.WEBSITE_ONLY.name,
+    setupFee: PLANS.WEBSITE_ONLY.setup,
+    setupPaidAt: ago(27),
+    monthly: PLANS.WEBSITE_ONLY.monthly,
+    method: "Mastercard ending 4444",
+    now,
+    numbering: { start: 1031 },
+  });
+
   const answers: Answers = {
     businessName: "Copper State Limo",
     yearStarted: "2012",
@@ -892,6 +877,12 @@ function copperState(ago: Ago, ahead: Ahead): Client {
       phone: "(520) 555-0142",
       role: "Owner",
     },
+    signedUpAt: ago(31),
+    approvedAt: ago(29),
+    request: {
+      plan: "WEBSITE_ONLY",
+      message: "We use Limo Anywhere and want to keep it. Just need a site that ranks in Tucson.",
+    },
     website: {
       plan: "WEBSITE_ONLY",
       status: "ACTIVE",
@@ -900,6 +891,7 @@ function copperState(ago: Ago, ahead: Ahead): Client {
       domain: "copperstate.example",
       startedAt: ago(28),
       targetLaunch: ahead(41),
+      nextBillingAt,
       facts: {
         agreementSignedAt: ago(28),
         setupFeePaidAt: ago(27),
@@ -948,18 +940,7 @@ function copperState(ago: Ago, ahead: Ahead): Client {
     blueprint,
     designs: { readyAt: ago(2), options: designOptions() },
     changes: [],
-    invoices: [
-      {
-        id: "inv-setup",
-        number: "FNF-1031",
-        date: ago(27),
-        description: "Website Only setup",
-        amount: 500,
-        status: "PAID",
-        paidAt: ago(27),
-        method: "Mastercard ending 4444",
-      },
-    ],
+    invoices,
     card: { brand: "Mastercard", last4: "4444", exp: "11/27" },
     threads: [
       {
@@ -1046,6 +1027,8 @@ function mesaExecutive(ago: Ago, ahead: Ahead): Client {
       phone: "(480) 555-0176",
       role: "Owner",
     },
+    signedUpAt: ago(8),
+    request: { plan: "LEADS" },
     leads: { status: "TRIAL", startedAt: ago(8), trialEndsAt: ahead(22) },
     documents: [],
     answers: {},

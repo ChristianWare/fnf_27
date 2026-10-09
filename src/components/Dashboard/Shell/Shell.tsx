@@ -20,10 +20,14 @@ type Props = {
   nav: NavGroup[];
   business: string;
   plan: string;
-  tone: "platform" | "website" | "leads";
+  tone: "platform" | "website" | "leads" | "admin";
+  /** The letters in the square beside the business name. */
+  mark?: string;
   user: { name: string; email: string; initials: string; sample?: boolean };
   /** Clients without a website plan see a short invite in the sidebar. */
   promo?: boolean;
+  /** A strip across the top of the page, e.g. while viewing as a client. */
+  banner?: ReactNode;
   children: ReactNode;
 };
 
@@ -32,8 +36,10 @@ export default function Shell({
   business,
   plan,
   tone,
+  mark,
   user,
   promo,
+  banner,
   children,
 }: Props) {
   const pathname = usePathname();
@@ -57,7 +63,10 @@ export default function Shell({
   const close = () => setOpen(false);
 
   const link = (item: NavItem) => {
-    const active = !item.external && pathname === item.href;
+    const active =
+      !item.external &&
+      (pathname === item.href ||
+        (item.match === "prefix" && pathname.startsWith(`${item.href}/`)));
     const content = (
       <>
         <Icon name={item.icon} className={styles.icon} />
@@ -158,11 +167,12 @@ export default function Shell({
                 className={`${styles.mark} ${styles[tone]}`}
                 aria-hidden='true'
               >
-                {business
-                  .split(/\s+/)
-                  .slice(0, 2)
-                  .map((word) => word[0])
-                  .join("")}
+                {mark ??
+                  business
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((word) => word[0])
+                    .join("")}
               </span>
               <span className={styles.wsText}>
                 <span className={styles.wsName}>{business}</span>
@@ -263,6 +273,7 @@ export default function Shell({
         </aside>
 
         <main id='dashboard-main' className={styles.main}>
+          {banner}
           {children}
         </main>
       </div>

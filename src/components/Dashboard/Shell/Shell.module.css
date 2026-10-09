@@ -95,6 +95,11 @@
   background-color: var(--accent2);
 }
 
+.admin {
+  background-color: var(--black);
+  color: var(--accent3);
+}
+
 .wsText {
   display: flex;
   flex-direction: column;

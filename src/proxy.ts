@@ -1,4 +1,4 @@
-// Keeps the dashboard behind the login. This is the quick, early check: it
+// Keeps the dashboard and the admin behind the login. This is the quick, early check: it
 // reads the session cookie and sends anyone without a valid one to /login,
 // remembering where they were headed. Pages check again through the DAL.
 
@@ -13,11 +13,12 @@ export async function proxy(request: NextRequest) {
 
   const { pathname, search } = request.nextUrl;
   const login = new URL("/login", request.url);
-  if (pathname !== "/dashboard")
+  if (pathname !== "/dashboard" && pathname !== "/admin") {
     login.searchParams.set("next", pathname + search);
+  }
   return NextResponse.redirect(login);
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*"],
 };

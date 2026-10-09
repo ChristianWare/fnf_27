@@ -1,0 +1,467 @@
+/* ── Needs a look ── */
+.flags {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.flag {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 1.4rem;
+  border-radius: 1.8rem;
+  background-color: var(--light);
+}
+
+.flagIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 4.6rem;
+  height: 4.6rem;
+  border-radius: 1.4rem;
+  color: var(--black);
+}
+
+.flagIcon svg {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.flagText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.flagText p {
+  font-size: 16px;
+}
+
+.flagBiz {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--textDark);
+}
+
+.flagTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.25;
+  color: var(--black);
+}
+
+.flagActions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.allClear {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1.6rem;
+  border-radius: 1.8rem;
+  background-color: var(--accent3Light);
+}
+
+.allClear p {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.allClearIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 4.6rem;
+  height: 4.6rem;
+  border-radius: 1.4rem;
+  background-color: var(--accent3);
+}
+
+.allClearIcon svg {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+/* ── Where it comes from ── */
+.mixTotal {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.mixAmount {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 4.4rem;
+  line-height: 1;
+  letter-spacing: -1.4px;
+  color: var(--black);
+}
+
+.mixBar {
+  display: flex;
+  gap: 0.4rem;
+  height: 4.4rem;
+}
+
+.mixSeg {
+  min-width: 1rem;
+  border-radius: 1.2rem;
+}
+
+.mix_FULL_PLATFORM {
+  background-color: var(--black);
+}
+
+.mix_WEBSITE_ONLY {
+  background-color: var(--accent3);
+}
+
+.mix_LEADS {
+  background-color: var(--accent2);
+}
+
+.mixList {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.mixRow {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.mixRow:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.mixSwatch {
+  flex: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+}
+
+.mixName {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.mixMeta {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--textDark);
+}
+
+.mixValue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+/* ── A year of revenue (beats the six-month chart it builds on) ── */
+ol.chart12 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.yearNote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 2.4rem;
+}
+
+.yearNote p {
+  font-size: 16px;
+}
+
+.yearNote strong {
+  font-family: var(--CreatoDisplayMedium);
+  font-weight: 400;
+  color: var(--black);
+}
+
+/* ── Invoices ── */
+.invoices {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  min-width: 0;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.invoicesHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.titles p {
+  font-size: 16px;
+}
+
+.heading {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--black);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search {
+  position: relative;
+  flex: 1 1 28rem;
+  min-width: 0;
+}
+
+.search input {
+  padding-left: 4.8rem;
+}
+
+.search input:focus {
+  border-color: var(--black);
+  background-color: var(--white);
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 1.6rem;
+  width: 2rem;
+  height: 2rem;
+  color: var(--text);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+  height: 2.2rem;
+  padding: 0 0.6rem;
+  border-radius: 50px;
+  background-color: rgb(13 13 14 / 8%);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+}
+
+[aria-pressed="true"] .count {
+  background-color: rgb(255 255 255 / 18%);
+}
+
+.month {
+  flex: 0 0 22rem;
+}
+
+.table td {
+  padding-top: 1.2rem;
+  padding-bottom: 1.2rem;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.client {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.clientName {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--black);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .client:hover .clientName {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 3.4rem;
+  padding: 0 1.2rem 0 1rem;
+  border-radius: 50px;
+  background-color: var(--light);
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--black);
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.pdf svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.pdf:hover {
+  background-color: var(--accent3);
+}
+
+.dueXs {
+  display: none;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: #a2301c;
+}
+
+.tableFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--light);
+}
+
+.none {
+  padding: 2.4rem 0;
+  font-size: 16px;
+}
+
+@media screen and (max-width: 1068px) {
+  .hideMd {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .invoices {
+    padding: 2.4rem;
+  }
+
+  .month {
+    flex: 1 1 100%;
+  }
+
+  ol.chart12 {
+    gap: 0.4rem;
+  }
+
+  ol.chart12 li > span:first-child {
+    display: none;
+  }
+
+  .flag {
+    flex-wrap: wrap;
+  }
+
+  .flagText {
+    flex-basis: calc(100% - 6.2rem);
+  }
+
+  .flagActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .invoices {
+    padding: 2.2rem 1.8rem;
+    border-radius: 2rem;
+  }
+
+  .hideSm,
+  .hideXs,
+  .pdfText {
+    display: none;
+  }
+
+  .dueXs {
+    display: block;
+  }
+
+  /* Every other month's name, so they don't touch. */
+  ol.chart12 li:nth-child(odd) > span:last-child {
+    visibility: hidden;
+  }
+
+  .pdf {
+    width: 3.4rem;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .clientName {
+    font-size: 16px;
+  }
+
+  .client > span:first-child {
+    display: none;
+  }
+
+  .mixAmount {
+    font-size: 3.6rem;
+  }
+}

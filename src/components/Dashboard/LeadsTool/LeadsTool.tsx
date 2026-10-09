@@ -84,7 +84,7 @@ export default function LeadsTool({
           </Pill>
           <p className={styles.copy}>
             {state === "NONE"
-              ? `Try it free for ${trialDays} days, no card needed. If it earns its keep, it's ${money(monthly)} a month after that.`
+              ? `Try it free for ${trialDays} days, no card needed. If it earns its keep, it's ${money(monthly)} a month after that, billed on the 1st.`
               : "The Leads Tool is moving into this dashboard. Until it lands here, it runs on the current site with the same account and the same leads."}
           </p>
         </div>
@@ -137,8 +137,9 @@ export default function LeadsTool({
               </h2>
               <p>
                 Your trial ends {ends ? fmtDate(ends) : "soon"}. Add a card
-                anytime to keep it for {money(monthly)} a month; nothing is
-                charged before then.
+                anytime to keep it: the first charge covers the rest of that
+                month, then {money(monthly)} on the 1st of every month.
+                Nothing is charged before then.
               </p>
             </div>
             <Link

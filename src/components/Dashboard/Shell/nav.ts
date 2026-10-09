@@ -17,6 +17,8 @@ export type NavItem = {
   external?: boolean;
   /** Opens after launch. */
   locked?: boolean;
+  /** Also active on the pages under it, e.g. one client's page. */
+  match?: "prefix";
 };
 
 export type NavGroup = {

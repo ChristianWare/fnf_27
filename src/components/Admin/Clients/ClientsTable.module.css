@@ -1,0 +1,362 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2.4rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.search {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 1.6rem;
+  width: 2rem;
+  height: 2rem;
+  color: var(--text);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 5.2rem;
+  padding: 0 1.6rem 0 4.8rem;
+  border: 1px solid transparent;
+  border-radius: 1.4rem;
+  background-color: var(--light);
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--black);
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: var(--black);
+  background-color: var(--white);
+}
+
+.searchInput::placeholder {
+  color: var(--textDark);
+}
+
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sortSelect {
+  width: auto;
+  min-height: 5.2rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+  height: 2.2rem;
+  padding: 0 0.6rem;
+  border-radius: 50px;
+  background-color: rgb(13 13 14 / 8%);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+}
+
+[aria-pressed="true"] .count {
+  background-color: rgb(255 255 255 / 18%);
+}
+
+/* ── The list, as a table on wide screens ── */
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.head,
+.row {
+  display: grid;
+  grid-template-columns:
+    minmax(24rem, 2.2fr) minmax(13rem, 1fr) minmax(16rem, 1.3fr)
+    minmax(8rem, 0.6fr) minmax(16rem, 1.5fr) minmax(10rem, 0.8fr) 2rem;
+  align-items: center;
+  gap: 1.6rem;
+}
+
+.head {
+  padding: 0 1.2rem 1.2rem;
+  border-bottom: 1px solid var(--light2);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.row {
+  padding: 1.4rem 1.2rem;
+  border-radius: 1.6rem;
+  transition: background-color 0.15s ease;
+}
+
+.rows li + li .row {
+  box-shadow: inset 0 1px 0 var(--light);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .row:hover {
+    background-color: var(--light);
+    box-shadow: none !important;
+  }
+
+  .row:hover .arrow {
+    transform: translateX(3px);
+    color: var(--black);
+  }
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: -2px;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  min-width: 0;
+}
+
+.whoText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell {
+  min-width: 0;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.stageTop {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+}
+
+.stageLabel {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--black);
+}
+
+.stageCount {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  color: var(--textDark);
+}
+
+.track {
+  display: block;
+  height: 0.6rem;
+  border-radius: 50px;
+  background-color: var(--light);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--accent1);
+}
+
+.fillLive {
+  background-color: var(--accent3);
+}
+
+.mrr {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  color: var(--black);
+}
+
+.next {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.nextYou {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--black);
+}
+
+.nextThem {
+  color: var(--text);
+}
+
+.nextNone {
+  color: var(--textDark);
+}
+
+.when {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--textDark);
+}
+
+.arrow {
+  width: 1.8rem;
+  height: 1.8rem;
+  color: var(--textDark);
+  transition: transform 0.2s ease;
+}
+
+.none {
+  padding: 3.2rem 1.2rem;
+  font-size: 16px;
+}
+
+/* ── Narrower: cards ── */
+@media screen and (max-width: 1268px) {
+  .head {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "who plan"
+      "stage mrr"
+      "next when";
+    gap: 1.2rem 1.6rem;
+    padding: 1.8rem 1.4rem;
+  }
+
+  .who {
+    grid-area: who;
+  }
+
+  .row > .cell:nth-child(2) {
+    grid-area: plan;
+    justify-self: end;
+  }
+
+  .stage {
+    grid-area: stage;
+  }
+
+  .mrr {
+    grid-area: mrr;
+    justify-self: end;
+  }
+
+  .next {
+    grid-area: next;
+  }
+
+  .when {
+    grid-area: when;
+    justify-self: end;
+  }
+
+  .arrow {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .panel {
+    padding: 1.6rem 1.2rem;
+    border-radius: 2rem;
+  }
+
+  .tools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sortSelect {
+    flex: 1;
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "who"
+      "plan"
+      "stage"
+      "next";
+  }
+
+  .row > .cell:nth-child(2) {
+    justify-self: start;
+  }
+
+  .mrr,
+  .when {
+    display: none;
+  }
+}

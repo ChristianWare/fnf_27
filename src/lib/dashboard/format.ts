@@ -61,7 +61,7 @@ export const fmtMonthLong = (value: DateLike) =>
 export const fmtDay = (value: DateLike) => dayFmt.format(toDate(value));
 
 /** The calendar day in Arizona, e.g. "2026-10-08". */
-const dayKey = (value: DateLike) => keyFmt.format(toDate(value));
+export const dayKey = (value: DateLike) => keyFmt.format(toDate(value));
 
 /** Whole calendar days from one date to another, in Arizona. */
 export function daysBetween(from: DateLike, to: DateLike) {
@@ -94,12 +94,16 @@ export function greeting(now: DateLike) {
   return "Good evening";
 }
 
-/** "$499", or "$1,250" */
+/** "$499", "$1,250", or "$8.30" when there are cents. */
 export const money = (amount: number) =>
   `$${amount.toLocaleString("en-US", {
-    minimumFractionDigits: 0,
+    minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
     maximumFractionDigits: 2,
   })}`;
+
+/** "Dana's", or "Red Rock Rides'" for a name ending in s. */
+export const possessive = (name: string) =>
+  /s$/i.test(name) ? `${name}’` : `${name}’s`;
 
 export const initials = (name: string) =>
   name

@@ -9,7 +9,13 @@ import {
   sessionCookieOptions,
   signSession,
 } from "@/lib/auth/session";
-import { SAMPLE_PASSWORD, findUserByEmail } from "@/lib/auth/users";
+import { VIEW_AS_COOKIE } from "@/lib/auth/dal";
+import {
+  SAMPLE_PASSWORD,
+  findUserByEmail,
+  homeFor,
+  type User,
+} from "@/lib/auth/users";
 
 export type SignInState = { error?: string; email?: string };
 
@@ -17,11 +23,15 @@ export type SignInState = { error?: string; email?: string };
 const digest = (value: string) => createHash("sha256").update(value).digest();
 const matches = (a: string, b: string) => timingSafeEqual(digest(a), digest(b));
 
-// After signing in, only ever go back to a page in the dashboard.
-const safeNext = (value: FormDataEntryValue | null) =>
-  typeof value === "string" && /^\/dashboard(\/[\w\-/]*)?(\?.*)?$/.test(value)
+// After signing in, only ever go back to a page this person may see:
+// clients to their dashboard, admins to the admin.
+const safeNext = (value: FormDataEntryValue | null, user: User) => {
+  const area = user.role === "ADMIN" ? "admin" : "dashboard";
+  const pattern = new RegExp(`^/${area}(/[\\w\\-/]*)?(\\?.*)?$`);
+  return typeof value === "string" && pattern.test(value)
     ? value
-    : "/dashboard";
+    : homeFor(user);
+};
 
 export async function signIn(
   _previous: SignInState,
@@ -56,10 +66,12 @@ export async function signIn(
 
   const { token, expires } = await signSession(user.id);
   (await cookies()).set(SESSION_COOKIE, token, sessionCookieOptions(expires));
-  redirect(safeNext(formData.get("next")));
+  redirect(safeNext(formData.get("next"), user));
 }
 
 export async function signOut() {
-  (await cookies()).delete(SESSION_COOKIE);
+  const jar = await cookies();
+  jar.delete(SESSION_COOKIE);
+  jar.delete(VIEW_AS_COOKIE);
   redirect("/login");
 }

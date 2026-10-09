@@ -24,7 +24,7 @@ export function serviceAgreement(business: string, plan: PlanId): DocBlock[] {
     },
     {
       heading: "Fees",
-      text: `A one-time setup fee of ${money(info.setup)}, due before work starts and not refundable once work has begun, then ${money(info.monthly)} a month, starting the day your site goes live. There are no per-booking fees.`,
+      text: `A one-time setup fee of ${money(info.setup)}, due before work starts and not refundable once work has begun. Then ${money(info.monthly)} a month, charged on the 1st of each month, starting the 1st after the setup fee is paid. There are no per-booking fees.`,
     },
     {
       heading: "Changes",
@@ -36,7 +36,7 @@ export function serviceAgreement(business: string, plan: PlanId): DocBlock[] {
     },
     {
       heading: "Cancelling",
-      text: "There is no long-term contract. Cancel anytime by email or from your dashboard; it takes effect at the end of your billing month, and we will export your content and data on request.",
+      text: "There is no long-term contract. Cancel anytime by email or from your dashboard; it takes effect at the end of that month, and we will export your content and data on request.",
     },
     {
       heading: "The rest",

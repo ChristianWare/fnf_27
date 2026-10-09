@@ -21,6 +21,7 @@ type Props = {
     setupPaidAt?: string;
     nextBillingAt?: string;
     live: boolean;
+    status: "ACTIVE" | "PAST_DUE" | "CANCELLING";
   };
   upgrade: { name: string; monthly: number };
   leads: {
@@ -62,6 +63,12 @@ export default function Billing({
     });
   };
 
+  // Cancelling takes effect at the end of the month: the day before the
+  // next 1st.
+  const endsOn = plan?.nextBillingAt
+    ? new Date(new Date(plan.nextBillingAt).getTime() - 86_400_000).toISOString()
+    : undefined;
+
   const daysLeft =
     leadsState === "TRIAL" && trialEnds
       ? Math.max(
@@ -85,9 +92,13 @@ export default function Billing({
                   <span className={styles.planName}>{plan.name}</span>
                   {cancelled ? (
                     <Pill tone='red' dot>
-                      {plan.live && plan.nextBillingAt
-                        ? `Ends ${fmtDate(plan.nextBillingAt)}`
+                      {endsOn
+                        ? `Ends ${fmtDate(endsOn)}`
                         : "Cancelled"}
+                    </Pill>
+                  ) : plan.status === "PAST_DUE" ? (
+                    <Pill tone='red' dot>
+                      Payment failed
                     </Pill>
                   ) : (
                     <Pill
@@ -116,9 +127,9 @@ export default function Billing({
                 <div className={styles.row}>
                   <dt className={ui.monoMuted}>Monthly billing</dt>
                   <dd>
-                    {plan.live && plan.nextBillingAt
-                      ? `Next bill ${fmtDate(plan.nextBillingAt)}`
-                      : "Starts on launch day"}
+                    {plan.nextBillingAt
+                      ? `Next bill ${fmtDate(plan.nextBillingAt)} · the 1st of every month`
+                      : "Starts the 1st after your setup fee"}
                   </dd>
                 </div>
                 <div className={styles.row}>
@@ -237,11 +248,11 @@ export default function Billing({
                 ? "Fresh leads every morning, at no extra cost."
                 : leadsState === "TRIAL"
                   ? keepLeads
-                    ? `Card added. Your Leads Tool carries on after ${trialEnds ? fmtDate(trialEnds) : "your trial"} at ${money(leads.monthly)} a month.`
-                    : `Your trial ends ${trialEnds ? fmtDate(trialEnds) : "soon"}. Add a card to keep it for ${money(leads.monthly)} a month; nothing is charged before then.`
+                    ? `Card added. After ${trialEnds ? fmtDate(trialEnds) : "your trial"}, the first charge covers the rest of that month, then ${money(leads.monthly)} on the 1st of every month.`
+                    : `Your trial ends ${trialEnds ? fmtDate(trialEnds) : "soon"}. Add a card to keep it: the first charge covers the rest of that month, then ${money(leads.monthly)} on the 1st of every month. Nothing is charged before then.`
                   : leadsState === "ACTIVE"
                     ? "Billed monthly with your plan. Cancel anytime."
-                    : `The hotels, venues and companies near you that book rides, every morning. No card needed; ${money(leads.monthly)} a month after if you keep it.`}
+                    : `The hotels, venues and companies near you that book rides, every morning. No card needed. If you keep it, it's ${money(leads.monthly)} a month, billed on the 1st.`}
             </p>
           </div>
           <div className={styles.leadsActions}>
@@ -270,7 +281,7 @@ export default function Billing({
                 onClick={() => {
                   setKeepLeads(true);
                   toast("Card added", {
-                    detail: `Your Leads Tool carries on after the trial at ${money(leads.monthly)} a month.`,
+                    detail: `After the trial, the first charge covers the rest of that month, then ${money(leads.monthly)} on the 1st.`,
                   });
                 }}
               >
@@ -317,7 +328,7 @@ export default function Billing({
               <span>/month</span>
             </span>
             <p>
-              Instead of {money(plan.monthly)}, from the day booking goes live.
+              Instead of {money(plan.monthly)}, from the 1st after booking goes live.
               Your site stays up the whole time.
             </p>
             {upgradeAsked ? (
@@ -412,9 +423,9 @@ export default function Billing({
             <span className={ui.monoMuted}>Cancel plan</span>
             <h2 className={ui.modalTitle}>Cancel your {plan.name} plan?</h2>
             <p className={styles.small}>
-              {plan.live && plan.nextBillingAt
-                ? `It ends at the end of this billing month, on ${fmtDate(plan.nextBillingAt)}. Your site stays up until then, and we'll send an export of your content and data on request. Your domain stays yours.`
-                : `We stop the build. The ${money(plan.setupFee)} setup fee isn't refundable once work has begun, and there's nothing else to pay.`}
+              {plan.live
+                ? `It ends at the end of this month${endsOn ? `, on ${fmtDate(endsOn)}` : ""}. Your site stays up until then, nothing more is charged, and we'll send an export of your content and data on request. Your domain stays yours.`
+                : `We stop the build at the end of this month${endsOn ? `, on ${fmtDate(endsOn)}` : ""}, and nothing more is charged. The ${money(plan.setupFee)} setup fee isn't refundable once work has begun.`}
             </p>
             <p className={styles.small}>
               If something isn&apos;t working, tell us first: most problems are
@@ -436,8 +447,8 @@ export default function Billing({
                   toast("Plan cancelled", {
                     tone: "info",
                     detail:
-                      plan.live && plan.nextBillingAt
-                        ? `It ends on ${fmtDate(plan.nextBillingAt)}. Change your mind anytime before then.`
+                      endsOn
+                        ? `It ends on ${fmtDate(endsOn)}. Change your mind anytime before then.`
                         : "We've stopped the build. Change your mind anytime.",
                   });
                 }}

@@ -1,0 +1,76 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1rem 1rem 1rem 1.6rem;
+  border-radius: 2rem;
+  background-color: var(--accent4);
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  background-color: var(--black);
+  color: var(--accent4);
+}
+
+.icon svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  color: var(--black);
+}
+
+.text strong {
+  font-family: var(--CreatoDisplayMedium);
+  font-weight: 400;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  height: 4.4rem;
+  padding: 0 1.8rem;
+  border-radius: 50px;
+  background-color: var(--black);
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--white);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.arrow {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+@media screen and (max-width: 568px) {
+  .banner {
+    flex-wrap: wrap;
+    padding: 1.4rem;
+  }
+
+  .banner form,
+  .back {
+    width: 100%;
+    justify-content: center;
+  }
+}

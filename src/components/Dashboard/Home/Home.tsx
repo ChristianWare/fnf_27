@@ -199,8 +199,14 @@ export default function Home({ client, now }: { client: Client; now: string }) {
     status = `Your site has been live for ${daysBetween(client.website.facts.launchedAt, now)} days.`;
   } else if (client.website) {
     status = `Your build is ${Math.round((done / steps.length) * 100)}% done.${list.length ? ` ${list.length} thing${list.length === 1 ? " needs" : "s need"} you.` : ""}`;
-  } else {
+  } else if (client.leads.status === "TRIAL") {
     status = `Your Leads Tool trial has ${trialDaysLeft(client, now)} days left.`;
+  } else if (client.leads.status === "ACTIVE") {
+    status = "Fresh leads land every morning.";
+  } else {
+    // Signed up, waiting for approval.
+    status =
+      "Thanks for signing up. We're setting up your account and will be in touch within one business day.";
   }
 
   const growth = client.growth;
@@ -435,7 +441,7 @@ export default function Home({ client, now }: { client: Client; now: string }) {
             </Panel>
           )}
 
-          {!client.website && (
+          {!client.website && client.leads.status !== "NONE" && (
             <Panel
               title='Your Leads Tool'
               text='Fresh leads every morning, with who to ask for and what to say.'
@@ -450,24 +456,40 @@ export default function Home({ client, now }: { client: Client; now: string }) {
                 </ButtonLink>
               }
             >
-              <div className={styles.trial}>
-                <div className={styles.trialRow}>
-                  <span className={styles.mono}>Free trial</span>
-                  <span className={styles.mono}>
-                    {trialDaysLeft(client, now)} of {LEADS.trialDays} days left
-                  </span>
+              {client.leads.status === "ACTIVE" ? (
+                <div className={styles.trial}>
+                  <div className={styles.trialRow}>
+                    <span className={styles.mono}>Active</span>
+                    <span className={styles.mono}>
+                      {money(LEADS.monthly)} a month
+                    </span>
+                  </div>
+                  <p>
+                    Billed on the 1st of every month. Cancel anytime in Billing.
+                  </p>
                 </div>
-                <Progress
-                  value={LEADS.trialDays - trialDaysLeft(client, now)}
-                  max={LEADS.trialDays}
-                  label='Trial days used'
-                  tone='purple'
-                />
-                <p>
-                  Keep it after your trial for {money(LEADS.monthly)} a month.
-                  Add a card anytime; nothing is charged until the trial ends.
-                </p>
-              </div>
+              ) : (
+                <div className={styles.trial}>
+                  <div className={styles.trialRow}>
+                    <span className={styles.mono}>Free trial</span>
+                    <span className={styles.mono}>
+                      {trialDaysLeft(client, now)} of {LEADS.trialDays} days
+                      left
+                    </span>
+                  </div>
+                  <Progress
+                    value={LEADS.trialDays - trialDaysLeft(client, now)}
+                    max={LEADS.trialDays}
+                    label='Trial days used'
+                    tone='purple'
+                  />
+                  <p>
+                    Keep it after your trial for {money(LEADS.monthly)} a month,
+                    billed on the 1st. Add a card anytime; nothing is charged
+                    until the trial ends.
+                  </p>
+                </div>
+              )}
             </Panel>
           )}
         </div>

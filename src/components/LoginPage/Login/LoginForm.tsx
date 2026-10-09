@@ -113,7 +113,7 @@ export default function LoginForm({
           <div className={styles.samplesHead}>
             <span className={styles.mono}>Sample accounts</span>
             <p>
-              Password for all three: <strong>{SAMPLE_PASSWORD}</strong>
+              Password for every account: <strong>{SAMPLE_PASSWORD}</strong>
             </p>
           </div>
           <ul className={styles.sampleList}>

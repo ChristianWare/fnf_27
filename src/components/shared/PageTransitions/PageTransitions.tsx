@@ -20,8 +20,9 @@ import { usePathname, useRouter } from "next/navigation";
 // waiting any longer (browsers give up on a transition after about 4s).
 const TIMEOUT = 3000;
 
-const inDashboard = (path: string) =>
-  path === "/dashboard" || path.startsWith("/dashboard/");
+// The dashboard and the admin are apps: their pages change in place.
+const inApp = (path: string) =>
+  /^\/(dashboard|admin)(\/|$)/.test(path);
 
 export default function PageTransitions() {
   const router = useRouter();
@@ -57,10 +58,9 @@ export default function PageTransitions() {
       // Other websites, and links within the same page, behave as usual.
       if (url.origin !== window.location.origin) return;
       if (url.pathname === window.location.pathname) return;
-      // Inside the dashboard, pages change in place: the sidebar stays put.
-      if (inDashboard(url.pathname) && inDashboard(window.location.pathname)) {
-        return;
-      }
+      // Inside the dashboard and the admin, pages change in place: the
+      // sidebar stays put.
+      if (inApp(url.pathname) && inApp(window.location.pathname)) return;
 
       // Handle the navigation here, so Next's own link handler stands down.
       e.preventDefault();

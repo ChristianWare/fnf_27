@@ -1,0 +1,521 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  min-width: 0;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.panelHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.titles p {
+  font-size: 16px;
+}
+
+.heading {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--black);
+}
+
+/* ── Plans and prices ── */
+.saveBar {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  min-width: 0;
+  padding: 2.4rem;
+  border-radius: 2rem;
+}
+
+.plan_FULL_PLATFORM {
+  background-color: var(--black);
+}
+
+.plan_WEBSITE_ONLY {
+  background-color: var(--accent3);
+}
+
+.plan_LEADS {
+  background-color: var(--accent2);
+}
+
+.planTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.planName {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.4rem;
+  line-height: 1.1;
+  letter-spacing: -0.4px;
+  color: var(--black);
+}
+
+.planPrice {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+.planPrice span {
+  margin-left: 0.2rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.planBlurb {
+  flex: 1;
+  font-size: 16px;
+  color: var(--black);
+}
+
+.planFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.plan input {
+  background-color: var(--white);
+}
+
+.plan input:focus {
+  border-color: var(--black);
+}
+
+.planFoot {
+  padding-top: 1.4rem;
+  border-top: 1px solid rgb(13 13 14 / 12%);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.plan_FULL_PLATFORM .planName,
+.plan_FULL_PLATFORM .planPrice {
+  color: var(--white);
+}
+
+.plan_FULL_PLATFORM .planBlurb,
+.plan_FULL_PLATFORM .planLabel {
+  color: rgb(255 255 255 / 70%);
+}
+
+.plan_FULL_PLATFORM .planFoot {
+  border-top-color: rgb(255 255 255 / 14%);
+  color: var(--accent3);
+}
+
+.plan_FULL_PLATFORM input:focus {
+  border-color: var(--accent3);
+}
+
+.money,
+.days {
+  position: relative;
+  display: block;
+}
+
+.money > span,
+.days > span {
+  position: absolute;
+  top: 50%;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--text);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.money > span {
+  left: 1.6rem;
+}
+
+.money input {
+  padding-left: 3rem;
+}
+
+.days > span {
+  right: 1.6rem;
+}
+
+.days input {
+  padding-right: 5.6rem;
+}
+
+/* ── How billing runs ── */
+.azChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.4rem;
+  border-radius: 50px;
+  background-color: var(--black);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--accent3);
+}
+
+.azChip svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 2rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.timelineHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.6rem;
+  padding: 0.4rem 0.4rem 0;
+}
+
+.timelineHead p {
+  font-size: 16px;
+}
+
+.timelineTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.steps {
+  --steps: 4;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--steps), minmax(0, 1fr));
+  gap: 1.6rem;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+  padding: 2rem;
+  border-radius: 1.6rem;
+  background-color: var(--white);
+}
+
+/* The arrow from one step to the next. */
+.step + .step::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -1.3rem;
+  width: 1rem;
+  height: 1rem;
+  border-top: 2px solid var(--black);
+  border-right: 2px solid var(--black);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.step p {
+  font-size: 16px;
+}
+
+.stepWhen {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.stepNum {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background-color: var(--black);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--white);
+}
+
+.stepAmount {
+  margin-top: 0.4rem;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 3.6rem;
+  line-height: 1;
+  letter-spacing: -1px;
+  color: var(--black);
+}
+
+.stepTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.25;
+  color: var(--black);
+}
+
+.step_lime {
+  background-color: var(--accent3);
+}
+
+.step_purple {
+  background-color: var(--accent2);
+}
+
+.step_free {
+  border: 1.5px dashed var(--light2);
+  background-color: transparent;
+}
+
+.step_black {
+  background-color: var(--black);
+}
+
+.step_black .stepAmount,
+.step_black .stepTitle {
+  color: var(--white);
+}
+
+.step_black p,
+.step_black .stepWhen {
+  color: rgb(255 255 255 / 70%);
+}
+
+.step_black .stepNum {
+  background-color: var(--accent3);
+  color: var(--black);
+}
+
+.step_lime .stepWhen,
+.step_purple .stepWhen,
+.step_lime p,
+.step_purple p {
+  color: var(--black);
+}
+
+/* ── The fine print ── */
+.rules {
+  display: flex;
+  flex-direction: column;
+}
+
+.rule {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  gap: 1.6rem;
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.rule:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.rule dt {
+  padding-top: 0.2rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.rule dd {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+/* ── Notifications ── */
+.toggles {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.toggle,
+.invoiceSwitch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+}
+
+.toggle {
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.toggle:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.toggleText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.toggleText p {
+  font-size: 16px;
+}
+
+.toggleTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--black);
+}
+
+.actionsEnd {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.invoiceSwitch {
+  padding: 1.8rem 2rem;
+  border-radius: 1.6rem;
+  background-color: var(--accent3Light);
+}
+
+@media screen and (max-width: 1268px) {
+  .plans {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plan {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: start;
+    column-gap: 2.4rem;
+  }
+
+  .planTop,
+  .planBlurb,
+  .planFoot {
+    grid-column: 1;
+  }
+
+  .planFields {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media screen and (max-width: 1068px) {
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .step + .step::before {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .panel {
+    padding: 2.4rem;
+  }
+
+  .plan {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .rule {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .panel {
+    padding: 2.2rem 1.8rem;
+    border-radius: 2rem;
+  }
+
+  .timeline {
+    padding: 1.4rem;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+  }
+
+  .plan {
+    padding: 2rem;
+  }
+
+  .stepAmount {
+    font-size: 3rem;
+  }
+}
