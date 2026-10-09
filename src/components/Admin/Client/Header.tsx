@@ -39,11 +39,20 @@ export default function Header({ client }: { client: Client }) {
       : client.approvedAt
         ? { label: "Approved", value: fmtDate(client.approvedAt) }
         : { label: "Approved", value: "Not yet" },
-    w?.nextBillingAt && w.facts.setupFeePaidAt
-      ? { label: "Next bill", value: fmtDate(w.nextBillingAt) }
-      : client.leads.trialEndsAt && client.leads.status === "TRIAL"
-        ? { label: "Trial ends", value: fmtDate(client.leads.trialEndsAt) }
-        : { label: "Next bill", value: "—" },
+    w?.status === "CANCELLED"
+      ? { label: "Plan", value: "Ended" }
+      : w?.status === "CANCELLING" && w.nextBillingAt
+        ? {
+            label: "Ends",
+            value: fmtDate(
+              new Date(new Date(w.nextBillingAt).getTime() - 86_400_000),
+            ),
+          }
+        : w?.nextBillingAt && w.facts.setupFeePaidAt
+          ? { label: "Next bill", value: fmtDate(w.nextBillingAt) }
+          : client.leads.trialEndsAt && client.leads.status === "TRIAL"
+            ? { label: "Trial ends", value: fmtDate(client.leads.trialEndsAt) }
+            : { label: "Next bill", value: "—" },
   ];
 
   return (

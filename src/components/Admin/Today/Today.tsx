@@ -288,6 +288,7 @@ export default function Today({
                       </span>
                     </Link>
                     <Nudge
+                      clientId={client.id}
                       name={client.contact.name}
                       email={client.contact.email}
                       what={list.join(", ")}

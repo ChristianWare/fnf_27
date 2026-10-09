@@ -227,3 +227,7 @@
     width: 100%;
   }
 }
+
+.fileLink {
+  align-self: flex-start;
+}

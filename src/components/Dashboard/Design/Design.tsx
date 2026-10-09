@@ -5,25 +5,68 @@ import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "../icons";
 import { Pill, ui } from "../ui/ui";
-import { useToast } from "../Toast/Toast";
+import { useAction } from "../useAction";
 import styles from "./Design.module.css";
-import { fmtDate } from "@/lib/dashboard/format";
-import type { DesignId, Designs } from "@/lib/dashboard/types";
+import { chooseDesign } from "@/app/dashboard/actions";
+import { fmtDate, thumb } from "@/lib/dashboard/format";
+import type { DesignId, DesignOption, Designs } from "@/lib/dashboard/types";
 import Night from "../../../../public/images/cadiMotion.png";
 import Desert from "../../../../public/images/cadiv.png";
 import Studio from "../../../../public/images/cadi.png";
 
-const photos: Record<DesignId, StaticImageData> = {
+type Look = "midnight" | "desert" | "studio";
+const LOOKS: Look[] = ["midnight", "desert", "studio"];
+
+const photos: Record<Look, StaticImageData> = {
   midnight: Night,
   desert: Desert,
   studio: Studio,
 };
 
-const headlines: Record<DesignId, string> = {
+const headlines: Record<Look, string> = {
   midnight: "Arrive like you mean it.",
   desert: "Every mile, handled.",
   studio: "Booked in a minute.",
 };
+
+/** The design itself: its screenshot, or a small sketch of the homepage. */
+function Preview({
+  option,
+  index,
+  business,
+  city,
+}: {
+  option: DesignOption;
+  index: number;
+  business: string;
+  city: string;
+}) {
+  const shot = option.images?.[0];
+  if (shot) {
+    return (
+      <a
+        href={shot}
+        target='_blank'
+        rel='noopener noreferrer'
+        className={styles.shot}
+        aria-label={`Open the ${option.name} design full size`}
+      >
+        <Image
+          src={thumb(shot, 1200)}
+          alt={`${option.name}, a design for ${business}`}
+          fill
+          unoptimized
+          sizes='(max-width: 968px) 100vw, 33vw'
+          className={styles.shotImg}
+        />
+      </a>
+    );
+  }
+  const look = LOOKS.includes(option.id as Look)
+    ? (option.id as Look)
+    : LOOKS[index % LOOKS.length];
+  return <Mock id={look} business={business} city={city} />;
+}
 
 /** A small, live sketch of the homepage in each direction. */
 function Mock({
@@ -31,7 +74,7 @@ function Mock({
   business,
   city,
 }: {
-  id: DesignId;
+  id: Look;
   business: string;
   city: string;
 }) {
@@ -85,7 +128,7 @@ export default function Design({
   /** After launch the choice is history, not a decision. */
   locked: boolean;
 }) {
-  const toast = useToast();
+  const { run, pending: saving } = useAction();
   const [chosen, setChosen] = useState(designs.chosen);
   const [chosenAt, setChosenAt] = useState(designs.chosenAt);
   const [confirm, setConfirm] = useState<DesignId | null>(null);
@@ -125,14 +168,19 @@ export default function Design({
       )}
 
       <section className={styles.options}>
-        {designs.options.map((option) => {
+        {designs.options.map((option, index) => {
           const isChosen = option.id === chosen;
           return (
             <article
               key={option.id}
               className={`${styles.option} ${isChosen ? styles.optionChosen : ""}`}
             >
-              <Mock id={option.id} business={business} city={city} />
+              <Preview
+                option={option}
+                index={index}
+                business={business}
+                city={city}
+              />
               <div className={styles.body}>
                 <div className={styles.titleRow}>
                   <h2 className={styles.name}>{option.name}</h2>
@@ -142,30 +190,36 @@ export default function Design({
                     </Pill>
                   )}
                 </div>
-                <p>{option.mood}</p>
-                <ul className={styles.palette}>
-                  {option.palette.map((swatch) => (
-                    <li key={swatch.hex} className={styles.swatch}>
-                      <span
-                        className={styles.swatchDot}
-                        style={{ backgroundColor: swatch.hex }}
-                      />
-                      <span className={ui.monoMuted}>{swatch.name}</span>
-                    </li>
-                  ))}
-                </ul>
-                <ul className={styles.notes}>
-                  <li className={styles.noteItem}>
-                    <span className={ui.mono}>Type</span>
-                    <p>{option.type}</p>
-                  </li>
-                  {option.notes.map((note) => (
-                    <li key={note} className={styles.noteItem}>
-                      <span className={styles.bullet} />
-                      <p>{note}</p>
-                    </li>
-                  ))}
-                </ul>
+                {option.mood && <p>{option.mood}</p>}
+                {option.palette.length > 0 && (
+                  <ul className={styles.palette}>
+                    {option.palette.map((swatch) => (
+                      <li key={swatch.hex} className={styles.swatch}>
+                        <span
+                          className={styles.swatchDot}
+                          style={{ backgroundColor: swatch.hex }}
+                        />
+                        <span className={ui.monoMuted}>{swatch.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {(option.type || option.notes.length > 0) && (
+                  <ul className={styles.notes}>
+                    {option.type && (
+                      <li className={styles.noteItem}>
+                        <span className={ui.mono}>Type</span>
+                        <p>{option.type}</p>
+                      </li>
+                    )}
+                    {option.notes.map((note) => (
+                      <li key={note} className={styles.noteItem}>
+                        <span className={styles.bullet} />
+                        <p>{note}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 {!locked && !isChosen && (
                   <button
                     type='button'
@@ -205,14 +259,21 @@ export default function Design({
               <button
                 type='button'
                 className={`${ui.btn} ${ui.btn_black}`}
-                onClick={() => {
-                  setChosen(pending.id);
-                  setChosenAt(new Date().toISOString());
-                  setConfirm(null);
-                  toast(`${pending.name} it is`, {
-                    detail: "We'll build your site in this direction.",
-                  });
-                }}
+                disabled={saving}
+                onClick={() =>
+                  run(
+                    () => chooseDesign(pending.id),
+                    (data) => {
+                      setChosen(pending.id);
+                      setChosenAt(data?.chosenAt ?? new Date().toISOString());
+                      setConfirm(null);
+                      return {
+                        message: `${pending.name} it is`,
+                        detail: "We'll build your site in this direction.",
+                      };
+                    },
+                  )
+                }
               >
                 Choose {pending.name}
                 <Icon name='check' className={ui.btnIcon} />

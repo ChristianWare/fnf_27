@@ -2,13 +2,14 @@
 
 // Every client conversation in one inbox, the ones waiting on you first.
 // Replying emails the client. Used for every client on the Messages page,
-// and for one client on their page. SAMPLE: lasts until you reload.
+// and for one client on their page.
 
 import { useMemo, useState } from "react";
 import Mark from "../Mark";
 import Icon from "@/components/Dashboard/icons";
-import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { useAction } from "@/components/Dashboard/useAction";
 import { Pill, ui } from "@/components/Dashboard/ui/ui";
+import { setThreadStatus, studioReply } from "@/app/admin/actions";
 import type { ClientKind } from "@/lib/admin/derive";
 import { fmtAgo, fmtShort, fmtTime } from "@/lib/dashboard/format";
 import type { Thread } from "@/lib/dashboard/types";
@@ -33,13 +34,16 @@ export default function Inbox({
   now,
   openKey,
   showClient = true,
+  you = "Fonts & Footers",
 }: {
   initial: ThreadRow[];
   now: string;
   openKey?: string;
   showClient?: boolean;
+  /** The signed-in admin, for their replies. */
+  you?: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [threads, setThreads] = useState(initial);
   // Open on the list that holds the conversation you came for.
   const [filter, setFilter] = useState<Filter>(() => {
@@ -76,43 +80,55 @@ export default function Inbox({
   const active = threads.find((t) => t.key === activeKey);
 
   const send = () => {
-    if (!active || !reply.trim()) return;
+    if (!active || !reply.trim() || pending) return;
     const text = reply.trim();
-    setThreads((list) =>
-      list.map((t) =>
-        t.key === active.key
-          ? {
-              ...t,
-              status: "ANSWERED",
-              messages: [
-                ...t.messages,
-                {
-                  id: `m-${Date.now()}`,
-                  from: "us",
-                  name: "Chris Ware",
-                  at: new Date().toISOString(),
-                  text,
-                },
-              ],
-            }
-          : t,
-      ),
+    run(
+      () => studioReply(active.clientId, active.id, text),
+      () => {
+        setThreads((list) =>
+          list.map((t) =>
+            t.key === active.key
+              ? {
+                  ...t,
+                  status: "ANSWERED",
+                  messages: [
+                    ...t.messages,
+                    {
+                      id: `m-${Date.now()}`,
+                      from: "us",
+                      name: you,
+                      at: new Date().toISOString(),
+                      text,
+                    },
+                  ],
+                }
+              : t,
+          ),
+        );
+        setReply("");
+        return {
+          message: `Reply sent to ${active.contact.split(" ")[0]}`,
+          detail: `Emailed to ${active.email}.`,
+        };
+      },
     );
-    setReply("");
-    toast(`Reply sent to ${active.contact.split(" ")[0]}`, {
-      detail: `Emailed to ${active.email}.`,
-    });
   };
 
   const setStatus = (status: Thread["status"]) => {
     if (!active) return;
-    setThreads((list) =>
-      list.map((t) => (t.key === active.key ? { ...t, status } : t)),
-    );
-    toast(
-      status === "CLOSED" ? "Conversation closed" : "Conversation reopened",
-      {
-        tone: "info",
+    run(
+      () => setThreadStatus(active.clientId, active.id, status),
+      () => {
+        setThreads((list) =>
+          list.map((t) => (t.key === active.key ? { ...t, status } : t)),
+        );
+        return {
+          message:
+            status === "CLOSED"
+              ? "Conversation closed"
+              : "Conversation reopened",
+          tone: "info",
+        };
       },
     );
   };

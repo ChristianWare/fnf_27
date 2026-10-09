@@ -1,20 +1,18 @@
 import type { NextConfig } from "next";
 
+const PDF_FILES = ["./public/fonts/**/*", "./public/logos/fnf_logo_black.png"];
+
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
-  // The invoice PDFs: keep the renderer out of the bundle, and ship the
-  // fonts and logo it reads from /public with the route.
+  // The PDFs (invoices, the signed agreement): keep the renderer out of the
+  // bundle, and ship the fonts and logo it reads from /public with every
+  // route that makes one, including the Stripe webhook that emails them.
   serverExternalPackages: ["@react-pdf/renderer"],
   outputFileTracingIncludes: {
-    "/dashboard/billing/invoices/[id]": [
-      "./public/fonts/**/*",
-      "./public/logos/**/*",
-    ],
-    "/admin/clients/[id]/invoices/[invoiceId]": [
-      "./public/fonts/**/*",
-      "./public/logos/**/*",
-    ],
+    "/dashboard/**": PDF_FILES,
+    "/admin/**": PDF_FILES,
+    "/api/**": PDF_FILES,
   },
   async redirects() {
     return [

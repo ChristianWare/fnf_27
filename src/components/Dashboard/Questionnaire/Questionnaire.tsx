@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useLenis } from "lenis/react";
 import Icon from "../icons";
 import { Progress, ui } from "../ui/ui";
-import { useToast } from "../Toast/Toast";
+import { useAction } from "../useAction";
 import styles from "./Questionnaire.module.css";
+import { saveAnswers, submitQuestionnaire } from "@/app/dashboard/actions";
 import {
   isAnswered,
   type Question,
@@ -26,7 +27,7 @@ export default function Questionnaire({
   initialSection?: string;
 }) {
   const lenis = useLenis();
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [answers, setAnswers] = useState<Answers>(initialAnswers);
   const [active, setActive] = useState(() =>
     Math.max(
@@ -51,8 +52,13 @@ export default function Questionnaire({
   };
 
   const save = (message = "Answers saved") => {
+    const snapshot = answers;
     setStatus("saved");
-    toast(message);
+    run(
+      () => saveAnswers(snapshot),
+      () => ({ message }),
+      () => setStatus("dirty"),
+    );
   };
 
   const go = (index: number) => {
@@ -254,15 +260,21 @@ export default function Questionnaire({
                 <button
                   type='button'
                   className={`${ui.btn} ${ui.btn_black}`}
-                  disabled={missing.length > 0}
-                  onClick={() => {
-                    setSent(new Date().toISOString());
-                    setStatus("saved");
-                    toast("Questionnaire sent", {
-                      detail:
-                        "Thank you. Chris reads it before writing your blueprint.",
-                    });
-                  }}
+                  disabled={missing.length > 0 || pending}
+                  onClick={() =>
+                    run(
+                      () => submitQuestionnaire(answers),
+                      (data) => {
+                        setSent(data?.submittedAt ?? new Date().toISOString());
+                        setStatus("saved");
+                        return {
+                          message: "Questionnaire sent",
+                          detail:
+                            "Thank you. Chris reads it before writing your blueprint.",
+                        };
+                      },
+                    )
+                  }
                 >
                   Send questionnaire
                   <Icon name='send' className={ui.btnIcon} />

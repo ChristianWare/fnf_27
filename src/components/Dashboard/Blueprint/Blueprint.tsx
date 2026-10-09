@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Icon from "../icons";
 import { Pill, Progress, ui } from "../ui/ui";
-import { useToast } from "../Toast/Toast";
+import { useAction } from "../useAction";
 import styles from "./Blueprint.module.css";
+import { approveSections, commentOnSection } from "@/app/dashboard/actions";
 import { blueprintCounts } from "@/lib/dashboard/helpers";
 import { fmtShort } from "@/lib/dashboard/format";
 import type {
@@ -29,7 +30,7 @@ export default function Blueprint({
   initial: BlueprintPage[];
   you: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [pages, setPages] = useState(initial);
   const [activeId, setActiveId] = useState(
     () =>
@@ -56,41 +57,57 @@ export default function Blueprint({
   const markApproved = (sectionId: string) =>
     update(sectionId, (s) => ({ ...s, status: "APPROVED" }));
 
-  const approve = (section: BlueprintSection) => {
-    markApproved(section.id);
-    toast(`Approved: ${section.title}`);
-  };
+  const approve = (section: BlueprintSection) =>
+    run(
+      () => approveSections([section.id]),
+      () => {
+        markApproved(section.id);
+        return { message: `Approved: ${section.title}` };
+      },
+    );
 
   const approveAll = () => {
     const waiting = page.sections.filter((s) => s.status === "REVIEW");
-    waiting.forEach((s) => markApproved(s.id));
-    toast(
-      `${waiting.length} section${waiting.length === 1 ? "" : "s"} approved`,
-      { detail: `${page.name} is ready to build.` },
+    run(
+      () => approveSections(waiting.map((s) => s.id)),
+      () => {
+        waiting.forEach((s) => markApproved(s.id));
+        return {
+          message: `${waiting.length} section${waiting.length === 1 ? "" : "s"} approved`,
+          detail: `${page.name} is ready to build.`,
+        };
+      },
     );
   };
 
   const sendChange = (sectionId: string) => {
-    if (!draft.trim()) return;
-    update(sectionId, (s) => ({
-      ...s,
-      status: "DRAFT",
-      comments: [
-        ...s.comments,
-        {
-          id: `c-${Date.now()}`,
-          from: "you",
-          name: you,
-          at: new Date().toISOString(),
-          text: draft.trim(),
-        },
-      ],
-    }));
-    setDraft("");
-    setCommenting(null);
-    toast("Sent to Chris", {
-      detail: "He'll rewrite the section and send it back for approval.",
-    });
+    const text = draft.trim();
+    if (!text || pending) return;
+    run(
+      () => commentOnSection(sectionId, text),
+      () => {
+        update(sectionId, (s) => ({
+          ...s,
+          status: "DRAFT",
+          comments: [
+            ...s.comments,
+            {
+              id: `c-${Date.now()}`,
+              from: "you",
+              name: you,
+              at: new Date().toISOString(),
+              text,
+            },
+          ],
+        }));
+        setDraft("");
+        setCommenting(null);
+        return {
+          message: "Sent to Chris",
+          detail: "He'll rewrite the section and send it back for approval.",
+        };
+      },
+    );
   };
 
   if (!page) {

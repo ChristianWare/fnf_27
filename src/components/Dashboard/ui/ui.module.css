@@ -487,6 +487,18 @@
   color: var(--black);
 }
 
+.noticeGood {
+  background-color: var(--accent3);
+}
+
+.noticeBad {
+  background-color: #ffe9e4;
+}
+
+.noticeBad p {
+  color: #a2301c;
+}
+
 /* ── Tables ── */
 /* Relative, so hidden labels inside the table stay inside it. */
 .tableWrap {

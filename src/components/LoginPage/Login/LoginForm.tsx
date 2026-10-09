@@ -1,141 +1,103 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import styles from "./Login.module.css";
-import { signIn, type SignInState } from "@/app/login/actions";
-
-const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
-const EMAIL = "hello@fontsandfooters.com";
-// SAMPLE: shown while the sample accounts exist. Remove with them.
-const SAMPLE_PASSWORD = "fonts2026";
-
-type Sample = { email: string; name: string; label: string };
+import {
+  resendVerification,
+  signIn,
+  type ResendState,
+  type SignInState,
+} from "@/app/login/actions";
+import { Field, PasswordField } from "./Fields";
 
 export default function LoginForm({
   next,
-  samples,
+  email: initialEmail = "",
+  notice,
 }: {
   next?: string;
-  samples: Sample[];
+  email?: string;
+  notice?: { tone: "good" | "bad"; text: string };
 }) {
   const [state, action, pending] = useActionState<SignInState, FormData>(
     signIn,
     {},
   );
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [show, setShow] = useState(false);
-
-  const fillSample = (sample: Sample) => {
-    setEmail(sample.email);
-    setPassword(SAMPLE_PASSWORD);
-  };
+  const [resent, resend, resending] = useActionState<ResendState, FormData>(
+    resendVerification,
+    {},
+  );
+  const [email, setEmail] = useState(initialEmail);
 
   return (
-    <>
-      <form action={action} className={styles.form} noValidate>
-        {next && <input type='hidden' name='next' value={next} />}
+    <form action={action} className={styles.form} noValidate>
+      {next && <input type='hidden' name='next' value={next} />}
 
-        <label className={styles.field}>
-          <span className={styles.label}>Email</span>
-          <input
-            className={styles.input}
-            type='email'
-            name='email'
-            autoComplete='email'
-            placeholder='you@company.com'
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </label>
-
-        <label className={styles.field}>
-          <span className={styles.label}>Password</span>
-          <span className={styles.passwordWrap}>
-            <input
-              className={styles.input}
-              type={show ? "text" : "password"}
-              name='password'
-              autoComplete='current-password'
-              placeholder='Your password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button
-              type='button'
-              className={styles.eye}
-              onClick={() => setShow((value) => !value)}
-              aria-label={show ? "Hide password" : "Show password"}
-              aria-pressed={show}
-            >
-              {show ? (
-                <svg viewBox='0 0 24 24' aria-hidden='true'>
-                  <path d='M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.4 5.2A9.6 9.6 0 0 1 12 5c5 0 9 4.5 10 7-.4 1-1.3 2.4-2.6 3.7M6.5 6.6C4.5 8 3.2 10 2 12c1 2.5 5 7 10 7 1.6 0 3-.4 4.3-1' />
-                </svg>
-              ) : (
-                <svg viewBox='0 0 24 24' aria-hidden='true'>
-                  <path d='M2 12c1-2.5 5-7 10-7s9 4.5 10 7c-1 2.5-5 7-10 7S3 14.5 2 12Z' />
-                  <circle cx='12' cy='12' r='3' />
-                </svg>
-              )}
-            </button>
-          </span>
-        </label>
-
-        {state.error && (
-          <p className={styles.error} role='alert'>
-            {state.error}
-          </p>
-        )}
-
-        <button type='submit' className={styles.submit} disabled={pending}>
-          {pending ? "Signing in…" : "Sign in"}
-          <svg viewBox='0 0 24 24' aria-hidden='true'>
-            <path d='M5 12h14m-6-6 6 6-6 6' />
-          </svg>
-        </button>
-
-        <p className={styles.small}>
-          Forgot your password?{" "}
-          <a href={`mailto:${EMAIL}?subject=Dashboard%20password`}>Email us</a>.
-          Not a client yet?{" "}
-          <a href={CALENDAR} target='_blank' rel='noopener noreferrer'>
-            Book a call
-          </a>
-          .
+      {notice && !state.error && (
+        <p
+          className={notice.tone === "good" ? styles.notice : styles.error}
+          role='status'
+        >
+          {notice.text}
         </p>
-      </form>
+      )}
 
-      {samples.length > 0 && (
-        <div className={styles.samples}>
-          <div className={styles.samplesHead}>
-            <span className={styles.mono}>Sample accounts</span>
-            <p>
-              Password for every account: <strong>{SAMPLE_PASSWORD}</strong>
-            </p>
-          </div>
-          <ul className={styles.sampleList}>
-            {samples.map((sample) => (
-              <li key={sample.email} className={styles.sample}>
-                <div className={styles.sampleText}>
-                  <span className={styles.sampleLabel}>{sample.label}</span>
-                  <p>{sample.email}</p>
-                </div>
-                <button
-                  type='button'
-                  className={styles.use}
-                  onClick={() => fillSample(sample)}
-                  aria-label={`Use the ${sample.label} sample account`}
-                >
-                  Use
-                </button>
-              </li>
+      <Field
+        label='Email'
+        type='email'
+        name='email'
+        autoComplete='email'
+        placeholder='you@company.com'
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+
+      <PasswordField
+        label='Password'
+        name='password'
+        autoComplete='current-password'
+        placeholder='Your password'
+        extra={
+          <Link href='/forgot-password' className={styles.forgot}>
+            Forgot it?
+          </Link>
+        }
+      />
+
+      {state.error && (
+        <div className={styles.error} role='alert'>
+          <p>{state.error}</p>
+          {state.unverified &&
+            (resent.sent ? (
+              <p className={styles.errorNote}>
+                Sent. Check your inbox (and spam) for a new link.
+              </p>
+            ) : (
+              <button
+                type='submit'
+                formAction={resend}
+                className={styles.inlineBtn}
+                disabled={resending}
+              >
+                {resending ? "Sending…" : "Send me the link again"}
+              </button>
             ))}
-          </ul>
+          {resent.error && <p className={styles.errorNote}>{resent.error}</p>}
         </div>
       )}
-    </>
+
+      <button type='submit' className={styles.submit} disabled={pending}>
+        {pending ? "Signing in…" : "Sign in"}
+        <svg viewBox='0 0 24 24' aria-hidden='true'>
+          <path d='M5 12h14m-6-6 6 6-6 6' />
+        </svg>
+      </button>
+
+      <p className={styles.small}>
+        New to Fonts & Footers? <Link href='/register'>Create an account</Link>.
+      </p>
+    </form>
   );
 }

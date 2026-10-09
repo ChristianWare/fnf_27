@@ -3,9 +3,14 @@
 import { useState, type FormEvent } from "react";
 import Icon from "../icons";
 import { ui } from "../ui/ui";
-import { useToast } from "../Toast/Toast";
+import { useAction } from "../useAction";
 import styles from "./Profile.module.css";
 import { signOut } from "@/app/login/actions";
+import {
+  changePassword as savePassword,
+  saveProfile,
+  setEmailPreference,
+} from "@/app/dashboard/actions";
 
 type Details = {
   name: string;
@@ -20,14 +25,19 @@ type Details = {
 export default function Profile({
   initial,
   leads,
-  sample,
+  emails,
+  pendingEmail: pendingAtStart,
 }: {
   initial: Details;
   leads: boolean;
-  sample?: boolean;
+  /** Which emails they get. Missing means on. */
+  emails: Record<string, boolean>;
+  /** A new address waiting for them to confirm it. */
+  pendingEmail?: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [details, setDetails] = useState(initial);
+  const [pendingEmail, setPendingEmail] = useState(pendingAtStart);
   const [password, setPassword] = useState({
     current: "",
     next: "",
@@ -35,11 +45,10 @@ export default function Profile({
   });
   const [passwordMsg, setPasswordMsg] = useState<{ text: string } | null>(null);
   const [notify, setNotify] = useState({
-    replies: true,
-    changes: true,
-    report: true,
-    invoices: true,
-    digest: leads,
+    replies: emails.replies !== false,
+    changes: emails.changes !== false,
+    invoices: emails.invoices !== false,
+    digest: emails.digest !== false,
   });
 
   const edit = (key: keyof Details, value: string) =>
@@ -47,7 +56,26 @@ export default function Profile({
 
   const save = (part: "you" | "business") => (e: FormEvent) => {
     e.preventDefault();
-    toast(part === "you" ? "Your details are saved" : "Business details saved");
+    run(
+      () => saveProfile(part, details),
+      (data) => {
+        if (data?.pendingEmail) {
+          setPendingEmail(data.pendingEmail);
+          setDetails((d) => ({ ...d, email: initial.email }));
+          return {
+            message: `Check ${data.pendingEmail}`,
+            detail:
+              "Click the link we sent to confirm your new email. Until then, sign in with your current one.",
+          };
+        }
+        return {
+          message:
+            part === "you"
+              ? "Your details are saved"
+              : "Business details saved",
+        };
+      },
+    );
   };
 
   const changePassword = (e: FormEvent) => {
@@ -60,12 +88,18 @@ export default function Profile({
       setPasswordMsg({ text: "The new passwords don't match." });
     } else {
       setPasswordMsg(null);
-      setPassword({ current: "", next: "", confirm: "" });
-      toast("Password updated", {
-        detail: sample
-          ? "Sample accounts keep the password fonts2026."
-          : "Use it the next time you sign in.",
-      });
+      run(
+        () => savePassword(password.current, password.next),
+        () => {
+          setPassword({ current: "", next: "", confirm: "" });
+          return {
+            message: "Password updated",
+            detail:
+              "Use it the next time you sign in. Any other devices are signed out.",
+          };
+        },
+        (error) => setPasswordMsg({ text: error }),
+      );
     }
   };
 
@@ -81,11 +115,6 @@ export default function Profile({
       text: "When a request is picked up and when it's done.",
     },
     {
-      key: "report",
-      label: "Monthly growth report",
-      text: "Your numbers and what moved, on the 1st.",
-    },
-    {
       key: "invoices",
       label: "Invoices and receipts",
       text: "A PDF invoice each time a payment goes through.",
@@ -95,7 +124,7 @@ export default function Profile({
           {
             key: "digest" as const,
             label: "Leads digest",
-            text: "Fresh leads, every morning at 7am.",
+            text: "Fresh leads, every morning at 6am.",
           },
         ]
       : []),
@@ -132,6 +161,12 @@ export default function Profile({
               onChange={(e) => edit("email", e.target.value)}
               autoComplete='email'
             />
+            {pendingEmail && (
+              <p className={ui.help}>
+                Waiting for you to confirm {pendingEmail}: check that inbox for
+                our link.
+              </p>
+            )}
           </label>
           <label className={ui.field}>
             <span className={ui.label}>Phone</span>
@@ -235,13 +270,17 @@ export default function Profile({
               {passwordMsg.text}
             </p>
           )}
-          <button type='submit' className={`${ui.btn} ${ui.btn_black}`}>
+          <button
+            type='submit'
+            className={`${ui.btn} ${ui.btn_black}`}
+            disabled={pending}
+          >
             Update password
           </button>
         </div>
       </form>
 
-      <section className={styles.panel}>
+      <section id='emails' className={styles.panel}>
         <h2 className={styles.heading}>Email me about</h2>
         <ul className={styles.toggles}>
           {toggles.map((toggle) => (
@@ -259,11 +298,15 @@ export default function Profile({
                 onClick={() => {
                   const on = !notify[toggle.key];
                   setNotify((n) => ({ ...n, [toggle.key]: on }));
-                  toast(
-                    on
-                      ? `You'll get emails about ${toggle.label.toLowerCase()}`
-                      : `No more emails about ${toggle.label.toLowerCase()}`,
-                    { tone: "info" },
+                  run(
+                    () => setEmailPreference(toggle.key, on),
+                    () => ({
+                      message: on
+                        ? `You'll get emails about ${toggle.label.toLowerCase()}`
+                        : `No more emails about ${toggle.label.toLowerCase()}`,
+                      tone: "info",
+                    }),
+                    () => setNotify((n) => ({ ...n, [toggle.key]: !on })),
                   );
                 }}
               />

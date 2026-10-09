@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import Icon, { type IconName } from "../icons";
 import { Pill, Progress, ui } from "../ui/ui";
-import { useToast } from "../Toast/Toast";
+import { useAction } from "../useAction";
 import styles from "./LeadsTool.module.css";
+import { startLeadsTrial } from "@/app/dashboard/actions";
 import { fmtDate, money } from "@/lib/dashboard/format";
 
 const features: { icon: IconName; title: string; text: string }[] = [
@@ -40,9 +41,7 @@ export default function LeadsTool({
   monthly: number;
   now: string;
 }) {
-  const toast = useToast();
-  // SAMPLE: starting the trial lasts until you reload. After the move it
-  // starts the trial and opens Lead settings to pick a market.
+  const { run, pending } = useAction();
   const [ends, setEnds] = useState<string>();
 
   return (
@@ -69,16 +68,24 @@ export default function LeadsTool({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black}`}
-              onClick={() => {
-                setEnds(
-                  new Date(
-                    new Date(now).getTime() + trialDays * 86_400_000,
-                  ).toISOString(),
-                );
-                toast(`Your ${trialDays}-day free trial has started`, {
-                  detail: "Your first leads arrive tomorrow morning.",
-                });
-              }}
+              disabled={pending}
+              onClick={() =>
+                run(
+                  () => startLeadsTrial(),
+                  (data) => {
+                    setEnds(
+                      data?.trialEndsAt ??
+                        new Date(
+                          new Date(now).getTime() + trialDays * 86_400_000,
+                        ).toISOString(),
+                    );
+                    return {
+                      message: `Your ${trialDays}-day free trial has started`,
+                      detail: "Your first leads arrive tomorrow morning.",
+                    };
+                  },
+                )
+              }
             >
               Start free trial
               <Icon name='arrow' className={ui.btnIcon} />

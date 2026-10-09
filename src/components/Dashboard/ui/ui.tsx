@@ -207,3 +207,25 @@ export function NoWebsite({ crumb, title }: { crumb: string; title: string }) {
     </>
   );
 }
+
+/** A one-line message at the top of a page: saved, confirmed, or a problem. */
+export function Notice({
+  tone = "info",
+  children,
+}: {
+  tone?: "good" | "bad" | "info";
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={`${styles.notice} ${tone === "good" ? styles.noticeGood : tone === "bad" ? styles.noticeBad : ""}`}
+      role={tone === "bad" ? "alert" : "status"}
+    >
+      <Icon
+        name={tone === "good" ? "check" : "info"}
+        className={styles.noticeIcon}
+      />
+      <p>{children}</p>
+    </div>
+  );
+}

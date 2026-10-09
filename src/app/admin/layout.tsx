@@ -29,7 +29,6 @@ export default async function AdminLayout({
         name: user.name,
         email: user.email,
         initials: initials(user.name),
-        sample: user.sample,
       }}
     >
       {children}

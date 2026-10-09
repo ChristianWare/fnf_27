@@ -9,6 +9,7 @@ import {
   clientMrr,
   clientStage,
   getAdmin,
+  getArchived,
   kindLabel,
   lastActivity,
   studioStats,
@@ -20,11 +21,12 @@ export const metadata: Metadata = { title: "Clients" };
 
 export default async function ClientsPage() {
   const { clients, now } = await getAdmin();
+  const archived = await getArchived();
   const queue = adminQueue(clients, now);
   const waiting = waitingOnClients(clients);
   const stats = studioStats(clients);
 
-  const rows: ClientRow[] = clients.map((c) => {
+  const rows: ClientRow[] = [...clients, ...archived].map((c) => {
     const kind = clientKind(c);
     const next = queue.find((item) => item.clientId === c.id);
     return {
@@ -42,6 +44,7 @@ export default async function ClientsPage() {
       waitingOnThem:
         waiting.find((w) => w.client.id === c.id)?.waiting.length ?? 0,
       lastActive: lastActivity(c),
+      archived: archived.includes(c),
     };
   });
 

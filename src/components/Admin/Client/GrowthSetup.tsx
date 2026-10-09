@@ -1,13 +1,21 @@
 "use client";
 
-// Everything behind a client's Growth page: where the numbers come from,
-// their 12-month plan, this month's notes and their weekly habits.
-// SAMPLE: saves show a toast and last until you reload.
+// Everything behind a client's Growth page, entered by hand: this month's
+// numbers, their 12-month plan with each month's actual visitors, this
+// month's notes and their weekly habits. It all shows on their Growth page
+// as soon as you save.
 
 import { useState } from "react";
 import Icon from "@/components/Dashboard/icons";
-import { useToast } from "@/components/Dashboard/Toast/Toast";
-import { Pill, ui } from "@/components/Dashboard/ui/ui";
+import { useAction } from "@/components/Dashboard/useAction";
+import { ui } from "@/components/Dashboard/ui/ui";
+import {
+  publishGrowthNotes,
+  saveGrowthHabits,
+  saveGrowthNumbers,
+  saveGrowthPlan,
+} from "@/app/admin/build-actions";
+import { firstOfMonth } from "@/lib/dashboard/billing";
 import { fmtMonth, fmtMonthLong } from "@/lib/dashboard/format";
 import type { Growth } from "@/lib/dashboard/types";
 import styles from "./Client.module.css";
@@ -16,28 +24,48 @@ const STANDARD = [
   100, 150, 250, 400, 600, 900, 1300, 1800, 2400, 3100, 4000, 5000,
 ];
 
+const num = (value: string) => Number(value.replace(/[^\d.]/g, "")) || 0;
+
 export default function GrowthSetup({
+  clientId,
   growth,
-  domain,
   live,
+  launchedAt,
   firstName,
   now,
 }: {
+  clientId: string;
   growth?: Growth;
-  domain: string;
   live: boolean;
+  launchedAt?: string;
   firstName: string;
   now: string;
 }) {
-  const toast = useToast();
-  const [sources, setSources] = useState({
-    plausible: live ? domain : "",
-    searchConsole: live ? `sc-domain:${domain}` : "",
-    business: live ? "locations/1129 4880 3321" : "",
-    place: live ? "ChIJ…" : "",
+  const { run, pending } = useAction();
+
+  const months =
+    growth?.months.map((m) => m.month) ??
+    Array.from({ length: 12 }, (_, i) => firstOfMonth(launchedAt ?? now, i));
+  const thisMonth = firstOfMonth(now);
+
+  const [numbers, setNumbers] = useState({
+    monthToDate: String(growth?.monthToDate ?? 0),
+    callsNow: String(growth?.calls.monthToDate ?? 0),
+    callsLast: String(growth?.calls.lastMonth ?? 0),
+    bookingsLabel: growth?.bookings.label ?? "Bookings",
+    bookingsNow: String(growth?.bookings.monthToDate ?? 0),
+    bookingsLast: String(growth?.bookings.lastMonth ?? 0),
+    reviews: String(growth?.reviews.total ?? 0),
+    reviewsNew: String(growth?.reviews.newThisMonth ?? 0),
+    rating: String(growth?.reviews.rating ?? 0),
   });
   const [targets, setTargets] = useState<number[]>(
     growth?.months.map((m) => m.target) ?? STANDARD,
+  );
+  const [actuals, setActuals] = useState<string[]>(
+    growth?.months.map((m) =>
+      m.actual === undefined ? "" : String(m.actual),
+    ) ?? Array(12).fill(""),
   );
   const [notes, setNotes] = useState<string[]>(
     growth?.notes.length ? growth.notes : [""],
@@ -49,25 +77,21 @@ export default function GrowthSetup({
     ],
   );
 
-  const sourceFields: {
-    key: keyof typeof sources;
-    label: string;
-    help: string;
-  }[] = [
-    { key: "plausible", label: "Plausible site", help: "Visitors from search" },
-    {
-      key: "searchConsole",
-      label: "Search Console property",
-      help: "Searches and positions",
-    },
-    {
-      key: "business",
-      label: "Google Business Profile",
-      help: "Calls from Google",
-    },
-    { key: "place", label: "Google Place ID", help: "Reviews and rating" },
-  ];
-  const connected = sourceFields.filter((f) => sources[f.key].trim()).length;
+  const field = (
+    key: keyof typeof numbers,
+    label: string,
+    mode: "numeric" | "decimal" | "text" = "numeric",
+  ) => (
+    <label className={styles.source}>
+      <span className={ui.label}>{label}</span>
+      <input
+        className={ui.input}
+        inputMode={mode === "text" ? undefined : mode}
+        value={numbers[key]}
+        onChange={(e) => setNumbers((n) => ({ ...n, [key]: e.target.value }))}
+      />
+    </label>
+  );
 
   return (
     <div className={styles.split}>
@@ -77,60 +101,63 @@ export default function GrowthSetup({
             <Icon name='info' className={ui.noticeIcon} />
             <p>
               {firstName}&apos;s Growth page opens on launch day. Set it up now
-              so the numbers start flowing the moment the site goes live.
+              so it&apos;s ready the moment the site goes live.
             </p>
           </div>
         )}
 
         <section className={styles.card}>
-          <div className={styles.cardHead}>
-            <div className={styles.titles}>
-              <h2 className={styles.heading}>Where the numbers come from</h2>
-              <p>
-                Pulled every night. Nothing to do once they&apos;re connected.
-              </p>
-            </div>
-            <Pill
-              tone={connected === sourceFields.length ? "lime" : "yellow"}
-              dot
-            >
-              {connected} of {sourceFields.length} connected
-            </Pill>
+          <div className={styles.titles}>
+            <h2 className={styles.heading}>This month&apos;s numbers</h2>
+            <p>
+              From Plausible, Search Console and their Google profile. Update
+              them whenever you look; {firstName} sees them straight away.
+            </p>
           </div>
           <div className={styles.sources}>
-            {sourceFields.map((field) => (
-              <label key={field.key} className={styles.source}>
-                <span className={styles.sourceTop}>
-                  <span className={ui.label}>{field.label}</span>
-                  <span
-                    className={`${styles.status} ${sources[field.key].trim() ? styles.statusOn : ""}`}
-                  >
-                    {sources[field.key].trim() ? "Connected" : "Not set"}
-                  </span>
-                </span>
-                <input
-                  className={ui.input}
-                  value={sources[field.key]}
-                  onChange={(e) =>
-                    setSources((s) => ({ ...s, [field.key]: e.target.value }))
-                  }
-                  placeholder={field.help}
-                />
-                <span className={styles.sourceHelp}>{field.help}</span>
-              </label>
-            ))}
+            {field("monthToDate", "Visitors from search, so far")}
+            {field("bookingsLabel", "What counts as a booking", "text")}
+            {field("callsNow", "Calls from Google, this month")}
+            {field("callsLast", "Calls, last month")}
+            {field("bookingsNow", "Bookings, this month")}
+            {field("bookingsLast", "Bookings, last month")}
+            {field("reviews", "Google reviews in total")}
+            {field("reviewsNew", "New reviews this month")}
+            {field("rating", "Average rating", "decimal")}
           </div>
           <div className={styles.actions}>
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+              disabled={pending}
               onClick={() =>
-                toast("Connections saved", {
-                  detail: "The next nightly pull uses them.",
-                })
+                run(
+                  () =>
+                    saveGrowthNumbers(clientId, {
+                      monthToDate: num(numbers.monthToDate),
+                      calls: {
+                        monthToDate: num(numbers.callsNow),
+                        lastMonth: num(numbers.callsLast),
+                      },
+                      bookings: {
+                        label: numbers.bookingsLabel,
+                        monthToDate: num(numbers.bookingsNow),
+                        lastMonth: num(numbers.bookingsLast),
+                      },
+                      reviews: {
+                        total: num(numbers.reviews),
+                        newThisMonth: num(numbers.reviewsNew),
+                        rating: num(numbers.rating),
+                      },
+                    }),
+                  () => ({
+                    message: "Numbers saved",
+                    detail: `They're on ${firstName}'s Growth page now.`,
+                  }),
+                )
               }
             >
-              Save connections
+              Save numbers
             </button>
           </div>
         </section>
@@ -142,41 +169,55 @@ export default function GrowthSetup({
                 {firstName}&apos;s 12-month plan
               </h2>
               <p>
-                Visitors from search each month. The dotted line on their chart.
+                Visitors from search each month: the target (the dotted line on
+                their chart) and, once a month is over, what they got.
               </p>
             </div>
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
-              onClick={() => {
-                setTargets(STANDARD);
-                toast("Back to the standard plan", { tone: "info" });
-              }}
+              onClick={() => setTargets(STANDARD)}
             >
               Use the standard plan
             </button>
           </div>
           <div className={styles.targets}>
-            {targets.map((target, i) => (
-              <label key={i} className={styles.target}>
-                <span className={ui.monoMuted}>
-                  {growth?.months[i]
-                    ? fmtMonth(growth.months[i].month)
-                    : `Month ${i + 1}`}
-                </span>
-                <input
-                  className={ui.input}
-                  inputMode='numeric'
-                  value={String(target)}
-                  onChange={(e) => {
-                    const value =
-                      Number(e.target.value.replace(/\D/g, "")) || 0;
-                    setTargets((t) => t.map((x, j) => (j === i ? value : x)));
-                  }}
-                  aria-label={`Target for month ${i + 1}`}
-                />
-              </label>
-            ))}
+            {targets.map((target, i) => {
+              const over = months[i] && months[i] < thisMonth;
+              return (
+                <div key={i} className={styles.target}>
+                  <span className={ui.monoMuted}>
+                    {months[i] ? fmtMonth(months[i]) : `Month ${i + 1}`}
+                  </span>
+                  <input
+                    className={ui.input}
+                    inputMode='numeric'
+                    value={String(target)}
+                    onChange={(e) => {
+                      const value = num(e.target.value);
+                      setTargets((t) => t.map((x, j) => (j === i ? value : x)));
+                    }}
+                    aria-label={`Target for month ${i + 1}`}
+                  />
+                  {over && (
+                    <input
+                      className={`${ui.input} ${styles.actual}`}
+                      inputMode='numeric'
+                      value={actuals[i] ?? ""}
+                      placeholder='Actual'
+                      onChange={(e) =>
+                        setActuals((a) =>
+                          a.map((x, j) =>
+                            j === i ? e.target.value.replace(/\D/g, "") : x,
+                          ),
+                        )
+                      }
+                      aria-label={`Actual visitors for month ${i + 1}`}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
           <div className={styles.actions}>
             <span className={styles.help}>
@@ -186,10 +227,22 @@ export default function GrowthSetup({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+              disabled={pending}
               onClick={() =>
-                toast("Plan saved", {
-                  detail: `${firstName}'s chart updates tonight.`,
-                })
+                run(
+                  () =>
+                    saveGrowthPlan(
+                      clientId,
+                      targets.map((target, i) => ({
+                        target,
+                        actual: actuals[i] === "" ? null : Number(actuals[i]),
+                      })),
+                    ),
+                  () => ({
+                    message: "Plan saved",
+                    detail: `${firstName}'s chart is up to date.`,
+                  }),
+                )
               }
             >
               Save plan
@@ -246,11 +299,15 @@ export default function GrowthSetup({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-              disabled={!notes.some((n) => n.trim())}
+              disabled={!notes.some((n) => n.trim()) || pending}
               onClick={() =>
-                toast("Notes published", {
-                  detail: `They're on ${firstName}'s Growth page now.`,
-                })
+                run(
+                  () => publishGrowthNotes(clientId, notes),
+                  () => ({
+                    message: "Notes published",
+                    detail: `They're on ${firstName}'s Growth page now.`,
+                  }),
+                )
               }
             >
               Publish
@@ -303,7 +360,13 @@ export default function GrowthSetup({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-              onClick={() => toast("Habits saved")}
+              disabled={pending}
+              onClick={() =>
+                run(
+                  () => saveGrowthHabits(clientId, habits),
+                  () => ({ message: "Habits saved" }),
+                )
+              }
             >
               Save habits
             </button>

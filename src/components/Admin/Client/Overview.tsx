@@ -33,13 +33,15 @@ export default function Overview({
 }) {
   const first = client.contact.name.split(" ")[0];
   const w = client.website;
-  const isNew = clientKind(client) === "NEW" && !client.approvedAt;
+  const isNew =
+    clientKind(client) === "NEW" && !client.approvedAt && !client.archivedAt;
 
   return (
     <div className={styles.split}>
       <div className={styles.column}>
         {isNew && (
           <Approve
+            clientId={client.id}
             business={client.business}
             name={client.contact.name}
             email={client.contact.email}
@@ -50,6 +52,7 @@ export default function Overview({
 
         {w && (
           <Tracker
+            clientId={client.id}
             steps={projectSteps(client)}
             business={client.business}
             firstName={first}
@@ -129,9 +132,10 @@ export default function Overview({
       </div>
 
       <div className={styles.column}>
-        <Notes initial={client.notes} />
+        <Notes clientId={client.id} initial={client.notes} />
         {w && (
           <SiteLinks
+            clientId={client.id}
             domain={w.domain}
             previewUrl={w.previewUrl}
             liveUrl={w.liveUrl}
@@ -140,8 +144,11 @@ export default function Overview({
           />
         )}
         <Archive
+          clientId={client.id}
           business={client.business}
           endsOn={lastDayOf(firstOfMonth(now))}
+          archivedAt={client.archivedAt}
+          now={now}
         />
       </div>
     </div>

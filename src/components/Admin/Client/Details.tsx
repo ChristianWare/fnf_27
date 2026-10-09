@@ -1,19 +1,30 @@
 "use client";
 
 // The small editable bits of a client: your private notes, their site
-// links, and archiving them. SAMPLE: saves show a toast and last until you
-// reload.
+// links, and archiving (or restoring) them.
 
 import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "@/components/Dashboard/icons";
-import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { useAction } from "@/components/Dashboard/useAction";
 import { ui } from "@/components/Dashboard/ui/ui";
+import {
+  archiveClient,
+  restoreClient,
+  saveNotes,
+  saveSiteLinks,
+} from "@/app/admin/actions";
 import { fmtDate } from "@/lib/dashboard/format";
 import styles from "./Client.module.css";
 
-export function Notes({ initial }: { initial?: string }) {
-  const toast = useToast();
+export function Notes({
+  clientId,
+  initial,
+}: {
+  clientId: string;
+  initial?: string;
+}) {
+  const { run, pending } = useAction();
   const [notes, setNotes] = useState(initial ?? "");
   const [dirty, setDirty] = useState(false);
 
@@ -36,11 +47,16 @@ export function Notes({ initial }: { initial?: string }) {
         <button
           type='button'
           className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-          disabled={!dirty}
-          onClick={() => {
-            setDirty(false);
-            toast("Notes saved");
-          }}
+          disabled={!dirty || pending}
+          onClick={() =>
+            run(
+              () => saveNotes(clientId, notes),
+              () => {
+                setDirty(false);
+                return { message: "Notes saved" };
+              },
+            )
+          }
         >
           Save notes
         </button>
@@ -50,19 +66,21 @@ export function Notes({ initial }: { initial?: string }) {
 }
 
 export function SiteLinks({
+  clientId,
   domain,
   previewUrl,
   liveUrl,
   bookingAdminUrl,
   platform,
 }: {
+  clientId: string;
   domain: string;
   previewUrl?: string;
   liveUrl?: string;
   bookingAdminUrl?: string;
   platform: boolean;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [links, setLinks] = useState({
     domain,
     previewUrl: previewUrl ?? "",
@@ -117,11 +135,16 @@ export function SiteLinks({
         <button
           type='button'
           className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-          disabled={!dirty}
-          onClick={() => {
-            setDirty(false);
-            toast("Site links saved");
-          }}
+          disabled={!dirty || pending}
+          onClick={() =>
+            run(
+              () => saveSiteLinks(clientId, links),
+              () => {
+                setDirty(false);
+                return { message: "Site links saved" };
+              },
+            )
+          }
         >
           Save links
         </button>
@@ -131,17 +154,30 @@ export function SiteLinks({
 }
 
 export function Archive({
+  clientId,
   business,
   endsOn,
+  archivedAt,
+  now,
 }: {
+  clientId: string;
   business: string;
   /** The last day of this month, when billing would stop. */
   endsOn: string;
+  /** Archived (or, in the future, scheduled to be). */
+  archivedAt?: string;
+  now: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [open, setOpen] = useState(false);
   const [when, setWhen] = useState<"end" | "now">("end");
-  const [archived, setArchived] = useState<string | null>(null);
+  const describe = (at?: string) =>
+    !at
+      ? null
+      : at > now
+        ? `${business} will be archived on ${fmtDate(new Date(new Date(at).getTime() - 86_400_000))}. Their billing stops then.`
+        : `${business} is archived. Billing has stopped and they're signed out.`;
+  const [archived, setArchived] = useState<string | null>(describe(archivedAt));
 
   return (
     <section className={`${styles.card} ${styles.danger}`}>
@@ -153,6 +189,30 @@ export function Archive({
             : "Cancels their billing, signs them out and hides them from your lists. Invoices and files are kept, and you can restore them anytime."}
         </p>
       </div>
+      {archived && (
+        <div className={styles.actions}>
+          <button
+            type='button'
+            className={`${ui.btn} ${ui.btn_outline} ${ui.btnSmall}`}
+            disabled={pending}
+            onClick={() =>
+              run(
+                () => restoreClient(clientId),
+                () => {
+                  setArchived(null);
+                  return {
+                    message: `${business} restored`,
+                    detail:
+                      "They can sign in again. Billing doesn't restart on its own: set it up from their Billing tab.",
+                  };
+                },
+              )
+            }
+          >
+            Restore {business}
+          </button>
+        </div>
+      )}
       {!archived && (
         <div className={styles.actions}>
           <button
@@ -212,21 +272,28 @@ export function Archive({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black}`}
-              onClick={() => {
-                setOpen(false);
-                const text =
-                  when === "end"
-                    ? `${business} will be archived on ${fmtDate(endsOn)}.`
-                    : `${business} is archived. Billing has stopped.`;
-                setArchived(text);
-                toast(
-                  when === "end" ? "Archive scheduled" : "Client archived",
-                  {
-                    tone: "info",
-                    detail: text,
+              disabled={pending}
+              onClick={() =>
+                run(
+                  () => archiveClient(clientId, when),
+                  () => {
+                    setOpen(false);
+                    const text =
+                      when === "end"
+                        ? `${business} will be archived on ${fmtDate(endsOn)}. Their billing stops then.`
+                        : `${business} is archived. Billing has stopped and they're signed out.`;
+                    setArchived(text);
+                    return {
+                      message:
+                        when === "end"
+                          ? "Archive scheduled"
+                          : "Client archived",
+                      tone: "info",
+                      detail: text,
+                    };
                   },
-                );
-              }}
+                )
+              }
             >
               Archive
             </button>

@@ -119,12 +119,10 @@ export default function Team({
 
   const remove = (member: TeamRow) =>
     startTransition(async () => {
-      if (!member.invited) {
-        const result = await removeAdmin(member.id);
-        if (!result.ok) {
-          toast(result.error, { tone: "error" });
-          return;
-        }
+      const result = await removeAdmin(member.id);
+      if (!result.ok) {
+        toast(result.error, { tone: "error" });
+        return;
       }
       setMembers((list) => list.filter((m) => m.id !== member.id));
       setConfirm(null);
@@ -152,7 +150,7 @@ export default function Team({
       setMembers((list) => [
         ...list.filter((m) => m.role === "ADMIN"),
         {
-          id: `invite-${Date.now()}`,
+          id: result.data?.id ?? `invite-${Date.now()}`,
           name: name.trim(),
           email: email.trim().toLowerCase(),
           role: "ADMIN",

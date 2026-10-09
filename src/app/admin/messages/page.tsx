@@ -14,7 +14,7 @@ export default async function MessagesPage({
   searchParams: Promise<{ thread?: string | string[] }>;
 }) {
   const { thread } = await searchParams;
-  const { clients, now } = await getAdmin();
+  const { clients, now, user } = await getAdmin();
   const openKey = typeof thread === "string" ? thread : undefined;
 
   const rows: ThreadRow[] = clients.flatMap((c) =>
@@ -109,6 +109,7 @@ export default async function MessagesPage({
         initial={rows}
         now={now}
         openKey={openKey}
+        you={user.name}
       />
     </>
   );

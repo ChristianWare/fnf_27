@@ -2,12 +2,21 @@
 
 // Write a client's blueprint: pages, the sections on each, their copy and
 // status, and replies to the client's comments. Sending drafts for review
-// shows them to the client to approve. SAMPLE: lasts until you reload.
+// shows them to the client to approve, and emails them.
 
 import { useState } from "react";
 import Icon from "@/components/Dashboard/icons";
-import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { useAction } from "@/components/Dashboard/useAction";
 import { Pill, ui } from "@/components/Dashboard/ui/ui";
+import {
+  addBlueprintPage,
+  addBlueprintSection,
+  saveSectionCopy,
+  sendSectionsForReview,
+  setSectionStatus,
+  startBlueprint,
+  studioComment,
+} from "@/app/admin/build-actions";
 import { blueprintCounts } from "@/lib/dashboard/helpers";
 import { fmtShort } from "@/lib/dashboard/format";
 import type {
@@ -69,13 +78,18 @@ const STARTER: {
 ];
 
 export default function BlueprintEditor({
+  clientId,
   initial,
   firstName,
+  you,
 }: {
+  clientId: string;
   initial: BlueprintPage[];
   firstName: string;
+  /** The signed-in admin, for their comments. */
+  you: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [pages, setPages] = useState(initial);
   const [activeId, setActiveId] = useState(initial[0]?.id);
   const [editing, setEditing] = useState<string | null>(null);
@@ -98,26 +112,19 @@ export default function BlueprintEditor({
       })),
     );
 
-  const start = () => {
-    const seeded: BlueprintPage[] = STARTER.map((p, i) => ({
-      id: `page-${i}`,
-      name: p.name,
-      path: p.path,
-      purpose: p.purpose,
-      sections: p.sections.map((title, j) => ({
-        id: `page-${i}-s${j}`,
-        title,
-        status: "DRAFT",
-        copy: [],
-        comments: [],
-      })),
-    }));
-    setPages(seeded);
-    setActiveId(seeded[0].id);
-    toast("Blueprint started", {
-      detail: `${seeded.length} pages, ready for you to write.`,
-    });
-  };
+  const start = () =>
+    run(
+      () => startBlueprint(clientId, STARTER),
+      (seeded) => {
+        if (!seeded?.length) return;
+        setPages(seeded);
+        setActiveId(seeded[0].id);
+        return {
+          message: "Blueprint started",
+          detail: `${seeded.length} pages, ready for you to write.`,
+        };
+      },
+    );
 
   if (!page) {
     return (
@@ -134,6 +141,7 @@ export default function BlueprintEditor({
           type='button'
           className={`${ui.btn} ${ui.btn_black}`}
           onClick={start}
+          disabled={pending}
         >
           Start with the standard pages
           <Icon name='plus' className={ui.btnIcon} />
@@ -207,25 +215,27 @@ export default function BlueprintEditor({
             className={styles.inlineAdd}
             onSubmit={(e) => {
               e.preventDefault();
-              if (!newPage.trim()) return;
-              const id = `page-${Date.now()}`;
               const name = newPage.trim();
-              setPages((list) => [
-                ...list,
-                {
-                  id,
-                  name,
-                  path: `/${name
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, "-")
-                    .replace(/(^-|-$)/g, "")}`,
-                  purpose: "",
-                  sections: [],
+              if (!name || pending) return;
+              run(
+                () => addBlueprintPage(clientId, name),
+                (data) => {
+                  if (!data) return;
+                  setPages((list) => [
+                    ...list,
+                    {
+                      id: data.id,
+                      name,
+                      path: data.path,
+                      purpose: "",
+                      sections: [],
+                    },
+                  ]);
+                  setActiveId(data.id);
+                  setNewPage("");
+                  return { message: `Page added: ${name}` };
                 },
-              ]);
-              setActiveId(id);
-              setNewPage("");
-              toast(`Page added: ${name}`);
+              );
             }}
           >
             <input
@@ -263,18 +273,29 @@ export default function BlueprintEditor({
               <button
                 type='button'
                 className={`${ui.btn} ${ui.btn_black}`}
-                onClick={() => {
-                  drafts.forEach((s) =>
-                    updateSection(s.id, (x) => ({ ...x, status: "REVIEW" })),
-                  );
-                  toast(
-                    `${drafts.length} section${drafts.length === 1 ? "" : "s"} sent to ${firstName}`,
-                    {
-                      detail:
-                        "They'll see them on their Blueprint page to approve.",
+                disabled={pending}
+                onClick={() =>
+                  run(
+                    () =>
+                      sendSectionsForReview(
+                        clientId,
+                        drafts.map((x) => x.id),
+                      ),
+                    () => {
+                      drafts.forEach((x) =>
+                        updateSection(x.id, (y) => ({
+                          ...y,
+                          status: "REVIEW",
+                        })),
+                      );
+                      return {
+                        message: `${drafts.length} section${drafts.length === 1 ? "" : "s"} sent to ${firstName}`,
+                        detail:
+                          "They'll see them on their Blueprint page to approve, and get an email.",
+                      };
                     },
-                  );
-                }}
+                  )
+                }
               >
                 Send {drafts.length} for review
                 <Icon name='send' className={ui.btnIcon} />
@@ -306,13 +327,20 @@ export default function BlueprintEditor({
                         className={`${styles.segment} ${section.status === s.key ? styles[`seg_${s.key}`] : ""}`}
                         onClick={() => {
                           if (section.status === s.key) return;
-                          updateSection(section.id, (x) => ({
-                            ...x,
-                            status: s.key,
-                          }));
-                          toast(`${section.title}: ${s.label.toLowerCase()}`, {
-                            tone: "info",
-                          });
+                          const next = s.key;
+                          run(
+                            () => setSectionStatus(clientId, section.id, next),
+                            () => {
+                              updateSection(section.id, (x) => ({
+                                ...x,
+                                status: next,
+                              }));
+                              return {
+                                message: `${section.title}: ${s.label.toLowerCase()}`,
+                                tone: "info",
+                              };
+                            },
+                          );
                         }}
                       >
                         {s.label}
@@ -342,16 +370,23 @@ export default function BlueprintEditor({
                       <button
                         type='button'
                         className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+                        disabled={pending}
                         onClick={() => {
-                          updateSection(section.id, (x) => ({
-                            ...x,
-                            copy: copyDraft
-                              .split("\n")
-                              .map((line) => line.trim())
-                              .filter(Boolean),
-                          }));
-                          setEditing(null);
-                          toast(`Saved: ${section.title}`);
+                          const copy = copyDraft
+                            .split("\n")
+                            .map((line) => line.trim())
+                            .filter(Boolean);
+                          run(
+                            () => saveSectionCopy(clientId, section.id, copy),
+                            () => {
+                              updateSection(section.id, (x) => ({
+                                ...x,
+                                copy,
+                              }));
+                              setEditing(null);
+                              return { message: `Saved: ${section.title}` };
+                            },
+                          );
                         }}
                       >
                         Save copy
@@ -410,22 +445,27 @@ export default function BlueprintEditor({
                   onSubmit={(e) => {
                     e.preventDefault();
                     const text = replies[section.id]?.trim();
-                    if (!text) return;
-                    updateSection(section.id, (x) => ({
-                      ...x,
-                      comments: [
-                        ...x.comments,
-                        {
-                          id: `c-${Date.now()}`,
-                          from: "us",
-                          name: "Chris Ware",
-                          at: new Date().toISOString(),
-                          text,
-                        },
-                      ],
-                    }));
-                    setReplies((r) => ({ ...r, [section.id]: "" }));
-                    toast(`Comment sent to ${firstName}`);
+                    if (!text || pending) return;
+                    run(
+                      () => studioComment(clientId, section.id, text),
+                      (data) => {
+                        updateSection(section.id, (x) => ({
+                          ...x,
+                          comments: [
+                            ...x.comments,
+                            {
+                              id: data?.id ?? `c-${Date.now()}`,
+                              from: "us",
+                              name: you,
+                              at: new Date().toISOString(),
+                              text,
+                            },
+                          ],
+                        }));
+                        setReplies((r) => ({ ...r, [section.id]: "" }));
+                        return { message: `Comment sent to ${firstName}` };
+                      },
+                    );
                   }}
                 >
                   <input
@@ -458,28 +498,34 @@ export default function BlueprintEditor({
             onSubmit={(e) => {
               e.preventDefault();
               const title = newSection.trim();
-              if (!title) return;
-              setPages((list) =>
-                list.map((p) =>
-                  p.id === page.id
-                    ? {
-                        ...p,
-                        sections: [
-                          ...p.sections,
-                          {
-                            id: `s-${Date.now()}`,
-                            title,
-                            status: "DRAFT",
-                            copy: [],
-                            comments: [],
-                          },
-                        ],
-                      }
-                    : p,
-                ),
+              if (!title || pending) return;
+              const pageId = page.id;
+              run(
+                () => addBlueprintSection(clientId, pageId, title),
+                (data) => {
+                  setPages((list) =>
+                    list.map((p) =>
+                      p.id === pageId
+                        ? {
+                            ...p,
+                            sections: [
+                              ...p.sections,
+                              {
+                                id: data?.id ?? `s-${Date.now()}`,
+                                title,
+                                status: "DRAFT",
+                                copy: [],
+                                comments: [],
+                              },
+                            ],
+                          }
+                        : p,
+                    ),
+                  );
+                  setNewSection("");
+                  return { message: `Section added to ${page.name}` };
+                },
               );
-              setNewSection("");
-              toast(`Section added to ${page.name}`);
             }}
           >
             <input

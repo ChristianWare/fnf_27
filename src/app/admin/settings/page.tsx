@@ -6,6 +6,7 @@ import styles from "@/components/Admin/Settings/Settings.module.css";
 import { PageHead } from "@/components/Dashboard/ui/ui";
 import { getAdmin } from "@/lib/admin";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
+import { getSetting } from "@/lib/data/write";
 
 export const metadata: Metadata = { title: "Plans and billing" };
 
@@ -59,7 +60,13 @@ export default async function SettingsPage() {
       />
       <div className={styles.grid}>
         <FinePrint trialDays={LEADS.trialDays} />
-        <Notifications email={user.email} />
+        <Notifications
+          email={user.email}
+          prefs={user.notify}
+          invoiceEmails={
+            (await getSetting<boolean>("invoice_emails")) !== false
+          }
+        />
       </div>
     </>
   );

@@ -1,6 +1,6 @@
-// The shape of everything the dashboard shows for one client. The sample
-// clients in demo.ts fill it in today; after the move from the current
-// site, the database fills in the same shape. Dates are ISO strings.
+// The shape of everything the dashboard shows for one client, put together
+// from the database by src/lib/data/clients.ts. Dates are ISO strings and
+// money is in dollars.
 
 export type PlanId = "FULL_PLATFORM" | "WEBSITE_ONLY";
 
@@ -24,12 +24,14 @@ export type ProjectFacts = {
   previewReadyAt?: string;
   previewApprovedAt?: string;
   launchedAt?: string;
+  /** Website Only: they asked to move to the Full Platform. */
+  upgradeRequestedAt?: string;
 };
 
 export type Website = {
   plan: PlanId;
-  /** PAST_DUE: the last monthly charge failed. */
-  status: "ACTIVE" | "PAST_DUE" | "CANCELLING";
+  /** PAST_DUE: the last monthly charge failed. CANCELLED: it has ended. */
+  status: "ACTIVE" | "PAST_DUE" | "CANCELLING" | "CANCELLED";
   monthly: number;
   setupFee: number;
   domain: string;
@@ -50,11 +52,17 @@ export type Doc = {
   id: string;
   title: string;
   summary: string;
-  status: "SIGNED" | "AWAITING";
+  /** The agreement is a build step; anything else is extra. */
+  kind: "AGREEMENT" | "OTHER";
+  /** INFO: for their records, nothing to sign. */
+  status: "SIGNED" | "AWAITING" | "INFO";
   sentAt: string;
   signedAt?: string;
   signedBy?: string;
   body: DocBlock[];
+  /** A PDF, for documents sent as a file. */
+  fileUrl?: string;
+  fileName?: string;
 };
 
 export type Answers = Record<string, string | string[]>;
@@ -70,6 +78,8 @@ export type Asset = {
   addedAt: string;
   /** A picture to show. Files without one show their type. */
   src?: string;
+  /** The file itself, to download. */
+  url?: string;
 };
 
 export type Comment = {
@@ -101,7 +111,7 @@ export type BlueprintPage = {
   sections: BlueprintSection[];
 };
 
-export type DesignId = "midnight" | "desert" | "studio";
+export type DesignId = string;
 
 export type DesignOption = {
   id: DesignId;
@@ -110,6 +120,8 @@ export type DesignOption = {
   palette: { name: string; hex: string }[];
   type: string;
   notes: string[];
+  /** Screenshots of the design. */
+  images?: string[];
 };
 
 export type Designs = {
@@ -155,6 +167,8 @@ export type Growth = {
   }[];
   notes: string[];
   habits: { id: string; text: string; detail: string }[];
+  /** The habits ticked off, for the week that starts on `week`. */
+  habitsDone?: { week: string; ids: string[] };
 };
 
 export type Invoice = {
@@ -210,7 +224,14 @@ export type Client = {
   id: string;
   business: string;
   city: string;
-  contact: { name: string; email: string; phone: string; role: string };
+  contact: {
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+    /** They've clicked the link we emailed when they signed up. */
+    verified?: boolean;
+  };
   /** Clients sign themselves up; website plans then wait for approval. */
   signedUpAt: string;
   /** When an admin approved them and set their plan and prices. */
@@ -219,6 +240,8 @@ export type Client = {
   request?: { plan?: PlanId | "LEADS"; message?: string };
   /** Admin-only notes. Clients never see these. */
   notes?: string;
+  /** Archived: hidden, signed out, billing stopped. In the future: scheduled. */
+  archivedAt?: string;
   website?: Website;
   leads: { status: LeadsStatus; startedAt?: string; trialEndsAt?: string };
   documents: Doc[];
@@ -230,6 +253,8 @@ export type Client = {
   growth?: Growth;
   invoices: Invoice[];
   card?: Card;
+  /** They have a customer in Stripe. */
+  stripeLinked?: boolean;
   threads: Thread[];
   activity: Activity[];
 };

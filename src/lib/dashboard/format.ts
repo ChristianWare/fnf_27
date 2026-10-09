@@ -120,3 +120,12 @@ export const initials = (name: string) =>
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+
+/** A smaller copy of a Cloudinary image, for thumbnails. */
+export const thumb = (src: string, width = 480) =>
+  /res\.cloudinary\.com\/.+\/image\/upload\//.test(src)
+    ? src.replace(
+        "/image/upload/",
+        `/image/upload/c_limit,w_${width},q_auto,f_auto/`,
+      )
+    : src;

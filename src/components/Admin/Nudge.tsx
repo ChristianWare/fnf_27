@@ -1,38 +1,47 @@
 "use client";
 
-// A small button that sends a client a friendly reminder. SAMPLE: shows
-// the toast; the real one emails the client.
+// A small button that emails a client a friendly reminder of what's
+// waiting on them.
 
 import { useState } from "react";
 import Icon from "@/components/Dashboard/icons";
-import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { useAction } from "@/components/Dashboard/useAction";
 import { ui } from "@/components/Dashboard/ui/ui";
+import { nudgeClient } from "@/app/admin/actions";
 
 export default function Nudge({
+  clientId,
   name,
   email,
   what,
   label = "Nudge",
 }: {
+  clientId: string;
   name: string;
   email: string;
   what: string;
   label?: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [sent, setSent] = useState(false);
 
   return (
     <button
       type='button'
       className={`${ui.btn} ${sent ? ui.btn_light : ui.btn_outline} ${ui.btnSmall}`}
-      disabled={sent}
-      onClick={() => {
-        setSent(true);
-        toast(`Reminder sent to ${name.split(" ")[0]}`, {
-          detail: `${email}: ${what}`,
-        });
-      }}
+      disabled={sent || pending}
+      onClick={() =>
+        run(
+          () => nudgeClient(clientId),
+          () => {
+            setSent(true);
+            return {
+              message: `Reminder sent to ${name.split(" ")[0]}`,
+              detail: `${email}: ${what}`,
+            };
+          },
+        )
+      }
     >
       {sent ? (
         <>

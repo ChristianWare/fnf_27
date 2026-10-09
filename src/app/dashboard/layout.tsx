@@ -46,7 +46,6 @@ export default async function DashboardLayout({
         name: user.name,
         email: user.email,
         initials: initials(user.name),
-        sample: user.sample,
       }}
       promo={!client.website}
       banner={

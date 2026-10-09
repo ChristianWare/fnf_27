@@ -3,14 +3,15 @@
 // Change requests as a board: Received, In progress, Done. Open one to read
 // it, move it along and reply; the client gets an email each time. Used for
 // every client on the Change requests page, and for one client on their
-// page. SAMPLE: changes last until you reload.
+// page.
 
 import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Mark from "../Mark";
 import Icon from "@/components/Dashboard/icons";
-import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { useAction } from "@/components/Dashboard/useAction";
 import { Pill, ui } from "@/components/Dashboard/ui/ui";
+import { updateChangeRequest } from "@/app/admin/actions";
 import type { ClientKind } from "@/lib/admin/derive";
 import { fmtAgo, fmtShort } from "@/lib/dashboard/format";
 import type { ChangeRequest, ChangeStatus } from "@/lib/dashboard/types";
@@ -50,7 +51,7 @@ export default function RequestsBoard({
   openKey?: string;
   showClient?: boolean;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [rows, setRows] = useState(initial);
   const [open, setOpen] = useState<string | null>(
     initial.some((r) => r.key === openKey) ? openKey! : null,
@@ -67,26 +68,38 @@ export default function RequestsBoard({
   };
 
   const save = () => {
-    if (!current) return;
+    if (!current || pending) return;
     const text = reply.trim();
-    setRows((list) =>
-      list.map((r) =>
-        r.key === current.key
-          ? {
-              ...r,
-              status,
-              updatedAt: new Date().toISOString(),
-              reply: text || r.reply,
-            }
-          : r,
-      ),
-    );
-    setOpen(null);
-    toast(
-      status !== current.status
-        ? `#${current.number} is ${label[status].toLowerCase()}`
-        : `Reply sent to ${current.firstName}`,
-      { detail: `${current.firstName} gets an email at ${current.email}.` },
+    const row = current;
+    const next = status;
+    run(
+      () =>
+        updateChangeRequest(row.clientId, row.id, {
+          status: next,
+          reply: text,
+        }),
+      () => {
+        setRows((list) =>
+          list.map((r) =>
+            r.key === row.key
+              ? {
+                  ...r,
+                  status: next,
+                  updatedAt: new Date().toISOString(),
+                  reply: text || r.reply,
+                }
+              : r,
+          ),
+        );
+        setOpen(null);
+        return {
+          message:
+            next !== row.status
+              ? `#${row.number} is ${label[next].toLowerCase()}`
+              : `Reply sent to ${row.firstName}`,
+          detail: `${row.firstName} gets an email at ${row.email}.`,
+        };
+      },
     );
   };
 

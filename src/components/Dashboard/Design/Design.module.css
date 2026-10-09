@@ -400,3 +400,18 @@
     padding: 2rem 1rem 1rem;
   }
 }
+
+/* A real design: its screenshot, cropped to the top of the page. */
+.shot {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 1.6rem;
+  overflow: hidden;
+  background-color: var(--light);
+}
+
+.shotImg {
+  object-fit: cover;
+  object-position: top;
+}

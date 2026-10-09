@@ -4,7 +4,7 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getViewAs, requireUser } from "@/lib/auth/dal";
-import { findClient } from "./clients";
+import { loadClient } from "@/lib/data/clients";
 
 export * from "./helpers";
 
@@ -20,12 +20,7 @@ export const getDashboard = cache(async () => {
   const clientId = viewingAs ? await getViewAs() : user.clientId;
   if (viewingAs && !clientId) redirect("/admin");
 
-  // SAMPLE: the sample clients. After the move, read the client from the
-  // database here instead.
-  const client = clientId ? findClient(clientId, now) : undefined;
-  if (!client) {
-    if (viewingAs) redirect("/admin");
-    throw new Error(`No client found for ${user.email}.`);
-  }
+  const client = clientId ? await loadClient(clientId) : undefined;
+  if (!client) redirect(viewingAs ? "/admin" : "/login");
   return { user, client, now: now.toISOString(), viewingAs };
 });

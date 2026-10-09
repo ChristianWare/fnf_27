@@ -519,3 +519,36 @@
     font-size: 3rem;
   }
 }
+
+/* A list price, read-only: label over value. */
+.planFact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.2rem 1.4rem;
+  border-radius: 1.2rem;
+  background-color: rgb(255 255 255 / 55%);
+}
+
+.planLabel {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.planFact dd {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--black);
+}
+
+.plan_FULL_PLATFORM .planFact {
+  background-color: rgb(255 255 255 / 10%);
+}
+
+.plan_FULL_PLATFORM .planFact dd {
+  color: var(--white);
+}

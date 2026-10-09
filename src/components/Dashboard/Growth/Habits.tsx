@@ -3,17 +3,38 @@
 import { useState } from "react";
 import Icon from "../icons";
 import { Progress } from "../ui/ui";
+import { useAction } from "../useAction";
 import styles from "./Growth.module.css";
+import { toggleHabit } from "@/app/dashboard/actions";
 import type { Growth } from "@/lib/dashboard/types";
 
 /** The client's side of the plan: a few small things, every week. */
-export default function Habits({ habits }: { habits: Growth["habits"] }) {
-  const [done, setDone] = useState<string[]>([]);
+export default function Habits({
+  habits,
+  week,
+  initialDone,
+}: {
+  habits: Growth["habits"];
+  /** The Monday this week started, e.g. "2026-10-05". */
+  week: string;
+  initialDone: string[];
+}) {
+  const { run } = useAction();
+  const [done, setDone] = useState<string[]>(initialDone);
 
-  const toggle = (id: string) =>
+  const toggle = (id: string) => {
+    const before = done;
     setDone((list) =>
       list.includes(id) ? list.filter((item) => item !== id) : [...list, id],
     );
+    run(
+      () => toggleHabit(id, week),
+      (ids) => {
+        if (ids) setDone(ids);
+      },
+      () => setDone(before),
+    );
+  };
 
   return (
     <section className={styles.panel}>

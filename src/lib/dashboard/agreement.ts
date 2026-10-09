@@ -7,14 +7,19 @@ import { PLANS } from "./plans";
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 
-export function serviceAgreement(business: string, plan: PlanId): DocBlock[] {
-  const info = PLANS[plan];
+export function serviceAgreement(
+  business: string,
+  plan: PlanId,
+  /** This client's rates, in dollars. The list prices if not given. */
+  rates?: { monthly: number; setup: number },
+): DocBlock[] {
+  const info = { ...PLANS[plan], ...rates };
   const full = plan === "FULL_PLATFORM";
 
   return [
     {
       heading: "Who this is between",
-      text: `This agreement is between Fonts & Footers, of Phoenix, Arizona ("we"), and ${business} ("you"), for the ${info.name} plan.`,
+      text: `This agreement is between Fonts & Footers, of Scottsdale, Arizona ("we"), and ${business} ("you"), for the ${info.name} plan.`,
     },
     {
       heading: "What we build and run",

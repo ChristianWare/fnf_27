@@ -1,11 +1,10 @@
 // Signed session cookies, with no extra packages.
 //
-// The cookie holds who is signed in and when that runs out, plus a
-// signature (HMAC-SHA256) made with AUTH_SECRET. Nobody can change the
-// cookie without the secret, so the server can trust it without looking
-// anything up. The proxy (src/proxy.ts) uses it to send signed-out visitors
-// to /login, and every dashboard page checks it again through the DAL
-// (src/lib/auth/dal.ts).
+// The cookie holds who is signed in, when they signed in and when that
+// runs out, plus a signature (HMAC-SHA256) made with AUTH_SECRET. Nobody
+// can change the cookie without the secret. The proxy (src/proxy.ts) uses
+// it to send signed-out visitors to /login, and every page checks it again
+// through the DAL (src/lib/auth/dal.ts), which also looks the account up.
 //
 // Set AUTH_SECRET in .env.local and on Vercel: a long random string, e.g.
 // the output of `openssl rand -base64 32`. Without it, development uses a
@@ -17,6 +16,8 @@ export const SESSION_DAYS = 7;
 export type Session = {
   /** The signed-in user's id. */
   sub: string;
+  /** When the session started, in seconds since 1970. */
+  iat: number;
   /** When the session runs out, in seconds since 1970. */
   exp: number;
 };
@@ -63,9 +64,11 @@ export async function signSession(sub: string) {
   const value = secret();
   if (!value) throw new Error("AUTH_SECRET is not set.");
 
+  const iat = Math.floor(Date.now() / 1000);
   const session: Session = {
     sub,
-    exp: Math.floor(Date.now() / 1000) + SESSION_DAYS * 24 * 60 * 60,
+    iat,
+    exp: iat + SESSION_DAYS * 24 * 60 * 60,
   };
   const payload = toBase64Url(encoder.encode(JSON.stringify(session)));
   const signature = await crypto.subtle.sign(
@@ -106,7 +109,11 @@ export async function verifySession(
       return null;
     }
     if (session.exp * 1000 < Date.now()) return null;
-    return { sub: session.sub, exp: session.exp };
+    return {
+      sub: session.sub,
+      iat: typeof session.iat === "number" ? session.iat : 0,
+      exp: session.exp,
+    };
   } catch {
     return null;
   }

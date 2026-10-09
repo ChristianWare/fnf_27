@@ -125,31 +125,6 @@
   color: var(--text);
 }
 
-.sample {
-  align-self: flex-start;
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 50px;
-  background-color: var(--accent4);
-  font-family: var(--IBMPlex);
-  font-size: 14px;
-  line-height: 1;
-  text-transform: uppercase;
-  color: var(--black);
-  cursor: help;
-}
-
-.sample::before {
-  content: "";
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 50%;
-  background-color: var(--black);
-}
-
 /* The links scroll on their own when the window is short. */
 .nav {
   flex: 1;

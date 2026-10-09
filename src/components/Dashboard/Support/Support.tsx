@@ -1,14 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Icon from "../icons";
 import { Pill, ui } from "../ui/ui";
-import { useToast } from "../Toast/Toast";
+import { useAction } from "../useAction";
 import styles from "./Support.module.css";
+import {
+  markThreadRead,
+  replyThread,
+  startThread,
+} from "@/app/dashboard/actions";
 import { fmtShort, fmtTime } from "@/lib/dashboard/format";
 import type { Thread } from "@/lib/dashboard/types";
 
 const EMAIL = "hello@fontsandfooters.com";
+
+/** A message they just sent, shown straight away. */
+const sentMessage = (name: string, text: string) => ({
+  id: `m-${Date.now()}`,
+  from: "you" as const,
+  name,
+  at: new Date().toISOString(),
+  text,
+});
 
 const statusPill = {
   OPEN: { text: "Waiting on us", tone: "yellow" },
@@ -23,7 +37,7 @@ export default function Support({
   initial: Thread[];
   you: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   // The first conversation opens on arrival, so it counts as read.
   const [threads, setThreads] = useState(() =>
     initial.map((t, i) => (i === 0 ? { ...t, unread: false } : t)),
@@ -37,7 +51,13 @@ export default function Support({
 
   const active = threads.find((t) => t.id === activeId);
 
+  // Opening the page shows the first conversation: that counts as read.
+  useEffect(() => {
+    if (initial[0]?.unread) void markThreadRead(initial[0].id);
+  }, [initial]);
+
   const select = (id: string) => {
+    if (threads.find((t) => t.id === id)?.unread) void markThreadRead(id);
     setActiveId(id);
     setReply("");
     setThreads((list) =>
@@ -53,47 +73,58 @@ export default function Support({
     }
   };
 
-  const message = (text: string) => ({
-    id: `m-${Date.now()}`,
-    from: "you" as const,
-    name: you,
-    at: new Date().toISOString(),
-    text,
-  });
-
   const send = () => {
-    if (!active || !reply.trim()) return;
-    setThreads((list) =>
-      list.map((t) =>
-        t.id === active.id
-          ? {
-              ...t,
-              status: "OPEN",
-              messages: [...t.messages, message(reply.trim())],
-            }
-          : t,
-      ),
+    const text = reply.trim();
+    if (!active || !text || pending) return;
+    run(
+      () => replyThread(active.id, text),
+      () => {
+        setThreads((list) =>
+          list.map((t) =>
+            t.id === active.id
+              ? {
+                  ...t,
+                  status: "OPEN",
+                  messages: [...t.messages, sentMessage(you, text)],
+                }
+              : t,
+          ),
+        );
+        setReply("");
+        return {
+          message: "Reply sent",
+          detail: "Chris replies within one business day.",
+        };
+      },
     );
-    setReply("");
-    toast("Reply sent", { detail: "Chris replies within one business day." });
   };
 
   const start = () => {
-    if (!subject.trim() || !body.trim()) return;
-    const id = `t-${Date.now()}`;
-    setThreads((list) => [
-      {
-        id,
-        subject: subject.trim(),
-        status: "OPEN",
-        messages: [message(body.trim())],
+    const topic = subject.trim();
+    const text = body.trim();
+    if (!topic || !text || pending) return;
+    run(
+      () => startThread(topic, text),
+      (data) => {
+        const id = data?.id ?? `t-${Date.now()}`;
+        setThreads((list) => [
+          {
+            id,
+            subject: topic,
+            status: "OPEN",
+            messages: [sentMessage(you, text)],
+          },
+          ...list,
+        ]);
+        setSubject("");
+        setBody("");
+        setActiveId(id);
+        return {
+          message: "Message sent",
+          detail: "Chris replies within one business day.",
+        };
       },
-      ...list,
-    ]);
-    setSubject("");
-    setBody("");
-    setActiveId(id);
-    toast("Message sent", { detail: "Chris replies within one business day." });
+    );
   };
 
   return (

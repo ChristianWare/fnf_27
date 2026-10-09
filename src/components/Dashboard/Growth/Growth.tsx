@@ -2,7 +2,7 @@ import styles from "./Growth.module.css";
 import Habits from "./Habits";
 import Icon from "../icons";
 import { Pill } from "../ui/ui";
-import { growthNow } from "@/lib/dashboard";
+import { growthNow, weekOf } from "@/lib/dashboard";
 import { fmtMonth, fmtMonthLong } from "@/lib/dashboard/format";
 import type { Growth as GrowthData } from "@/lib/dashboard/types";
 
@@ -16,6 +16,7 @@ export default function Growth({
   now: string;
 }) {
   const { current, pace } = growthNow(growth, now);
+  const week = weekOf(now);
   const lastMonth = [...growth.months]
     .reverse()
     .find((m) => m.actual !== undefined);
@@ -191,63 +192,80 @@ export default function Growth({
             <h2 className={styles.heading}>What moved</h2>
             <p>From Chris, after this month&apos;s look at your numbers.</p>
           </div>
-          <ul className={styles.notes}>
-            {growth.notes.map((note) => (
-              <li key={note} className={styles.note}>
-                <span className={styles.noteIcon}>
-                  <Icon name='sparkle' />
-                </span>
-                <p>{note}</p>
-              </li>
-            ))}
-          </ul>
+          {growth.notes.length ? (
+            <ul className={styles.notes}>
+              {growth.notes.map((note) => (
+                <li key={note} className={styles.note}>
+                  <span className={styles.noteIcon}>
+                    <Icon name='sparkle' />
+                  </span>
+                  <p>{note}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>
+              This month&apos;s notes land here after Chris looks at your
+              numbers.
+            </p>
+          )}
         </section>
 
-        <Habits habits={growth.habits} />
+        {growth.habits.length > 0 && (
+          <Habits
+            habits={growth.habits}
+            week={week}
+            initialDone={
+              growth.habitsDone?.week === week ? growth.habitsDone.ids : []
+            }
+          />
+        )}
       </div>
 
-      <section className={styles.panel}>
-        <div className={styles.titles}>
-          <h2 className={styles.heading}>Searches that bring riders</h2>
-          <p>
-            Where you show up on Google, and the clicks each search sent this
-            month.
-          </p>
-        </div>
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope='col'>Search</th>
-                <th scope='col'>Position</th>
-                <th scope='col'>Change</th>
-                <th scope='col'>Clicks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {growth.queries.map((q) => (
-                <tr key={q.query}>
-                  <td className={styles.query}>{q.query}</td>
-                  <td>
-                    <span className={styles.position}>#{q.position}</span>
-                  </td>
-                  <td>
-                    {q.change > 0 ? (
-                      <span className={styles.up}>
-                        <Icon name='arrowUpRight' />
-                        {q.change}
-                      </span>
-                    ) : (
-                      <span className={styles.flat}>Same</span>
-                    )}
-                  </td>
-                  <td>{n(q.clicks)}</td>
+      {growth.queries.length > 0 && (
+        <section className={styles.panel}>
+          <div className={styles.titles}>
+            <h2 className={styles.heading}>Searches that bring riders</h2>
+            <p>
+              Where you show up on Google, and the clicks each search sent this
+              month.
+            </p>
+          </div>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th scope='col'>Search</th>
+                  <th scope='col'>Position</th>
+                  <th scope='col'>Change</th>
+                  <th scope='col'>Clicks</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {growth.queries.map((q) => (
+                  <tr key={q.query}>
+                    <td className={styles.query}>{q.query}</td>
+                    <td>
+                      <span className={styles.position}>#{q.position}</span>
+                    </td>
+                    <td>
+                      {q.change > 0 ? (
+                        <span className={styles.up}>
+                          <Icon name='arrowUpRight' />
+                          {q.change}
+                        </span>
+                      ) : (
+                        <span className={styles.flat}>Same</span>
+                      )}
+                    </td>
+                    <td>{n(q.clicks)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </>
   );
 }

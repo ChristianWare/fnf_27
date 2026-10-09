@@ -1437,8 +1437,22 @@
   list-style: none;
 }
 
+.uploadItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.uploadItem .input,
+.uploadItem input {
+  height: 4rem;
+  padding: 0 1rem;
+}
+
 .upload {
   position: relative;
+  display: block;
   aspect-ratio: 4 / 3;
   border-radius: 1.2rem;
   background-color: var(--light2);
@@ -1799,4 +1813,10 @@
   .actions > button {
     flex: 1 1 auto;
   }
+}
+
+/* A month that's over: what they actually got, under the target. */
+.actual {
+  border-color: var(--light2);
+  background-color: var(--white);
 }

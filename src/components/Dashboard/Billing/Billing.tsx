@@ -5,8 +5,14 @@ import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "../icons";
 import { Pill, Progress, ui } from "../ui/ui";
-import { useToast } from "../Toast/Toast";
+import { useAction } from "../useAction";
 import styles from "./Billing.module.css";
+import {
+  cancelPlan,
+  keepPlan,
+  requestUpgrade,
+  startLeadsTrial,
+} from "@/app/dashboard/actions";
 import { fmtDate, money } from "@/lib/dashboard/format";
 import type { Card, Invoice, LeadsStatus, PlanId } from "@/lib/dashboard/types";
 
@@ -21,7 +27,10 @@ type Props = {
     setupPaidAt?: string;
     nextBillingAt?: string;
     live: boolean;
-    status: "ACTIVE" | "PAST_DUE" | "CANCELLING";
+    status: "ACTIVE" | "PAST_DUE" | "CANCELLING" | "CANCELLED";
+    /** The setup fee comes after the agreement. */
+    agreementSigned: boolean;
+    upgradeRequested: boolean;
   };
   upgrade: { name: string; monthly: number };
   leads: {
@@ -43,31 +52,38 @@ export default function Billing({
   invoices,
   now,
 }: Props) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [cancelling, setCancelling] = useState(false);
-  const [cancelled, setCancelled] = useState(false);
-  const [upgradeAsked, setUpgradeAsked] = useState(false);
+  const [cancelled, setCancelled] = useState(plan?.status === "CANCELLING");
+  const [upgradeAsked, setUpgradeAsked] = useState(
+    plan?.upgradeRequested ?? false,
+  );
   const [leadsState, setLeadsState] = useState(leads.access);
   const [trialEnds, setTrialEnds] = useState(leads.trialEndsAt);
-  const [keepLeads, setKeepLeads] = useState(false);
+  const ended = plan?.status === "CANCELLED";
 
-  const startTrial = () => {
-    setLeadsState("TRIAL");
-    setTrialEnds(
-      new Date(
-        new Date(now).getTime() + leads.trialDays * 86_400_000,
-      ).toISOString(),
+  const startTrial = () =>
+    run(
+      () => startLeadsTrial(),
+      (data) => {
+        setLeadsState("TRIAL");
+        setTrialEnds(data?.trialEndsAt);
+        return {
+          message: `Your ${leads.trialDays}-day free trial has started`,
+          detail: "Your first leads arrive tomorrow morning.",
+        };
+      },
     );
-    toast(`Your ${leads.trialDays}-day free trial has started`, {
-      detail: "Your first leads arrive tomorrow morning.",
-    });
-  };
 
   // Cancelling takes effect at the end of the month: the day before the
   // next 1st.
-  const endsOn = plan?.nextBillingAt
-    ? new Date(new Date(plan.nextBillingAt).getTime() - 86_400_000).toISOString()
-    : undefined;
+  const [endsOn, setEndsOn] = useState(
+    plan?.nextBillingAt
+      ? new Date(
+          new Date(plan.nextBillingAt).getTime() - 86_400_000,
+        ).toISOString()
+      : undefined,
+  );
 
   const daysLeft =
     leadsState === "TRIAL" && trialEnds
@@ -90,11 +106,13 @@ export default function Billing({
               <div className={`${styles.planHead} ${styles[plan.id]}`}>
                 <div className={styles.planTop}>
                   <span className={styles.planName}>{plan.name}</span>
-                  {cancelled ? (
+                  {ended ? (
                     <Pill tone='red' dot>
-                      {endsOn
-                        ? `Ends ${fmtDate(endsOn)}`
-                        : "Cancelled"}
+                      Ended
+                    </Pill>
+                  ) : cancelled ? (
+                    <Pill tone='red' dot>
+                      {endsOn ? `Ends ${fmtDate(endsOn)}` : "Cancelled"}
                     </Pill>
                   ) : plan.status === "PAST_DUE" ? (
                     <Pill tone='red' dot>
@@ -121,7 +139,9 @@ export default function Billing({
                     {money(plan.setupFee)}
                     {plan.setupPaidAt
                       ? ` · Paid ${fmtDate(plan.setupPaidAt)}`
-                      : " · Due"}
+                      : plan.agreementSigned
+                        ? " · Due now"
+                        : " · Due after you sign your agreement"}
                   </dd>
                 </div>
                 <div className={styles.row}>
@@ -138,22 +158,58 @@ export default function Billing({
                 </div>
               </dl>
               <div className={styles.planActions}>
-                {plan.id === "WEBSITE_ONLY" && !cancelled && (
-                  <a href='#upgrade' className={`${ui.btn} ${ui.btn_black}`}>
-                    Upgrade, no rebuild
+                {!plan.setupPaidAt && plan.agreementSigned && !ended && (
+                  <a
+                    href='/dashboard/billing/pay'
+                    className={`${ui.btn} ${ui.btn_black}`}
+                    data-no-transition
+                  >
+                    Pay the {money(plan.setupFee)} setup fee
                     <Icon name='arrow' className={ui.btnIcon} />
                   </a>
                 )}
-                {cancelled ? (
+                {!plan.setupPaidAt && !plan.agreementSigned && (
+                  <Link
+                    href='/dashboard/website/documents'
+                    className={`${ui.btn} ${ui.btn_black}`}
+                  >
+                    Sign your agreement
+                    <Icon name='arrow' className={ui.btnIcon} />
+                  </Link>
+                )}
+                {plan.id === "WEBSITE_ONLY" &&
+                  plan.setupPaidAt &&
+                  !cancelled &&
+                  !ended && (
+                    <a href='#upgrade' className={`${ui.btn} ${ui.btn_black}`}>
+                      Upgrade, no rebuild
+                      <Icon name='arrow' className={ui.btnIcon} />
+                    </a>
+                  )}
+                {ended ? (
+                  <Link
+                    href='/dashboard/support'
+                    className={`${ui.btn} ${ui.btn_light}`}
+                  >
+                    Message us to start again
+                  </Link>
+                ) : cancelled ? (
                   <button
                     type='button'
                     className={`${ui.btn} ${ui.btn_black}`}
-                    onClick={() => {
-                      setCancelled(false);
-                      toast("Your plan stays on", {
-                        detail: "Nothing changes. Glad you're staying.",
-                      });
-                    }}
+                    disabled={pending}
+                    onClick={() =>
+                      run(
+                        () => keepPlan(),
+                        () => {
+                          setCancelled(false);
+                          return {
+                            message: "Your plan stays on",
+                            detail: "Nothing changes. Glad you're staying.",
+                          };
+                        },
+                      )
+                    }
                   >
                     Keep my plan
                   </button>
@@ -213,19 +269,17 @@ export default function Billing({
               <p>No card on file.</p>
             </div>
           )}
-          <button
-            type='button'
+          <a
+            href='/dashboard/billing/card'
             className={`${ui.btn} ${ui.btn_light}`}
-            onClick={() =>
-              toast("Card updates open soon", {
-                tone: "info",
-                detail:
-                  "This will open Stripe's secure page once billing moves over. Card details never touch our servers.",
-              })
-            }
+            data-no-transition
           >
             {card ? "Update card" : "Add a card"}
-          </button>
+          </a>
+          <p className={styles.small}>
+            Opens Stripe&apos;s secure page. Card details never touch our
+            servers.
+          </p>
         </section>
       </div>
 
@@ -247,9 +301,7 @@ export default function Billing({
               {leadsState === "INCLUDED"
                 ? "Fresh leads every morning, at no extra cost."
                 : leadsState === "TRIAL"
-                  ? keepLeads
-                    ? `Card added. After ${trialEnds ? fmtDate(trialEnds) : "your trial"}, the first charge covers the rest of that month, then ${money(leads.monthly)} on the 1st of every month.`
-                    : `Your trial ends ${trialEnds ? fmtDate(trialEnds) : "soon"}. Add a card to keep it: the first charge covers the rest of that month, then ${money(leads.monthly)} on the 1st of every month. Nothing is charged before then.`
+                  ? `Your trial ends ${trialEnds ? fmtDate(trialEnds) : "soon"}. To keep it, add a card before then: the first charge covers the rest of that month, then ${money(leads.monthly)} on the 1st of every month. Nothing is charged before then.`
                   : leadsState === "ACTIVE"
                     ? "Billed monthly with your plan. Cancel anytime."
                     : `The hotels, venues and companies near you that book rides, every morning. No card needed. If you keep it, it's ${money(leads.monthly)} a month, billed on the 1st.`}
@@ -261,6 +313,7 @@ export default function Billing({
                 type='button'
                 className={`${ui.btn} ${ui.btn_black}`}
                 onClick={startTrial}
+                disabled={pending}
               >
                 Start free trial
                 <Icon name='arrow' className={ui.btnIcon} />
@@ -273,20 +326,6 @@ export default function Billing({
                 Open Leads Tool
                 <Icon name='arrow' className={ui.btnIcon} />
               </Link>
-            )}
-            {leadsState === "TRIAL" && !keepLeads && (
-              <button
-                type='button'
-                className={`${ui.btn} ${ui.btn_white}`}
-                onClick={() => {
-                  setKeepLeads(true);
-                  toast("Card added", {
-                    detail: `After the trial, the first charge covers the rest of that month, then ${money(leads.monthly)} on the 1st.`,
-                  });
-                }}
-              >
-                Add a card
-              </button>
             )}
           </div>
         </div>
@@ -328,8 +367,8 @@ export default function Billing({
               <span>/month</span>
             </span>
             <p>
-              Instead of {money(plan.monthly)}, from the 1st after booking goes live.
-              Your site stays up the whole time.
+              Instead of {money(plan.monthly)}, from the 1st after booking goes
+              live. Your site stays up the whole time.
             </p>
             {upgradeAsked ? (
               <span className={styles.asked}>
@@ -340,12 +379,19 @@ export default function Billing({
               <button
                 type='button'
                 className={`${ui.btn} ${ui.btn_lime}`}
-                onClick={() => {
-                  setUpgradeAsked(true);
-                  toast("Upgrade requested", {
-                    detail: "Chris will email you within one business day.",
-                  });
-                }}
+                disabled={pending}
+                onClick={() =>
+                  run(
+                    () => requestUpgrade(),
+                    () => {
+                      setUpgradeAsked(true);
+                      return {
+                        message: "Upgrade requested",
+                        detail: "Chris will email you within one business day.",
+                      };
+                    },
+                  )
+                }
               >
                 Request the upgrade
                 <Icon name='arrow' className={ui.btnIcon} />
@@ -441,17 +487,25 @@ export default function Billing({
               <button
                 type='button'
                 className={`${ui.btn} ${ui.btn_black}`}
-                onClick={() => {
-                  setCancelled(true);
-                  setCancelling(false);
-                  toast("Plan cancelled", {
-                    tone: "info",
-                    detail:
-                      endsOn
-                        ? `It ends on ${fmtDate(endsOn)}. Change your mind anytime before then.`
-                        : "We've stopped the build. Change your mind anytime.",
-                  });
-                }}
+                disabled={pending}
+                onClick={() =>
+                  run(
+                    () => cancelPlan(),
+                    (data) => {
+                      setCancelled(true);
+                      setCancelling(false);
+                      if (data?.endsAt) setEndsOn(data.endsAt);
+                      const ends = data?.endsAt ?? endsOn;
+                      return {
+                        message: "Plan cancelled",
+                        tone: "info",
+                        detail: ends
+                          ? `It ends on ${fmtDate(ends)}. Change your mind anytime before then.`
+                          : "We've stopped the build. Change your mind anytime.",
+                      };
+                    },
+                  )
+                }
               >
                 Cancel plan
               </button>

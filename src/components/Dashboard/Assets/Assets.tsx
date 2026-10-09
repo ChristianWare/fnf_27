@@ -5,9 +5,17 @@ import { useRef, useState, type DragEvent } from "react";
 import Icon from "../icons";
 import { Progress, ui } from "../ui/ui";
 import { useToast } from "../Toast/Toast";
+import { useAction } from "../useAction";
+import { upload } from "../upload";
 import styles from "./Assets.module.css";
+import {
+  addAssets,
+  assetUploadTicket,
+  relabelAsset,
+  removeAsset,
+} from "@/app/dashboard/actions";
 import { assetNeeds } from "@/lib/dashboard/helpers";
-import { fmtShort } from "@/lib/dashboard/format";
+import { fmtShort, thumb } from "@/lib/dashboard/format";
 import type { Asset, AssetLabel } from "@/lib/dashboard/types";
 
 const LABELS: AssetLabel[] = [
@@ -25,10 +33,7 @@ const tips = [
   "Real people beat stock: you or a chauffeur by the car, smiling.",
 ];
 
-const sizeLabel = (bytes: number) =>
-  bytes > 1_000_000
-    ? `${(bytes / 1_000_000).toFixed(1)} MB`
-    : `${Math.max(1, Math.round(bytes / 1000))} KB`;
+const MAX_BYTES = 25_000_000;
 
 // A first guess at what a file is, from its name and type.
 const guessLabel = (file: File): AssetLabel => {
@@ -40,8 +45,10 @@ const guessLabel = (file: File): AssetLabel => {
 
 export default function Assets({ initial }: { initial: Asset[] }) {
   const toast = useToast();
+  const { run } = useAction();
   const [assets, setAssets] = useState(initial);
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(0);
   const input = useRef<HTMLInputElement>(null);
 
   const needs = assetNeeds(assets);
@@ -49,37 +56,75 @@ export default function Assets({ initial }: { initial: Asset[] }) {
   const have = required.reduce((sum, n) => sum + Math.min(n.have, n.need), 0);
   const need = required.reduce((sum, n) => sum + n.need, 0);
 
-  const add = (files: FileList | null) => {
-    if (!files?.length) return;
-    const added: Asset[] = Array.from(files).map((file) => ({
-      id: `${file.name}-${file.lastModified}-${Math.round(Math.random() * 1e6)}`,
-      name: file.name,
-      label: guessLabel(file),
-      size: sizeLabel(file.size),
-      addedAt: new Date().toISOString(),
-      src: file.type.startsWith("image/")
-        ? URL.createObjectURL(file)
-        : undefined,
-    }));
-    setAssets((list) => [...list, ...added]);
-    toast(
-      added.length === 1
-        ? `Added ${added[0].name}`
-        : `Added ${added.length} files`,
-      { detail: "Check the label on each one so we know what it is." },
+  const add = async (files: FileList | null) => {
+    if (!files?.length || uploading) return;
+    const chosen = Array.from(files).slice(0, 20);
+    const tooBig = chosen.filter((file) => file.size > MAX_BYTES);
+    const list = chosen.filter((file) => file.size <= MAX_BYTES);
+    if (tooBig.length) {
+      toast(`${tooBig[0].name} is over 25 MB`, {
+        tone: "error",
+        detail: "Send big files by email, or export a smaller copy.",
+      });
+    }
+    if (!list.length) return;
+
+    setUploading(list.length);
+    try {
+      const ticket = await assetUploadTicket();
+      if (!ticket.ok) {
+        toast(ticket.error, { tone: "error" });
+        return;
+      }
+      const uploaded = [];
+      for (const file of list) {
+        try {
+          uploaded.push({
+            ...(await upload(ticket.data!, file)),
+            label: guessLabel(file),
+          });
+        } catch (error) {
+          toast((error as Error).message, { tone: "error" });
+        }
+      }
+      if (!uploaded.length) return;
+      const saved = await addAssets(uploaded);
+      if (!saved.ok) {
+        toast(saved.error, { tone: "error" });
+        return;
+      }
+      const added = saved.data ?? [];
+      setAssets((current) => [...current, ...added]);
+      toast(
+        added.length === 1
+          ? `Added ${added[0].name}`
+          : `Added ${added.length} files`,
+        { detail: "Check the label on each one so we know what it is." },
+      );
+    } catch {
+      toast("The upload didn't finish. Check your connection and try again.", {
+        tone: "error",
+      });
+    } finally {
+      setUploading(0);
+    }
+  };
+
+  const remove = (asset: Asset) =>
+    run(
+      () => removeAsset(asset.id),
+      () => {
+        setAssets((list) => list.filter((item) => item.id !== asset.id));
+        return { message: `Removed ${asset.name}`, tone: "info" };
+      },
     );
-  };
 
-  const remove = (asset: Asset) => {
-    if (asset.src?.startsWith("blob:")) URL.revokeObjectURL(asset.src);
-    setAssets((list) => list.filter((item) => item.id !== asset.id));
-    toast(`Removed ${asset.name}`, { tone: "info" });
-  };
-
-  const relabel = (id: string, label: AssetLabel) =>
+  const relabel = (id: string, label: AssetLabel) => {
     setAssets((list) =>
       list.map((item) => (item.id === id ? { ...item, label } : item)),
     );
+    run(() => relabelAsset(id, label));
+  };
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
@@ -115,7 +160,13 @@ export default function Assets({ initial }: { initial: Asset[] }) {
               <Icon name='upload' />
             </span>
             <span className={styles.dropTitle}>
-              Drop files here, or <u>choose files</u>
+              {uploading ? (
+                `Uploading ${uploading} file${uploading === 1 ? "" : "s"}…`
+              ) : (
+                <>
+                  Drop files here, or <u>choose files</u>
+                </>
+              )}
             </span>
             <p>
               Photos, logos and brand guides. JPG, PNG, SVG or PDF, up to 25 MB
@@ -135,12 +186,12 @@ export default function Assets({ initial }: { initial: Asset[] }) {
                   <div className={styles.thumb}>
                     {asset.src ? (
                       <Image
-                        src={asset.src}
+                        src={thumb(asset.src)}
                         alt={asset.name}
                         fill
                         sizes='(max-width: 768px) 50vw, 240px'
                         className={styles.thumbImg}
-                        unoptimized={asset.src.startsWith("blob:")}
+                        unoptimized
                       />
                     ) : (
                       <span className={styles.ext}>

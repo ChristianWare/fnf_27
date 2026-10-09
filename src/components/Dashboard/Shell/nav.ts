@@ -123,7 +123,9 @@ export function buildNav(client: Client, leadsDue = 0): NavGroup[] {
     );
   }
 
-  if (leadsAccess(client) !== "NONE") {
+  // The Leads Tool's full set of pages (Today, Find, Pipeline, Settings)
+  // comes back with its nightly jobs; until then, one page.
+  if (leadsAccess(client) !== "NONE" && leadsDue > 0) {
     groups.push({
       title: "Leads",
       items: [
@@ -153,7 +155,7 @@ export function buildNav(client: Client, leadsDue = 0): NavGroup[] {
       external: true,
     });
   }
-  if (leadsAccess(client) === "NONE") {
+  if (leadsAccess(client) === "NONE" || leadsDue === 0) {
     tools.push({
       href: "/dashboard/leads",
       label: "Leads Tool",

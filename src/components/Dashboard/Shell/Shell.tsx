@@ -23,7 +23,7 @@ type Props = {
   tone: "platform" | "website" | "leads" | "admin";
   /** The letters in the square beside the business name. */
   mark?: string;
-  user: { name: string; email: string; initials: string; sample?: boolean };
+  user: { name: string; email: string; initials: string };
   /** Clients without a website plan see a short invite in the sidebar. */
   promo?: boolean;
   /** A strip across the top of the page, e.g. while viewing as a client. */
@@ -247,16 +247,7 @@ export default function Shell({
               </span>
               <span className={styles.meText}>
                 <span className={styles.meName}>{user.name}</span>
-                {user.sample ? (
-                  <span
-                    className={styles.sample}
-                    title='A sample account: changes you make here last until you reload.'
-                  >
-                    Sample data
-                  </span>
-                ) : (
-                  <span className={styles.meEmail}>{user.email}</span>
-                )}
+                <span className={styles.meEmail}>{user.email}</span>
               </span>
               <form action={signOut}>
                 <button

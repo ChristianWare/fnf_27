@@ -335,7 +335,8 @@ function InvoicePdf({
 
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
-            Fonts & Footers · Phoenix, Arizona · {SUPPORT_EMAIL}
+            Fonts & Footers · 10105 E Via Linda Ste. 103, Scottsdale, AZ 85268 ·{" "}
+            {SUPPORT_EMAIL}
           </Text>
           <Text style={styles.footerText}>Invoice {invoice.number}</Text>
         </View>

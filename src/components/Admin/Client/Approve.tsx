@@ -2,32 +2,35 @@
 
 // A new sign-up: read what they asked for, set the plan and prices, and
 // approve. Approving emails them a welcome with the agreement and the
-// setup fee. SAMPLE: updates this page and shows a toast.
+// setup fee.
 
 import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "@/components/Dashboard/icons";
-import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { useAction } from "@/components/Dashboard/useAction";
 import { ui } from "@/components/Dashboard/ui/ui";
+import { approveClient, declineClient } from "@/app/admin/actions";
 import { fmtShort, money } from "@/lib/dashboard/format";
 import { PLANS } from "@/lib/dashboard/plans";
 import type { PlanId } from "@/lib/dashboard/types";
 import styles from "./Client.module.css";
 
 export default function Approve({
+  clientId,
   business,
   name,
   email,
   request,
   nextFirst,
 }: {
+  clientId: string;
   business: string;
   name: string;
   email: string;
   request?: { plan?: PlanId | "LEADS"; message?: string };
   nextFirst: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const first = name.split(" ")[0];
   const [plan, setPlan] = useState<PlanId>(
     request?.plan && request.plan !== "LEADS" ? request.plan : "FULL_PLATFORM",
@@ -174,13 +177,25 @@ export default function Approve({
         <button
           type='button'
           className={`${ui.btn} ${ui.btn_black}`}
-          disabled={!Number(monthly)}
-          onClick={() => {
-            setDone("approved");
-            toast(`${business} approved`, {
-              detail: `Welcome email sent to ${email}.`,
-            });
-          }}
+          disabled={!Number(monthly) || pending}
+          onClick={() =>
+            run(
+              () =>
+                approveClient(clientId, {
+                  plan,
+                  monthly: Number(monthly),
+                  setup: Number(setup) || 0,
+                  note,
+                }),
+              () => {
+                setDone("approved");
+                return {
+                  message: `${business} approved`,
+                  detail: `Welcome email sent to ${email}.`,
+                };
+              },
+            )
+          }
         >
           Approve and send welcome
           <Icon name='send' className={ui.btnIcon} />
@@ -211,14 +226,21 @@ export default function Approve({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black}`}
-              onClick={() => {
-                setDeclining(false);
-                setDone("declined");
-                toast(`${business} declined`, {
-                  tone: "info",
-                  detail: `${first} has been emailed.`,
-                });
-              }}
+              disabled={pending}
+              onClick={() =>
+                run(
+                  () => declineClient(clientId, reason),
+                  () => {
+                    setDeclining(false);
+                    setDone("declined");
+                    return {
+                      message: `${business} declined`,
+                      tone: "info",
+                      detail: `${first} has been emailed.`,
+                    };
+                  },
+                )
+              }
             >
               Decline and email
             </button>

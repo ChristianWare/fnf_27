@@ -2,17 +2,24 @@
 
 // A client's files: their questionnaire answers, brand assets, design
 // options and documents. You can copy the answers, download assets,
-// upload design options and send documents to sign. SAMPLE: uploads and
-// sends last until you reload.
+// upload design options and send documents to sign. Uploads go straight to
+// Cloudinary; sending emails the client.
 
 import Image from "next/image";
 import { useRef, useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "@/components/Dashboard/icons";
 import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { useAction } from "@/components/Dashboard/useAction";
+import { upload, type Uploaded } from "@/components/Dashboard/upload";
 import { Pill, ui } from "@/components/Dashboard/ui/ui";
+import {
+  adminUploadTicket,
+  sendDesigns,
+  sendDocument,
+} from "@/app/admin/build-actions";
 import { assetNeeds } from "@/lib/dashboard/helpers";
-import { fmtDate, fmtShort } from "@/lib/dashboard/format";
+import { fmtDate, fmtShort, thumb } from "@/lib/dashboard/format";
 import {
   isAnswered,
   type QuestionSection,
@@ -24,6 +31,7 @@ const show = (value: Answers[string] | undefined) =>
   Array.isArray(value) ? value.join(", ") : value || "";
 
 export default function Files({
+  clientId,
   firstName,
   email,
   sections,
@@ -33,6 +41,7 @@ export default function Files({
   designs,
   documents,
 }: {
+  clientId: string;
   firstName: string;
   email: string;
   sections: QuestionSection[];
@@ -43,18 +52,112 @@ export default function Files({
   documents: Doc[];
 }) {
   const toast = useToast();
+  const { run, pending } = useAction();
   const all = sections.flatMap((s) => s.questions);
   const answered = all.filter((q) => isAnswered(answers[q.id])).length;
   const needs = assetNeeds(assets);
 
-  const [uploads, setUploads] = useState<{ name: string; src: string }[]>([]);
+  const [uploads, setUploads] = useState<(Uploaded & { label: string })[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [sentDesigns, setSentDesigns] = useState(false);
   const designInput = useRef<HTMLInputElement>(null);
 
   const [docs, setDocs] = useState(documents);
   const [sending, setSending] = useState(false);
   const [docTitle, setDocTitle] = useState("");
+  const [docFile, setDocFile] = useState<File | null>(null);
   const [needsSignature, setNeedsSignature] = useState(true);
+
+  const uploadTo = async (kind: "designs" | "documents", files: File[]) => {
+    const ticket = await adminUploadTicket(clientId, kind);
+    if (!ticket.ok) {
+      toast(ticket.error, { tone: "error" });
+      return [];
+    }
+    const done: Uploaded[] = [];
+    for (const file of files) {
+      try {
+        done.push(await upload(ticket.data!, file));
+      } catch (error) {
+        toast((error as Error).message, { tone: "error" });
+      }
+    }
+    return done;
+  };
+
+  const addDesigns = async (files: File[]) => {
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const added = await uploadTo("designs", files);
+      setUploads((u) => [
+        ...u,
+        ...added.map((f) => ({
+          ...f,
+          label: f.name
+            .replace(/\.[a-z0-9]+$/i, "")
+            .replace(/[-_]+/g, " ")
+            .replace(/^./, (c) => c.toUpperCase()),
+        })),
+      ]);
+      if (added.length) {
+        toast(`Added ${added.length} design${added.length === 1 ? "" : "s"}`, {
+          detail: "Name each one, then send them.",
+        });
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const sendDoc = async () => {
+    const title = docTitle.trim();
+    if (!title || !docFile) return;
+    setUploading(true);
+    try {
+      const [file] = await uploadTo("documents", [docFile]);
+      if (!file) return;
+      run(
+        () =>
+          sendDocument(clientId, {
+            title,
+            url: file.url,
+            publicId: file.publicId,
+            fileName: file.name,
+            needsSignature,
+          }),
+        (data) => {
+          setDocs((list) => [
+            {
+              id: data?.id ?? `doc-${Date.now()}`,
+              title,
+              summary: needsSignature
+                ? "Please read and sign."
+                : "For your records.",
+              kind: "OTHER",
+              status: needsSignature ? "AWAITING" : "INFO",
+              sentAt: new Date().toISOString(),
+              body: [],
+              fileUrl: file.url,
+              fileName: file.name,
+            },
+            ...list,
+          ]);
+          setSending(false);
+          setDocTitle("");
+          setDocFile(null);
+          return {
+            message: needsSignature
+              ? `Sent to ${firstName} to sign`
+              : `Shared with ${firstName}`,
+            detail: title,
+          };
+        },
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const copyAnswers = async () => {
     const text = sections
@@ -185,6 +288,10 @@ export default function Files({
                     <Pill tone='lime' dot>
                       Signed
                     </Pill>
+                  ) : doc.status === "INFO" ? (
+                    <Pill tone='gray' dot>
+                      Shared
+                    </Pill>
                   ) : (
                     <Pill tone='yellow' dot>
                       Waiting on {firstName}
@@ -218,9 +325,10 @@ export default function Files({
                   <span className={styles.assetThumb}>
                     {asset.src ? (
                       <Image
-                        src={asset.src}
+                        src={thumb(asset.src, 320)}
                         alt={asset.name}
                         fill
+                        unoptimized
                         sizes='160px'
                         className={styles.cover}
                       />
@@ -235,9 +343,11 @@ export default function Files({
                   </span>
                   <span className={styles.assetMeta}>
                     <span className={ui.monoMuted}>{asset.label}</span>
-                    {asset.src && (
+                    {(asset.url ?? asset.src) && (
                       <a
-                        href={asset.src}
+                        href={asset.url ?? asset.src}
+                        target='_blank'
+                        rel='noopener noreferrer'
                         download={asset.name}
                         className={styles.download}
                         aria-label={`Download ${asset.name}`}
@@ -297,42 +407,47 @@ export default function Files({
                   accept='image/*'
                   multiple
                   className={ui.srOnly}
+                  disabled={uploading || uploads.length >= 3}
                   onChange={(e) => {
                     const files = Array.from(e.target.files ?? []).slice(
                       0,
                       3 - uploads.length,
                     );
-                    setUploads((u) => [
-                      ...u,
-                      ...files.map((f) => ({
-                        name: f.name,
-                        src: URL.createObjectURL(f),
-                      })),
-                    ]);
-                    if (files.length) {
-                      toast(
-                        `Added ${files.length} design${files.length === 1 ? "" : "s"}`,
-                      );
-                    }
                     e.target.value = "";
+                    void addDesigns(files);
                   }}
                 />
                 <Icon name='upload' className={styles.dropIcon} />
                 <span className={styles.dropText}>
-                  Upload screenshots, up to three
+                  {uploading ? "Uploading…" : "Upload screenshots, up to three"}
                 </span>
               </label>
               {uploads.length > 0 && (
                 <ul className={styles.uploads}>
-                  {uploads.map((u) => (
-                    <li key={u.src} className={styles.upload}>
-                      <Image
-                        src={u.src}
-                        alt={u.name}
-                        fill
-                        unoptimized
-                        sizes='160px'
-                        className={styles.cover}
+                  {uploads.map((u, i) => (
+                    <li key={u.publicId} className={styles.uploadItem}>
+                      <span className={styles.upload}>
+                        <Image
+                          src={thumb(u.url, 320)}
+                          alt={u.label}
+                          fill
+                          unoptimized
+                          sizes='160px'
+                          className={styles.cover}
+                        />
+                      </span>
+                      <input
+                        className={ui.input}
+                        value={u.label}
+                        onChange={(e) =>
+                          setUploads((list) =>
+                            list.map((x, j) =>
+                              j === i ? { ...x, label: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        aria-label={`Name for design ${i + 1}`}
+                        placeholder={`Option ${i + 1}`}
                       />
                     </li>
                   ))}
@@ -342,16 +457,29 @@ export default function Files({
                 <button
                   type='button'
                   className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-                  disabled={uploads.length === 0 || sentDesigns}
-                  onClick={() => {
-                    setSentDesigns(true);
-                    toast(
-                      `${uploads.length} design${uploads.length === 1 ? "" : "s"} sent to ${firstName}`,
-                      {
-                        detail: `${email} gets an email to choose one.`,
+                  disabled={
+                    uploads.length === 0 || sentDesigns || pending || uploading
+                  }
+                  onClick={() =>
+                    run(
+                      () =>
+                        sendDesigns(
+                          clientId,
+                          uploads.map((u) => ({
+                            name: u.label,
+                            url: u.url,
+                            publicId: u.publicId,
+                          })),
+                        ),
+                      () => {
+                        setSentDesigns(true);
+                        return {
+                          message: `${uploads.length} design${uploads.length === 1 ? "" : "s"} sent to ${firstName}`,
+                          detail: `${email} gets an email to choose one.`,
+                        };
                       },
-                    );
-                  }}
+                    )
+                  }
                 >
                   {sentDesigns ? "Sent" : `Send to ${firstName}`}
                 </button>
@@ -366,26 +494,7 @@ export default function Files({
           className={ui.modalBody}
           onSubmit={(e) => {
             e.preventDefault();
-            if (!docTitle.trim()) return;
-            setDocs((list) => [
-              {
-                id: `doc-${Date.now()}`,
-                title: docTitle.trim(),
-                summary: "",
-                status: needsSignature ? "AWAITING" : "SIGNED",
-                sentAt: new Date().toISOString(),
-                body: [],
-              },
-              ...list,
-            ]);
-            setSending(false);
-            setDocTitle("");
-            toast(
-              needsSignature
-                ? `Sent to ${firstName} to sign`
-                : `Shared with ${firstName}`,
-              { detail: docTitle.trim() },
-            );
+            void sendDoc();
           }}
         >
           <span className={ui.monoMuted}>Send a document</span>
@@ -401,7 +510,12 @@ export default function Files({
           </label>
           <label className={ui.field}>
             <span className={ui.label}>File</span>
-            <input className={styles.file} type='file' accept='.pdf,image/*' />
+            <input
+              className={styles.file}
+              type='file'
+              accept='.pdf,image/*'
+              onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
+            />
           </label>
           <label className={styles.check}>
             <input
@@ -422,9 +536,9 @@ export default function Files({
             <button
               type='submit'
               className={`${ui.btn} ${ui.btn_black}`}
-              disabled={!docTitle.trim()}
+              disabled={!docTitle.trim() || !docFile || uploading || pending}
             >
-              Send
+              {uploading || pending ? "Sending…" : "Send"}
               <Icon name='send' className={ui.btnIcon} />
             </button>
           </div>

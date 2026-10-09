@@ -54,7 +54,12 @@ export function clientStage(client: Client): Stage {
 export function clientMrr(client: Client) {
   let mrr = 0;
   const w = client.website;
-  if (w && w.facts.setupFeePaidAt && w.status !== "CANCELLING") {
+  if (
+    w &&
+    w.facts.setupFeePaidAt &&
+    w.status !== "CANCELLING" &&
+    w.status !== "CANCELLED"
+  ) {
     mrr += w.monthly;
   }
   if (client.leads.status === "ACTIVE" && w?.plan !== "FULL_PLATFORM") {
@@ -147,7 +152,7 @@ export function adminQueue(clients: Client[], now: string): QueueItem[] {
     const base = { clientId: c.id, business: c.business };
     const page = `/admin/clients/${c.id}`;
 
-    if (clientKind(c) === "NEW" && !c.approvedAt) {
+    if (clientKind(c) === "NEW" && !c.approvedAt && c.contact.verified) {
       const plan = c.request?.plan;
       items.push({
         ...base,
@@ -309,7 +314,12 @@ export function nextBillingRun(clients: Client[], now: string) {
   const lines: ForecastLine[] = [];
   for (const c of clients) {
     const w = c.website;
-    if (w && w.facts.setupFeePaidAt && w.status !== "CANCELLING") {
+    if (
+      w &&
+      w.facts.setupFeePaidAt &&
+      w.status !== "CANCELLING" &&
+      w.status !== "CANCELLED"
+    ) {
       lines.push({
         clientId: c.id,
         business: c.business,
@@ -398,7 +408,12 @@ export function planMix(clients: Client[]): MixLine[] {
   };
   for (const c of clients) {
     const w = c.website;
-    if (w && w.facts.setupFeePaidAt && w.status !== "CANCELLING") {
+    if (
+      w &&
+      w.facts.setupFeePaidAt &&
+      w.status !== "CANCELLING" &&
+      w.status !== "CANCELLED"
+    ) {
       lines[w.plan].clients += 1;
       lines[w.plan].mrr += w.monthly;
     }

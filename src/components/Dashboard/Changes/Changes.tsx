@@ -4,8 +4,9 @@ import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "../icons";
 import { Pill, ui } from "../ui/ui";
-import { useToast } from "../Toast/Toast";
+import { useAction } from "../useAction";
 import styles from "./Changes.module.css";
+import { sendChangeRequest } from "@/app/dashboard/actions";
 import { fmtShort } from "@/lib/dashboard/format";
 import type { ChangeRequest, ChangeStatus } from "@/lib/dashboard/types";
 
@@ -39,7 +40,7 @@ export default function Changes({
   initial: ChangeRequest[];
   you: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [requests, setRequests] = useState(initial);
   const [filter, setFilter] = useState<Filter>("all");
   const [open, setOpen] = useState(false);
@@ -57,30 +58,35 @@ export default function Changes({
   const doneCount = requests.filter((r) => r.status === "COMPLETED").length;
 
   const submit = () => {
-    if (!title.trim() || !details.trim()) return;
-    const number = Math.max(0, ...requests.map((r) => r.number)) + 1;
-    const id = `c-${number}`;
-    setRequests((list) => [
-      {
-        id,
-        number,
-        title: title.trim(),
-        area,
-        details: details.trim(),
-        status: "PENDING",
-        submittedAt: new Date().toISOString(),
+    if (!title.trim() || !details.trim() || pending) return;
+    const input = { title: title.trim(), area, details: details.trim() };
+    run(
+      () => sendChangeRequest(input),
+      (data) => {
+        const number = data?.number ?? 0;
+        const id = data?.id ?? `c-${number}`;
+        setRequests((list) => [
+          {
+            id,
+            number,
+            ...input,
+            status: "PENDING",
+            submittedAt: new Date().toISOString(),
+          },
+          ...list,
+        ]);
+        setSentId(id);
+        setFilter("all");
+        setTitle("");
+        setDetails("");
+        setArea(AREAS[0]);
+        setOpen(false);
+        return {
+          message: `Request #${number} sent`,
+          detail: `You'll hear back within one business day, ${you.split(" ")[0]}.`,
+        };
       },
-      ...list,
-    ]);
-    setSentId(id);
-    setFilter("all");
-    setTitle("");
-    setDetails("");
-    setArea(AREAS[0]);
-    setOpen(false);
-    toast(`Request #${number} sent`, {
-      detail: `You'll hear back within one business day, ${you.split(" ")[0]}.`,
-    });
+    );
   };
 
   return (

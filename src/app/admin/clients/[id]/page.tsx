@@ -13,6 +13,7 @@ import { clientKind, getAdminClient } from "@/lib/admin";
 import { nextFirst } from "@/lib/dashboard/billing";
 import { blueprintCounts, isLive } from "@/lib/dashboard/helpers";
 import { questionnaireFor } from "@/lib/dashboard/questionnaire";
+import { url } from "@/lib/server/config";
 
 export async function generateMetadata({
   params,
@@ -32,7 +33,7 @@ export default async function ClientPage({
 }) {
   const { id } = await params;
   const { tab } = await searchParams;
-  const { client, now } = await getAdminClient(id);
+  const { client, now, user } = await getAdminClient(id);
   const kind = clientKind(client);
   const first = client.contact.name.split(" ")[0];
   const w = client.website;
@@ -85,11 +86,17 @@ export default async function ClientPage({
       {active === "overview" && <Overview client={client} now={now} />}
 
       {active === "blueprint" && w && (
-        <BlueprintEditor initial={client.blueprint} firstName={first} />
+        <BlueprintEditor
+          clientId={client.id}
+          initial={client.blueprint}
+          firstName={first}
+          you={user.name}
+        />
       )}
 
       {active === "files" && w && (
         <Files
+          clientId={client.id}
           firstName={first}
           email={client.contact.email}
           sections={questionnaireFor(w.plan)}
@@ -103,9 +110,10 @@ export default async function ClientPage({
 
       {active === "growth" && w && (
         <GrowthSetup
+          clientId={client.id}
           growth={client.growth}
-          domain={w.domain}
           live={isLive(client)}
+          launchedAt={w.facts.launchedAt}
           firstName={first}
           now={now}
         />
@@ -146,6 +154,7 @@ export default async function ClientPage({
             }))}
             now={now}
             showClient={false}
+            you={user.name}
           />
         </div>
       )}
@@ -169,6 +178,8 @@ export default async function ClientPage({
           card={client.card}
           invoices={client.invoices}
           nextFirst={nextFirst(now)}
+          cardLink={url("/dashboard/billing/card")}
+          stripeLinked={Boolean(client.stripeLinked)}
         />
       )}
     </>

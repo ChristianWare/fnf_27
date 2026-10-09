@@ -1,13 +1,25 @@
 "use client";
 
 // One client's money: their plan and rates, the card and the subscription,
-// their Leads Tool, and every invoice as a PDF. SAMPLE: actions show a
-// toast; the real ones go through Stripe.
+// their Leads Tool, and every invoice as a PDF. Everything goes through
+// Stripe, and the client gets an email where it matters.
 
 import { useState } from "react";
 import Icon from "@/components/Dashboard/icons";
 import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { useAction } from "@/components/Dashboard/useAction";
 import { Pill, ui } from "@/components/Dashboard/ui/ui";
+import {
+  endLeads,
+  extendTrial,
+  restartPlan,
+  retryPayment,
+  saveRates,
+  sendCardLink,
+  setPlanCancel,
+  startTrialFor,
+  syncStripe,
+} from "@/app/admin/billing-actions";
 import { fmtDate, fmtShort, money } from "@/lib/dashboard/format";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
 import type {
@@ -28,6 +40,8 @@ export default function ClientBilling({
   card,
   invoices,
   nextFirst,
+  cardLink,
+  stripeLinked,
 }: {
   clientId: string;
   firstName: string;
@@ -41,25 +55,34 @@ export default function ClientBilling({
   invoices: Invoice[];
   /** The next 1st, when rate changes and new plans start. */
   nextFirst: string;
+  /** Where the client adds or replaces their card. */
+  cardLink: string;
+  /** They have a Stripe customer, so there's something to sync. */
+  stripeLinked: boolean;
 }) {
   const toast = useToast();
+  const { run, pending } = useAction();
   const [plan, setPlan] = useState<PlanId | undefined>(website?.plan);
   const [monthly, setMonthly] = useState(String(website?.monthly ?? ""));
   const [setup, setSetup] = useState(String(website?.setupFee ?? ""));
   const [status, setStatus] = useState(website?.status);
+  const [saved, setSaved] = useState({
+    plan: website?.plan,
+    monthly: website?.monthly,
+    setupFee: website?.setupFee,
+  });
   const [leadsStatus, setLeadsStatus] = useState(leads.status);
   const [trialEnds, setTrialEnds] = useState(leads.trialEndsAt);
 
   const ratesChanged =
     website &&
-    (plan !== website.plan ||
-      Number(monthly) !== website.monthly ||
-      Number(setup) !== website.setupFee);
+    (plan !== saved.plan ||
+      Number(monthly) !== saved.monthly ||
+      Number(setup) !== saved.setupFee);
 
   const copyLink = async () => {
-    const link = `https://billing.stripe.com/p/session/sample_${clientId}`;
     try {
-      await navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(cardLink);
       toast("Card-update link copied", {
         detail: `Send it to ${firstName}. It opens Stripe's secure page.`,
       });
@@ -88,6 +111,10 @@ export default function ClientBilling({
               ) : status === "CANCELLING" ? (
                 <Pill tone='red' dot>
                   Cancels at month end
+                </Pill>
+              ) : status === "CANCELLED" ? (
+                <Pill tone='gray' dot>
+                  Ended
                 </Pill>
               ) : (
                 <Pill tone='lime' dot>
@@ -162,11 +189,28 @@ export default function ClientBilling({
               <button
                 type='button'
                 className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-                disabled={!ratesChanged || !Number(monthly)}
+                disabled={!ratesChanged || !Number(monthly) || pending || !plan}
                 onClick={() =>
-                  toast("Rates saved", {
-                    detail: `${plan ? PLANS[plan].name : "Plan"} at ${money(Number(monthly))} a month from ${fmtShort(nextFirst)}. ${firstName} gets an email.`,
-                  })
+                  plan &&
+                  run(
+                    () =>
+                      saveRates(clientId, {
+                        plan,
+                        monthly: Number(monthly),
+                        setup: Number(setup) || 0,
+                      }),
+                    () => {
+                      setSaved({
+                        plan,
+                        monthly: Number(monthly),
+                        setupFee: Number(setup) || 0,
+                      });
+                      return {
+                        message: "Rates saved",
+                        detail: `${PLANS[plan].name} at ${money(Number(monthly))} a month from ${fmtShort(website.nextBillingAt ?? nextFirst)}. ${firstName} gets an email.`,
+                      };
+                    },
+                  )
                 }
               >
                 Save rates
@@ -296,10 +340,15 @@ export default function ClientBilling({
                 <button
                   type='button'
                   className={`${ui.btn} ${ui.btn_black}`}
+                  disabled={pending}
                   onClick={() =>
-                    toast("Card-update link sent", {
-                      detail: `${email} can add a new card in a minute. We'll retry the payment as soon as they do.`,
-                    })
+                    run(
+                      () => sendCardLink(clientId),
+                      () => ({
+                        message: "Card-update link sent",
+                        detail: `${email} can add a new card in a minute. We'll retry the payment as soon as they do.`,
+                      }),
+                    )
                   }
                 >
                   Send {firstName} a card link
@@ -308,6 +357,7 @@ export default function ClientBilling({
                 <button
                   type='button'
                   className={`${ui.btn} ${ui.btn_outline}`}
+                  disabled={pending}
                   onClick={() => {
                     if (card?.expired) {
                       toast("Still declined", {
@@ -315,10 +365,22 @@ export default function ClientBilling({
                         detail:
                           "The card on file has expired. Send them a card link.",
                       });
-                    } else {
-                      setStatus("ACTIVE");
-                      toast("Payment went through");
+                      return;
                     }
+                    run(
+                      () => retryPayment(clientId),
+                      (data) => {
+                        if (!data?.paid) {
+                          return {
+                            message: "Nothing to retry",
+                            tone: "info",
+                            detail: "Stripe has no unpaid bills for them.",
+                          };
+                        }
+                        setStatus("ACTIVE");
+                        return { message: "Payment went through" };
+                      },
+                    );
                   }}
                 >
                   Retry the payment
@@ -339,30 +401,83 @@ export default function ClientBilling({
                 <button
                   type='button'
                   className={`${ui.btn} ${ui.btn_light}`}
-                  onClick={() => {
-                    setStatus("ACTIVE");
-                    toast("Cancellation undone", {
-                      detail: `${firstName}'s plan carries on as normal.`,
-                    });
-                  }}
+                  disabled={pending}
+                  onClick={() =>
+                    run(
+                      () => setPlanCancel(clientId, false),
+                      () => {
+                        setStatus("ACTIVE");
+                        return {
+                          message: "Cancellation undone",
+                          detail: `${firstName}'s plan carries on as normal.`,
+                        };
+                      },
+                    )
+                  }
                 >
                   Undo the cancellation
+                </button>
+              ) : status === "CANCELLED" ? (
+                <button
+                  type='button'
+                  className={`${ui.btn} ${ui.btn_black}`}
+                  disabled={pending}
+                  onClick={() =>
+                    run(
+                      () => restartPlan(clientId),
+                      () => {
+                        setStatus("ACTIVE");
+                        return {
+                          message: "Billing starts again on the 1st",
+                          detail: `${firstName} gets an email.`,
+                        };
+                      },
+                    )
+                  }
+                >
+                  Restart billing on the 1st
                 </button>
               ) : (
                 <button
                   type='button'
                   className={`${ui.btn} ${ui.btn_outline}`}
-                  onClick={() => {
-                    setStatus("CANCELLING");
-                    toast("Cancels at the end of the month", {
-                      tone: "info",
-                      detail: `Nothing more is charged. ${firstName} gets an email.`,
-                    });
-                  }}
+                  disabled={pending}
+                  onClick={() =>
+                    run(
+                      () => setPlanCancel(clientId, true),
+                      () => {
+                        setStatus("CANCELLING");
+                        return {
+                          message: "Cancels at the end of the month",
+                          tone: "info",
+                          detail: `Nothing more is charged. ${firstName} gets an email.`,
+                        };
+                      },
+                    )
+                  }
                 >
                   Cancel at the end of the month
                 </button>
               ))}
+            {stripeLinked && (
+              <button
+                type='button'
+                className={`${ui.btn} ${ui.btn_light}`}
+                disabled={pending}
+                onClick={() =>
+                  run(
+                    () => syncStripe(clientId),
+                    (data) => ({
+                      message: "Matched with Stripe",
+                      detail: data?.summary,
+                    }),
+                  )
+                }
+              >
+                Sync with Stripe
+                <Icon name='refresh' className={ui.btnIcon} />
+              </button>
+            )}
           </div>
         </section>
 
@@ -392,16 +507,20 @@ export default function ClientBilling({
                 <button
                   type='button'
                   className={`${ui.btn} ${ui.btn_black}`}
-                  onClick={() => {
-                    const next = new Date(
-                      new Date(trialEnds ?? Date.now()).getTime() +
-                        7 * 86_400_000,
-                    ).toISOString();
-                    setTrialEnds(next);
-                    toast("Trial extended by 7 days", {
-                      detail: `It now ends ${fmtDate(next)}. ${firstName} gets an email.`,
-                    });
-                  }}
+                  disabled={pending}
+                  onClick={() =>
+                    run(
+                      () => extendTrial(clientId, 7),
+                      (data) => {
+                        const next = data?.trialEndsAt ?? trialEnds;
+                        setTrialEnds(next);
+                        return {
+                          message: "Trial extended by 7 days",
+                          detail: `It now ends ${next ? fmtDate(next) : "a week later"}. ${firstName} gets an email.`,
+                        };
+                      },
+                    )
+                  }
                 >
                   Extend the trial 7 days
                   <Icon name='plus' className={ui.btnIcon} />
@@ -411,20 +530,20 @@ export default function ClientBilling({
                 <button
                   type='button'
                   className={`${ui.btn} ${ui.btn_black}`}
-                  onClick={() => {
-                    const ends = new Date(
-                      Date.now() + LEADS.trialDays * 86_400_000,
-                    ).toISOString();
-                    setLeadsStatus("TRIAL");
-                    setTrialEnds(ends);
-                    toast(
-                      `Started a ${LEADS.trialDays}-day trial for ${firstName}`,
-                      {
-                        detail:
-                          "No card needed. Their first digest goes out tomorrow.",
+                  disabled={pending}
+                  onClick={() =>
+                    run(
+                      () => startTrialFor(clientId),
+                      (data) => {
+                        setLeadsStatus("TRIAL");
+                        setTrialEnds(data?.trialEndsAt);
+                        return {
+                          message: `Started a ${LEADS.trialDays}-day trial for ${firstName}`,
+                          detail: "No card needed. They've been emailed.",
+                        };
                       },
-                    );
-                  }}
+                    )
+                  }
                 >
                   Start a free trial for them
                 </button>
@@ -433,15 +552,23 @@ export default function ClientBilling({
                 <button
                   type='button'
                   className={`${ui.btn} ${ui.btn_outline}`}
-                  onClick={() => {
-                    setLeadsStatus("NONE");
-                    toast(
-                      leadsStatus === "TRIAL"
-                        ? "Trial ended"
-                        : "Leads Tool cancels at the end of the month",
-                      { tone: "info" },
-                    );
-                  }}
+                  disabled={pending}
+                  onClick={() =>
+                    run(
+                      () => endLeads(clientId),
+                      () => {
+                        const was = leadsStatus;
+                        setLeadsStatus("NONE");
+                        return {
+                          message:
+                            was === "TRIAL"
+                              ? "Trial ended"
+                              : "Leads Tool cancels at the end of the month",
+                          tone: "info",
+                        };
+                      },
+                    )
+                  }
                 >
                   {leadsStatus === "TRIAL"
                     ? "End the trial"

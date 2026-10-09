@@ -366,3 +366,11 @@ export function growthNow(growth: Growth, now: string) {
   const pace = Math.round((growth.monthToDate * daysInMonth) / day);
   return { current, pace, day, daysInMonth };
 }
+
+/** The Monday that starts this week in Arizona, e.g. "2026-10-05". */
+export function weekOf(now: string) {
+  const local = new Date(new Date(now).getTime() - 7 * 3_600_000);
+  const day = (local.getUTCDay() + 6) % 7;
+  const monday = new Date(local.getTime() - day * 86_400_000);
+  return monday.toISOString().slice(0, 10);
+}

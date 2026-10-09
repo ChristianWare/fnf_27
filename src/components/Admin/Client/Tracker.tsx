@@ -3,27 +3,29 @@
 // The build, step by step, from your side: what's yours to do, what's
 // waiting on the client, and buttons to move it along. Marking a client's
 // step done covers the times they send something by email instead.
-// SAMPLE: changes last until you reload.
 
 import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "@/components/Dashboard/icons";
-import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { useAction } from "@/components/Dashboard/useAction";
 import { Pill, ui } from "@/components/Dashboard/ui/ui";
+import { launchSite, setBuildStep } from "@/app/admin/build-actions";
 import { fmtShort } from "@/lib/dashboard/format";
 import type { Step } from "@/lib/dashboard/helpers";
 import styles from "./Client.module.css";
 
 export default function Tracker({
+  clientId,
   steps,
   business,
   firstName,
 }: {
+  clientId: string;
   steps: Step[];
   business: string;
   firstName: string;
 }) {
-  const toast = useToast();
+  const { run, pending } = useAction();
   const [done, setDone] = useState<Record<string, string | null>>({});
   const [launching, setLaunching] = useState(false);
 
@@ -33,15 +35,20 @@ export default function Tracker({
     step.id in done ? done[step.id] : step.doneAt;
   const count = steps.filter(isDone).length;
 
-  const mark = (step: Step, value: boolean) => {
-    setDone((d) => ({
-      ...d,
-      [step.id]: value ? new Date().toISOString() : null,
-    }));
-    toast(value ? `Done: ${step.title}` : `Reopened: ${step.title}`, {
-      tone: value ? "success" : "info",
-    });
-  };
+  const mark = (step: Step, value: boolean) =>
+    run(
+      () => setBuildStep(clientId, step.id, value),
+      (data) => {
+        setDone((d) => ({
+          ...d,
+          [step.id]: value ? (data?.at ?? new Date().toISOString()) : null,
+        }));
+        return {
+          message: value ? `Done: ${step.title}` : `Reopened: ${step.title}`,
+          tone: value ? "success" : "info",
+        };
+      },
+    );
 
   return (
     <section className={styles.card}>
@@ -157,16 +164,25 @@ export default function Tracker({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black}`}
-              onClick={() => {
-                const launch = steps.find((s) => s.id === "launch");
-                setLaunching(false);
-                if (launch) {
-                  setDone((d) => ({ ...d, launch: new Date().toISOString() }));
-                }
-                toast(`${business} is live`, {
-                  detail: `${firstName} has been emailed the good news.`,
-                });
-              }}
+              disabled={pending}
+              onClick={() =>
+                run(
+                  () => launchSite(clientId),
+                  (data) => {
+                    setLaunching(false);
+                    const at = data?.at ?? new Date().toISOString();
+                    setDone((d) => ({
+                      ...d,
+                      launch: at,
+                      preview: d.preview ?? at,
+                    }));
+                    return {
+                      message: `${business} is live`,
+                      detail: `${firstName} has been emailed the good news.`,
+                    };
+                  },
+                )
+              }
             >
               Launch
               <Icon name='globe' className={ui.btnIcon} />

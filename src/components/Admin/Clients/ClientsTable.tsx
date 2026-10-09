@@ -25,9 +25,14 @@ export type ClientRow = {
   next?: { title: string; href: string };
   waitingOnThem: number;
   lastActive: string;
+  /** Archived: only shown under Archived. */
+  archived?: boolean;
 };
 
-const filters: { key: "ALL" | StageKey | "PAST_DUE"; label: string }[] = [
+const filters: {
+  key: "ALL" | StageKey | "PAST_DUE" | "ARCHIVED";
+  label: string;
+}[] = [
   { key: "ALL", label: "All" },
   { key: "NEW", label: "New sign-ups" },
   { key: "BUILD", label: "In build" },
@@ -35,6 +40,7 @@ const filters: { key: "ALL" | StageKey | "PAST_DUE"; label: string }[] = [
   { key: "TRIAL", label: "Trials" },
   { key: "LEADS", label: "Leads Tool" },
   { key: "PAST_DUE", label: "Past due" },
+  { key: "ARCHIVED", label: "Archived" },
 ];
 
 const kindTone: Record<ClientKind, Tone> = {
@@ -58,8 +64,13 @@ export default function ClientsTable({
   const [sort, setSort] = useState<Sort>("active");
 
   const counts = useMemo(() => {
-    const out: Record<string, number> = { ALL: rows.length };
+    const out: Record<string, number> = { ALL: 0 };
     for (const row of rows) {
+      if (row.archived) {
+        out.ARCHIVED = (out.ARCHIVED ?? 0) + 1;
+        continue;
+      }
+      out.ALL++;
       out[row.stage.key] = (out[row.stage.key] ?? 0) + 1;
       if (row.pastDue) out.PAST_DUE = (out.PAST_DUE ?? 0) + 1;
     }
@@ -70,11 +81,15 @@ export default function ClientsTable({
     const q = query.trim().toLowerCase();
     return rows
       .filter((row) =>
-        filter === "ALL"
-          ? true
-          : filter === "PAST_DUE"
-            ? row.pastDue
-            : row.stage.key === filter,
+        filter === "ARCHIVED"
+          ? row.archived
+          : row.archived
+            ? false
+            : filter === "ALL"
+              ? true
+              : filter === "PAST_DUE"
+                ? row.pastDue
+                : row.stage.key === filter,
       )
       .filter(
         (row) =>
@@ -122,18 +137,20 @@ export default function ClientsTable({
       </div>
 
       <div className={styles.filters} role='group' aria-label='Show'>
-        {filters.map((f) => (
-          <button
-            key={f.key}
-            type='button'
-            className={ui.chip}
-            aria-pressed={filter === f.key}
-            onClick={() => setFilter(f.key)}
-          >
-            {f.label}
-            <span className={styles.count}>{counts[f.key] ?? 0}</span>
-          </button>
-        ))}
+        {filters
+          .filter((f) => f.key !== "ARCHIVED" || counts.ARCHIVED)
+          .map((f) => (
+            <button
+              key={f.key}
+              type='button'
+              className={ui.chip}
+              aria-pressed={filter === f.key}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label}
+              <span className={styles.count}>{counts[f.key] ?? 0}</span>
+            </button>
+          ))}
       </div>
 
       <div className={styles.table}>
