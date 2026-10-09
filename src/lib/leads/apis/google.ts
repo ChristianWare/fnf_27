@@ -119,6 +119,7 @@ type GooglePlace = {
   userRatingCount?: number;
   nationalPhoneNumber?: string;
   websiteUri?: string;
+  photos?: { name?: string }[];
 };
 
 export type PlaceDetails = {
@@ -134,6 +135,8 @@ export type PlaceDetails = {
   website?: string;
   types: string[];
   closed: boolean;
+  /** How many photos Google has of it (up to 10). */
+  photoCount: number;
 };
 
 function cityOf(place: GooglePlace) {
@@ -157,8 +160,10 @@ export async function placeDetails(
   id: string,
   who: Who,
 ): Promise<PlaceDetails | undefined> {
+  // "photos" is in the free IDs-only tier, so asking for it here costs
+  // nothing more: it tells us how many photos there are.
   const fields =
-    "id,displayName,formattedAddress,addressComponents,location,types,primaryType,businessStatus,rating,userRatingCount,nationalPhoneNumber,websiteUri";
+    "id,displayName,formattedAddress,addressComponents,location,types,primaryType,businessStatus,rating,userRatingCount,nationalPhoneNumber,websiteUri,photos";
   try {
     const p = await callJson<GooglePlace>(
       "Google details",
@@ -182,6 +187,7 @@ export async function placeDetails(
         ...new Set([p.primaryType, ...(p.types ?? [])].filter(Boolean)),
       ] as string[],
       closed: p.businessStatus === "CLOSED_PERMANENTLY",
+      photoCount: p.photos?.length ?? 0,
     };
   } catch (error) {
     if (
@@ -194,16 +200,21 @@ export async function placeDetails(
 }
 
 /**
- * Where a venue is: its address, city and location (Essentials, $5/1,000).
- * Undefined when Google no longer has the place.
+ * A venue: where it is, its rating, its phone and how many photos it has
+ * (Enterprise, $20/1,000, looked up once a month per event). Undefined when
+ * Google no longer has the place.
  */
-export async function placeBasics(id: string, who: Who) {
+export async function venueDetails(id: string, who: Who) {
   let p: GooglePlace;
   try {
     p = await callJson<GooglePlace>(
       "Google details",
       `${PLACES}/places/${encodeURIComponent(id)}`,
-      { headers: headers("id,formattedAddress,addressComponents,location") },
+      {
+        headers: headers(
+          "id,formattedAddress,addressComponents,location,rating,userRatingCount,nationalPhoneNumber,photos",
+        ),
+      },
     );
   } catch (error) {
     if (
@@ -213,18 +224,24 @@ export async function placeBasics(id: string, who: Who) {
       return undefined;
     throw error;
   }
-  track("places_basic", who);
+  track("places_details", who);
   if (!p.location) return undefined;
   return {
     address: shortAddress(p.formattedAddress),
     city: cityOf(p),
     lat: p.location.latitude,
     lng: p.location.longitude,
+    rating: p.rating,
+    reviews: p.userRatingCount,
+    phone: p.nationalPhoneNumber,
+    photos: p.photos?.length ?? 0,
   };
 }
 
-/** The name of a place's first photo, and who took it (free: IDs only). */
-export async function firstPhoto(id: string) {
+export type GooglePhoto = { name: string; author?: string; authorUrl?: string };
+
+/** A place's photos (up to 10), and who took each one (free: IDs only). */
+export async function placePhotos(id: string): Promise<GooglePhoto[]> {
   const p = await callJson<{
     photos?: {
       name: string;
@@ -233,14 +250,16 @@ export async function firstPhoto(id: string) {
   }>("Google photos", `${PLACES}/places/${encodeURIComponent(id)}`, {
     headers: headers("photos"),
   });
-  const photo = p.photos?.[0];
-  return photo
-    ? {
-        name: photo.name,
-        author: photo.authorAttributions?.[0]?.displayName,
-        authorUrl: photo.authorAttributions?.[0]?.uri,
-      }
-    : undefined;
+  return (p.photos ?? []).map((photo) => ({
+    name: photo.name,
+    author: photo.authorAttributions?.[0]?.displayName,
+    authorUrl: photo.authorAttributions?.[0]?.uri,
+  }));
+}
+
+/** The name of a place's first photo, and who took it (free: IDs only). */
+export async function firstPhoto(id: string) {
+  return (await placePhotos(id))[0];
 }
 
 /** The photo itself, at most `width` pixels wide ($7 per 1,000). */

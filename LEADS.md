@@ -59,6 +59,34 @@ A client's base picks their market: the nearest one within 30 miles, or a
 new one made around them (the admins get an email). A market only runs
 while someone's using it.
 
+## What each lead shows
+
+**A score out of 100**, on every row in Find leads and Today and at the top
+of each lead, so the best ones sort first. It's worked out the same way
+every time from what we know (no AI), and **Why this score** on the lead
+shows the points for each part:
+
+- Accounts: car service (30: none on their website scores highest), size
+  from Google reviews (15), rating (10), how often that kind of place books
+  rides (15), distance (15), how easy they are to reach (10) and timing
+  (5: in the news, or new this morning).
+- Events: the kind of event (25), timing (25: two weeks to two months out
+  is best), size (15), ticket prices (10), how easy the organizer is to
+  reach (15) and distance (10). Under a week away, the lead says to call
+  instead of emailing.
+
+**A picture.** Accounts use their first Google photo, then the picture
+their website shares when it's linked. Events use their own artwork from
+Ticketmaster, Eventbrite, Google Events or the calendar, then a photo of
+the venue. With none of those, it says "No image available". Click any
+picture to see it full size; an account's page shows up to 7 Google
+photos, with back and forward arrows.
+
+**Ticket prices**, when the listing has them: Ticketmaster, Eventbrite and
+calendar pages that publish them. Otherwise that box doesn't show.
+
+**The venue's rating and phone line** on events, from Google.
+
 ## Billing
 
 A 30-day trial, no card. Adding a card (Stripe Checkout), or keeping it
@@ -83,5 +111,12 @@ Some ceilings keep a bad day cheap:
 
 - Each client can save 60 leads a day, with up to 200 AI calls and 60
   email lookups. Removing leads and saving them again still counts.
-- Photos stop at 5,000 a day (about $35). After that, lists show icon
-  tiles until the next day.
+- Photos stop at 5,000 a day (about $35). After that, lists show the
+  next picture we have, or "No image available", until the next day.
+  Browsers and Vercel keep each photo for a day, so opening a lead twice
+  doesn't pay twice.
+
+Each event's venue is looked up on Google once (Place Details, Enterprise:
+$20 per 1,000 at list price, for its rating, phone and photos) and
+refreshed with the rest every 30 days. Website pictures come from the page
+we already read for each account, at no extra cost.

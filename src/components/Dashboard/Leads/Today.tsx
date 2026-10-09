@@ -8,7 +8,15 @@ import Link from "next/link";
 import Icon from "../icons";
 import { ButtonLink, PageHead, Pill, Progress, ui } from "../ui/ui";
 import { useLeads } from "./Store";
-import { DateBlock, kindOf, Reasons, SaveButton, Tile } from "./bits";
+import {
+  DateBlock,
+  kindOf,
+  Reasons,
+  SaveButton,
+  ScoreBadge,
+  Thumb,
+  Tile,
+} from "./bits";
 import styles from "./Leads.module.css";
 import {
   fits,
@@ -19,6 +27,7 @@ import {
   wonValue,
 } from "@/lib/leads/advice";
 import { STAGES } from "@/lib/leads/catalog";
+import { scoreOf } from "@/lib/leads/score";
 import { prorate } from "@/lib/dashboard/billing";
 import { fmtDate, fmtWeekday, money } from "@/lib/dashboard/format";
 
@@ -43,13 +52,13 @@ export default function Today({ firstName }: { firstName: string }) {
   const moves = todaysMoves(saved, target, now);
   const fresh = [...accounts, ...events]
     .filter((t) => t.foundAt > newSince && fits(t, settings) && !savedFor(t.id))
-    .sort((a, b) => rank(b, now) - rank(a, now));
+    .sort((a, b) => rank(b, now, newSince) - rank(a, now, newSince));
   // The very first day there's nothing "new": show the best ones instead.
   const starters =
     !fresh.length && !saved.length
       ? [...accounts, ...events]
           .filter((t) => fits(t, settings))
-          .sort((a, b) => rank(b, now) - rank(a, now))
+          .sort((a, b) => rank(b, now, newSince) - rank(a, now, newSince))
           .slice(0, 6)
       : [];
   const picks = fresh.length ? fresh : starters;
@@ -212,14 +221,17 @@ export default function Today({ firstName }: { firstName: string }) {
                 {picks.slice(0, 6).map((t) => (
                   <li key={t.id} className={styles.item}>
                     <Link href={href(t.id)} className={styles.itemMain}>
-                      <Tile target={t} now={now} />
+                      <Thumb target={t} />
                       <span className={styles.itemText}>
                         <span className={styles.itemName}>{t.name}</span>
                         <span className={styles.itemKind}>{kindOf(t)}</span>
                         <Reasons target={t} now={now} limit={3} />
                       </span>
                     </Link>
-                    <SaveButton id={t.id} from='Today' />
+                    <span className={styles.resultSide}>
+                      <ScoreBadge score={scoreOf(t, now, newSince).score} />
+                      <SaveButton id={t.id} from='Today' />
+                    </span>
                   </li>
                 ))}
               </ul>

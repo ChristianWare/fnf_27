@@ -24,7 +24,7 @@ import { dayKey } from "@/lib/dashboard/format";
 import {
   findPlaceId,
   googleReady,
-  placeBasics,
+  venueDetails,
   placeDetails,
   searchIds,
   type Box,
@@ -49,7 +49,7 @@ import {
 import { ACCOUNT_CATEGORIES, STUDIO_ID } from "./kinds";
 import { CITIES } from "./market";
 import { milesBetween } from "./advice";
-import { researchPlace, RESEARCH_DAYS } from "./research";
+import { researchPlace, RESEARCH_DAYS, researchImage } from "./research";
 import { flushUsage, type Who } from "./usage";
 import type { AccountCategory, EventType } from "./types";
 
@@ -331,6 +331,7 @@ async function stepDetails(ctx: Ctx) {
               phone: d.phone ?? null,
               website: d.website ?? null,
               types: d.types,
+              photoCount: d.photoCount,
               detailsAt: ctx.now,
             })
             .where(eq(s.leadsPlaces.id, row.id));
@@ -365,6 +366,7 @@ const clearedDetails = {
   phone: null,
   website: null,
   types: null,
+  photoCount: null,
 };
 
 /** Each business's website: car service, and a line about them. */
@@ -424,7 +426,43 @@ async function stepResearch(ctx: Ctx) {
     );
     await ctx.save();
   }
+  if (ctx.left() > 30_000) await researchImages(ctx);
   return ctx.left() > 30_000 || done();
+}
+
+/** Websites read before we kept the picture they share: just that, no AI. */
+async function researchImages(ctx: Ctx) {
+  const limit = 300;
+  while (ctx.left() > 30_000 && (ctx.run.counts.imagesChecked ?? 0) < limit) {
+    const rows = await db
+      .select({ id: s.leadsPlaces.id, website: s.leadsPlaces.website })
+      .from(s.leadsPlaces)
+      .innerJoin(s.leadsResearch, eq(s.leadsResearch.key, s.leadsPlaces.id))
+      .where(
+        and(
+          eq(s.leadsPlaces.marketId, ctx.market.id),
+          eq(s.leadsPlaces.closed, false),
+          isNotNull(s.leadsResearch.checkedAt),
+          isNull(s.leadsResearch.imageCheckedAt),
+        ),
+      )
+      .limit(24);
+    if (!rows.length) return;
+    await pool(
+      rows,
+      6,
+      () => ctx.left() < 25_000,
+      async (row) => {
+        try {
+          if (await researchImage(row)) ctx.count("websiteImages");
+        } catch {
+          // Tried again on a later night.
+        }
+        ctx.count("imagesChecked");
+      },
+    );
+    await ctx.save();
+  }
 }
 
 /* ── Events ── */
@@ -438,6 +476,15 @@ type Known = {
 };
 
 /** Adds new events and updates ones already found, from any source. */
+/** A source's ticket prices, in cents. */
+const cents = (raw: RawEvent) =>
+  raw.priceMin === undefined && raw.priceMax === undefined
+    ? {}
+    : {
+        priceMinCents: Math.round((raw.priceMin ?? raw.priceMax!) * 100),
+        priceMaxCents: Math.round((raw.priceMax ?? raw.priceMin!) * 100),
+      };
+
 async function ingest(ctx: Ctx, raws: RawEvent[], fallback?: EventType | null) {
   // The same event on several nights (a concert run): one lead.
   const groups = new Map<string, RawEvent>();
@@ -460,6 +507,9 @@ async function ingest(ctx: Ctx, raws: RawEvent[], fallback?: EventType | null) {
         ...known,
         startsAt: starts[0],
         endsAt: ends[1] > starts[0] ? ends[1] : undefined,
+        image: known.image ?? raw.image,
+        priceMin: known.priceMin ?? raw.priceMin,
+        priceMax: known.priceMax ?? raw.priceMax,
       });
     } else if (!known) groups.set(key, raw);
     else groups.set(`${key}|${raw.startsAt}`, raw);
@@ -531,6 +581,8 @@ async function ingest(ctx: Ctx, raws: RawEvent[], fallback?: EventType | null) {
       guests: raw.guests ?? null,
       phone: raw.phone ?? null,
       description: raw.description?.slice(0, 1000) ?? null,
+      imageUrl: raw.image ?? null,
+      ...cents(raw),
       ...(raw.lat !== undefined && raw.lng !== undefined
         ? { lat: raw.lat, lng: raw.lng, geoFromGoogleAt: null }
         : {}),
@@ -560,6 +612,17 @@ async function ingest(ctx: Ctx, raws: RawEvent[], fallback?: EventType | null) {
           ...(values.description
             ? {
                 description: sql`coalesce(${s.leadsEvents.description}, ${values.description})`,
+              }
+            : {}),
+          ...(values.imageUrl
+            ? {
+                imageUrl: sql`coalesce(${s.leadsEvents.imageUrl}, ${values.imageUrl})`,
+              }
+            : {}),
+          ...(values.priceMinCents != null || values.priceMaxCents != null
+            ? {
+                priceMinCents: values.priceMinCents,
+                priceMaxCents: values.priceMaxCents,
               }
             : {}),
           ...(raw.lat !== undefined && raw.lng !== undefined
@@ -800,6 +863,16 @@ async function venuesFromGoogle(ctx: Ctx) {
               isNull(s.leadsEvents.lat),
             ),
             lt(s.leadsEvents.geoFromGoogleAt, stale),
+            // No picture of its own: the venue's photo stands in.
+            and(
+              isNull(s.leadsEvents.venuePlaceId),
+              isNull(s.leadsEvents.imageUrl),
+            ),
+            // Looked up before we kept the venue's rating and photos.
+            and(
+              isNotNull(s.leadsEvents.venuePlaceId),
+              isNull(s.leadsEvents.venuePhotos),
+            ),
           ),
           sql`(${s.leadsEvents.venue} <> '' or ${s.leadsEvents.address} is not null)`,
           sql`not (${s.leadsEvents.keys} @> '["NOVENUE"]'::jsonb)`,
@@ -841,7 +914,7 @@ async function venuesFromGoogle(ctx: Ctx) {
             }
           }
           const basics = placeId
-            ? await placeBasics(placeId, ctx.who)
+            ? await venueDetails(placeId, ctx.who)
             : undefined;
           if (!basics) {
             // Google doesn't know the venue: it goes by its city instead.
@@ -871,6 +944,10 @@ async function venuesFromGoogle(ctx: Ctx) {
               geoFromGoogleAt: ctx.now,
               address: event.address ?? basics.address,
               city: event.city || basics.city,
+              venueRating: basics.rating ?? null,
+              venueReviews: basics.reviews ?? null,
+              venuePhone: basics.phone ?? null,
+              venuePhotos: basics.photos,
             })
             .where(eq(s.leadsEvents.id, event.id));
           ctx.count("venues");
@@ -966,7 +1043,15 @@ export async function tidyGoogleData() {
     );
   await db
     .update(s.leadsEvents)
-    .set({ lat: null, lng: null, geoFromGoogleAt: null })
+    .set({
+      lat: null,
+      lng: null,
+      geoFromGoogleAt: null,
+      venueRating: null,
+      venueReviews: null,
+      venuePhone: null,
+      venuePhotos: null,
+    })
     .where(lt(s.leadsEvents.geoFromGoogleAt, cutoff));
   await db.delete(s.leadsDrives).where(lt(s.leadsDrives.at, cutoff));
 }

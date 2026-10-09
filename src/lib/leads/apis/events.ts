@@ -5,6 +5,7 @@
 import { callJson } from "./http";
 import { track, type Who } from "../usage";
 import { eventKind, type RawEvent } from "../classify";
+import { goodImage, offerPrices } from "../media";
 
 /* ── Ticketmaster: concerts, games and shows ── */
 
@@ -26,6 +27,14 @@ type TmEvent = {
     genre?: { name?: string };
   }[];
   promoter?: { name?: string };
+  images?: {
+    ratio?: string;
+    url?: string;
+    width?: number;
+    height?: number;
+    fallback?: boolean;
+  }[];
+  priceRanges?: { min?: number; max?: number; currency?: string }[];
   _embedded?: {
     venues?: {
       name?: string;
@@ -42,6 +51,31 @@ export const ticketmasterReady = () =>
 
 /** "2026-10-09T07:00:00Z", the way Ticketmaster wants it. */
 const tmTime = (date: Date) => `${date.toISOString().slice(0, 19)}Z`;
+
+/** Ticketmaster's best picture: wide (16:9), big enough, not a placeholder. */
+function tmImage(images: TmEvent["images"]) {
+  const list = (images ?? []).filter((i) => i.url && !i.fallback);
+  const wide = list.filter((i) => i.ratio === "16_9");
+  const pick = (from: typeof list) =>
+    [...from]
+      .filter((i) => (i.width ?? 0) <= 2048)
+      .sort((a, b) => (b.width ?? 0) - (a.width ?? 0))[0];
+  return goodImage((pick(wide) ?? pick(list))?.url);
+}
+
+/** Ticketmaster's prices, lowest and highest, in US dollars. */
+function tmPrices(ranges: TmEvent["priceRanges"]) {
+  const usd = (ranges ?? []).filter(
+    (r) => !r.currency || r.currency.toUpperCase() === "USD",
+  );
+  const mins = usd.map((r) => r.min).filter((n) => typeof n === "number");
+  const maxes = usd.map((r) => r.max).filter((n) => typeof n === "number");
+  if (!mins.length && !maxes.length) return {};
+  return {
+    priceMin: Math.min(...(mins.length ? mins : maxes)),
+    priceMax: Math.max(...(maxes.length ? maxes : mins)),
+  };
+}
 
 export async function ticketmasterEvents(
   center: { lat: number; lng: number },
@@ -114,6 +148,8 @@ export async function ticketmasterEvents(
         organizer: e.promoter?.name ?? venue?.name,
         url: e.url,
         type,
+        image: tmImage(e.images),
+        ...tmPrices(e.priceRanges),
       });
     }
     if (page + 1 >= (res.page?.totalPages ?? 1)) break;
@@ -189,6 +225,8 @@ type EbItem = {
     geo?: { latitude?: number | string; longitude?: number | string };
   };
   organizer?: { name?: string; url?: string };
+  image?: unknown;
+  offers?: unknown;
 };
 
 /**
@@ -250,10 +288,15 @@ export async function collectEventbrite(runId: string, who: Who) {
       organizerUrl: e.organizer?.url,
       url: e.url,
       description: e.description?.slice(0, 1000),
+      image: goodImage(e.image),
+      ...prices(offerPrices(e.offers)),
     });
   }
   return events;
 }
+
+const prices = (p: { min: number; max: number } | undefined) =>
+  p ? { priceMin: p.min, priceMax: p.max } : {};
 
 /* ── Google Events, through SerpApi (weekly: 250 free searches a month) ── */
 
@@ -266,6 +309,8 @@ type SerpEvent = {
   link?: string;
   description?: string;
   venue?: { name?: string };
+  image?: string;
+  thumbnail?: string;
 };
 
 const MONTHS = [
@@ -384,6 +429,7 @@ export async function googleEvents(
         city,
         url: e.link,
         description: e.description,
+        image: goodImage(e.image) ?? goodImage(e.thumbnail),
       });
     }
   }

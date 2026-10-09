@@ -502,6 +502,8 @@ export const leadsPlaces = pgTable(
     phone: text("phone"),
     website: text("website"),
     types: jsonb("types").$type<string[]>(),
+    /** How many photos Google has of it (the photos are fetched live). */
+    photoCount: integer("photo_count"),
     detailsAt: at("details_at"),
     /** Closed for good, says Google. Hidden. */
     closed: boolean("closed").notNull().default(false),
@@ -540,6 +542,16 @@ export const leadsEvents = pgTable(
     geoFromGoogleAt: at("geo_from_google_at"),
     /** The venue on Google, for its photo and the map. Kept for good. */
     venuePlaceId: text("venue_place_id"),
+    /** The venue on Google: cleared with the location after 30 days. */
+    venueRating: doublePrecision("venue_rating"),
+    venueReviews: integer("venue_reviews"),
+    venuePhone: text("venue_phone"),
+    venuePhotos: integer("venue_photos"),
+    /** The event's own picture, from the place we found it. */
+    imageUrl: text("image_url"),
+    /** Ticket prices, when the source lists them. */
+    priceMinCents: integer("price_min_cents"),
+    priceMaxCents: integer("price_max_cents"),
     organizer: text("organizer").notNull().default(""),
     organizerUrl: text("organizer_url"),
     url: text("url"),
@@ -574,6 +586,9 @@ export const leadsResearch = pgTable("leads_research", {
   /** A line or two about them, from their website. */
   brief: text("brief"),
   checkedAt: at("checked_at"),
+  /** The picture their website shares (its og:image), for when Google has none. */
+  imageUrl: text("image_url"),
+  imageCheckedAt: at("image_checked_at"),
   /** The person who books the rides. Work emails only. */
   contact: jsonb("contact").$type<
     Contact & { source: "TEAM_PAGE" | "APOLLO" }

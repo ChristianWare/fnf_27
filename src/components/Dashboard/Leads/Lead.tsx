@@ -5,23 +5,26 @@
 // free. Saving it finds the decision-maker and writes the scripts.
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Icon, { type IconName } from "../icons";
 import { Pill, ui } from "../ui/ui";
 import { useToast } from "../Toast/Toast";
 import { useLeads } from "./Store";
 import {
+  Img,
   kindOf,
-  Photo,
+  NoImage,
   Reasons,
   SaveButton,
+  ScoreBadge,
   StagePill,
-  Tile,
   WinDialog,
 } from "./bits";
+import Lightbox from "./Lightbox";
 import styles from "./Leads.module.css";
 import { briefFor, eventDates, writeScripts } from "@/lib/leads/advice";
 import { CATEGORIES, EVENT_TYPES, SOURCES, STAGES } from "@/lib/leads/catalog";
+import { scoreOf, timingOf, type ScoreFactor } from "@/lib/leads/score";
 import type { ActivityKind, LeadExtras, LeadStage } from "@/lib/leads/types";
 import {
   dayKey,
@@ -49,11 +52,44 @@ const activityIcon: Record<ActivityKind, IconName> = {
 
 const DAY = 86_400_000;
 
-const siteLabel = (url: string) =>
-  url
-    .replace(/^https?:\/\//i, "")
-    .replace(/^www\./i, "")
-    .replace(/\/$/, "");
+const withScheme = (url: string) =>
+  /^https?:/i.test(url) ? url : `https://${url}`;
+
+/** "Venue, address", without the venue twice when the address starts with it. */
+const whereOf = (venue: string, place?: string) =>
+  venue && place?.toLowerCase().startsWith(venue.toLowerCase())
+    ? place
+    : [venue, place].filter(Boolean).join(", ");
+
+/** "car service and size". */
+const listOf = (items: string[]) =>
+  items.length > 1
+    ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`
+    : (items[0] ?? "");
+
+/** A sentence on what a score is made of. */
+function scoreSummary(score: number, factors: ScoreFactor[]) {
+  const share = (f: ScoreFactor) => f.points / f.max;
+  const strong = factors
+    .filter((f) => share(f) >= 0.75)
+    .sort((a, b) => b.max - a.max)
+    .slice(0, 2)
+    .map((f) => f.label.toLowerCase());
+  const weak = factors
+    .filter((f) => share(f) < 0.4 && f.max >= 10)
+    .sort((a, b) => b.max - a.max)[0];
+  return [
+    score >= 75
+      ? "One of your best."
+      : score >= 55
+        ? "Worth a look."
+        : "A long shot.",
+    strong.length ? `Strongest on ${listOf(strong)}.` : "",
+    weak ? `Held back by ${weak.label.toLowerCase()}.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
 
 export default function Lead({
   id,
@@ -71,9 +107,21 @@ export default function Lead({
   const [logNote, setLogNote] = useState("");
   const [removing, setRemoving] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  // Which photo the lightbox shows, and photos that wouldn't load.
+  const [shown, setShown] = useState<number | null>(null);
+  const [broken, setBroken] = useState<string[]>([]);
+  const markBroken = useCallback(
+    (src: string) => setBroken((b) => (b.includes(src) ? b : [...b, src])),
+    [],
+  );
+  const closeLightbox = useCallback(() => setShown(null), []);
 
   const t = target(id);
   if (!t) return null;
+  const photos = (extras.photos ?? []).filter((p) => !broken.includes(p.src));
+  const hero = photos[0];
+  const { score, factors } = scoreOf(t, now, newSince);
+  const timing = t.kind === "EVENT" ? timingOf(t.date, now) : undefined;
   const lead = savedFor(id);
   const brief = briefFor(t, now);
   const scripts = lead
@@ -84,6 +132,11 @@ export default function Lead({
   const first = t.contact?.name.split(" ")[0];
   const phone = t.contact?.phone ?? t.phone;
   const isNew = t.foundAt > newSince && !lead;
+  // For an event happening soon, the quickest line to someone.
+  const urgentLine =
+    t.kind === "EVENT"
+      ? (t.contact?.phone ?? t.phone ?? t.venuePhone)
+      : undefined;
 
   const copy = async (text: string, what: string) => {
     try {
@@ -144,11 +197,16 @@ export default function Lead({
       ]
     : [];
 
-  const facts: { label: string; value: string; href?: string }[] =
+  const facts: {
+    label: string;
+    value: string;
+    href?: string;
+    /** "Live site": opens in a new tab. */
+    site?: boolean;
+  }[] =
     t.kind === "ACCOUNT"
       ? [
-          ...(t.address ? [{ label: "Address", value: t.address }] : []),
-          ...drive,
+          { label: "Category", value: CATEGORIES[t.category].label },
           ...(t.rating
             ? [
                 {
@@ -160,14 +218,24 @@ export default function Lead({
           ...(t.phone
             ? [{ label: "Main line", value: t.phone, href: `tel:${t.phone}` }]
             : []),
+          ...(t.address ? [{ label: "Address", value: t.address }] : []),
+          ...drive,
+          {
+            label: "Car service",
+            value:
+              t.carService === "NONE"
+                ? "None on their website"
+                : t.carService === "HAS"
+                  ? "They have one"
+                  : "Not sure yet",
+          },
           ...(t.website
             ? [
                 {
                   label: "Website",
-                  value: siteLabel(t.website),
-                  href: /^https?:/i.test(t.website)
-                    ? t.website
-                    : `https://${t.website}`,
+                  value: "Live site",
+                  href: withScheme(t.website),
+                  site: true,
                 },
               ]
             : []),
@@ -181,9 +249,26 @@ export default function Lead({
           },
           {
             label: "Where",
-            value: [t.venue, t.city].filter(Boolean).join(", ") || "Not listed",
+            value: whereOf(t.venue, t.address || t.city) || "Not listed",
           },
-          ...drive,
+          ...(t.price ? [{ label: "Tickets", value: t.price }] : []),
+          ...(t.venueRating
+            ? [
+                {
+                  label: "Venue on Google",
+                  value: `${t.venueRating.toFixed(1)} stars · ${(t.venueReviews ?? 0).toLocaleString("en-US")} reviews`,
+                },
+              ]
+            : []),
+          ...(t.venuePhone
+            ? [
+                {
+                  label: "Venue line",
+                  value: t.venuePhone,
+                  href: `tel:${t.venuePhone}`,
+                },
+              ]
+            : []),
           ...(t.organizer ? [{ label: "Organizer", value: t.organizer }] : []),
           ...(t.guests
             ? [
@@ -193,12 +278,14 @@ export default function Lead({
                 },
               ]
             : []),
+          ...drive,
           ...(t.website
             ? [
                 {
                   label: "Event page",
-                  value: siteLabel(t.website),
-                  href: t.website,
+                  value: "Live site",
+                  href: withScheme(t.website),
+                  site: true,
                 },
               ]
             : []),
@@ -232,40 +319,96 @@ export default function Lead({
         {t.kind === "EVENT" ? "All events" : "All accounts"}
       </Link>
 
+      {/* ── Close to the date: call, don't email ── */}
+      {t.kind === "EVENT" && timing?.urgent && (
+        <section className={styles.urgent}>
+          <span className={styles.urgentIcon}>
+            <Icon name='clock' />
+          </span>
+          <span className={styles.urgentText}>
+            <strong className={styles.urgentTitle}>
+              {timing.days <= 0
+                ? "It's today"
+                : timing.days === 1
+                  ? "Tomorrow: act today"
+                  : `${timing.days} days away: act today`}
+            </strong>
+            <p>
+              Most transport for an event this close is booked already. Call
+              instead of emailing, and offer to cover whatever&apos;s still
+              open.
+            </p>
+          </span>
+          {urgentLine ? (
+            <a
+              href={`tel:${urgentLine}`}
+              className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+            >
+              Call {urgentLine}
+              <Icon name='phone' className={ui.btnIcon} />
+            </a>
+          ) : t.website ? (
+            <a
+              href={withScheme(t.website)}
+              target='_blank'
+              rel='noopener noreferrer'
+              className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+            >
+              Event page
+              <Icon name='arrowUpRight' className={ui.btnIcon} />
+            </a>
+          ) : null}
+        </section>
+      )}
+
       {/* ── The lead ── */}
       <header className={styles.leadHead}>
-        {extras.photo && (
-          <figure className={styles.leadPhoto}>
-            <Photo src={extras.photo.src} className={styles.leadPhotoImg} />
-            <figcaption className={styles.photoCredit}>
-              {t.kind === "EVENT" ? `${t.venue || "The venue"} · ` : ""}
-              Photo
-              {extras.photo.credit ? (
-                <>
-                  {" "}
-                  by{" "}
-                  {extras.photo.creditUrl ? (
-                    <a
-                      href={extras.photo.creditUrl}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                    >
-                      {extras.photo.credit}
-                    </a>
-                  ) : (
-                    extras.photo.credit
-                  )}
-                </>
-              ) : null}{" "}
-              on Google
-            </figcaption>
-          </figure>
-        )}
+        <figure className={styles.hero}>
+          {hero ? (
+            <>
+              <button
+                type='button'
+                className={styles.heroButton}
+                onClick={() => setShown(0)}
+                aria-label={`See the photo of ${t.name} full size`}
+              >
+                <Img
+                  key={hero.src}
+                  src={hero.src}
+                  className={styles.heroImg}
+                  eager
+                  onFail={() => markBroken(hero.src)}
+                />
+                <span className={styles.shade} aria-hidden='true' />
+                <span className={styles.expand} aria-hidden='true'>
+                  <Icon name='expand' />
+                  Click to expand
+                </span>
+              </button>
+              <figcaption className={styles.photoCredit}>
+                {hero.creditUrl ? (
+                  <a
+                    href={hero.creditUrl}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    {hero.credit}
+                  </a>
+                ) : (
+                  hero.credit
+                )}
+              </figcaption>
+            </>
+          ) : (
+            <NoImage className={styles.heroNone} />
+          )}
+        </figure>
+
         <div className={styles.leadTop}>
-          <Tile target={{ ...t, photo: undefined }} now={now} size='lg' />
           <div className={styles.leadTitles}>
             <span className={ui.monoMuted}>
               {kindOf(t)} · {t.miles} mi away
+              {t.kind === "EVENT" ? ` · Via ${SOURCES[t.source].label}` : ""}
             </span>
             <h1 className={`h3 ${styles.leadName}`}>{t.name}</h1>
             <div className={styles.leadPills}>
@@ -278,21 +421,25 @@ export default function Lead({
                   </Pill>
                 )
               )}
+              {timing && (
+                <Pill tone={timing.tone} dot>
+                  {timing.label}
+                </Pill>
+              )}
               <Reasons target={t} now={now} />
             </div>
           </div>
-          {lead?.stage === "WON" && lead.value ? (
-            <div className={styles.leadActions}>
+          <div className={styles.leadActions}>
+            <ScoreBadge score={score} size='lg' />
+            {lead?.stage === "WON" && lead.value ? (
               <span className={styles.wonTag}>
                 Won · {money(lead.value)}
                 {lead.per === "MONTH" ? "/mo" : ""}
               </span>
-            </div>
-          ) : !lead ? (
-            <div className={styles.leadActions}>
+            ) : !lead ? (
               <SaveButton id={id} from='its page' small={false} />
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </div>
         <dl className={styles.facts}>
           {facts.map((f) => (
@@ -302,10 +449,14 @@ export default function Lead({
                 {f.href ? (
                   <a
                     href={f.href}
-                    target={f.href.startsWith("http") ? "_blank" : undefined}
+                    target={f.site ? "_blank" : undefined}
                     rel='noopener noreferrer'
+                    className={f.site ? styles.siteLink : undefined}
                   >
                     {f.value}
+                    {f.site && (
+                      <Icon name='arrowUpRight' className={styles.siteIcon} />
+                    )}
                   </a>
                 ) : (
                   f.value
@@ -316,8 +467,94 @@ export default function Lead({
         </dl>
       </header>
 
+      {/* ── Photos: an account's own, from Google ── */}
+      {t.kind === "ACCOUNT" && photos.length > 1 && (
+        <section className={ui.panel}>
+          <div className={ui.panelHead}>
+            <div className={ui.panelTitles}>
+              <h2 className={ui.panelTitle}>Photos</h2>
+              <p>
+                {photos.length} photos of {t.name}. Click any one to see it full
+                size.
+              </p>
+            </div>
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+              onClick={() => setShown(0)}
+            >
+              See them all
+              <Icon name='expand' className={ui.btnIcon} />
+            </button>
+          </div>
+          <ul className={styles.photoGrid}>
+            {photos.slice(1, 7).map((p, i) => (
+              <li key={p.src}>
+                <button
+                  type='button'
+                  className={styles.gridButton}
+                  onClick={() => setShown(i + 1)}
+                  aria-label={`See photo ${i + 2} of ${photos.length} full size`}
+                >
+                  <Img
+                    src={p.thumb}
+                    className={styles.gridImg}
+                    onFail={() => markBroken(p.src)}
+                  />
+                  <span className={styles.shade} aria-hidden='true' />
+                  <span className={styles.expandSmall} aria-hidden='true'>
+                    <Icon name='expand' />
+                    Click to expand
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <div className={styles.leadGrid}>
         <div className={styles.column}>
+          {/* ── Why this score ── */}
+          <section className={ui.panel}>
+            <div className={styles.scoreHead}>
+              <div className={ui.panelTitles}>
+                <h2 className={ui.panelTitle}>Why this score</h2>
+                <p>{scoreSummary(score, factors)}</p>
+              </div>
+              <ScoreBadge score={score} />
+            </div>
+            <ul className={styles.factors}>
+              {factors.map((f) => {
+                const share = f.points / f.max;
+                return (
+                  <li key={f.label} className={styles.factor}>
+                    <span className={styles.factorTop}>
+                      <span className={styles.factorLabel}>{f.label}</span>
+                      <span className={styles.factorPoints}>
+                        {f.points}
+                        <span>/{f.max}</span>
+                      </span>
+                    </span>
+                    <span className={styles.factorBar} aria-hidden='true'>
+                      <span
+                        className={
+                          share >= 0.75
+                            ? styles.barHigh
+                            : share >= 0.4
+                              ? styles.barMid
+                              : styles.barLow
+                        }
+                        style={{ width: `${Math.max(4, share * 100)}%` }}
+                      />
+                    </span>
+                    <p>{f.note}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
           {/* ── Who to contact ── */}
           <section className={ui.panel}>
             <div className={ui.panelTitles}>
@@ -567,24 +804,39 @@ export default function Lead({
           </section>
 
           {/* ── Getting there ── */}
-          {extras.map && (
+          {(extras.map || extras.mapsLink) && (
             <section className={ui.panel}>
-              <div className={ui.panelTitles}>
-                <h2 className={ui.panelTitle}>Getting there</h2>
-                <p>
-                  {extras.drive
-                    ? `About ${extras.drive.minutes} minutes from ${settings.base.city}, without traffic.`
-                    : `${t.miles} miles from ${settings.base.city} as the crow flies.`}
-                </p>
+              <div className={ui.panelHead}>
+                <div className={ui.panelTitles}>
+                  <h2 className={ui.panelTitle}>Getting there</h2>
+                  <p>
+                    {extras.drive
+                      ? `About ${extras.drive.minutes} minutes from ${settings.base.city}, without traffic.`
+                      : `${t.miles} miles from ${settings.base.city} as the crow flies.`}
+                  </p>
+                </div>
+                {extras.mapsLink && (
+                  <a
+                    href={extras.mapsLink}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+                  >
+                    Open in Google Maps
+                    <Icon name='arrowUpRight' className={ui.btnIcon} />
+                  </a>
+                )}
               </div>
-              <iframe
-                title={`Map of ${t.name}`}
-                src={extras.map}
-                className={styles.map}
-                loading='lazy'
-                referrerPolicy='no-referrer-when-downgrade'
-                allowFullScreen
-              />
+              {extras.map && (
+                <iframe
+                  title={`Map of ${t.name}`}
+                  src={extras.map}
+                  className={styles.map}
+                  loading='lazy'
+                  referrerPolicy='no-referrer-when-downgrade'
+                  allowFullScreen
+                />
+              )}
             </section>
           )}
         </div>
@@ -803,6 +1055,13 @@ export default function Lead({
         </div>
       </div>
 
+      <Lightbox
+        photos={photos}
+        index={shown}
+        onIndex={setShown}
+        onClose={closeLightbox}
+        title={t.name}
+      />
       <WinDialog id={id} open={winning} onClose={() => setWinning(false)} />
     </>
   );

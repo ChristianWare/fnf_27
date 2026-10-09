@@ -11,12 +11,18 @@ import { useMemo, useState } from "react";
 import Icon from "../icons";
 import { PageHead, ui } from "../ui/ui";
 import { useLeads } from "./Store";
-import { DateBlock, kindOf, Reasons, SaveButton, Tile } from "./bits";
+import { kindOf, Reasons, SaveButton, ScoreBadge, Thumb } from "./bits";
 import NotReady from "./NotReady";
 import styles from "./Leads.module.css";
-import { daysUntil, eventDates, rank } from "@/lib/leads/advice";
+import { daysUntil, eventDates } from "@/lib/leads/advice";
 import { CATEGORIES, EVENT_TYPES, SOURCES } from "@/lib/leads/catalog";
-import type { AccountCategory, EventType, SourceId } from "@/lib/leads/types";
+import { scoreOf } from "@/lib/leads/score";
+import type {
+  AccountCategory,
+  EventType,
+  Located,
+  SourceId,
+} from "@/lib/leads/types";
 
 type Tab = "accounts" | "events";
 
@@ -38,6 +44,7 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
     where,
     access,
     trialEndsAt,
+    newSince,
   } = useLeads();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [query, setQuery] = useState("");
@@ -48,6 +55,7 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
   const [span, setSpan] = useState(90);
   const [type, setType] = useState<EventType | "ALL">("ALL");
   const [source, setSource] = useState<SourceId | "ALL">("ALL");
+  const [eventOrder, setEventOrder] = useState<"best" | "soon">("best");
 
   const q = query.trim().toLowerCase();
   const matches = (name: string, ...more: string[]) =>
@@ -68,19 +76,32 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
     [events, radius, settings.eventTypes],
   );
 
+  // Every lead's score, once.
+  const scores = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of [...nearAccounts, ...nearEvents] as Located[])
+      map.set(t.id, scoreOf(t, now, newSince).score);
+    return map;
+  }, [nearAccounts, nearEvents, now, newSince]);
+  const scoreFor = (id: string) => scores.get(id) ?? 0;
+
   const shownAccounts = nearAccounts
     .filter((a) => category === "ALL" || a.category === category)
     .filter((a) => !open || a.carService === "NONE")
     .filter((a) => !ready || a.contact?.verified)
     .filter((a) => matches(a.name, a.city, CATEGORIES[a.category].label))
-    .sort((a, b) => rank(b, now) - rank(a, now));
+    .sort((a, b) => scoreFor(b.id) - scoreFor(a.id));
 
   const shownEvents = nearEvents
     .filter((e) => daysUntil(e.date, now) <= span)
     .filter((e) => type === "ALL" || e.type === type)
     .filter((e) => source === "ALL" || e.source === source)
     .filter((e) => matches(e.name, e.venue, e.organizer, e.city))
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .sort((a, b) =>
+      eventOrder === "best"
+        ? scoreFor(b.id) - scoreFor(a.id) || a.date.localeCompare(b.date)
+        : a.date.localeCompare(b.date),
+    );
 
   const categoryCounts = (Object.keys(CATEGORIES) as AccountCategory[])
     .filter((c) => settings.categories.includes(c))
@@ -300,9 +321,34 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
         <div className={styles.resultsHead}>
           <span className={ui.monoMuted}>
             {tab === "accounts"
-              ? `${shownAccounts.length} ${shownAccounts.length === 1 ? "account" : "accounts"} · best first`
-              : `${shownEvents.length} ${shownEvents.length === 1 ? "event" : "events"} · soonest first`}
+              ? `${shownAccounts.length} ${shownAccounts.length === 1 ? "account" : "accounts"} · highest score first`
+              : `${shownEvents.length} ${shownEvents.length === 1 ? "event" : "events"} · ${eventOrder === "best" ? "highest score first" : "soonest first"}`}
           </span>
+          {tab === "events" && (
+            <div
+              className={styles.segmented}
+              role='radiogroup'
+              aria-label='Order'
+            >
+              {(
+                [
+                  ["best", "Best first"],
+                  ["soon", "Soonest first"],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  type='button'
+                  role='radio'
+                  aria-checked={eventOrder === key}
+                  className={`${styles.segment} ${eventOrder === key ? styles.segmentOn : ""}`}
+                  onClick={() => setEventOrder(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {tab === "accounts" ? (
@@ -311,7 +357,7 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
               {shownAccounts.map((a) => (
                 <li key={a.id} className={styles.result}>
                   <Link href={href(a.id)} className={styles.resultMain}>
-                    <Tile target={a} now={now} />
+                    <Thumb target={a} />
                     <span className={styles.itemText}>
                       <span className={styles.itemName}>{a.name}</span>
                       <span className={styles.itemKind}>
@@ -321,7 +367,10 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
                       <Reasons target={a} now={now} />
                     </span>
                   </Link>
-                  <SaveButton id={a.id} from='Find' />
+                  <span className={styles.resultSide}>
+                    <ScoreBadge score={scoreFor(a.id)} />
+                    <SaveButton id={a.id} from='Find' />
+                  </span>
                 </li>
               ))}
             </ul>
@@ -341,7 +390,7 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
             {shownEvents.map((e) => (
               <li key={e.id} className={styles.result}>
                 <Link href={href(e.id)} className={styles.resultMain}>
-                  <DateBlock date={e.date} />
+                  <Thumb target={e} />
                   <span className={styles.itemText}>
                     <span className={styles.itemName}>{e.name}</span>
                     <span className={styles.itemKind}>
@@ -358,7 +407,10 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
                     {SOURCES[e.source].label}
                   </span>
                 </Link>
-                <SaveButton id={e.id} from='Find' />
+                <span className={styles.resultSide}>
+                  <ScoreBadge score={scoreFor(e.id)} />
+                  <SaveButton id={e.id} from='Find' />
+                </span>
               </li>
             ))}
           </ul>

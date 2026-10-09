@@ -14,6 +14,7 @@ import {
   readPage,
 } from "./apis/http";
 import { CATEGORIES, EVENT_TYPES } from "./catalog";
+import { shareImage } from "./media";
 import type { Who } from "./usage";
 import type { AccountCategory, Contact, EventType } from "./types";
 
@@ -82,19 +83,23 @@ export async function researchPlace(
       domain: null,
       carService: "UNKNOWN",
       checkedAt: new Date(),
+      imageCheckedAt: new Date(),
       error: null,
     });
     return;
   }
   let text = "";
+  let imageUrl: string | undefined;
   try {
     const page = await readPage(place.website, { limit: 800_000 });
     text = page ? pageText(page.body, 12_000) : "";
+    imageUrl = page ? shareImage(page.body, page.url) : undefined;
   } catch (error) {
     await save(place.id, {
       domain,
       carService: "UNKNOWN",
       checkedAt: new Date(),
+      imageCheckedAt: new Date(),
       error:
         error instanceof Error
           ? error.message.slice(0, 200)
@@ -149,8 +154,32 @@ export async function researchPlace(
     carServiceNote: carServiceNote ?? null,
     brief: brief ?? null,
     checkedAt: new Date(),
+    imageUrl: imageUrl ?? null,
+    imageCheckedAt: new Date(),
     error: null,
   });
+}
+
+/**
+ * Just the picture a business's website shares, for businesses read before
+ * we kept it. No AI, one page.
+ */
+export async function researchImage(place: {
+  id: string;
+  website?: string | null;
+}) {
+  let imageUrl: string | undefined;
+  if (place.website && domainOf(place.website)) {
+    const page = await readPage(place.website, { limit: 400_000 }).catch(
+      () => undefined,
+    );
+    imageUrl = page ? shareImage(page.body, page.url) : undefined;
+  }
+  await db
+    .update(schema.leadsResearch)
+    .set({ imageUrl: imageUrl ?? null, imageCheckedAt: new Date() })
+    .where(eq(schema.leadsResearch.key, place.id));
+  return Boolean(imageUrl);
 }
 
 /* ── The decision-maker ── */

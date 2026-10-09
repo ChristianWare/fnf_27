@@ -1043,21 +1043,196 @@
   text-underline-offset: 3px;
 }
 
-/* ── The lead's photo, across the top of its card ── */
-.leadPhoto {
+/* ── The lead's picture, across the top of its card ── */
+.hero {
   position: relative;
-  height: 24rem;
+  height: 34rem;
   margin: 0;
   overflow: hidden;
-  border-radius: 1.6rem;
-  background-color: var(--light);
+  border-radius: 1.8rem;
+  background-color: var(--light2);
 }
 
-.leadPhotoImg {
+.heroButton {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.heroButton:focus-visible {
+  outline: 3px solid var(--black);
+  outline-offset: -3px;
+}
+
+.heroImg {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* The slightly dark layer over a picture you can open. */
+.shade {
+  position: absolute;
+  inset: 0;
+  background-color: rgb(13 13 14 / 26%);
+  transition: background-color 0.2s ease;
+}
+
+.expand {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.2rem 1.8rem;
+  border-radius: 50px;
+  background-color: rgb(13 13 14 / 62%);
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--white);
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  transition: background-color 0.2s ease;
+}
+
+.expand svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .heroButton:hover .shade {
+    background-color: rgb(13 13 14 / 40%);
+  }
+
+  .heroButton:hover .expand {
+    background-color: var(--black);
+  }
+}
+
+.hero .photoCredit {
+  z-index: 1;
+}
+
+/* "No image available": grey, with the words in dark gray. */
+.noImage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  background-color: var(--light2);
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  line-height: 1.3;
+  color: #4b5058;
+  text-align: center;
+}
+
+/* Bigger words across the top of a lead. */
+.noImage.heroNone {
+  font-size: 18px;
+}
+
+/* ── An account's photos, three across ── */
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.gridButton {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 0;
+  border-radius: 1.4rem;
+  overflow: hidden;
+  background-color: var(--light2);
+  cursor: zoom-in;
+}
+
+.gridButton:focus-visible {
+  outline: 3px solid var(--black);
+  outline-offset: 2px;
+}
+
+.gridImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gridButton .shade {
+  background-color: rgb(13 13 14 / 0%);
+}
+
+.expandSmall {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border-radius: 50px;
+  background-color: rgb(13 13 14 / 62%);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--white);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.expandSmall svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gridButton:hover .gridImg {
+    transform: scale(1.03);
+  }
+
+  .gridButton:hover .shade {
+    background-color: rgb(13 13 14 / 26%);
+  }
+
+  .gridButton:hover .expandSmall {
+    opacity: 1;
+  }
+}
+
+.gridButton:focus-visible .expandSmall {
+  opacity: 1;
+}
+
+/* No hover on a phone: the hint is always there. */
+@media (hover: none) {
+  .gridButton .shade {
+    background-color: rgb(13 13 14 / 16%);
+  }
+
+  .expandSmall {
+    opacity: 1;
+  }
 }
 
 .photoCredit {
@@ -1782,6 +1957,361 @@
   }
 }
 
+/* ── A lead's picture in a list ── */
+.thumb {
+  position: relative;
+  display: flex;
+  flex: none;
+  width: 12rem;
+  height: 8.4rem;
+  overflow: hidden;
+  border-radius: 1.4rem;
+  background-color: var(--light2);
+}
+
+.thumbImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Under an event's date, not behind it. */
+.noImage.thumbNone {
+  padding: 3rem 0.6rem 0.4rem;
+  line-height: 1.2;
+}
+
+.thumbDate {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.8rem;
+  background-color: var(--white);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.resultSide {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ── The lead score ── */
+.score {
+  display: inline-flex;
+  flex: none;
+  align-items: baseline;
+  gap: 0.2rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 1.2rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+.score strong {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  font-weight: 400;
+}
+
+.score > span {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+}
+
+.score_lime {
+  background-color: var(--accent3);
+}
+
+.score_yellow {
+  background-color: var(--accent4);
+}
+
+.score_gray {
+  background-color: var(--white);
+  box-shadow: inset 0 0 0 1px var(--light2);
+}
+
+.score_gray > span {
+  color: var(--text);
+}
+
+.scoreLg {
+  padding: 1.1rem 1.6rem;
+  border-radius: 1.6rem;
+}
+
+.scoreLg strong {
+  font-size: 3.2rem;
+}
+
+/* ── Why this score ── */
+/* The score stays beside its summary, however long that runs. */
+.scoreHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.6rem;
+}
+
+.scoreHead > :first-child {
+  flex: 1 1 auto;
+}
+
+.scoreHead > :last-child {
+  flex: none;
+}
+
+.factors {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.factor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--light);
+}
+
+.factor:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.factor p {
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.factorTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.factorLabel {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.factorPoints {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--black);
+}
+
+.factorPoints span {
+  color: var(--text);
+}
+
+.factorBar {
+  display: block;
+  height: 0.8rem;
+  overflow: hidden;
+  border-radius: 50px;
+  background-color: var(--light);
+}
+
+.factorBar span {
+  display: block;
+  height: 100%;
+  border-radius: 50px;
+}
+
+.barHigh {
+  background-color: var(--black);
+}
+
+.barMid {
+  background-color: var(--text);
+}
+
+.barLow {
+  background-color: #b9bec5;
+}
+
+/* ── An event that's close: call, don't email ── */
+.urgent {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 2rem 2.4rem;
+  border-radius: 2.4rem;
+  background-color: var(--accent4);
+}
+
+.urgentIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 1.4rem;
+  background-color: var(--black);
+  color: var(--accent4);
+}
+
+.urgentIcon svg {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.urgentText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.urgentTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.urgentText p {
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--black);
+}
+
+/* "Live site" in a lead's facts. */
+.siteLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.siteIcon {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* ── The lightbox: one photo at a time, on a dark screen ── */
+.lightbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  padding: 7rem 10rem 3rem;
+}
+
+.lightboxFigure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4rem;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+}
+
+.lightboxImg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: calc(100vh - 15rem);
+  border-radius: 1.2rem;
+  object-fit: contain;
+}
+
+.lightboxNone {
+  width: min(80vw, 64rem);
+  height: 40rem;
+  border-radius: 1.6rem;
+  font-size: 16px;
+}
+
+.lightboxCaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem 1.6rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: center;
+  color: rgb(255 255 255 / 78%);
+}
+
+.lightboxCaption a {
+  color: var(--white);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lightboxCount {
+  color: var(--white);
+}
+
+.lightboxArrow {
+  position: fixed;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.6rem;
+  height: 5.6rem;
+  border-radius: 50%;
+  background-color: rgb(255 255 255 / 14%);
+  color: var(--white);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background-color 0.2s ease;
+}
+
+.lightboxArrow svg {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.lightboxArrow:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lightboxArrow:hover {
+    background-color: rgb(255 255 255 / 26%);
+  }
+}
+
+.lightboxPrev {
+  left: 2rem;
+}
+
+.lightboxPrev svg {
+  transform: rotate(180deg);
+}
+
+.lightboxNext {
+  right: 2rem;
+}
+
 @media screen and (max-width: 968px) {
   .summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1822,7 +2352,7 @@
   }
 
   .leadTitles {
-    flex-basis: calc(100% - 9.2rem);
+    flex-basis: 100%;
   }
 
   .leadActions {
@@ -1831,6 +2361,46 @@
 
   .leadActions > * {
     flex: 1;
+  }
+
+  .leadActions > .score {
+    flex: none;
+  }
+
+  .hero {
+    height: 26rem;
+  }
+
+  .urgent {
+    flex-wrap: wrap;
+  }
+
+  .urgent > a {
+    width: 100%;
+  }
+
+  .lightbox {
+    padding: 7rem 1.2rem 10rem;
+  }
+
+  .lightboxImg {
+    max-height: calc(100vh - 21rem);
+  }
+
+  .lightboxArrow {
+    top: auto;
+    bottom: 2.4rem;
+    width: 4.8rem;
+    height: 4.8rem;
+    transform: none;
+  }
+
+  .lightboxPrev {
+    left: calc(50% - 6rem);
+  }
+
+  .lightboxNext {
+    right: calc(50% - 6rem);
   }
 
   .leadName {
@@ -1877,12 +2447,27 @@
     border-radius: 1.6rem;
   }
 
-  .leadTitles {
-    flex-basis: calc(100% - 7.6rem);
-  }
-
   .leadName {
     font-size: 2.8rem;
+  }
+
+  .hero {
+    height: 21rem;
+    border-radius: 1.4rem;
+  }
+
+  .photoGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .thumb {
+    width: 9.6rem;
+    height: 7.2rem;
+  }
+
+  .urgent {
+    padding: 2rem 1.8rem;
+    border-radius: 2rem;
   }
 
   .tabs {
@@ -1916,7 +2501,11 @@
 
   .item > :last-child,
   .result > :last-child {
-    margin-left: 6rem;
+    margin-left: 10.8rem;
+  }
+
+  .resultSide {
+    justify-content: flex-end;
   }
 
   .rowGo {

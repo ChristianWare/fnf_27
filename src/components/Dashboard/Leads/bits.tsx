@@ -13,6 +13,7 @@ import { useToast } from "../Toast/Toast";
 import { useLeads } from "./Store";
 import styles from "./Leads.module.css";
 import { reasonsFor, thisWeek, type Reason } from "@/lib/leads/advice";
+import { scoreTone } from "@/lib/leads/score";
 import { CATEGORIES, EVENT_TYPES, stageOf } from "@/lib/leads/catalog";
 import type { LeadStage, Located, Target } from "@/lib/leads/types";
 import { fmtMonth, money } from "@/lib/dashboard/format";
@@ -21,36 +22,84 @@ import { fmtMonth, money } from "@/lib/dashboard/format";
 export const kindOf = (target: Target) =>
   `${target.kind === "ACCOUNT" ? CATEGORIES[target.category].short : EVENT_TYPES[target.type].short}${target.city ? ` · ${target.city}` : ""}`;
 
-/** A Google photo that steps aside for something else if it won't load. */
-export function Photo({
+/**
+ * A picture that says when it won't load (a link gone stale, a site that
+ * won't share it), even if it failed before the page came to life.
+ */
+export function Img({
   src,
   className,
-  fallback = null,
+  alt = "",
+  eager = false,
+  onFail,
 }: {
-  src?: string;
+  src: string;
   className?: string;
-  fallback?: ReactNode;
+  alt?: string;
+  eager?: boolean;
+  onFail: () => void;
 }) {
-  const [broken, setBroken] = useState(false);
-  // A photo that failed before the page came to life never says so: check.
-  const check = useCallback((img: HTMLImageElement | null) => {
-    if (img?.complete && img.naturalWidth === 0) setBroken(true);
-  }, []);
-  if (!src || broken) return <>{fallback}</>;
+  const check = useCallback(
+    (img: HTMLImageElement | null) => {
+      if (img?.complete && img.naturalWidth === 0) onFail();
+    },
+    [onFail],
+  );
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- Google's photos come through our own proxy, not next/image.
+    // eslint-disable-next-line @next/next/no-img-element -- Google's photos come through our own proxy, and the rest from the sites that list them.
     <img
       ref={check}
       src={src}
-      alt=''
+      alt={alt}
       className={className}
-      loading='lazy'
+      loading={eager ? "eager" : "lazy"}
       decoding='async'
-      onError={() => setBroken(true)}
+      referrerPolicy='no-referrer'
+      onError={onFail}
     />
   );
 }
 
+/** The first of these pictures that loads, or `fallback` if none do. */
+export function Photo({
+  srcs,
+  className,
+  fallback = null,
+  eager,
+}: {
+  srcs?: (string | undefined)[];
+  className?: string;
+  fallback?: ReactNode;
+  eager?: boolean;
+}) {
+  const list = (srcs ?? []).filter((s): s is string => Boolean(s));
+  const [failed, setFailed] = useState<string[]>([]);
+  const src = list.find((s) => !failed.includes(s));
+  const fail = () => {
+    if (src) setFailed((f) => (f.includes(src) ? f : [...f, src]));
+  };
+  if (!src) return <>{fallback}</>;
+  return (
+    <Img
+      key={src}
+      src={src}
+      className={className}
+      eager={eager}
+      onFail={fail}
+    />
+  );
+}
+
+/** Grey, with "No image available": what shows when a lead has no picture. */
+export function NoImage({ className }: { className?: string }) {
+  return (
+    <span className={`${styles.noImage} ${className ?? ""}`}>
+      No image available
+    </span>
+  );
+}
+
+/** A lead's square tile: its picture, or the icon for its kind. */
 export function Tile({
   target,
   now,
@@ -76,10 +125,58 @@ export function Tile({
       aria-hidden='true'
     >
       <Photo
-        src={target.photo}
+        key={target.id}
+        srcs={target.images}
         className={styles.tilePhoto}
         fallback={<Icon name={icon} />}
       />
+    </span>
+  );
+}
+
+/** A lead's picture in a list, with an event's date on its corner. */
+export function Thumb({ target }: { target: Target }) {
+  return (
+    <span className={styles.thumb} aria-hidden='true'>
+      <Photo
+        key={target.id}
+        srcs={target.images}
+        className={styles.thumbImg}
+        fallback={
+          <NoImage
+            className={target.kind === "EVENT" ? styles.thumbNone : undefined}
+          />
+        }
+      />
+      {target.kind === "EVENT" && (
+        <span className={styles.thumbDate}>
+          {fmtMonth(target.date)}{" "}
+          {new Intl.DateTimeFormat("en-US", {
+            day: "numeric",
+            timeZone: "America/Phoenix",
+          }).format(new Date(target.date))}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** The lead score, out of 100, tinted by how good it is. */
+export function ScoreBadge({
+  score,
+  size = "md",
+}: {
+  score: number;
+  size?: "md" | "lg";
+}) {
+  return (
+    <span
+      className={`${styles.score} ${styles[`score_${scoreTone(score)}`]} ${size === "lg" ? styles.scoreLg : ""}`}
+      title='Lead score, out of 100'
+    >
+      <strong>{score}</strong>
+      <span aria-hidden='true'>/100</span>
+      <span className={ui.srOnly}> out of 100</span>
     </span>
   );
 }

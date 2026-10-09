@@ -26,6 +26,11 @@ export type RawEvent = {
   description?: string;
   /** What the source says it is, when it says. */
   type?: EventType;
+  /** The event's own picture. */
+  image?: string;
+  /** Ticket prices in dollars, when listed. */
+  priceMin?: number;
+  priceMax?: number;
 };
 
 const RULES: [EventType, RegExp][] = [

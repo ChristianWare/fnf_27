@@ -41,8 +41,11 @@ type Place = {
   contactReady?: boolean;
   /** A line about this one in particular, for the brief. */
   note?: string;
-  /** A small photo (the place, or the event's venue), when there is one. */
-  photo?: string;
+  /**
+   * Pictures for the lists, best first: when one won't load the next is
+   * tried, and with none left it says "No image available".
+   */
+  images?: string[];
 };
 
 export type Account = Place & {
@@ -76,6 +79,15 @@ export type EventLead = Place & {
   phone?: string;
   /** The event's own page. */
   website?: string;
+  /** "$109 – $3,203", when the source lists prices. */
+  price?: string;
+  /** In cents, for the score. */
+  priceMin?: number;
+  priceMax?: number;
+  /** The venue on Google. */
+  venueRating?: number;
+  venueReviews?: number;
+  venuePhone?: string;
 };
 
 export type Target = Account | EventLead;
@@ -160,10 +172,26 @@ export type LeadsWorkspace = {
   saved: SavedLead[];
 };
 
-/** What a lead's page adds on top of the list: a big photo, a map, the drive. */
+/** One picture on a lead's page, in the sizes each place needs. */
+export type LeadPhoto = {
+  /** Across the top of the page. */
+  src: string;
+  /** In the grid of photos. */
+  thumb: string;
+  /** Full size, in the lightbox. */
+  full: string;
+  /** "Photo by Jane Lens on Google", "From Ticketmaster". */
+  credit: string;
+  creditUrl?: string;
+};
+
+/** What a lead's page adds on top of the list: photos, a map, the drive. */
 export type LeadExtras = {
-  photo?: { src: string; credit?: string; creditUrl?: string };
+  /** Best first. Empty: "No image available". */
+  photos?: LeadPhoto[];
   /** A Google Maps embed address. */
   map?: string;
+  /** Google Maps, to open in a new tab. */
+  mapsLink?: string;
   drive?: { minutes: number; miles: number };
 };

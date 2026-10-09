@@ -23,7 +23,7 @@ import { prorate } from "@/lib/dashboard/billing";
 import { LEADS } from "@/lib/dashboard/plans";
 import { trialReminder } from "@/lib/billing/leads";
 import { accessOf } from "./access";
-import { firstPhoto, googleReady } from "./apis/google";
+import { googleReady, placePhotos } from "./apis/google";
 import {
   fits,
   locate,
@@ -62,6 +62,25 @@ const TILE = {
   EVENT: "#e9d5ff",
 };
 
+/**
+ * The first of a lead's pictures that will show in an email: a Google photo
+ * once we know the place has one, or a picture from its listing or website.
+ */
+async function emailPicture(t: Located, google: boolean) {
+  for (const candidate of t.images ?? []) {
+    if (!candidate.startsWith("/api/leads/photo")) return candidate;
+    const id = google
+      ? new URL(candidate, "https://x").searchParams.get("id")
+      : null;
+    if (!id) continue;
+    const has = await placePhotos(id)
+      .then((list) => list.length > 0)
+      .catch(() => false);
+    if (has) return photoUrl(id, 160, { absolute: true });
+  }
+  return undefined;
+}
+
 async function rowHtml(
   t: Located,
   base: string,
@@ -73,22 +92,12 @@ async function rowHtml(
     t.kind === "ACCOUNT"
       ? CATEGORIES[t.category].short
       : EVENT_TYPES[t.type].short;
-  const placeId =
-    t.kind === "ACCOUNT"
-      ? t.id
-      : t.photo
-        ? new URL(t.photo, "https://x").searchParams.get("id")
-        : null;
-  const photo =
-    photos && placeId
-      ? await firstPhoto(placeId)
-          .then((p) => (p ? photoUrl(placeId, 160, true) : undefined))
-          .catch(() => undefined)
-      : undefined;
+  const photo = await emailPicture(t, photos);
+  // Its own width and height, so no email app squashes it.
   const tile = photo
-    ? `<img src="${esc(photo)}" width="48" height="48" alt="" style="display:block;width:48px;height:48px;border-radius:12px;object-fit:cover;">`
-    : `<div style="width:48px;height:48px;border-radius:12px;background:${TILE[t.kind]};font-family:${MONO};font-size:14px;line-height:48px;text-align:center;color:#0d0d0e;">${esc(kind.slice(0, 2).toUpperCase())}</div>`;
-  return `<tr><td width="48" style="padding:10px 0;vertical-align:top;">${tile}</td><td style="padding:10px 0 10px 14px;vertical-align:top;"><a href="${esc(href)}" style="font-size:16px;font-weight:700;line-height:1.35;color:#0d0d0e;text-decoration:none;">${esc(t.name)}</a><div style="margin-top:2px;font-family:${MONO};font-size:14px;text-transform:uppercase;color:#6b6b70;">${esc(`${kind}${t.city ? ` · ${t.city}` : ""}`)}</div><div style="margin-top:4px;font-size:14px;line-height:1.5;color:#3d3d40;">${esc(line)}</div></td></tr>`;
+    ? `<img src="${esc(photo)}" width="64" alt="" style="display:block;width:64px;height:auto;max-height:64px;border-radius:10px;">`
+    : `<div style="width:64px;height:48px;border-radius:10px;background:${TILE[t.kind]};font-family:${MONO};font-size:14px;line-height:48px;text-align:center;color:#0d0d0e;">${esc(kind.slice(0, 2).toUpperCase())}</div>`;
+  return `<tr><td width="64" style="padding:10px 0;vertical-align:top;">${tile}</td><td style="padding:10px 0 10px 14px;vertical-align:top;"><a href="${esc(href)}" style="font-size:16px;font-weight:700;line-height:1.35;color:#0d0d0e;text-decoration:none;">${esc(t.name)}</a><div style="margin-top:2px;font-family:${MONO};font-size:14px;text-transform:uppercase;color:#6b6b70;">${esc(`${kind}${t.city ? ` · ${t.city}` : ""}`)}</div><div style="margin-top:4px;font-size:14px;line-height:1.5;color:#3d3d40;">${esc(line)}</div></td></tr>`;
 }
 
 const section = (title: string, rows: string[]) =>
@@ -183,7 +192,7 @@ async function morningFor(
       (t) =>
         t.foundAt > w.newSince && fits(t, w.settings) && !savedIds.has(t.id),
     )
-    .sort((a, b) => rank(b, nowIso) - rank(a, nowIso));
+    .sort((a, b) => rank(b, nowIso, w.newSince) - rank(a, nowIso, w.newSince));
   const soon = events
     .filter(
       (e) => thisWeek(e, nowIso) && fits(e, w.settings) && !savedIds.has(e.id),

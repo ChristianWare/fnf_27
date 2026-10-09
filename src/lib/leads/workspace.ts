@@ -19,11 +19,18 @@ import { createId } from "@/lib/server/ids";
 import { alertAdmins } from "@/lib/server/notify";
 import { url } from "@/lib/server/config";
 import { LEADS } from "@/lib/dashboard/plans";
-import { driveTime, findCity, firstPhoto, googleReady } from "./apis/google";
-import { CATEGORIES, EVENT_TYPES } from "./catalog";
+import {
+  driveTime,
+  findCity,
+  googleReady,
+  placePhotos,
+  type GooglePhoto,
+} from "./apis/google";
+import { CATEGORIES, EVENT_TYPES, SOURCES } from "./catalog";
 import { milesBetween, rank } from "./advice";
 import { ACCOUNT_CATEGORIES, EVENT_KINDS, STUDIO_ID } from "./kinds";
 import { CITIES, newSince } from "./market";
+import { priceText } from "./media";
 import { photoUrl } from "./photos";
 import { organizerDomain } from "./research";
 import { flushUsage } from "./usage";
@@ -35,6 +42,7 @@ import type {
   EventType,
   LeadActivity,
   LeadExtras,
+  LeadPhoto,
   LeadsSettings,
   LeadsWorkspace,
   Operator,
@@ -294,7 +302,12 @@ export function toAccount(
     note: research?.brief ?? undefined,
     news: p.news ?? undefined,
     foundAt: p.firstSeenAt.toISOString(),
-    photo: photoUrl(p.id, 160),
+    // Google's photo (unless Google says it has none), then the picture
+    // their website shares.
+    images: [
+      ...(p.photoCount !== 0 ? [photoUrl(p.id, 400)] : []),
+      ...(research?.imageUrl ? [research.imageUrl] : []),
+    ],
     ...contactFor(research, saved),
   };
 }
@@ -324,7 +337,19 @@ export function toEvent(
     website: e.url ?? e.organizerUrl ?? undefined,
     note: e.description ? firstSentence(e.description) : undefined,
     foundAt: e.foundAt.toISOString(),
-    photo: e.venuePlaceId ? photoUrl(e.venuePlaceId, 160) : undefined,
+    price: priceText(e.priceMinCents, e.priceMaxCents),
+    priceMin: e.priceMinCents ?? undefined,
+    priceMax: e.priceMaxCents ?? undefined,
+    venueRating: e.venueRating ?? undefined,
+    venueReviews: e.venueReviews ?? undefined,
+    venuePhone: e.venuePhone ?? undefined,
+    // The event's own picture, then the venue's photo on Google.
+    images: [
+      ...(e.imageUrl ? [e.imageUrl] : []),
+      ...(e.venuePlaceId && e.venuePhotos !== 0
+        ? [photoUrl(e.venuePlaceId, 400)]
+        : []),
+    ],
     ...contactFor(research, saved),
   };
 }
@@ -695,48 +720,126 @@ async function drive(
   return found;
 }
 
+/** A Google photo in the three sizes a lead's page uses. */
+function googlePhoto(
+  placeId: string,
+  index: number,
+  photo: GooglePhoto,
+  of?: string,
+): LeadPhoto {
+  return {
+    src: photoUrl(placeId, 1200, { index }),
+    thumb: photoUrl(placeId, 640, { index }),
+    full: photoUrl(placeId, 1600, { index }),
+    credit: `${of ? `${of} · ` : ""}Photo${photo.author ? ` by ${photo.author}` : ""} on Google`,
+    creditUrl: photo.authorUrl,
+  };
+}
+
+/** A picture from somewhere else: the event's listing, their website. */
+const otherPhoto = (
+  src: string,
+  credit: string,
+  creditUrl?: string,
+): LeadPhoto => ({ src, thumb: src, full: src, credit, creditUrl });
+
+const LISTED_ON = new Set(["TICKETMASTER", "EVENTBRITE", "GOOGLE"]);
+
+/**
+ * What a lead's page shows on top of the lists: its photos (Google's for
+ * an account, up to seven for the grid; the event's own picture and then
+ * the venue's for an event), the map, and the drive from the base.
+ */
 export async function leadExtras(
   clientId: string,
   target: Account | EventLead,
   base: { lat: number; lng: number },
 ): Promise<LeadExtras> {
-  let placeId: string | undefined;
-  if (target.kind === "ACCOUNT") placeId = target.id;
-  else {
-    const [e] = await db
-      .select({ venuePlaceId: s.leadsEvents.venuePlaceId })
-      .from(s.leadsEvents)
-      .where(eq(s.leadsEvents.id, target.id))
-      .limit(1);
-    placeId = e?.venuePlaceId ?? undefined;
-  }
   const google = googleReady();
-  const [photo, driving] = await Promise.all([
-    google && placeId ? within(firstPhoto(placeId), 3_000) : undefined,
+  const [event] =
+    target.kind === "EVENT"
+      ? await db
+          .select({
+            venuePlaceId: s.leadsEvents.venuePlaceId,
+            imageUrl: s.leadsEvents.imageUrl,
+            source: s.leadsEvents.source,
+          })
+          .from(s.leadsEvents)
+          .where(eq(s.leadsEvents.id, target.id))
+          .limit(1)
+      : [];
+  const placeId =
+    target.kind === "ACCOUNT" ? target.id : (event?.venuePlaceId ?? undefined);
+
+  const [googlePhotos, driving] = await Promise.all([
+    google && placeId ? within(placePhotos(placeId), 3_000) : undefined,
     google ? within(drive(clientId, base, target), 4_000) : undefined,
   ]);
   await flushUsage();
+
+  const photos: LeadPhoto[] = [];
+  if (target.kind === "ACCOUNT") {
+    photos.push(
+      ...(googlePhotos ?? [])
+        .slice(0, 7)
+        .map((photo, index) => googlePhoto(target.id, index, photo)),
+    );
+    if (!photos.length) {
+      const [r] = await db
+        .select({ imageUrl: s.leadsResearch.imageUrl })
+        .from(s.leadsResearch)
+        .where(eq(s.leadsResearch.key, target.id))
+        .limit(1);
+      if (r?.imageUrl)
+        photos.push(
+          otherPhoto(r.imageUrl, "From their website", target.website),
+        );
+    }
+  } else {
+    if (event?.imageUrl)
+      photos.push(
+        otherPhoto(
+          event.imageUrl,
+          LISTED_ON.has(event.source)
+            ? `From ${SOURCES[event.source].label}`
+            : "From the event's listing",
+          target.website,
+        ),
+      );
+    if (placeId)
+      photos.push(
+        ...(googlePhotos ?? [])
+          .slice(0, 4)
+          .map((photo, index) =>
+            googlePhoto(placeId, index, photo, target.venue || "The venue"),
+          ),
+      );
+  }
+
   const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY;
   const q = placeId
     ? `place_id:${placeId}`
     : target.lat && target.lng
       ? `${target.lat},${target.lng}`
       : undefined;
+  const search = [
+    target.kind === "ACCOUNT" ? target.name : target.venue || target.name,
+    target.kind === "ACCOUNT" ? target.address : target.address,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const mapsLink =
+    search || (target.lat && target.lng)
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(search || `${target.lat},${target.lng}`)}${placeId ? `&query_place_id=${encodeURIComponent(placeId)}` : ""}`
+      : undefined;
   return {
-    ...(photo && placeId
-      ? {
-          photo: {
-            src: photoUrl(placeId, 1200),
-            credit: photo.author,
-            creditUrl: photo.authorUrl,
-          },
-        }
-      : {}),
+    photos,
     ...(key && q
       ? {
           map: `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(key)}&q=${encodeURIComponent(q)}&zoom=13`,
         }
       : {}),
+    ...(mapsLink ? { mapsLink } : {}),
     ...(driving ? { drive: driving } : {}),
   };
 }

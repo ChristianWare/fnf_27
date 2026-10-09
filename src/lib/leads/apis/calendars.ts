@@ -6,6 +6,7 @@ import { aiReady, askJson } from "./ai";
 import { decodeEntities, pageText, readPage } from "./http";
 import type { Who } from "../usage";
 import type { RawEvent } from "../classify";
+import { goodImage, offerPrices } from "../media";
 import type { CalendarSource } from "../types";
 
 export type CalendarRead = {
@@ -94,6 +95,12 @@ export function readIcal(text: string, source: CalendarSource): RawEvent[] {
         const organizer = /CN="?([^";:]+)/i.exec(
           current.ORGANIZER?.params ?? "",
         )?.[1];
+        // RFC 7986's IMAGE, or an image attached to the event.
+        const attached =
+          current.IMAGE?.value ??
+          (/FMTTYPE=image\//i.test(current.ATTACH?.params ?? "")
+            ? current.ATTACH?.value
+            : undefined);
         events.push({
           key: `${source}:${current.UID?.value ?? `${name}|${start.at.toISOString()}`}`,
           source,
@@ -106,6 +113,7 @@ export function readIcal(text: string, source: CalendarSource): RawEvent[] {
           url: current.URL?.value?.trim(),
           organizer,
           description: icalText(current.DESCRIPTION?.value).slice(0, 1000),
+          image: goodImage(attached?.trim()),
         });
       }
       current = undefined;
@@ -169,6 +177,29 @@ function textDates(text: string) {
   return found;
 }
 
+const attr = (tagText: string, name: string) =>
+  new RegExp(`\\b${name}\\s*=\\s*["']([^"']+)["']`, "i").exec(tagText)?.[1];
+
+/** An item's picture: an image enclosure, media:content, or an <img>. */
+function rssImage(item: string, html: string, base?: string) {
+  for (const t of item.match(/<enclosure\b[^>]*>/gi) ?? []) {
+    const type = attr(t, "type") ?? "";
+    const href = attr(t, "url");
+    if (
+      href &&
+      (/^image\//i.test(type) || /\.(jpe?g|png|webp|gif)(\?|$)/i.test(href))
+    )
+      return goodImage(href, base);
+  }
+  for (const t of item.match(/<media:(content|thumbnail)\b[^>]*>/gi) ?? []) {
+    const href = attr(t, "url");
+    const medium = attr(t, "medium") ?? attr(t, "type") ?? "image";
+    if (href && /image/i.test(medium)) return goodImage(href, base);
+  }
+  const img = /<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/i.exec(html)?.[1];
+  return goodImage(img, base);
+}
+
 export function readRss(xml: string, source: CalendarSource): RawEvent[] {
   const items = xml.match(/<(item|entry)\b[\s\S]*?<\/\1>/gi) ?? [];
   const events: RawEvent[] = [];
@@ -179,13 +210,14 @@ export function readRss(xml: string, source: CalendarSource): RawEvent[] {
     const href = /<link[^>]*href=["']([^"']+)["']/i.exec(item)?.[1];
     const url =
       (linkTag && /^https?:/.test(linkTag) ? linkTag : href) ?? undefined;
-    const description = pageText(
+    const rawDescription =
       tag(item, "description") ??
-        tag(item, "summary") ??
-        tag(item, "content") ??
-        "",
-      1500,
-    );
+      tag(item, "summary") ??
+      tag(item, "content") ??
+      tag(item, "content:encoded") ??
+      "";
+    const description = pageText(rawDescription, 1500);
+    const image = rssImage(item, rawDescription, url);
     // An explicit start date, if the feed has one…
     const explicit =
       tag(item, "ev:startdate") ??
@@ -217,6 +249,7 @@ export function readRss(xml: string, source: CalendarSource): RawEvent[] {
       allDay,
       url,
       description,
+      image,
     });
   }
   return events;
@@ -239,6 +272,9 @@ function* things(value: unknown): Generator<Thing> {
 }
 
 const str = (v: unknown) => (typeof v === "string" ? v.trim() : undefined);
+
+const prices = (p: { min: number; max: number } | undefined) =>
+  p ? { priceMin: p.min, priceMax: p.max } : {};
 
 export function readEventData(
   html: string,
@@ -311,6 +347,8 @@ export function readEventData(
         organizerUrl: str(organizer?.url),
         url: pageUrl ? new URL(pageUrl, base).toString() : undefined,
         description: str(t.description)?.slice(0, 1000),
+        image: goodImage(t.image, base),
+        ...prices(offerPrices(t.offers)),
       });
     }
   }

@@ -234,6 +234,7 @@ const paths = {
     </>
   ),
   zap: <path d='M13 2 4 14h7l-1 8 9-12h-7z' />,
+  expand: <path d='M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7' />,
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof paths;

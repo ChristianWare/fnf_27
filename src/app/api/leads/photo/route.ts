@@ -1,5 +1,6 @@
-// GET /api/leads/photo?id=<place>&w=<width>&s=<signature>: a Google photo
-// of a place, for the Leads Tool's lists, lead pages and morning emails.
+// GET /api/leads/photo?id=<place>[&n=<photo>]&w=<width>&s=<signature>: one
+// of Google's photos of a place (the first, or the nth), for the Leads
+// Tool's lists, lead pages and morning emails.
 // Only links we signed work, so nobody else can run up the photo bill, and
 // there's a ceiling on photos a day whoever asks. Browsers and Vercel keep
 // each one for a day.
@@ -8,7 +9,7 @@ import { after } from "next/server";
 import { and, eq, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { dayKey } from "@/lib/dashboard/format";
-import { firstPhoto, googleReady, photoImage } from "@/lib/leads/apis/google";
+import { googleReady, photoImage, placePhotos } from "@/lib/leads/apis/google";
 import { photoLinkOk } from "@/lib/leads/photos";
 import { flushUsage } from "@/lib/leads/usage";
 
@@ -28,18 +29,23 @@ export async function GET(request: Request) {
   const keys = [...params.keys()];
   const id = params.get("id") ?? "";
   const w = params.get("w") ?? "";
+  const n = params.get("n");
   const width = Number(w);
+  const index = n === null ? 0 : Number(n);
   // Only links spelled the way we make them: anything added to one, or
   // spelled another way, would get past the cache and cost a photo.
+  const expected = n === null ? ["id", "w", "s"] : ["id", "n", "w", "s"];
   const plain =
-    keys.length === 3 &&
-    ["id", "w", "s"].every((key) => keys.includes(key)) &&
-    /^[1-9]\d{1,4}$/.test(w);
-  if (!plain || !id || !photoLinkOk(id, width, params.get("s") ?? ""))
+    keys.length === expected.length &&
+    expected.every((key) => keys.includes(key)) &&
+    /^[1-9]\d{1,4}$/.test(w) &&
+    (n === null || /^[1-9]$/.test(n));
+  if (!plain || !id || !photoLinkOk(id, width, params.get("s") ?? "", index))
     return nothing(60);
   if (!googleReady()) return nothing(600);
 
-  // Past the day's ceiling, lists show their icon tiles until tomorrow.
+  // Past the day's ceiling, lists show their next picture (or "No image
+  // available") until tomorrow.
   const [today] = await db
     .select({
       n: sql<number>`coalesce(sum(${schema.leadsUsage.calls}), 0)::int`,
@@ -54,7 +60,7 @@ export async function GET(request: Request) {
   if ((today?.n ?? 0) >= PHOTOS_A_DAY) return nothing(600);
 
   try {
-    const photo = await firstPhoto(id);
+    const photo = (await placePhotos(id))[index];
     if (!photo) return nothing(86_400);
     // Counted against the market the place is in.
     const [market] = await db

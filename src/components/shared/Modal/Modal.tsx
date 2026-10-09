@@ -2,20 +2,35 @@
 "use client";
 
 import { useLenis } from "lenis/react";
-import { useLayoutEffect, useRef, MouseEvent } from "react";
+import { useId, useLayoutEffect, useRef, MouseEvent } from "react";
 import styles from "./Modal.module.css";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  /**
+   * "dark": the whole screen goes dark and the content sits on it with no
+   * card around it, for photos. The close button moves to the corner.
+   */
+  variant?: "light" | "dark";
+  /** What a screen reader calls the dialog. */
+  label?: string;
 }
 
-export default function Modal({ isOpen, onClose, children }: Props) {
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+  variant = "light",
+  label,
+}: Props) {
   const scrollRef = useRef(0);
   const htmlPrev = useRef<string>("");
   const removeTouchBlockRef = useRef<() => void>(() => {});
   const lenis = useLenis();
+  // Each dialog its own id, so two on one page don't trip over each other.
+  const dialogId = `app-modal-dialog-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
   useLayoutEffect(() => {
     if (!isOpen) return;
@@ -28,7 +43,7 @@ export default function Modal({ isOpen, onClose, children }: Props) {
 
     // Reset modal scroll to top on every open so tall content
     // doesn't reopen at the previously-scrolled position
-    const modalEl = document.getElementById("app-modal-dialog");
+    const modalEl = document.getElementById(dialogId);
     if (modalEl) modalEl.scrollTop = 0;
 
     html.style.overflow = "hidden";
@@ -39,7 +54,7 @@ export default function Modal({ isOpen, onClose, children }: Props) {
 
     const blockTouch = (e: TouchEvent) => {
       const target = e.target as HTMLElement | null;
-      const dialog = document.getElementById("app-modal-dialog");
+      const dialog = document.getElementById(dialogId);
       if (dialog && target && dialog.contains(target)) return;
       e.preventDefault();
     };
@@ -58,25 +73,28 @@ export default function Modal({ isOpen, onClose, children }: Props) {
       root.scrollTo({ top: scrollRef.current });
       lenis?.start();
     };
-  }, [isOpen, onClose, lenis]);
+  }, [isOpen, onClose, lenis, dialogId]);
 
   const stop = (e: MouseEvent) => e.stopPropagation();
+  const dark = variant === "dark" ? styles.dark : "";
 
   return (
     <div
-      className={`${styles.backdrop} ${isOpen ? styles.open : styles.closed}`}
+      className={`${styles.backdrop} ${dark} ${isOpen ? styles.open : styles.closed}`}
       onClick={onClose}
       aria-hidden={!isOpen}
     >
       <div
-        id='app-modal-dialog'
-        className={`${styles.dialog} ${isOpen ? styles.open : styles.closed}`}
+        id={dialogId}
+        className={`${styles.dialog} ${dark} ${isOpen ? styles.open : styles.closed}`}
         onClick={stop}
         role='dialog'
         aria-modal='true'
+        aria-label={label}
         data-lenis-prevent
       >
         <button
+          type='button'
           onClick={onClose}
           className={styles.closeBtn}
           aria-label='Close modal'

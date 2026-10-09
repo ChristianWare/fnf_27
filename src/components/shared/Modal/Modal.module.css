@@ -78,3 +78,47 @@
     width: calc(100vw - 4rem);
   }
 }
+
+/* ── Dark: the screen goes dark and the content sits on it, for photos ── */
+.backdrop.dark {
+  background: rgb(10 10 11 / 92%);
+}
+
+/* No transform here: it would pin the fixed buttons to the dialog, not the
+   screen. It fades in instead. */
+.dialog.dark,
+.dialog.dark.open {
+  width: auto;
+  max-width: 100vw;
+  max-height: 100vh;
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  transform: none;
+}
+
+.dialog.dark .closeBtn {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  float: none;
+  margin: 0;
+  background-color: rgb(255 255 255 / 14%);
+  color: var(--white);
+  z-index: 2;
+}
+
+.dialog.dark .closeBtn:hover {
+  background-color: rgb(255 255 255 / 24%);
+}
+
+@media (max-width: 768px) {
+  .dialog.dark {
+    width: 100vw;
+  }
+
+  .dialog.dark .closeBtn {
+    top: 1.2rem;
+    right: 1.2rem;
+  }
+}

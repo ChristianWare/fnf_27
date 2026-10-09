@@ -8,8 +8,8 @@
 // falls back to.
 
 import { CATEGORIES, EVENT_TYPES, FOLLOW_UP_DAYS, SOURCES } from "./catalog";
+import { scoreOf } from "./score";
 import type {
-  Account,
   EventLead,
   LeadsSettings,
   Located,
@@ -115,60 +115,12 @@ export function reasonsFor(target: Located, now: string): Reason[] {
 
 /* ── The order to show them in ── */
 
-const categoryWeight: Record<Account["category"], number> = {
-  HOTEL: 8,
-  CORPORATE: 8,
-  VENUE: 6,
-  LAW: 5,
-  CASINO: 5,
-  GOLF: 4,
-  FUNERAL: 4,
-  SENIOR: 3,
-  TOURS: 3,
-};
-
-const typeWeight: Record<EventLead["type"], number> = {
-  GALA: 12,
-  CONFERENCE: 12,
-  AUCTION: 12,
-  TOURNAMENT: 10,
-  BUSINESS: 8,
-  WEDDING_SHOW: 8,
-  GRADUATION: 6,
-  FESTIVAL: 6,
-  CONCERT: 4,
-};
-
-/** Higher first. Not shown to anyone: the reasons are. */
-export function rank(target: Located, now: string) {
-  const contact = target.contact
-    ? target.contact.verified
-      ? 10
-      : 5
-    : target.contactReady
-      ? 8
-      : 0;
-  if (target.kind === "ACCOUNT") {
-    const news = target.news ? 12 : 0;
-    const service = { NONE: 40, UNKNOWN: 22, HAS: 6 }[target.carService];
-    const size = Math.min(25, Math.log10((target.reviews ?? 0) + 1) * 8);
-    const rating = ((target.rating ?? 4) - 4) * 10;
-    const distance = Math.max(0, 15 - target.miles / 2);
-    return (
-      service +
-      size +
-      rating +
-      distance +
-      contact +
-      news +
-      categoryWeight[target.category]
-    );
-  }
-  const days = daysUntil(target.date, now);
-  const timing = days < 2 ? 4 : days <= 21 ? 26 : days <= 45 ? 18 : 10;
-  const size = Math.min(25, Math.log10((target.guests ?? 0) + 1) * 6);
-  return timing + size + contact + typeWeight[target.type] - target.miles / 3;
-}
+/**
+ * Higher first: the lead score (score.ts), out of 100. Pass newSince where
+ * the score is on show, so the order matches the numbers.
+ */
+export const rank = (target: Located, now: string, newSince?: string) =>
+  scoreOf(target, now, newSince).score;
 
 /* ── The brief ── */
 
