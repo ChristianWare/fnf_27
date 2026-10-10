@@ -32,6 +32,7 @@ import { createId } from "@/lib/server/ids";
 import { url } from "@/lib/server/config";
 import { emailPerson } from "@/lib/server/notify";
 import { humanCheck } from "@/lib/server/turnstile";
+import { botReason, botText, STAMP_FIELD, TRAP_FIELD } from "@/lib/server/spam";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
 
 const SUPPORT = "hello@fontsandfooters.com";
@@ -225,6 +226,23 @@ export async function register(
   if (weak) return back(weak);
   if (!authConfigured())
     return back("Sign-up isn't set up on this server yet.");
+
+  // A bot in the trap field is sent to the "check your email" page like
+  // anyone else, and nothing is made. A form posted in under a few
+  // seconds, or left open all day, gets a plain answer and a second go.
+  // (What they typed isn't judged here: a business can be called after
+  // its website.)
+  const bot = botReason({
+    trap: get(TRAP_FIELD),
+    stamp: get(STAMP_FIELD) || undefined,
+    names: [],
+    message: "",
+  });
+  if (bot === "trap") {
+    console.warn(`[register] bot turned away: ${values.email}`);
+    redirect(`/register/check-email?email=${encodeURIComponent(values.email)}`);
+  }
+  if (bot) return back(botText(bot));
 
   const ip = await clientIp();
   if (await tooMany(`register-ip:${ip}`, 6, 60)) {

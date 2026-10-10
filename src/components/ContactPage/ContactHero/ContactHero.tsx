@@ -1,8 +1,9 @@
 "use client";
 
 // The contact page's hero: a photo with Barry's quote on the left, the
-// form on the right. The form checks the fields and shows a thank-you;
-// sending it somewhere is a PLACEHOLDER until there's an endpoint.
+// form on the right. The form checks the fields, sends the message to the
+// studio inbox (sendInquiry), says how it went in a toast, and shows a
+// thank-you. Bots are turned away by the server; see lib/server/spam.ts.
 
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
@@ -10,6 +11,10 @@ import styles from "./ContactHero.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import Turnstile from "@/components/shared/Turnstile/Turnstile";
+import { ToastProvider, useToast } from "@/components/Dashboard/Toast/Toast";
+import { STAMP_FIELD, TRAP_FIELD } from "@/lib/forms/fields";
+import { sendInquiry } from "@/app/contact/actions";
 import HeroImg from "../../../../public/images/newHero.png";
 import Barry from "../../../../public/images/barry.png";
 
@@ -17,7 +22,23 @@ type Field = "name" | "email" | "company" | "role" | "message";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function ContactHero() {
+type Props = {
+  /** Cloudflare's site key; without one there's no box. */
+  siteKey?: string;
+  /** When the page was drawn, signed by the server. */
+  stamp: string;
+};
+
+export default function ContactHero(props: Props) {
+  return (
+    <ToastProvider>
+      <Hero {...props} />
+    </ToastProvider>
+  );
+}
+
+function Hero({ siteKey, stamp }: Props) {
+  const toast = useToast();
   const [values, setValues] = useState<Record<Field, string>>({
     name: "",
     email: "",
@@ -25,11 +46,13 @@ export default function ContactHero() {
     role: "",
     message: "",
   });
-  const [error, setError] = useState<{ field: Field; text: string } | null>(
+  const [error, setError] = useState<{ field?: Field; text: string } | null>(
     null,
   );
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  // Counts the failed sends, so the box asks for a fresh token each time.
+  const [failed, setFailed] = useState(0);
 
   function set(field: Field) {
     return (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -40,6 +63,7 @@ export default function ContactHero() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     if (!values.name.trim()) {
       setError({ field: "name", text: "Enter your name." });
       return;
@@ -48,7 +72,7 @@ export default function ContactHero() {
       setError({ field: "email", text: "Enter a valid email address." });
       return;
     }
-    if (!values.message.trim()) {
+    if (values.message.trim().length < 10) {
       setError({
         field: "message",
         text: "Tell us a little about what you need.",
@@ -57,13 +81,28 @@ export default function ContactHero() {
     }
     setError(null);
     setSending(true);
-
-    // PLACEHOLDER: post the values to your API route or email service
-    // here, e.g. await fetch("/api/contact", { method: "POST", body: ... }).
-    await new Promise((resolve) => setTimeout(resolve, 600));
-
-    setSending(false);
-    setSent(true);
+    try {
+      // Everything in the form, the hidden fields and Cloudflare's token
+      // included.
+      const result = await sendInquiry(new FormData(form));
+      if (result.ok) {
+        setSent(true);
+        toast("Message sent", {
+          detail: `We'll reply to ${values.email.trim()} within 24 hours.`,
+        });
+      } else {
+        setError({ text: result.error });
+        setFailed((n) => n + 1);
+        toast("That didn't send", { tone: "error", detail: result.error });
+      }
+    } catch {
+      const text = "That didn't send. Check your connection and try again.";
+      setError({ text });
+      setFailed((n) => n + 1);
+      toast("That didn't send", { tone: "error", detail: text });
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -213,6 +252,24 @@ export default function ContactHero() {
                 />
               </label>
             </div>
+
+            {/* For bots only: a person never sees this field, so a value
+                in it means a bot filled the form. */}
+            <div className={styles.srOnly} aria-hidden='true'>
+              <label>
+                Leave this empty
+                <input
+                  type='text'
+                  name={TRAP_FIELD}
+                  tabIndex={-1}
+                  autoComplete='off'
+                  defaultValue=''
+                />
+              </label>
+            </div>
+            <input type='hidden' name={STAMP_FIELD} value={stamp} />
+
+            <Turnstile siteKey={siteKey} resetKey={failed} />
 
             <p className={styles.fine}>
               *By submitting this form, you agree to receive helpful resources

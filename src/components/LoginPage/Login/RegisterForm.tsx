@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useState } from "react";
 import styles from "./Login.module.css";
+import Turnstile from "@/components/shared/Turnstile/Turnstile";
+import { STAMP_FIELD, TRAP_FIELD } from "@/lib/forms/fields";
 import { register, type RegisterState } from "@/app/login/actions";
 import { Field, PasswordField } from "./Fields";
 
@@ -14,68 +16,17 @@ export type PlanCard = {
   blurb: string;
 };
 
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (el: HTMLElement, options: Record<string, unknown>) => string;
-      reset: (id?: string) => void;
-    };
-    __fnfTurnstile?: () => void;
-  }
-}
-
-/** Cloudflare's "are you a person?" box. Skipped when there's no key. */
-function Turnstile({
-  siteKey,
-  resetKey,
-}: {
-  siteKey?: string;
-  resetKey: number;
-}) {
-  const box = useRef<HTMLDivElement>(null);
-  const widget = useRef<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (!siteKey) return;
-    const draw = () => {
-      if (!window.turnstile || !box.current || widget.current) return;
-      widget.current = window.turnstile.render(box.current, {
-        sitekey: siteKey,
-        theme: "light",
-      });
-    };
-    if (window.turnstile) {
-      draw();
-      return;
-    }
-    window.__fnfTurnstile = draw;
-    if (!document.getElementById("cf-turnstile-script")) {
-      const script = document.createElement("script");
-      script.id = "cf-turnstile-script";
-      script.src =
-        "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=__fnfTurnstile&render=explicit";
-      script.async = true;
-      document.head.appendChild(script);
-    }
-  }, [siteKey]);
-
-  // A failed sign-up uses up the token: ask for a fresh one.
-  useEffect(() => {
-    if (resetKey && widget.current) window.turnstile?.reset(widget.current);
-  }, [resetKey]);
-
-  if (!siteKey) return null;
-  return <div ref={box} className={styles.turnstile} />;
-}
-
 export default function RegisterForm({
   plans,
   initialPlan,
   siteKey,
+  stamp,
 }: {
   plans: PlanCard[];
   initialPlan?: PlanCard["id"];
   siteKey?: string;
+  /** When the form was drawn, signed: a bot posts in under a second. */
+  stamp: string;
 }) {
   const [state, action, pending] = useActionState<RegisterState, FormData>(
     register,
@@ -195,7 +146,27 @@ export default function RegisterForm({
         minLength={8}
       />
 
-      <Turnstile siteKey={siteKey} resetKey={state.error ? attempts : 0} />
+      {/* For bots only: a person never sees this field, so a value in it
+          means a bot filled the form. */}
+      <div className={styles.srOnly} aria-hidden='true'>
+        <label>
+          Leave this empty
+          <input
+            type='text'
+            name={TRAP_FIELD}
+            tabIndex={-1}
+            autoComplete='off'
+            defaultValue=''
+          />
+        </label>
+      </div>
+      <input type='hidden' name={STAMP_FIELD} value={stamp} />
+
+      <Turnstile
+        siteKey={siteKey}
+        resetKey={state.error ? attempts : 0}
+        className={styles.turnstile}
+      />
 
       {state.error && (
         <p className={styles.error} role='alert'>

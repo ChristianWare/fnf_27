@@ -8,6 +8,7 @@ import { getSessionUser } from "@/lib/auth/dal";
 import { homeFor } from "@/lib/auth/users";
 import { money } from "@/lib/dashboard/format";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
+import { formStamp } from "@/lib/server/spam";
 import Photo from "../../../public/images/cadi_drive.png";
 
 export const metadata: Metadata = {
@@ -79,6 +80,7 @@ export default async function RegisterPage({
         plans={plans}
         initialPlan={typeof plan === "string" ? PICK[plan] : undefined}
         siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+        stamp={formStamp()}
       />
     </AuthFrame>
   );

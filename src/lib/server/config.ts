@@ -13,6 +13,8 @@ export const STUDIO = {
   name: "Fonts & Footers",
   from: "Fonts & Footers <noreply@fontsandfooters.com>",
   replyTo: "hello@fontsandfooters.com",
+  /** Where the contact form's messages land. */
+  inbox: "hello@fontsandfooters.com",
   /** On every email, as the law asks. */
   address: "10105 E Via Linda Ste. 103, Scottsdale, AZ 85268",
 };

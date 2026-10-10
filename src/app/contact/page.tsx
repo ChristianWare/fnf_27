@@ -6,6 +6,10 @@ import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee"
 import ContactDetails from "@/components/ContactPage/ContactDetails/ContactDetails";
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import Footer from "@/components/shared/Footer/Footer";
+import { formStamp } from "@/lib/server/spam";
+
+// Drawn on each visit, so the form's stamp says when it was opened.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: { absolute: "Contact | Fonts & Footers" },
@@ -50,7 +54,10 @@ export default function ContactPage() {
   return (
     <main className={styles.container}>
       <Nav />
-      <ContactHero />
+      <ContactHero
+        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+        stamp={formStamp()}
+      />
       <FeatureMarquee />
       <ContactDetails />
       <Faq faqs={contactFaqs} heading='Before You Reach Out' />
