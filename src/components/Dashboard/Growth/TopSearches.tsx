@@ -125,7 +125,7 @@ export default function TopSearches({
                 : `Google's numbers run two or three days behind, so these go up to ${fmtDayShort(google.through)}.`}
             </p>
           )}
-          <h3 className={styles.subheading}>Searches that bring riders</h3>
+          <h3 className={`${styles.subheading} h4`}>Searches that bring riders</h3>
         </>
       ) : (
         <div className={styles.titles}>
