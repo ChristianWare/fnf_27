@@ -78,3 +78,24 @@ export async function destroyUpload(publicId: string, mime?: string | null) {
     }
   }
 }
+
+/**
+ * Deletes every file under a folder (a deleted client's uploads), up to a
+ * thousand of each kind. Best effort, like destroyUpload.
+ */
+export async function destroyFolder(folder: string) {
+  if (!uploadsReady() || !folder.endsWith("/")) return;
+  const auth = Buffer.from(
+    `${process.env.CLOUDINARY_API_KEY}:${process.env.CLOUDINARY_API_SECRET}`,
+  ).toString("base64");
+  for (const type of ["image", "raw", "video"]) {
+    try {
+      await fetch(
+        `https://api.cloudinary.com/v1_1/${cloud()}/resources/${type}/upload?prefix=${encodeURIComponent(folder)}`,
+        { method: "DELETE", headers: { Authorization: `Basic ${auth}` } },
+      );
+    } catch {
+      // A leftover file costs nothing much.
+    }
+  }
+}

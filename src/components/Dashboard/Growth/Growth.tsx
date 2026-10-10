@@ -1,59 +1,313 @@
-import styles from "./Growth.module.css";
+"use client";
+
+// The Growth page: visitors from Google for whatever dates they pick
+// (daily, weekly, monthly, year to date, all time, or their own), against
+// their 12-month plan, their Google reviews, the searches that bring them,
+// and the notes and habits from Chris. The numbers come from Google every
+// night; everything here is worked out from one row a day since launch.
+
+import { useState } from "react";
 import Habits from "./Habits";
+import RangeCalendar from "./RangeCalendar";
+import TopSearches from "./TopSearches";
+import TrafficChart from "./TrafficChart";
 import Icon from "../icons";
 import { Pill } from "../ui/ui";
-import { growthNow, weekOf } from "@/lib/dashboard";
-import { fmtMonth, fmtMonthLong } from "@/lib/dashboard/format";
-import type { Growth as GrowthData } from "@/lib/dashboard/types";
+import styles from "./Growth.module.css";
+import {
+  daysFrom,
+  fmtDayLong,
+  fmtDayShort,
+  fmtMonthName,
+  fmtSpan,
+} from "@/lib/growth/dates";
+import type { Reviews } from "@/lib/growth/load";
+import {
+  bucketsFor,
+  changeOf,
+  monthStatus,
+  previousOf,
+  RANGES,
+  rangeFor,
+  totalsFor,
+  type PlanMonth,
+  type RangeKey,
+  type TrafficSeries,
+} from "@/lib/growth/traffic";
+import type { Growth as GrowthPlan } from "@/lib/dashboard/types";
 
 const n = (value: number) => value.toLocaleString("en-US");
 
-export default function Growth({
-  growth,
-  now,
-}: {
-  growth: GrowthData;
-  now: string;
-}) {
-  const { current, pace } = growthNow(growth, now);
-  const week = weekOf(now);
-  const lastMonth = [...growth.months]
-    .reverse()
-    .find((m) => m.actual !== undefined);
-  const top =
-    Math.ceil(Math.max(...growth.months.map((m) => m.target), pace) / 1000) *
-    1000;
-  const lines = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(top * f));
-  const pct = (value: number) => `${Math.min(100, (value / top) * 100)}%`;
-  const onPace = current ? pace >= current.target : false;
+type Span = { from: string; to: string };
 
-  const tiles = [
-    {
-      label: "Visitors from search",
-      value: n(growth.monthToDate),
-      note: current ? `On pace for ${n(pace)} · plan ${n(current.target)}` : "",
-      highlight: true,
-    },
-    {
-      label: "Calls from Google",
-      value: n(growth.calls.monthToDate),
-      note: `${n(growth.calls.lastMonth)} last month`,
-    },
-    {
-      label: growth.bookings.label,
-      value: n(growth.bookings.monthToDate),
-      note: `${n(growth.bookings.lastMonth)} last month`,
-    },
-    {
-      label: "Google reviews",
-      value: n(growth.reviews.total),
-      note: `${growth.reviews.rating} average · ${growth.reviews.newThisMonth} new this month`,
-    },
-  ];
+const GRAIN_WORDS = {
+  day: "day by day",
+  week: "week by week",
+  month: "month by month",
+} as const;
+
+export default function Growth({
+  series,
+  plan,
+  growth,
+  reviews,
+  today,
+  week,
+  initial,
+}: {
+  /** Undefined until Google's first numbers are in. */
+  series?: TrafficSeries;
+  plan: PlanMonth[];
+  growth?: GrowthPlan;
+  reviews?: Reviews;
+  /** Today in Arizona. */
+  today: string;
+  /** The Monday this week started, for the habits. */
+  week: string;
+  /** The dates in the address, if any. */
+  initial?: { key: RangeKey; span?: Span };
+}) {
+  const [key, setKey] = useState<RangeKey>(initial?.key ?? "month");
+  const [custom, setCustom] = useState<Span | undefined>(initial?.span);
+  const [picking, setPicking] = useState(false);
+
+  // Keeps the view in the address, so a refresh or a shared link opens it.
+  const remember = (next: RangeKey, span?: Span) => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("view");
+    params.delete("from");
+    params.delete("to");
+    if (next === "custom" && span) {
+      params.set("from", span.from);
+      params.set("to", span.to);
+    } else if (next !== "month") params.set("view", next);
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${query ? `?${query}` : ""}`,
+    );
+  };
+
+  const choose = (next: RangeKey) => {
+    if (next === "custom") {
+      setPicking(true);
+      return;
+    }
+    setKey(next);
+    remember(next);
+  };
+
+  const status = monthStatus(series, plan, today);
 
   return (
     <>
-      <section className={styles.tiles} aria-label='This month so far'>
+      {series ? (
+        <Traffic
+          series={series}
+          plan={plan}
+          reviews={reviews}
+          range={rangeFor(key, series, plan, custom)}
+          onChoose={choose}
+          status={status}
+        />
+      ) : (
+        <section className={styles.panel}>
+          <div className={styles.waiting}>
+            <span className={styles.waitingIcon}>
+              <Icon name='chart' />
+            </span>
+            <div className={styles.titles}>
+              <h2 className={styles.heading}>
+                Your visitors from Google are on their way
+              </h2>
+              <p>
+                We&apos;re connecting your site to Google Search Console. Your
+                numbers fill in here within a day or two, all the way back to
+                launch day, and update every night after that.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {series && (
+        <RangeCalendar
+          open={picking}
+          min={series.start}
+          max={series.through}
+          value={key === "custom" ? custom : undefined}
+          onClose={() => setPicking(false)}
+          onApply={(span) => {
+            setCustom(span);
+            setKey("custom");
+            setPicking(false);
+            remember("custom", span);
+          }}
+        />
+      )}
+
+      {growth && (growth.notes.length > 0 || growth.habits.length > 0) && (
+        <div className={styles.split}>
+          <section className={styles.panel}>
+            <div className={styles.titles}>
+              <h2 className={styles.heading}>What moved</h2>
+              <p>From Chris, after this month&apos;s look at your numbers.</p>
+            </div>
+            {growth.notes.length ? (
+              <ul className={styles.notes}>
+                {growth.notes.map((note) => (
+                  <li key={note} className={styles.note}>
+                    <span className={styles.noteIcon}>
+                      <Icon name='sparkle' />
+                    </span>
+                    <p>{note}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>
+                This month&apos;s notes land here after Chris looks at your
+                numbers.
+              </p>
+            )}
+          </section>
+
+          {growth.habits.length > 0 && (
+            <Habits
+              habits={growth.habits}
+              week={week}
+              initialDone={
+                growth.habitsDone?.week === week ? growth.habitsDone.ids : []
+              }
+            />
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+function Traffic({
+  series,
+  plan,
+  reviews,
+  range,
+  onChoose,
+  status,
+}: {
+  series: TrafficSeries;
+  plan: PlanMonth[];
+  reviews?: Reviews;
+  range: ReturnType<typeof rangeFor>;
+  onChoose: (key: RangeKey) => void;
+  status: ReturnType<typeof monthStatus>;
+}) {
+  const buckets = bucketsFor(range, series, plan);
+  const totals = totalsFor(series, range.from, range.to);
+  const prev = previousOf(range, series);
+  const before = prev ? totalsFor(series, prev.from, prev.to) : undefined;
+  const days = daysFrom(range.from, range.to) + 1;
+  const span = fmtSpan(range.from, range.to);
+  const versus = prev
+    ? `the ${n(prev.days)} ${prev.days === 1 ? "day" : "days"} before`
+    : undefined;
+
+  const trend = (now: number, then?: number) => {
+    if (!versus || then === undefined)
+      return range.from === series.start
+        ? `Since launch on ${fmtDayShort(series.start)}`
+        : span;
+    const pct = changeOf(now, then);
+    if (pct === undefined)
+      return now ? `Up from 0 on ${versus}` : `Same as ${versus}`;
+    if (pct === 0) return `Same as ${versus}`;
+    return `${pct > 0 ? "Up" : "Down"} ${Math.abs(pct)}% on ${versus}`;
+  };
+
+  const place = () => {
+    if (!totals.position) return "Not shown on Google in these dates";
+    if (!versus || !before?.position) return "Lower is better: 1 is the top";
+    const moved = before.position - totals.position;
+    if (Math.abs(moved) < 0.1) return `Steady on ${versus}`;
+    return `${moved > 0 ? "Up" : "Down"} ${Math.abs(moved).toFixed(1)} on ${versus}`;
+  };
+
+  const tiles = [
+    {
+      label: "Visitors from Google",
+      value: n(totals.clicks),
+      note: trend(totals.clicks, before?.clicks),
+      highlight: true,
+    },
+    {
+      label: "Shown on Google",
+      value: n(totals.impressions),
+      note: trend(totals.impressions, before?.impressions),
+    },
+    {
+      label: "Average position",
+      value: totals.position ? `#${totals.position.toFixed(1)}` : "–",
+      note: place(),
+    },
+    reviews
+      ? {
+          label: "Google reviews",
+          value: n(reviews.total),
+          note: [
+            reviews.rating ? `${reviews.rating.toFixed(1)} stars` : "",
+            reviews.since
+              ? `${n(reviews.added ?? 0)} new since ${fmtDayShort(reviews.since)}`
+              : "",
+          ]
+            .filter(Boolean)
+            .join(" · "),
+        }
+      : {
+          label: "Visitors a day",
+          value: (totals.clicks / Math.max(1, days)).toLocaleString("en-US", {
+            maximumFractionDigits: totals.clicks / days < 10 ? 1 : 0,
+          }),
+          note: `Over ${n(days)} ${days === 1 ? "day" : "days"}`,
+        },
+  ];
+
+  const onPace =
+    status.pace !== undefined && status.target !== undefined
+      ? status.pace >= status.target
+      : undefined;
+  const monthName = fmtMonthName(`${status.month}-01`);
+
+  return (
+    <>
+      <section className={styles.rangeBar} aria-label='Dates'>
+        <div className={styles.rangeText}>
+          <span className={styles.rangeSpan}>{span}</span>
+          <span className={styles.rangeMeta}>
+            {n(days)} {days === 1 ? "day" : "days"} · numbers through{" "}
+            {fmtDayShort(series.through)}
+          </span>
+        </div>
+        <div className={styles.segments} role='radiogroup' aria-label='Dates'>
+          {RANGES.map((r) => (
+            <button
+              key={r.key}
+              type='button'
+              role='radio'
+              aria-checked={range.key === r.key}
+              className={`${styles.segment} ${range.key === r.key ? styles.segmentOn : ""}`}
+              onClick={() => onChoose(r.key)}
+            >
+              {r.key === "custom" && (
+                <Icon name='calendar' className={styles.segmentIcon} />
+              )}
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.tiles} aria-label={`Your numbers, ${span}`}>
         {tiles.map((tile) => (
           <div
             key={tile.label}
@@ -69,10 +323,14 @@ export default function Growth({
       <section className={styles.panel}>
         <div className={styles.chartHead}>
           <div className={styles.titles}>
-            <h2 className={styles.heading}>Your 12-month plan</h2>
+            <h2 className={styles.heading}>
+              Visitors from Google, {GRAIN_WORDS[range.grain]}
+            </h2>
             <p>
-              Visitors from search each month. The dotted line is the plan; the
-              goal is a site busy enough to keep growing on its own.
+              People who clicked through to your site from a Google search.
+              {range.grain === "month" && plan.length > 0
+                ? " The dotted line is your 12-month plan."
+                : " Point at a bar for its numbers."}
             </p>
           </div>
           <div className={styles.legend}>
@@ -80,192 +338,47 @@ export default function Growth({
               <i className={styles.keyBar} />
               Visitors
             </span>
-            <span className={styles.key}>
-              <i className={styles.keyNow} />
-              This month
-            </span>
-            <span className={styles.key}>
-              <i className={styles.keyPlan} />
-              Plan
-            </span>
+            {range.grain !== "day" && (
+              <span className={styles.key}>
+                <i className={styles.keyNow} />
+                So far
+              </span>
+            )}
+            {range.grain === "month" && plan.length > 0 && (
+              <span className={styles.key}>
+                <i className={styles.keyPlan} />
+                Plan
+              </span>
+            )}
           </div>
         </div>
 
-        <div className={styles.chart}>
-          <div className={styles.plotArea}>
-            <div className={styles.grid} aria-hidden='true'>
-              {lines.map((line) => (
-                <div
-                  key={line}
-                  className={styles.gridLine}
-                  style={{ bottom: pct(line) }}
-                >
-                  <span className={styles.gridLabel}>{n(line)}</span>
-                </div>
-              ))}
-            </div>
+        <TrafficChart buckets={buckets} grain={range.grain} />
 
-            {/* The plan, as one dotted line through every month. */}
-            <svg
-              className={styles.planLine}
-              viewBox='0 0 100 100'
-              preserveAspectRatio='none'
-              aria-hidden='true'
-            >
-              <polyline
-                points={growth.months
-                  .map(
-                    (m, i) =>
-                      `${((i + 0.5) / growth.months.length) * 100},${100 - (m.target / top) * 100}`,
-                  )
-                  .join(" ")}
-                vectorEffect='non-scaling-stroke'
-              />
-            </svg>
-
-            <ol className={styles.cols}>
-              {growth.months.map((month) => {
-                const isNow = month.month === current?.month;
-                const value = isNow ? growth.monthToDate : month.actual;
-                return (
-                  <li
-                    key={month.month}
-                    className={styles.col}
-                    aria-label={`${fmtMonthLong(month.month)}: plan ${n(month.target)}${value !== undefined ? `, ${n(value)} visitors${isNow ? " so far" : ""}` : ""}`}
-                  >
-                    {isNow && (
-                      <div
-                        className={styles.ghost}
-                        style={{ height: pct(pace) }}
-                        title={`On pace for ${n(pace)}`}
-                      />
-                    )}
-                    {value !== undefined && (
-                      <div
-                        className={`${styles.bar} ${isNow ? styles.barNow : ""}`}
-                        style={{ height: pct(value) }}
-                      >
-                        <span className={styles.barValue}>{n(value)}</span>
-                      </div>
-                    )}
-                    <span
-                      className={`${styles.target} ${value !== undefined && value >= month.target ? styles.targetMet : ""}`}
-                      style={{ bottom: pct(month.target) }}
-                      title={`Plan: ${n(month.target)}`}
-                    />
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-
-          <ol className={styles.months} aria-hidden='true'>
-            {growth.months.map((month) => (
-              <li
-                key={month.month}
-                className={`${styles.month} ${month.month === current?.month ? styles.monthNow : ""}`}
-              >
-                {fmtMonth(month.month)}
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        {current && (
-          <div className={styles.paceRow}>
+        <div className={styles.paceRow}>
+          {onPace !== undefined && (
             <Pill tone={onPace ? "lime" : "yellow"} dot>
               {onPace ? "Ahead of plan" : "Behind plan"}
             </Pill>
-            <p>
-              {fmtMonthLong(current.month)} is on pace for {n(pace)} visitors
-              against a plan of {n(current.target)}.
-              {lastMonth?.actual !== undefined &&
-                ` Last month: ${n(lastMonth.actual)} against ${n(lastMonth.target)}.`}
-            </p>
-          </div>
-        )}
+          )}
+          <p>
+            {status.covered > 0 && status.through
+              ? `${monthName} so far: ${n(status.soFar)} ${status.soFar === 1 ? "visitor" : "visitors"} through ${fmtDayShort(status.through)}, on pace for ${n(status.pace ?? 0)}${status.target !== undefined ? ` against a plan of ${n(status.target)}` : ""}.`
+              : `${monthName}'s first numbers come in two or three days into the month.`}
+            {status.last &&
+              ` Last month: ${n(status.last.clicks)}${status.last.target !== undefined ? ` against ${n(status.last.target)}` : ""}.`}
+          </p>
+        </div>
       </section>
 
-      <div className={styles.split}>
-        <section className={styles.panel}>
-          <div className={styles.titles}>
-            <h2 className={styles.heading}>What moved</h2>
-            <p>From Chris, after this month&apos;s look at your numbers.</p>
-          </div>
-          {growth.notes.length ? (
-            <ul className={styles.notes}>
-              {growth.notes.map((note) => (
-                <li key={note} className={styles.note}>
-                  <span className={styles.noteIcon}>
-                    <Icon name='sparkle' />
-                  </span>
-                  <p>{note}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>
-              This month&apos;s notes land here after Chris looks at your
-              numbers.
-            </p>
-          )}
-        </section>
+      <TopSearches from={range.from} to={range.to} span={span} />
 
-        {growth.habits.length > 0 && (
-          <Habits
-            habits={growth.habits}
-            week={week}
-            initialDone={
-              growth.habitsDone?.week === week ? growth.habitsDone.ids : []
-            }
-          />
-        )}
-      </div>
-
-      {growth.queries.length > 0 && (
-        <section className={styles.panel}>
-          <div className={styles.titles}>
-            <h2 className={styles.heading}>Searches that bring riders</h2>
-            <p>
-              Where you show up on Google, and the clicks each search sent this
-              month.
-            </p>
-          </div>
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th scope='col'>Search</th>
-                  <th scope='col'>Position</th>
-                  <th scope='col'>Change</th>
-                  <th scope='col'>Clicks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {growth.queries.map((q) => (
-                  <tr key={q.query}>
-                    <td className={styles.query}>{q.query}</td>
-                    <td>
-                      <span className={styles.position}>#{q.position}</span>
-                    </td>
-                    <td>
-                      {q.change > 0 ? (
-                        <span className={styles.up}>
-                          <Icon name='arrowUpRight' />
-                          {q.change}
-                        </span>
-                      ) : (
-                        <span className={styles.flat}>Same</span>
-                      )}
-                    </td>
-                    <td>{n(q.clicks)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
+      <p className={styles.source}>
+        Updated every night from Google Search Console
+        {reviews ? " and Google Maps" : ""}. Google settles each day&apos;s
+        numbers over two or three days, so the newest are from{" "}
+        {fmtDayLong(series.through)}.
+      </p>
     </>
   );
 }

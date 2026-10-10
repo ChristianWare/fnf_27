@@ -122,6 +122,24 @@ function leadsView(
 export type ClientScope =
   { id: string } | { ids: string[] } | { archived: boolean };
 
+/**
+ * The Growth plan as it's used now: targets, notes and habits. Rows saved
+ * before the numbers came from Google also held typed-in numbers; those
+ * are left out.
+ */
+function plainGrowth(growth: Growth | null | undefined): Growth | undefined {
+  if (!growth || !Array.isArray(growth.months)) return undefined;
+  return {
+    months: growth.months.map((m) => ({
+      month: m.month,
+      target: Number(m.target) || 0,
+    })),
+    notes: Array.isArray(growth.notes) ? growth.notes : [],
+    habits: Array.isArray(growth.habits) ? growth.habits : [],
+    ...(growth.habitsDone ? { habitsDone: growth.habitsDone } : {}),
+  };
+}
+
 export async function loadClients(scope: ClientScope): Promise<Client[]> {
   const now = new Date();
   const which =
@@ -406,7 +424,7 @@ export async function loadClients(scope: ClientScope): Promise<Client[]> {
           updatedAt: iso(r.updatedAt),
           reply: r.reply ?? undefined,
         })),
-      growth: growth && Array.isArray(growth.months) ? growth : undefined,
+      growth: plainGrowth(growth),
       invoices,
       card: card(c, now),
       stripeLinked: Boolean(c.stripeCustomerId),

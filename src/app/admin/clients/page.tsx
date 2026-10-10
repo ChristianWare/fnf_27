@@ -19,8 +19,13 @@ import { money } from "@/lib/dashboard/format";
 
 export const metadata: Metadata = { title: "Clients" };
 
-export default async function ClientsPage() {
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string | string[] }>;
+}) {
   const { clients, now } = await getAdmin();
+  const { filter } = await searchParams;
   const archived = await getArchived();
   const queue = adminQueue(clients, now);
   const waiting = waitingOnClients(clients);
@@ -55,7 +60,7 @@ export default async function ClientsPage() {
         title='Clients'
         text={`${clients.length} clients, ${money(stats.mrr)} a month. Clients sign themselves up; website plans wait here for your approval.`}
       />
-      <ClientsTable rows={rows} now={now} />
+      <ClientsTable rows={rows} now={now} archived={filter === "archived"} />
     </>
   );
 }

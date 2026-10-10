@@ -148,6 +148,9 @@ export default function Overview({
           business={client.business}
           endsOn={lastDayOf(firstOfMonth(now))}
           archivedAt={client.archivedAt}
+          paidInvoices={
+            client.invoices.filter((i) => i.status === "PAID").length
+          }
           now={now}
         />
       </div>

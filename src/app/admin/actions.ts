@@ -22,6 +22,8 @@ import {
 import { addActivity, setSetting } from "@/lib/data/write";
 import { loadClient } from "@/lib/data/clients";
 import { createId } from "@/lib/server/ids";
+import { destroyFolder } from "@/lib/server/cloudinary";
+import { STUDIO_ID } from "@/lib/leads/kinds";
 import { url } from "@/lib/server/config";
 import { emailClient, emailPerson } from "@/lib/server/notify";
 import { errorText } from "@/lib/billing/stripe";
@@ -436,6 +438,48 @@ export async function restoreClient(clientId: string): Promise<ActionResult> {
     .where(eq(s.clients.id, clientId));
   refresh();
   return done();
+}
+
+/**
+ * Deletes an archived client for good: their sign-ins, website, files,
+ * invoices, messages, leads and numbers. Only once they're archived (so
+ * every subscription has stopped), and only with their name typed in.
+ * Stripe keeps its own record of the customer and their payments.
+ */
+export async function deleteClient(
+  clientId: string,
+  typed: string,
+): Promise<ActionResult<{ business: string }>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const [row] = await db
+    .select({ business: s.clients.business, archivedAt: s.clients.archivedAt })
+    .from(s.clients)
+    .where(eq(s.clients.id, clientId))
+    .limit(1);
+  if (!row || clientId === STUDIO_ID)
+    return fail("We couldn't find that client.");
+  if (!row.archivedAt || row.archivedAt > new Date())
+    return fail("Archive them first. Only archived clients can be deleted.");
+  const name = row.business.trim().toLowerCase();
+  if (clean(typed, 200).toLowerCase() !== name)
+    return fail(`Type ${row.business} exactly to delete them.`);
+
+  await db.transaction(async (tx) => {
+    // Their people go too; admins never belong to a client.
+    await tx
+      .delete(s.users)
+      .where(and(eq(s.users.clientId, clientId), eq(s.users.role, "CLIENT")));
+    // Everything else of theirs goes with the client row.
+    await tx.delete(s.clients).where(eq(s.clients.id, clientId));
+    await tx
+      .delete(s.sentNotices)
+      .where(sql`position(${clientId} in ${s.sentNotices.key}) > 0`);
+  });
+  // Their uploads, after the rows are gone.
+  await destroyFolder(`fnf/clients/${clientId}/`);
+  refresh();
+  return done({ business: row.business });
 }
 
 /** A friendly reminder of what's waiting on them. */

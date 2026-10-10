@@ -1,23 +1,37 @@
 "use client";
 
-// Everything behind a client's Growth page, entered by hand: this month's
-// numbers, their 12-month plan with each month's actual visitors, this
-// month's notes and their weekly habits. It all shows on their Growth page
-// as soon as you save.
+// Behind a client's Growth page. The numbers come from Google every night:
+// visitors from their site's Search Console property, and their rating
+// and reviews from their Google listing. Here you see how that's going,
+// connect the two, and set what's yours to set: their 12-month plan, this
+// month's notes and their weekly habits.
 
 import { useState } from "react";
 import Icon from "@/components/Dashboard/icons";
 import { useAction } from "@/components/Dashboard/useAction";
-import { ui } from "@/components/Dashboard/ui/ui";
+import { Pill, ui } from "@/components/Dashboard/ui/ui";
 import {
+  findGoogleListings,
   publishGrowthNotes,
+  pullGrowth,
   saveGrowthHabits,
-  saveGrowthNumbers,
   saveGrowthPlan,
+  searchConsoleSites,
+  setGoogleListing,
+  setSearchConsoleSite,
 } from "@/app/admin/build-actions";
 import { firstOfMonth } from "@/lib/dashboard/billing";
-import { fmtMonth, fmtMonthLong } from "@/lib/dashboard/format";
+import {
+  dayKey,
+  fmtMonth,
+  fmtMonthLong,
+  fmtShort,
+  fmtTime,
+} from "@/lib/dashboard/format";
 import type { Growth } from "@/lib/dashboard/types";
+import { fmtDayLong, fmtDayShort } from "@/lib/growth/dates";
+import type { GrowthAdmin } from "@/lib/growth/load";
+import type { Listing } from "@/lib/leads/apis/google";
 import styles from "./Client.module.css";
 
 const STANDARD = [
@@ -25,6 +39,7 @@ const STANDARD = [
 ];
 
 const num = (value: string) => Number(value.replace(/[^\d.]/g, "")) || 0;
+const n = (value: number) => value.toLocaleString("en-US");
 
 export default function GrowthSetup({
   clientId,
@@ -32,6 +47,10 @@ export default function GrowthSetup({
   live,
   launchedAt,
   firstName,
+  business,
+  city,
+  domain,
+  admin,
   now,
 }: {
   clientId: string;
@@ -39,33 +58,23 @@ export default function GrowthSetup({
   live: boolean;
   launchedAt?: string;
   firstName: string;
+  business: string;
+  city: string;
+  domain?: string;
+  admin: GrowthAdmin;
   now: string;
 }) {
   const { run, pending } = useAction();
 
+  // A plan that's never been saved: 12 months from launch, standard targets.
+  const planned = growth?.months.length ? growth.months : undefined;
   const months =
-    growth?.months.map((m) => m.month) ??
+    planned?.map((m) => m.month) ??
     Array.from({ length: 12 }, (_, i) => firstOfMonth(launchedAt ?? now, i));
   const thisMonth = firstOfMonth(now);
 
-  const [numbers, setNumbers] = useState({
-    monthToDate: String(growth?.monthToDate ?? 0),
-    callsNow: String(growth?.calls.monthToDate ?? 0),
-    callsLast: String(growth?.calls.lastMonth ?? 0),
-    bookingsLabel: growth?.bookings.label ?? "Bookings",
-    bookingsNow: String(growth?.bookings.monthToDate ?? 0),
-    bookingsLast: String(growth?.bookings.lastMonth ?? 0),
-    reviews: String(growth?.reviews.total ?? 0),
-    reviewsNew: String(growth?.reviews.newThisMonth ?? 0),
-    rating: String(growth?.reviews.rating ?? 0),
-  });
   const [targets, setTargets] = useState<number[]>(
-    growth?.months.map((m) => m.target) ?? STANDARD,
-  );
-  const [actuals, setActuals] = useState<string[]>(
-    growth?.months.map((m) =>
-      m.actual === undefined ? "" : String(m.actual),
-    ) ?? Array(12).fill(""),
+    planned?.map((m) => m.target) ?? STANDARD,
   );
   const [notes, setNotes] = useState<string[]>(
     growth?.notes.length ? growth.notes : [""],
@@ -77,22 +86,6 @@ export default function GrowthSetup({
     ],
   );
 
-  const field = (
-    key: keyof typeof numbers,
-    label: string,
-    mode: "numeric" | "decimal" | "text" = "numeric",
-  ) => (
-    <label className={styles.source}>
-      <span className={ui.label}>{label}</span>
-      <input
-        className={ui.input}
-        inputMode={mode === "text" ? undefined : mode}
-        value={numbers[key]}
-        onChange={(e) => setNumbers((n) => ({ ...n, [key]: e.target.value }))}
-      />
-    </label>
-  );
-
   return (
     <div className={styles.split}>
       <div className={styles.column}>
@@ -100,67 +93,21 @@ export default function GrowthSetup({
           <div className={ui.notice}>
             <Icon name='info' className={ui.noticeIcon} />
             <p>
-              {firstName}&apos;s Growth page opens on launch day. Set it up now
-              so it&apos;s ready the moment the site goes live.
+              {firstName}&apos;s Growth page opens on launch day, and the
+              numbers start then: nothing from before the site was theirs.
+              Connect it now so it&apos;s ready the moment the site goes live.
             </p>
           </div>
         )}
 
-        <section className={styles.card}>
-          <div className={styles.titles}>
-            <h2 className={styles.heading}>This month&apos;s numbers</h2>
-            <p>
-              From Plausible, Search Console and their Google profile. Update
-              them whenever you look; {firstName} sees them straight away.
-            </p>
-          </div>
-          <div className={styles.sources}>
-            {field("monthToDate", "Visitors from search, so far")}
-            {field("bookingsLabel", "What counts as a booking", "text")}
-            {field("callsNow", "Calls from Google, this month")}
-            {field("callsLast", "Calls, last month")}
-            {field("bookingsNow", "Bookings, this month")}
-            {field("bookingsLast", "Bookings, last month")}
-            {field("reviews", "Google reviews in total")}
-            {field("reviewsNew", "New reviews this month")}
-            {field("rating", "Average rating", "decimal")}
-          </div>
-          <div className={styles.actions}>
-            <button
-              type='button'
-              className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-              disabled={pending}
-              onClick={() =>
-                run(
-                  () =>
-                    saveGrowthNumbers(clientId, {
-                      monthToDate: num(numbers.monthToDate),
-                      calls: {
-                        monthToDate: num(numbers.callsNow),
-                        lastMonth: num(numbers.callsLast),
-                      },
-                      bookings: {
-                        label: numbers.bookingsLabel,
-                        monthToDate: num(numbers.bookingsNow),
-                        lastMonth: num(numbers.bookingsLast),
-                      },
-                      reviews: {
-                        total: num(numbers.reviews),
-                        newThisMonth: num(numbers.reviewsNew),
-                        rating: num(numbers.rating),
-                      },
-                    }),
-                  () => ({
-                    message: "Numbers saved",
-                    detail: `They're on ${firstName}'s Growth page now.`,
-                  }),
-                )
-              }
-            >
-              Save numbers
-            </button>
-          </div>
-        </section>
+        <SearchConsole
+          clientId={clientId}
+          admin={admin}
+          live={live}
+          domain={domain}
+          pending={pending}
+          run={run}
+        />
 
         <section className={styles.card}>
           <div className={styles.cardHead}>
@@ -169,8 +116,8 @@ export default function GrowthSetup({
                 {firstName}&apos;s 12-month plan
               </h2>
               <p>
-                Visitors from search each month: the target (the dotted line on
-                their chart) and, once a month is over, what they got.
+                Visitors from Google each month: the target is the dotted line
+                on their chart. What they got fills in from Google by itself.
               </p>
             </div>
             <button
@@ -183,11 +130,13 @@ export default function GrowthSetup({
           </div>
           <div className={styles.targets}>
             {targets.map((target, i) => {
-              const over = months[i] && months[i] < thisMonth;
+              const month = months[i];
+              const key = month ? dayKey(month).slice(0, 7) : undefined;
+              const actual = key ? admin.monthly[key] : undefined;
               return (
                 <div key={i} className={styles.target}>
                   <span className={ui.monoMuted}>
-                    {months[i] ? fmtMonth(months[i]) : `Month ${i + 1}`}
+                    {month ? fmtMonth(month) : `Month ${i + 1}`}
                   </span>
                   <input
                     className={ui.input}
@@ -197,23 +146,15 @@ export default function GrowthSetup({
                       const value = num(e.target.value);
                       setTargets((t) => t.map((x, j) => (j === i ? value : x)));
                     }}
-                    aria-label={`Target for month ${i + 1}`}
+                    aria-label={`Target for ${month ? fmtMonthLong(month) : `month ${i + 1}`}`}
                   />
-                  {over && (
-                    <input
-                      className={`${ui.input} ${styles.actual}`}
-                      inputMode='numeric'
-                      value={actuals[i] ?? ""}
-                      placeholder='Actual'
-                      onChange={(e) =>
-                        setActuals((a) =>
-                          a.map((x, j) =>
-                            j === i ? e.target.value.replace(/\D/g, "") : x,
-                          ),
-                        )
-                      }
-                      aria-label={`Actual visitors for month ${i + 1}`}
-                    />
+                  {month && month <= thisMonth && actual !== undefined && (
+                    <span
+                      className={`${styles.actualText} ${actual >= target ? styles.actualMet : ""}`}
+                    >
+                      {n(actual)}
+                      {month === thisMonth ? " so far" : ""}
+                    </span>
                   )}
                 </div>
               );
@@ -230,14 +171,7 @@ export default function GrowthSetup({
               disabled={pending}
               onClick={() =>
                 run(
-                  () =>
-                    saveGrowthPlan(
-                      clientId,
-                      targets.map((target, i) => ({
-                        target,
-                        actual: actuals[i] === "" ? null : Number(actuals[i]),
-                      })),
-                    ),
+                  () => saveGrowthPlan(clientId, targets),
                   () => ({
                     message: "Plan saved",
                     detail: `${firstName}'s chart is up to date.`,
@@ -252,6 +186,14 @@ export default function GrowthSetup({
       </div>
 
       <div className={styles.column}>
+        <Reviews
+          clientId={clientId}
+          admin={admin}
+          search={[business, city].filter(Boolean).join(" ")}
+          pending={pending}
+          run={run}
+        />
+
         <section className={styles.card}>
           <div className={styles.titles}>
             <h2 className={styles.heading}>
@@ -269,8 +211,8 @@ export default function GrowthSetup({
                   className={`${ui.textarea} ${styles.shortArea}`}
                   value={note}
                   onChange={(e) =>
-                    setNotes((n) =>
-                      n.map((x, j) => (j === i ? e.target.value : x)),
+                    setNotes((list) =>
+                      list.map((x, j) => (j === i ? e.target.value : x)),
                     )
                   }
                   placeholder='e.g. Your Sky Harbor page moved from #7 to #3.'
@@ -279,7 +221,9 @@ export default function GrowthSetup({
                 <button
                   type='button'
                   className={styles.remove}
-                  onClick={() => setNotes((n) => n.filter((_, j) => j !== i))}
+                  onClick={() =>
+                    setNotes((list) => list.filter((_, j) => j !== i))
+                  }
                   aria-label={`Remove note ${i + 1}`}
                 >
                   <Icon name='trash' />
@@ -291,7 +235,7 @@ export default function GrowthSetup({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
-              onClick={() => setNotes((n) => [...n, ""])}
+              onClick={() => setNotes((list) => [...list, ""])}
             >
               Add a line
               <Icon name='plus' className={ui.btnIcon} />
@@ -299,7 +243,7 @@ export default function GrowthSetup({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-              disabled={!notes.some((n) => n.trim()) || pending}
+              disabled={!notes.some((x) => x.trim()) || pending}
               onClick={() =>
                 run(
                   () => publishGrowthNotes(clientId, notes),
@@ -331,8 +275,8 @@ export default function GrowthSetup({
                   className={ui.input}
                   value={habit}
                   onChange={(e) =>
-                    setHabits((h) =>
-                      h.map((x, j) => (j === i ? e.target.value : x)),
+                    setHabits((list) =>
+                      list.map((x, j) => (j === i ? e.target.value : x)),
                     )
                   }
                   aria-label={`Habit ${i + 1}`}
@@ -340,7 +284,9 @@ export default function GrowthSetup({
                 <button
                   type='button'
                   className={styles.remove}
-                  onClick={() => setHabits((h) => h.filter((_, j) => j !== i))}
+                  onClick={() =>
+                    setHabits((list) => list.filter((_, j) => j !== i))
+                  }
                   aria-label={`Remove habit ${i + 1}`}
                 >
                   <Icon name='trash' />
@@ -352,7 +298,7 @@ export default function GrowthSetup({
             <button
               type='button'
               className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
-              onClick={() => setHabits((h) => [...h, ""])}
+              onClick={() => setHabits((list) => [...list, ""])}
             >
               Add a habit
               <Icon name='plus' className={ui.btnIcon} />
@@ -374,5 +320,416 @@ export default function GrowthSetup({
         </section>
       </div>
     </div>
+  );
+}
+
+type Run = ReturnType<typeof useAction>["run"];
+
+/** Their visitors: Search Console, and how the pulls are going. */
+function SearchConsole({
+  clientId,
+  admin,
+  live,
+  domain,
+  pending,
+  run,
+}: {
+  clientId: string;
+  admin: GrowthAdmin;
+  live: boolean;
+  domain?: string;
+  pending: boolean;
+  run: Run;
+}) {
+  const [sites, setSites] = useState<string[]>();
+  const [choice, setChoice] = useState(admin.property ?? "");
+  const [copied, setCopied] = useState(false);
+  const traffic = admin.sync.traffic;
+  const connected = admin.stored > 0 && !traffic?.error;
+
+  const copy = async () => {
+    if (!admin.email) return;
+    try {
+      await navigator.clipboard.writeText(admin.email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // The address is on screen to copy by hand.
+    }
+  };
+
+  return (
+    <section className={styles.card}>
+      <div className={`${styles.cardHead} ${styles.growthHead}`}>
+        <div className={styles.titles}>
+          <h2 className={styles.heading}>Visitors from Google</h2>
+          <p>
+            From their site&apos;s property in Google Search Console, every
+            night, back to launch day.
+          </p>
+        </div>
+        <Pill
+          tone={admin.keyProblem ? "red" : connected ? "lime" : "yellow"}
+          dot
+        >
+          {admin.keyProblem
+            ? "Key missing"
+            : connected
+              ? "Connected"
+              : "Not connected yet"}
+        </Pill>
+      </div>
+
+      {admin.keyProblem ? (
+        <div className={`${ui.notice} ${ui.noticeBad}`}>
+          <Icon name='info' className={ui.noticeIcon} />
+          <p>
+            {admin.keyProblem} The steps are in GROWTH.md: a service account in
+            Google Cloud, its JSON key in Vercel.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className={styles.copyBox}>
+            <span className={ui.label}>Add this address to their property</span>
+            <div className={styles.copyRow}>
+              <code className={styles.copyText}>{admin.email}</code>
+              <button
+                type='button'
+                className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+                onClick={copy}
+              >
+                {copied ? "Copied" : "Copy"}
+                <Icon name={copied ? "check" : "copy"} className={ui.btnIcon} />
+              </button>
+            </div>
+            <p className={styles.help}>
+              In Search Console, open {domain ? `${domain}'s` : "their"}{" "}
+              property → Settings → Users and permissions → Add user, paste it,
+              and choose Restricted. Then pull.
+            </p>
+          </div>
+
+          <dl className={styles.miniFacts}>
+            <div className={styles.factWide}>
+              <dt>Property</dt>
+              <dd className={styles.propertyValue}>
+                {admin.property ?? "Found from their domain on the first pull"}
+              </dd>
+            </div>
+            <div>
+              <dt>Numbers</dt>
+              <dd>
+                {admin.first && admin.through
+                  ? `${fmtDayShort(admin.first)} – ${fmtDayShort(admin.through)}`
+                  : "None yet"}
+              </dd>
+            </div>
+            <div>
+              <dt>Last pull</dt>
+              <dd>
+                {traffic?.at
+                  ? `${fmtShort(traffic.at)}, ${fmtTime(traffic.at)}`
+                  : "Not yet"}
+              </dd>
+            </div>
+          </dl>
+
+          {traffic?.error && (
+            <div className={`${ui.notice} ${ui.noticeBad}`}>
+              <Icon name='info' className={ui.noticeIcon} />
+              <p>{traffic.error}</p>
+            </div>
+          )}
+
+          {sites && (
+            <div className={styles.pickRow}>
+              <label className={ui.field}>
+                <span className={ui.label}>Their property</span>
+                <select
+                  className={ui.select}
+                  value={choice}
+                  onChange={(e) => setChoice(e.target.value)}
+                >
+                  <option value=''>Find it from their domain</option>
+                  {sites.map((site) => (
+                    <option key={site} value={site}>
+                      {site}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type='button'
+                className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+                disabled={pending || choice === (admin.property ?? "")}
+                onClick={() =>
+                  run(
+                    () => setSearchConsoleSite(clientId, choice || null),
+                    () => {
+                      setSites(undefined);
+                      return {
+                        message: "Property saved",
+                        detail: "Pull now to read its numbers.",
+                      };
+                    },
+                  )
+                }
+              >
+                Use this one
+              </button>
+            </div>
+          )}
+
+          <div className={styles.actions}>
+            {!sites && (
+              <button
+                type='button'
+                className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+                disabled={pending}
+                onClick={() =>
+                  run(
+                    () => searchConsoleSites(clientId),
+                    (data) => {
+                      if (!data) return;
+                      setSites(data.sites);
+                      setChoice(admin.property ?? data.suggested ?? "");
+                      return data.sites.length
+                        ? undefined
+                        : {
+                            message: "No properties yet",
+                            tone: "info",
+                            detail:
+                              "Search Console hasn't shared any with us. Add the address above to theirs first.",
+                          };
+                    },
+                  )
+                }
+              >
+                Change property
+              </button>
+            )}
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+              disabled={pending || !live}
+              onClick={() =>
+                run(
+                  () => pullGrowth(clientId),
+                  (data) => ({
+                    message: "Pulled from Google",
+                    detail: data?.through
+                      ? `Numbers through ${fmtDayLong(data.through)}. They're on their Growth page now.`
+                      : "Google has no final numbers for their site yet. They come in two or three days after launch.",
+                  }),
+                )
+              }
+            >
+              {pending ? "Pulling…" : "Pull now"}
+              <Icon name='refresh' className={ui.btnIcon} />
+            </button>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+/** Their rating and reviews: which Google listing is theirs. */
+function Reviews({
+  clientId,
+  admin,
+  search,
+  pending,
+  run,
+}: {
+  clientId: string;
+  admin: GrowthAdmin;
+  search: string;
+  pending: boolean;
+  run: Run;
+}) {
+  const [text, setText] = useState(search);
+  const [found, setFound] = useState<Listing[]>();
+  const [changing, setChanging] = useState(!admin.placeId);
+  const listing = admin.reviews;
+  const error = admin.sync.reviews?.error;
+
+  const find = () =>
+    run(
+      () => findGoogleListings(clientId, text),
+      (list) => {
+        setFound(list ?? []);
+        return list?.length
+          ? undefined
+          : {
+              message: "Nothing found",
+              tone: "info",
+              detail:
+                "Try their name as it shows on Google Maps, and the city.",
+            };
+      },
+    );
+
+  return (
+    <section className={styles.card}>
+      <div className={`${styles.cardHead} ${styles.growthHead}`}>
+        <div className={styles.titles}>
+          <h2 className={styles.heading}>Google reviews</h2>
+          <p>
+            Their rating and how many reviews they have, from their Google
+            listing every night. A small tile on their Growth page.
+          </p>
+        </div>
+        <Pill tone={admin.placeId ? (error ? "yellow" : "lime") : "gray"} dot>
+          {admin.placeId ? (error ? "Needs a look" : "Connected") : "Not set"}
+        </Pill>
+      </div>
+
+      {admin.placeId && !changing && (
+        <>
+          {listing ? (
+            <div className={styles.listing}>
+              <span className={styles.listingName}>{listing.name}</span>
+              {listing.address && (
+                <span className={styles.help}>{listing.address}</span>
+              )}
+              <span className={styles.listingStats}>
+                {listing.rating ? `${listing.rating.toFixed(1)} stars · ` : ""}
+                {n(listing.total)} reviews
+                {listing.since
+                  ? ` · ${n(listing.added ?? 0)} new since ${fmtDayShort(listing.since)}`
+                  : ""}
+              </span>
+            </div>
+          ) : (
+            <p className={styles.help}>
+              Their numbers come in with tonight&apos;s pull.
+            </p>
+          )}
+          {error && (
+            <div className={`${ui.notice} ${ui.noticeBad}`}>
+              <Icon name='info' className={ui.noticeIcon} />
+              <p>{error}</p>
+            </div>
+          )}
+          <div className={styles.actions}>
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+              disabled={pending}
+              onClick={() =>
+                run(
+                  () => setGoogleListing(clientId, null),
+                  () => {
+                    setChanging(true);
+                    return {
+                      message: "Listing removed",
+                      tone: "info",
+                      detail: "The reviews tile is off their Growth page.",
+                    };
+                  },
+                )
+              }
+            >
+              Remove
+            </button>
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+              onClick={() => setChanging(true)}
+            >
+              Change listing
+            </button>
+          </div>
+        </>
+      )}
+
+      {(changing || !admin.placeId) && (
+        <>
+          <form
+            className={styles.pickRow}
+            onSubmit={(e) => {
+              e.preventDefault();
+              find();
+            }}
+          >
+            <label className={ui.field}>
+              <span className={ui.label}>Their name and city</span>
+              <input
+                className={ui.input}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder='e.g. Nier Transportation Phoenix'
+              />
+            </label>
+            <button
+              type='submit'
+              className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+              disabled={pending || !text.trim()}
+            >
+              Find
+              <Icon name='search' className={ui.btnIcon} />
+            </button>
+          </form>
+
+          {found && found.length > 0 && (
+            <ul className={styles.listingList}>
+              {found.map((place) => (
+                <li key={place.id} className={styles.listingItem}>
+                  <span className={styles.listingText}>
+                    <span className={styles.listingName}>{place.name}</span>
+                    {place.address && (
+                      <span className={styles.help}>{place.address}</span>
+                    )}
+                    <span className={styles.listingStats}>
+                      {place.rating
+                        ? `${place.rating.toFixed(1)} stars · `
+                        : ""}
+                      {n(place.reviews)} reviews
+                    </span>
+                  </span>
+                  <button
+                    type='button'
+                    className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+                    disabled={pending}
+                    onClick={() =>
+                      run(
+                        () => setGoogleListing(clientId, place.id),
+                        () => {
+                          setChanging(false);
+                          setFound(undefined);
+                          return {
+                            message: "Listing connected",
+                            detail: `${place.name}: ${n(place.reviews)} reviews. The tile is on their Growth page now.`,
+                          };
+                        },
+                      )
+                    }
+                  >
+                    Use this one
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {admin.placeId && (
+            <div className={styles.actions}>
+              <button
+                type='button'
+                className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+                onClick={() => {
+                  setChanging(false);
+                  setFound(undefined);
+                }}
+              >
+                Keep the one they have
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }

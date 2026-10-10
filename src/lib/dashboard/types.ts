@@ -148,27 +148,32 @@ export type ChangeRequest = {
 export type GrowthMonth = {
   /** The first day of the month. */
   month: string;
+  /** Visitors from Google search the plan aims for that month. */
   target: number;
-  actual?: number;
 };
 
+/**
+ * The Growth page's plan, notes and habits, as set in the admin. The
+ * numbers themselves come from Google every night (src/lib/growth).
+ */
 export type Growth = {
   months: GrowthMonth[];
-  /** Visitors from search so far this month. */
-  monthToDate: number;
-  calls: { monthToDate: number; lastMonth: number };
-  bookings: { label: string; monthToDate: number; lastMonth: number };
-  reviews: { total: number; newThisMonth: number; rating: number };
-  queries: {
-    query: string;
-    position: number;
-    change: number;
-    clicks: number;
-  }[];
   notes: string[];
   habits: { id: string; text: string; detail: string }[];
   /** The habits ticked off, for the week that starts on `week`. */
   habitsDone?: { week: string; ids: string[] };
+};
+
+/** How the nightly Growth pulls last went, for the admin. */
+export type GrowthSync = {
+  traffic?: {
+    /** When it last ran. */
+    at: string;
+    /** The last day with Google's final numbers. */
+    through?: string;
+    error?: string;
+  };
+  reviews?: { at: string; error?: string };
 };
 
 export type Invoice = {

@@ -185,12 +185,95 @@
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
   list-style: none;
 }
 
+/* One bar's column: point at it (or tap it) for its numbers. */
 .col {
   position: relative;
+  outline: none;
+  cursor: default;
+}
+
+.col::before {
+  content: "";
+  position: absolute;
+  inset: 0 6%;
+  border-radius: 0.8rem;
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.col:hover::before,
+.col:focus::before {
+  background-color: var(--light);
+}
+
+.col:focus-visible::before {
+  box-shadow: inset 0 0 0 2px var(--black);
+}
+
+.chartDense .col::before {
+  inset: 0;
+  border-radius: 0.4rem;
+}
+
+/* The numbers for one bar, over the top of the chart. */
+.tip {
+  position: absolute;
+  top: 0.4rem;
+  left: 50%;
+  z-index: 5;
+  display: none;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: max-content;
+  max-width: 24rem;
+  padding: 1.2rem 1.4rem;
+  border-radius: 1.2rem;
+  background-color: var(--black);
+  box-shadow: 0 8px 24px rgb(13 13 14 / 20%);
+  color: var(--white);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.tipStart {
+  left: 0;
+  transform: none;
+}
+
+.tipEnd {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.col:hover .tip,
+.col:focus .tip {
+  display: flex;
+}
+
+.tipTitle {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--accent3);
+}
+
+.tipValue {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.tipLine {
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  line-height: 1.3;
+  color: rgb(255 255 255 / 75%);
 }
 
 .bar,
@@ -204,8 +287,15 @@
 
 .bar {
   z-index: 1;
-  min-height: 0.4rem;
+  min-height: 0.3rem;
   background-color: var(--black);
+}
+
+.chartDense .bar,
+.chartDense .ghost {
+  left: 16%;
+  right: 16%;
+  border-radius: 0.4rem 0.4rem 0.2rem 0.2rem;
 }
 
 .barNow {
@@ -253,21 +343,46 @@
 
 .months {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
   list-style: none;
 }
 
 .month {
+  overflow: visible;
   font-family: var(--IBMPlex);
   font-size: 14px;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--textDark);
 }
 
-.monthNow {
-  color: var(--black);
+/* Labels only every so often, so they never run together. */
+.month {
+  visibility: hidden;
+}
+
+.onWide {
+  visibility: visible;
+}
+
+/* Where labels are wider than their bars, the ends stay inside. */
+.chartDense .monthFirst {
+  text-align: left;
+}
+
+.chartDense .monthLast {
+  text-align: right;
+}
+
+@media screen and (max-width: 1100px) {
+  .onWide {
+    visibility: hidden;
+  }
+
+  .onPhone {
+    visibility: visible;
+  }
 }
 
 .paceRow {
@@ -466,8 +581,35 @@
   text-align: right;
 }
 
-.query {
-  min-width: 22rem;
+.table {
+  table-layout: fixed;
+}
+
+.colPos,
+.colChange {
+  width: 12rem;
+}
+
+.colVisits {
+  width: 10rem;
+}
+
+/* Long searches wrap, two lines at most. */
+.queryText {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.queryPos {
+  display: none;
+  margin-top: 0.4rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  color: var(--text);
 }
 
 .position {
@@ -501,6 +643,326 @@
   color: var(--text);
 }
 
+/* ── Which dates ── */
+.rangeBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+  padding: 1.6rem 1.6rem 1.6rem 2.8rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.rangeText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.rangeSpan {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--black);
+}
+
+.rangeMeta {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  border-radius: 50px;
+  background-color: var(--light);
+}
+
+.segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  height: 4.2rem;
+  padding: 0 1.6rem;
+  border-radius: 50px;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 16px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .segment:hover {
+    color: var(--black);
+  }
+}
+
+.segment:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 1px;
+}
+
+.segmentOn,
+.segmentOn:hover {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.segmentIcon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* ── Before Google's first numbers ── */
+.waiting {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.6rem;
+}
+
+.waitingIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 1.4rem;
+  background-color: var(--accent3Light);
+  color: var(--black);
+}
+
+.waitingIcon svg {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+/* ── Searches: the rest ── */
+.down {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem 0.5rem 0.6rem;
+  border-radius: 50px;
+  background-color: var(--light);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--black);
+}
+
+.down svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  transform: rotate(135deg);
+}
+
+.fresh {
+  display: inline-flex;
+  padding: 0.5rem 0.9rem;
+  border-radius: 50px;
+  background-color: var(--accent2Light);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.stale {
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+
+.searchNote {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.source {
+  padding: 0.8rem 1.2rem 0;
+  font-size: 16px;
+  color: var(--text);
+}
+
+/* ── The calendar ── */
+.cal {
+  min-width: 0;
+}
+
+/* The arrows sit either side of the month names. */
+.calNav {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: -6.8rem;
+  pointer-events: none;
+}
+
+.calNav > * {
+  pointer-events: auto;
+}
+
+.calStep {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 50%;
+  background-color: var(--light);
+  color: var(--black);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.calStep svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.calBack {
+  transform: rotate(180deg);
+}
+
+.calStep:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .calStep:not(:disabled):hover {
+    background-color: var(--light2);
+  }
+}
+
+.calStep:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.calMonths {
+  display: grid;
+  grid-template-columns: repeat(2, 30.8rem);
+  gap: 3.2rem;
+}
+
+.calMonth {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  min-width: 0;
+}
+
+.calMonthName {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 4.4rem;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.calGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.calRow {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calWeekday {
+  padding-bottom: 0.6rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-align: center;
+  color: var(--text);
+}
+
+.calCell,
+.calEmpty {
+  display: flex;
+  min-width: 0;
+}
+
+.calDay {
+  width: 100%;
+  height: 4.4rem;
+  border-radius: 1.2rem;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--black);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.calDay:disabled {
+  color: #b5bac1;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .calDay:not(:disabled):not(.calStart):not(.calEnd):not(.calInside):hover {
+    background-color: var(--light);
+  }
+}
+
+.calDay:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: -2px;
+}
+
+.calInside {
+  border-radius: 0;
+  background-color: var(--accent3Light);
+}
+
+.calStart,
+.calEnd {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.calStart.calEdge {
+  border-radius: 1.2rem 0 0 1.2rem;
+}
+
+.calEnd.calEdge {
+  border-radius: 0 1.2rem 1.2rem 0;
+}
+
+.calStart.calEnd {
+  border-radius: 1.2rem;
+}
+
+.calSummary {
+  font-size: 16px;
+  color: var(--black);
+}
+
 @media screen and (max-width: 1268px) {
   .tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -515,6 +977,32 @@
   .panel,
   .tile {
     padding: 2.4rem;
+  }
+
+  .rangeBar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 2rem;
+  }
+
+  .segments {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-radius: 2rem;
+  }
+
+  .segment {
+    padding: 0 0.6rem;
+    border-radius: 1.6rem;
+  }
+
+  .calMonths {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* One month at a time on a phone. */
+  .calMonthFirst {
+    display: none;
   }
 
   .tileValue {
@@ -554,8 +1042,21 @@
     letter-spacing: -1.2px;
   }
 
-  .query {
-    min-width: 0;
+  .cellPos,
+  .colPos {
+    display: none;
+  }
+
+  .colChange {
+    width: 8.4rem;
+  }
+
+  .colVisits {
+    width: 7.6rem;
+  }
+
+  .queryPos {
+    display: block;
   }
 
   .table th,
@@ -579,8 +1080,15 @@
     border-radius: 0.4rem 0.4rem 0.2rem 0.2rem;
   }
 
-  /* Every other month label, so they don't collide. */
-  .month:nth-child(even) {
-    visibility: hidden;
+  .labelYear {
+    display: none;
+  }
+
+  .monthFirst {
+    text-align: left;
+  }
+
+  .monthLast {
+    text-align: right;
   }
 }

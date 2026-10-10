@@ -5,7 +5,7 @@
 // To change it: edit this file, run `npm run db:generate` to write the SQL
 // migration into /drizzle, then `npm run db:migrate`.
 
-import type { Growth } from "@/lib/dashboard/types";
+import type { Growth, GrowthSync } from "@/lib/dashboard/types";
 import type { Contact, Operator, Script } from "@/lib/leads/types";
 import {
   ACCOUNT_CATEGORIES,
@@ -18,6 +18,7 @@ import {
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  date,
   doublePrecision,
   index,
   integer,
@@ -192,11 +193,79 @@ export const websites = pgTable("websites", {
     }>()
     .notNull()
     .default({ options: [] }),
-  /** The Growth page, as entered in the admin. */
+  /** The Growth page's plan, notes and habits, as set in the admin. */
   growth: jsonb("growth").$type<Growth>(),
+  /**
+   * Their site's property in Google Search Console, where their visitors
+   * from Google come from: "sc-domain:example.com" or "https://example.com/".
+   * Found from the domain the first time, or picked in the admin.
+   */
+  searchConsoleSite: text("search_console_site"),
+  /** Their own Google listing, for the reviews tile. An ID keeps for good. */
+  googlePlaceId: text("google_place_id"),
+  /** How the last nightly pulls went. */
+  growthSync: jsonb("growth_sync").$type<GrowthSync>().notNull().default({}),
   createdAt: created(),
   updatedAt: updated(),
 });
+
+/* ── Growth ──
+ *
+ * Visitors from Google search, a row a day since launch, from each site's
+ * Search Console property (their own numbers, kept for good), and the
+ * searches behind them. Their Google rating and review count come from
+ * Google Maps, so like everything else from Maps they're kept 30 days. */
+
+export const trafficDays = pgTable(
+  "traffic_days",
+  {
+    clientId: text("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    /** Search Console's day (Pacific time). */
+    day: date("day", { mode: "string" }).notNull(),
+    /** Visitors from Google search: clicks through to the site. */
+    clicks: integer("clicks").notNull().default(0),
+    /** Times the site showed up in Google's results. */
+    impressions: integer("impressions").notNull().default(0),
+    /** Average position in the results that day; 0 when it never showed. */
+    position: doublePrecision("position").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.clientId, t.day] })],
+);
+
+/** The searches they showed up for: up to 100 a day, most clicks first. */
+export const trafficQueries = pgTable(
+  "traffic_queries",
+  {
+    clientId: text("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    day: date("day", { mode: "string" }).notNull(),
+    query: text("query").notNull(),
+    clicks: integer("clicks").notNull().default(0),
+    impressions: integer("impressions").notNull().default(0),
+    position: doublePrecision("position").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.clientId, t.day, t.query] })],
+);
+
+/** Their Google listing, once a day: rating and review count. 30 days. */
+export const reviewDays = pgTable(
+  "review_days",
+  {
+    clientId: text("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    /** Arizona date. */
+    day: date("day", { mode: "string" }).notNull(),
+    rating: doublePrecision("rating"),
+    reviews: integer("reviews").notNull().default(0),
+    name: text("name").notNull().default(""),
+    address: text("address"),
+  },
+  (t) => [primaryKey({ columns: [t.clientId, t.day] })],
+);
 
 export const documents = pgTable(
   "documents",

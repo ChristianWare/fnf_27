@@ -14,6 +14,8 @@ interface Props {
    * card around it, for photos. The close button moves to the corner.
    */
   variant?: "light" | "dark";
+  /** "fit": as wide as what's in it (a calendar, say), not 900px. */
+  size?: "default" | "fit";
   /** What a screen reader calls the dialog. */
   label?: string;
 }
@@ -23,6 +25,7 @@ export default function Modal({
   onClose,
   children,
   variant = "light",
+  size = "default",
   label,
 }: Props) {
   const scrollRef = useRef(0);
@@ -77,6 +80,7 @@ export default function Modal({
 
   const stop = (e: MouseEvent) => e.stopPropagation();
   const dark = variant === "dark" ? styles.dark : "";
+  const fit = size === "fit" ? styles.fit : "";
 
   return (
     <div
@@ -86,7 +90,7 @@ export default function Modal({
     >
       <div
         id={dialogId}
-        className={`${styles.dialog} ${dark} ${isOpen ? styles.open : styles.closed}`}
+        className={`${styles.dialog} ${dark} ${fit} ${isOpen ? styles.open : styles.closed}`}
         onClick={stop}
         role='dialog'
         aria-modal='true'

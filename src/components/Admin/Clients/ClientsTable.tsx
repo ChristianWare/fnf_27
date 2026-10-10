@@ -55,12 +55,17 @@ type Sort = "active" | "name" | "mrr";
 export default function ClientsTable({
   rows,
   now,
+  archived = false,
 }: {
   rows: ClientRow[];
   now: string;
+  /** Open on the archived ones (after deleting one, say). */
+  archived?: boolean;
 }) {
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<(typeof filters)[number]["key"]>("ALL");
+  const [filter, setFilter] = useState<(typeof filters)[number]["key"]>(
+    archived && rows.some((row) => row.archived) ? "ARCHIVED" : "ALL",
+  );
   const [sort, setSort] = useState<Sort>("active");
 
   const counts = useMemo(() => {

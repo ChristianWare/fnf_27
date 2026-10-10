@@ -119,6 +119,7 @@ type GooglePlace = {
   userRatingCount?: number;
   nationalPhoneNumber?: string;
   websiteUri?: string;
+  googleMapsUri?: string;
   photos?: { name?: string }[];
 };
 
@@ -236,6 +237,72 @@ export async function venueDetails(id: string, who: Who) {
     phone: p.nationalPhoneNumber,
     photos: p.photos?.length ?? 0,
   };
+}
+
+/* ── A client's own listing, for their Growth page ── */
+
+export type Listing = {
+  id: string;
+  name: string;
+  address?: string;
+  rating?: number;
+  reviews: number;
+  mapsUrl?: string;
+};
+
+const LISTING_FIELDS =
+  "id,displayName,formattedAddress,rating,userRatingCount,googleMapsUri";
+
+const toListing = (p: GooglePlace): Listing => ({
+  id: p.id,
+  name: p.displayName?.text ?? "",
+  address: p.formattedAddress,
+  rating: p.rating,
+  reviews: p.userRatingCount ?? 0,
+  mapsUrl: p.googleMapsUri,
+});
+
+/** Listings matching some text, to pick a client's own (Enterprise). */
+export async function findListings(text: string, who: Who) {
+  const res = await callJson<{ places?: GooglePlace[] }>(
+    "Google search",
+    `${PLACES}/places:searchText`,
+    {
+      method: "POST",
+      headers: headers(
+        LISTING_FIELDS.split(",")
+          .map((f) => `places.${f}`)
+          .join(","),
+      ),
+      body: JSON.stringify({ textQuery: text, pageSize: 5 }),
+    },
+  );
+  track("places_listing", who);
+  return (res.places ?? []).map(toListing);
+}
+
+/**
+ * A listing's rating and review count (Enterprise, $20/1,000, once a
+ * night per client). Undefined when Google no longer has it.
+ */
+export async function listingDetails(id: string, who: Who) {
+  let p: GooglePlace;
+  try {
+    p = await callJson<GooglePlace>(
+      "Google details",
+      `${PLACES}/places/${encodeURIComponent(id)}`,
+      { headers: headers(LISTING_FIELDS) },
+    );
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      (error.status === 404 || error.status === 400)
+    )
+      return undefined;
+    throw error;
+  }
+  track("places_details", who);
+  return toListing(p);
 }
 
 export type GooglePhoto = { name: string; author?: string; authorUrl?: string };

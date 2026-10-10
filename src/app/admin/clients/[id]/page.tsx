@@ -14,6 +14,11 @@ import { nextFirst } from "@/lib/dashboard/billing";
 import { blueprintCounts, isLive } from "@/lib/dashboard/helpers";
 import { questionnaireFor } from "@/lib/dashboard/questionnaire";
 import { url } from "@/lib/server/config";
+import { loadGrowthAdmin } from "@/lib/growth/load";
+import { domainOf } from "@/lib/growth/searchConsole";
+
+// "Pull now" on the Growth tab reads up to 16 months from Google.
+export const maxDuration = 120;
 
 export async function generateMetadata({
   params,
@@ -69,6 +74,10 @@ export default async function ClientPage({
     { key: "billing", label: "Billing", icon: "card" },
   ];
   const active: TabKey = tabs.find((t) => t.key === tab)?.key ?? "overview";
+  const growthAdmin =
+    active === "growth" && w
+      ? await loadGrowthAdmin(client.id, now)
+      : undefined;
 
   const who = {
     clientId: client.id,
@@ -108,13 +117,20 @@ export default async function ClientPage({
         />
       )}
 
-      {active === "growth" && w && (
+      {active === "growth" && w && growthAdmin && (
         <GrowthSetup
           clientId={client.id}
           growth={client.growth}
           live={isLive(client)}
           launchedAt={w.facts.launchedAt}
           firstName={first}
+          business={client.business}
+          city={client.city}
+          domain={domainOf({
+            domain: w.domain ?? null,
+            liveUrl: w.liveUrl ?? null,
+          })}
+          admin={growthAdmin}
           now={now}
         />
       )}

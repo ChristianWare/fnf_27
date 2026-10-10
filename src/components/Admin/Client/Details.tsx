@@ -4,12 +4,14 @@
 // links, and archiving (or restoring) them.
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "@/components/Dashboard/icons";
 import { useAction } from "@/components/Dashboard/useAction";
 import { ui } from "@/components/Dashboard/ui/ui";
 import {
   archiveClient,
+  deleteClient,
   restoreClient,
   saveNotes,
   saveSiteLinks,
@@ -158,6 +160,7 @@ export function Archive({
   business,
   endsOn,
   archivedAt,
+  paidInvoices,
   now,
 }: {
   clientId: string;
@@ -166,11 +169,19 @@ export function Archive({
   endsOn: string;
   /** Archived (or, in the future, scheduled to be). */
   archivedAt?: string;
+  /** How many paid invoices deleting them would take with it. */
+  paidInvoices: number;
   now: string;
 }) {
   const { run, pending } = useAction();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [when, setWhen] = useState<"end" | "now">("end");
+  // Archived already (not just scheduled): only then can they be deleted.
+  const [gone, setGone] = useState(Boolean(archivedAt && archivedAt <= now));
+  const [deleting, setDeleting] = useState(false);
+  const [typed, setTyped] = useState("");
+  const matches = typed.trim().toLowerCase() === business.trim().toLowerCase();
   const describe = (at?: string) =>
     !at
       ? null
@@ -200,6 +211,7 @@ export function Archive({
                 () => restoreClient(clientId),
                 () => {
                   setArchived(null);
+                  setGone(false);
                   return {
                     message: `${business} restored`,
                     detail:
@@ -211,6 +223,19 @@ export function Archive({
           >
             Restore {business}
           </button>
+          {gone && (
+            <button
+              type='button'
+              className={`${ui.btn} ${styles.dangerBtn} ${ui.btnSmall}`}
+              onClick={() => {
+                setTyped("");
+                setDeleting(true);
+              }}
+            >
+              Delete forever
+              <Icon name='trash' className={ui.btnIcon} />
+            </button>
+          )}
         </div>
       )}
       {!archived && (
@@ -283,6 +308,7 @@ export function Archive({
                         ? `${business} will be archived on ${fmtDate(endsOn)}. Their billing stops then.`
                         : `${business} is archived. Billing has stopped and they're signed out.`;
                     setArchived(text);
+                    setGone(when === "now");
                     return {
                       message:
                         when === "end"
@@ -300,6 +326,80 @@ export function Archive({
           </div>
         </div>
       </Modal>
+
+      {gone && (
+        <Modal
+          isOpen={deleting}
+          onClose={() => setDeleting(false)}
+          label={`Delete ${business} forever`}
+        >
+          <form
+            className={ui.modalBody}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!matches || pending) return;
+              run(
+                () => deleteClient(clientId, typed),
+                () => {
+                  setDeleting(false);
+                  router.replace("/admin/clients?filter=archived");
+                  return {
+                    message: `${business} deleted`,
+                    tone: "info",
+                    detail: "Everything of theirs is gone from the dashboard.",
+                  };
+                },
+              );
+            }}
+          >
+            <span className={ui.monoMuted}>Delete forever</span>
+            <h2 className={ui.modalTitle}>Delete {business} for good?</h2>
+            <p className={styles.help}>
+              This deletes their sign-ins, website, blueprint, designs, files,
+              documents, messages, change requests, invoices, saved leads and
+              Growth numbers. It can&apos;t be undone. Stripe keeps its own
+              record of the customer and their payments.
+            </p>
+            {paidInvoices > 0 && (
+              <div className={`${ui.notice} ${ui.noticeBad}`}>
+                <Icon name='info' className={ui.noticeIcon} />
+                <p>
+                  They have {paidInvoices} paid{" "}
+                  {paidInvoices === 1 ? "invoice" : "invoices"}. Download any
+                  you need for your books from their Billing tab first.
+                </p>
+              </div>
+            )}
+            <label className={ui.field}>
+              <span className={ui.label}>Type {business} to confirm</span>
+              <input
+                className={ui.input}
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                autoComplete='off'
+                spellCheck={false}
+              />
+            </label>
+            <div className={ui.modalActions}>
+              <button
+                type='button'
+                className={`${ui.btn} ${ui.btn_light}`}
+                onClick={() => setDeleting(false)}
+              >
+                Keep them
+              </button>
+              <button
+                type='submit'
+                className={`${ui.btn} ${styles.dangerBtn}`}
+                disabled={!matches || pending}
+              >
+                Delete forever
+                <Icon name='trash' className={ui.btnIcon} />
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </section>
   );
 }

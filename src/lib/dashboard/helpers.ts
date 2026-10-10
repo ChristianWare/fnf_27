@@ -4,7 +4,7 @@
 
 import { money } from "./format";
 import { LEADS, PLANS } from "./plans";
-import type { Asset, BlueprintPage, Client, Growth } from "./types";
+import type { Asset, BlueprintPage, Client } from "./types";
 
 /* ── Brand assets: what we need ── */
 
@@ -365,19 +365,6 @@ export function trialDaysLeft(client: Client, now: string) {
 
 export const planName = (client: Client) =>
   client.website ? PLANS[client.website.plan].name : LEADS.name;
-
-/** This month so far: the target, and where the month is heading. */
-export function growthNow(growth: Growth, now: string) {
-  const current = growth.months.find((m) => m.actual === undefined);
-  // The day of the month in Arizona (UTC-7 all year).
-  const local = new Date(new Date(now).getTime() - 7 * 3_600_000);
-  const day = local.getUTCDate();
-  const daysInMonth = new Date(
-    Date.UTC(local.getUTCFullYear(), local.getUTCMonth() + 1, 0),
-  ).getUTCDate();
-  const pace = Math.round((growth.monthToDate * daysInMonth) / day);
-  return { current, pace, day, daysInMonth };
-}
 
 /** The Monday that starts this week in Arizona, e.g. "2026-10-05". */
 export function weekOf(now: string) {

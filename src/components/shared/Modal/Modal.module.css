@@ -73,8 +73,14 @@
   flex-direction: column;
 }
 
+/* As wide as what's in it. */
+.dialog.fit {
+  width: auto;
+}
+
 @media (max-width: 768px) {
-  .dialog {
+  .dialog,
+  .dialog.fit {
     width: calc(100vw - 4rem);
   }
 }

@@ -5,7 +5,6 @@ import Icon, { type IconName } from "../icons";
 import { ButtonLink, Panel, Pill, Progress, type Tone } from "../ui/ui";
 import ChrisImg from "../../../../public/images/chris.png";
 import {
-  growthNow,
   isLive,
   leadsAccess,
   projectSteps,
@@ -16,11 +15,12 @@ import {
   daysBetween,
   fmtAgo,
   fmtDay,
-  fmtMonth,
   greeting,
   money,
 } from "@/lib/dashboard/format";
 import { CALENDAR, LEADS, PLANS } from "@/lib/dashboard/plans";
+import { fmtMonthName, fmtMonthShort } from "@/lib/growth/dates";
+import type { MonthStatus } from "@/lib/growth/traffic";
 import type { ActivityKind, Client } from "@/lib/dashboard/types";
 
 type Cta = {
@@ -186,7 +186,22 @@ function planCards(client: Client, now: string): PlanCard[] {
   return [platform, website, leads];
 }
 
-export default function Home({ client, now }: { client: Client; now: string }) {
+/** Visitors from Google this month, for the snapshot. */
+export type TrafficSnapshot = {
+  status: MonthStatus;
+  /** The last few months, the one we're in last. */
+  months: { month: string; clicks: number }[];
+};
+
+export default function Home({
+  client,
+  now,
+  traffic,
+}: {
+  client: Client;
+  now: string;
+  traffic?: TrafficSnapshot;
+}) {
   const name = client.contact.name.split(" ")[0];
   const live = isLive(client);
   const steps = projectSteps(client);
@@ -209,14 +224,11 @@ export default function Home({ client, now }: { client: Client; now: string }) {
       "Thanks for signing up. We're setting up your account and will be in touch within one business day.";
   }
 
-  const growth = client.growth;
-  const snapshot = growth ? growthNow(growth, now) : undefined;
-  const current = snapshot?.current;
-  const pace = snapshot?.pace ?? 0;
-  const past = growth?.months.filter((m) => m.actual !== undefined) ?? [];
+  const visits = traffic?.status;
+  const monthName = visits ? fmtMonthName(`${visits.month}-01`) : undefined;
   const chartMax = Math.max(
-    ...past.map((m) => m.actual ?? 0),
-    current?.target ?? 0,
+    ...(traffic?.months.map((m) => m.clicks) ?? []),
+    visits?.target ?? 0,
     1,
   );
 
@@ -345,10 +357,14 @@ export default function Home({ client, now }: { client: Client; now: string }) {
             )}
           </Panel>
 
-          {growth && current && (
+          {traffic && visits && (
             <Panel
-              title='Visitors from search'
-              text={`This month, against your ${fmtMonth(current.month)} target of ${current.target.toLocaleString("en-US")}.`}
+              title='Visitors from Google'
+              text={
+                visits.target !== undefined
+                  ? `${monthName} so far, against your target of ${visits.target.toLocaleString("en-US")}.`
+                  : `${monthName} so far.`
+              }
               action={
                 <ButtonLink
                   href='/dashboard/growth'
@@ -363,36 +379,46 @@ export default function Home({ client, now }: { client: Client; now: string }) {
               <div className={styles.snapshot}>
                 <div className={styles.bigStat}>
                   <span className={styles.bigNumber}>
-                    {growth.monthToDate.toLocaleString("en-US")}
+                    {visits.soFar.toLocaleString("en-US")}
                   </span>
-                  <Pill tone={pace >= current.target ? "lime" : "yellow"} dot>
-                    On pace for {pace.toLocaleString("en-US")}
-                  </Pill>
-                </div>
-                <Progress
-                  value={growth.monthToDate}
-                  max={current.target}
-                  label='Visitors this month against the target'
-                  tone='lime'
-                />
-                <div className={styles.mini} aria-hidden='true'>
-                  {[...past, { ...current, actual: growth.monthToDate }].map(
-                    (m) => (
-                      <div key={m.month} className={styles.miniCol}>
-                        <div className={styles.miniBarWrap}>
-                          <div
-                            className={`${styles.miniBar} ${m.month === current.month ? styles.miniNow : ""}`}
-                            style={{
-                              height: `${Math.max(4, ((m.actual ?? 0) / chartMax) * 100)}%`,
-                            }}
-                          />
-                        </div>
-                        <span className={styles.miniLabel}>
-                          {fmtMonth(m.month)}
-                        </span>
-                      </div>
-                    ),
+                  {visits.pace !== undefined && (
+                    <Pill
+                      tone={
+                        visits.target === undefined ||
+                        visits.pace >= visits.target
+                          ? "lime"
+                          : "yellow"
+                      }
+                      dot
+                    >
+                      On pace for {visits.pace.toLocaleString("en-US")}
+                    </Pill>
                   )}
+                </div>
+                {visits.target !== undefined && (
+                  <Progress
+                    value={visits.soFar}
+                    max={visits.target}
+                    label='Visitors this month against the target'
+                    tone='lime'
+                  />
+                )}
+                <div className={styles.mini} aria-hidden='true'>
+                  {traffic.months.map((m) => (
+                    <div key={m.month} className={styles.miniCol}>
+                      <div className={styles.miniBarWrap}>
+                        <div
+                          className={`${styles.miniBar} ${m.month === visits.month ? styles.miniNow : ""}`}
+                          style={{
+                            height: `${Math.max(4, (m.clicks / chartMax) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                      <span className={styles.miniLabel}>
+                        {fmtMonthShort(`${m.month}-01`)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </Panel>

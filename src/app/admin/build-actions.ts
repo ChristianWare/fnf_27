@@ -20,6 +20,20 @@ import {
   uploadsReady,
 } from "@/lib/server/cloudinary";
 import { firstOfMonth } from "@/lib/dashboard/billing";
+import {
+  domainOf,
+  keyProblem,
+  listSites,
+  pickProperty,
+  problemText,
+} from "@/lib/growth/searchConsole";
+import { syncGrowth, syncReviews } from "@/lib/growth/sync";
+import {
+  findListings,
+  googleReady,
+  type Listing,
+} from "@/lib/leads/apis/google";
+import { flushUsage } from "@/lib/leads/usage";
 import type {
   BlueprintPage,
   Growth,
@@ -544,11 +558,6 @@ function blank(start: string): Growth {
       month: firstOfMonth(start, i),
       target: 0,
     })),
-    monthToDate: 0,
-    calls: { monthToDate: 0, lastMonth: 0 },
-    bookings: { label: "Bookings", monthToDate: 0, lastMonth: 0 },
-    reviews: { total: 0, newThisMonth: 0, rating: 0 },
-    queries: [],
     notes: [],
     habits: [],
   };
@@ -557,10 +566,20 @@ function blank(start: string): Growth {
 async function saveGrowth(clientId: string, change: (g: Growth) => Growth) {
   const row = await growthOf(clientId);
   if (!row) return false;
-  const base =
-    row.growth && Array.isArray(row.growth.months)
-      ? row.growth
-      : blank(row.facts.launchedAt ?? new Date().toISOString());
+  const fresh = blank(row.facts.launchedAt ?? new Date().toISOString());
+  const saved = row.growth;
+  const base: Growth = {
+    months:
+      saved && Array.isArray(saved.months) && saved.months.length
+        ? saved.months.map((m) => ({
+            month: m.month,
+            target: Number(m.target) || 0,
+          }))
+        : fresh.months,
+    notes: saved?.notes ?? [],
+    habits: saved?.habits ?? [],
+    ...(saved?.habitsDone ? { habitsDone: saved.habitsDone } : {}),
+  };
   await db
     .update(s.websites)
     .set({ growth: change(base), updatedAt: new Date() })
@@ -571,64 +590,18 @@ async function saveGrowth(clientId: string, change: (g: Growth) => Growth) {
 
 const whole = (value: unknown) => Math.max(0, Math.round(Number(value) || 0));
 
-export async function saveGrowthNumbers(
-  clientId: string,
-  input: {
-    monthToDate: number;
-    calls: { monthToDate: number; lastMonth: number };
-    bookings: { label: string; monthToDate: number; lastMonth: number };
-    reviews: { total: number; newThisMonth: number; rating: number };
-  },
-): Promise<ActionResult> {
-  const a = await admin();
-  if (!a.ok) return fail(a.error);
-  const ok = await saveGrowth(clientId, (g) => ({
-    ...g,
-    monthToDate: whole(input.monthToDate),
-    calls: {
-      monthToDate: whole(input.calls.monthToDate),
-      lastMonth: whole(input.calls.lastMonth),
-    },
-    bookings: {
-      label: clean(input.bookings.label, 40) || "Bookings",
-      monthToDate: whole(input.bookings.monthToDate),
-      lastMonth: whole(input.bookings.lastMonth),
-    },
-    reviews: {
-      total: whole(input.reviews.total),
-      newThisMonth: whole(input.reviews.newThisMonth),
-      rating: Math.min(
-        5,
-        Math.max(0, Math.round((Number(input.reviews.rating) || 0) * 10) / 10),
-      ),
-    },
-  }));
-  return ok ? done() : fail("They don't have a website plan.");
-}
-
 export async function saveGrowthPlan(
   clientId: string,
-  months: { target: number; actual?: number | null }[],
+  targets: number[],
 ): Promise<ActionResult> {
   const a = await admin();
   if (!a.ok) return fail(a.error);
   const ok = await saveGrowth(clientId, (g) => ({
     ...g,
-    months: g.months.map((m, i) => {
-      const next = months[i];
-      if (!next) return m;
-      const actual =
-        next.actual === null ||
-        next.actual === undefined ||
-        Number.isNaN(Number(next.actual))
-          ? undefined
-          : whole(next.actual);
-      return {
-        month: m.month,
-        target: whole(next.target),
-        ...(actual !== undefined ? { actual } : {}),
-      };
-    }),
+    months: g.months.map((m, i) => ({
+      month: m.month,
+      target: targets[i] === undefined ? m.target : whole(targets[i]),
+    })),
   }));
   return ok ? done() : fail("They don't have a website plan.");
 }
@@ -679,4 +652,126 @@ export async function saveGrowthHabits(
     }),
   }));
   return ok ? done() : fail("They don't have a website plan.");
+}
+
+/* ── Growth: where the numbers come from ── */
+
+/** Reads everything since launch from Google again, now. */
+export async function pullGrowth(
+  clientId: string,
+): Promise<ActionResult<{ through?: string; days: number }>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const { traffic, reviews } = await syncGrowth(clientId, { full: true });
+  refresh();
+  if (!traffic.ok) return fail(traffic.error);
+  if (!reviews.ok) return fail(`Visitors are in. Reviews: ${reviews.error}`);
+  return done({ through: traffic.through, days: traffic.days });
+}
+
+/** The Search Console properties the service account can see. */
+export async function searchConsoleSites(
+  clientId: string,
+): Promise<ActionResult<{ sites: string[]; suggested?: string }>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const problem = keyProblem();
+  if (problem) return fail(problem);
+  const [site] = await db
+    .select({ domain: s.websites.domain, liveUrl: s.websites.liveUrl })
+    .from(s.websites)
+    .where(eq(s.websites.clientId, clientId))
+    .limit(1);
+  if (!site) return fail("They don't have a website plan.");
+  try {
+    const sites = await listSites();
+    const domain = domainOf(site);
+    return done({
+      sites: sites.map((x) => x.siteUrl).sort(),
+      suggested: domain ? pickProperty(sites, domain) : undefined,
+    });
+  } catch (error) {
+    return fail(problemText(error));
+  }
+}
+
+/** Uses this property for their visitors (or forgets it, to look again). */
+export async function setSearchConsoleSite(
+  clientId: string,
+  site: string | null,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const value = site?.trim() || null;
+  if (value && !/^(sc-domain:[a-z0-9.-]+|https?:\/\/\S+\/)$/i.test(value))
+    return fail("That isn't a Search Console property.");
+  const [row] = await db
+    .select({ site: s.websites.searchConsoleSite })
+    .from(s.websites)
+    .where(eq(s.websites.clientId, clientId))
+    .limit(1);
+  if (!row) return fail("They don't have a website plan.");
+  await db.transaction(async (tx) => {
+    await tx
+      .update(s.websites)
+      .set({ searchConsoleSite: value, updatedAt: new Date() })
+      .where(eq(s.websites.clientId, clientId));
+    // Another property's numbers aren't theirs: start again from launch.
+    if (row.site !== value) {
+      await tx
+        .delete(s.trafficDays)
+        .where(eq(s.trafficDays.clientId, clientId));
+      await tx
+        .delete(s.trafficQueries)
+        .where(eq(s.trafficQueries.clientId, clientId));
+    }
+  });
+  refresh();
+  return done();
+}
+
+/** Google listings matching a search, to pick theirs. */
+export async function findGoogleListings(
+  clientId: string,
+  text: string,
+): Promise<ActionResult<Listing[]>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const query = clean(text, 200);
+  if (!query) return fail("Type their business name and city.");
+  if (!googleReady()) return fail("GOOGLE_MAPS_SERVER_KEY isn't set.");
+  try {
+    const found = await findListings(query, { clientId });
+    await flushUsage();
+    return done(found);
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : String(error));
+  }
+}
+
+/** Their listing, for the reviews tile (or none). */
+export async function setGoogleListing(
+  clientId: string,
+  placeId: string | null,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const value = placeId?.trim() || null;
+  if (value && !/^[A-Za-z0-9_-]{10,300}$/.test(value))
+    return fail("That isn't a Google listing.");
+  await db
+    .update(s.websites)
+    .set({ googlePlaceId: value, updatedAt: new Date() })
+    .where(eq(s.websites.clientId, clientId));
+  await db.delete(s.reviewDays).where(eq(s.reviewDays.clientId, clientId));
+  if (value) {
+    const result = await syncReviews(clientId);
+    await flushUsage();
+    if (!result.ok) {
+      refresh();
+      return fail(result.error);
+    }
+  }
+  refresh();
+  return done();
 }
