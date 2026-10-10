@@ -1,3 +1,6 @@
+// The three newest Journal posts, from the same files the Journal reads
+// (content/journal). Add a post there and it shows here on its own.
+
 import Image from "next/image";
 import Link from "next/link";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
@@ -5,44 +8,13 @@ import styles from "./JournalPreview.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Chris from "../../../../public/images/chris.png";
-import Img1 from "../../../../public/images/WhyWeExist.jpg";
-import Img2 from "../../../../public/images/call.jpg";
-import Img3 from "../../../../public/images/range.jpg";
 import Reveal from "@/components/shared/Reveal/Reveal";
-
-// Placeholder articles. Swap these for the three latest Journal posts once
-// the Journal is live (titles are from the site plan's first posts).
-const posts = [
-  {
-    id: 1,
-    category: "Software & booking",
-    date: "06 Oct 2026",
-    title: "Limo Anywhere alternatives: an honest comparison",
-    href: "/journal/limo-anywhere-alternatives",
-    src: Img1,
-    alt: "An operator reviewing a booking calendar on a desktop computer",
-  },
-  {
-    id: 2,
-    category: "Winning accounts",
-    date: "29 Sep 2026",
-    title: "How to get corporate clients for a limo company",
-    href: "/journal/how-to-get-corporate-clients-limo-company",
-    src: Img2,
-    alt: "A coordinator on the phone taking notes at her desk",
-  },
-  {
-    id: 3,
-    category: "Getting found",
-    date: "22 Sep 2026",
-    title: "SEO for limo companies: what actually moves rankings",
-    href: "/journal/seo-for-limo-companies",
-    src: Img3,
-    alt: "A black SUV driving on the highway",
-  },
-];
+import { getPosts, postHref } from "@/lib/journal";
 
 export default function JournalPreview() {
+  const posts = getPosts().slice(0, 3);
+  if (posts.length === 0) return null;
+
   return (
     <section className={styles.container}>
       <Reveal />
@@ -68,20 +40,18 @@ export default function JournalPreview() {
           <div className={styles.right}>
             {posts.map((post) => (
               <Link
-                href={post.href}
+                href={postHref(post)}
                 className={styles.card}
-                key={post.id}
+                key={post.slug}
                 data-reveal='each'
               >
                 <div className={styles.cardLeft}>
                   <div className={styles.cardTop}>
                     <div className={styles.meta}>
                       <span className={styles.category}>{post.category}</span>
-                      <span className={styles.date}>{post.date}</span>
+                      <span className={styles.date}>{post.dateLabel}</span>
                     </div>
-                    <h3 className={`${styles.title} h6`}>
-                      {post.title}
-                    </h3>
+                    <h3 className={`${styles.title} h6`}>{post.title}</h3>
                   </div>
                   <div className={styles.author}>
                     <span className={styles.avatar}>
@@ -94,17 +64,17 @@ export default function JournalPreview() {
                       />
                     </span>
                     <span className={styles.authorText}>
-                      <span className={styles.authorName}>Chris Ware</span>
+                      <span className={styles.authorName}>{post.author}</span>
                       <span className={styles.authorRole}>Author</span>
                     </span>
                   </div>
                 </div>
                 <div className={styles.imgContainer}>
                   <Image
-                    src={post.src}
-                    alt={post.alt}
+                    src={post.image}
+                    alt={post.imageAlt}
                     fill
-                    sizes='(max-width: 568px) 100vw, 300px'
+                    sizes='(max-width: 568px) 100vw, 380px'
                     className={styles.img}
                   />
                 </div>
