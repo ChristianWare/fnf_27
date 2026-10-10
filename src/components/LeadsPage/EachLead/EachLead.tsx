@@ -7,6 +7,7 @@
 import { useState, type KeyboardEvent } from "react";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./EachLead.module.css";
+import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import {
   BriefArt,
@@ -20,28 +21,28 @@ const tabs = [
     id: "contact",
     label: "The Decision-Maker",
     title: "Name, title, and a way to reach them",
-    body: "The decision-maker: name, title, and a verified email or phone when one is available. You reach the person who books the rides, not a front desk.",
+    body: "Save a lead and the tool finds the person who books the rides: their name, title, and a work email when one can be found, plus the business's phone line. You reach the decision-maker, not a front desk.",
     Art: DecisionMakerArt,
   },
   {
     id: "script",
-    label: "The Outreach Script",
-    title: "Written for that business",
-    body: "An outreach script written for that business. It names what they do, why their guests or staff need rides, and what to offer first, so your first message reads like you already know them.",
+    label: "The Scripts",
+    title: "An email, a text and a call opener, written for them",
+    body: "Three scripts written for that business, in your words: an email with its subject line, a text, and a call opener. Each one names what they do, why their guests or staff need rides, and what to offer first, so your first message reads like you already know them.",
     Art: ScriptArt,
   },
   {
     id: "brief",
-    label: "The Strategic Brief",
+    label: "The Brief",
     title: "Why they need you, and how to pitch",
-    body: "A strategic brief: why they need transportation and how to pitch them. Who they use now, when their busy season is, and the angle that wins the account.",
+    body: "A short brief on every lead: why they need transportation, who they use now (the tool reads their website for a car service partner), when their busy season is, who to ask for, and the angle to lead with.",
     Art: BriefArt,
   },
   {
     id: "next",
     label: "The Next Step",
     title: "Where it sits, and what to do today",
-    body: "Where the lead sits in your pipeline, from first contact to won account, and who to follow up with today. Nothing goes cold because you forgot.",
+    body: "Every saved lead sits in your pipeline, from New to Contacted, Talking and Won. Log the email, text, call or meeting, and the tool tells you who to follow up with today. Nothing goes cold because you forgot.",
     Art: NextStepArt,
   },
 ];
@@ -69,9 +70,22 @@ export default function EachLead() {
       <Reveal mode='together' />
       <LayoutWrapper>
         <div className={styles.content}>
-          <h2 id='each-lead' className={styles.srOnly}>
-            What comes with each lead
-          </h2>
+          <div className={styles.intro}>
+            <EyeBrow text='Each lead' />
+            <h2
+              id='each-lead'
+              className={styles.heading}
+              data-reveal
+              data-reveal-style='fade'
+            >
+              What Comes With Every Lead
+            </h2>
+            <p className={styles.introCopy} data-reveal>
+              Four things on every lead the tool finds: the person to contact,
+              the scripts to reach them with, why they need you, and what to do
+              next. Click through to see each one.
+            </p>
+          </div>
 
           <div
             className={styles.tabs}

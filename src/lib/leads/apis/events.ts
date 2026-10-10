@@ -157,6 +157,35 @@ export async function ticketmasterEvents(
   return events;
 }
 
+/** How many events Ticketmaster lists near a point in the days ahead. */
+export async function ticketmasterCount(
+  center: { lat: number; lng: number },
+  radiusMiles: number,
+  from: Date,
+  days: number,
+  who: Who = {},
+): Promise<number> {
+  const key = process.env.TICKETMASTER_API_KEY;
+  if (!key) return 0;
+  const to = new Date(from.getTime() + days * 86_400_000);
+  const params = new URLSearchParams({
+    apikey: key,
+    latlong: `${center.lat},${center.lng}`,
+    radius: String(radiusMiles),
+    unit: "miles",
+    startDateTime: tmTime(from),
+    endDateTime: tmTime(to),
+    size: "1",
+    locale: "*",
+  });
+  const res = await callJson<{ page?: { totalElements?: number } }>(
+    "Ticketmaster",
+    `https://app.ticketmaster.com/discovery/v2/events.json?${params}`,
+  );
+  track("ticketmaster", who);
+  return Math.max(0, Math.round(res.page?.totalElements ?? 0));
+}
+
 /* ── Eventbrite, through an Apify actor ──
  *
  * Apify runs take minutes, so a run is started early in the night and

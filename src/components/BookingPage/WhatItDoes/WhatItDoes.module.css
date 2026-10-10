@@ -1,26 +1,31 @@
 .container {
-  padding: 10rem 0rem;
-  background-color: var(--white);
   margin: 0 0.5rem;
+  padding: 10rem 0rem;
   border-radius: 3rem;
+  background-color: var(--white);
 }
 
+/* The same layout as the services on the home page: the intro and list on
+   the left, the cards on the right. */
 .content {
-  display: flex;
-  flex-direction: column;
-  gap: 5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 6rem;
   width: 100%;
 }
 
-/* The eyebrow and heading on the left, the count on the right. */
-.top {
+/* Sticks while the cards scroll past. */
+.left {
+  position: sticky;
+  top: 10rem;
+  align-self: start;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 3rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5rem;
 }
 
-.topLeft {
+.intro {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -28,164 +33,236 @@
 }
 
 .heading {
-  max-width: 650px;
+  max-width: 460px;
 }
 
-.count {
-  flex: none;
-  padding-bottom: 0.6rem;
-  font-family: var(--IBMPlex);
-  font-size: 14px;
-  line-height: 1;
-  text-transform: uppercase;
-  color: var(--text);
+.copy {
+  max-width: 420px;
 }
 
-/* Four cards to a row. */
-.grid {
+/* ── The list of the eight parts. The one in view is black with an arrow. ── */
+.nav {
+  width: 100%;
+  max-width: 36rem;
+}
+
+.navList {
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.8rem;
+  border-top: 1px solid var(--light2);
 }
 
-/* One feature: the screenshot on top, the text under it, the same shape as
-   the Journal cards. */
-.card {
+.navLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid var(--light2);
+  font-size: 1.8rem;
+  line-height: 1.3;
+  color: var(--text);
+  transition: color 0.3s ease;
+}
+
+.navArrow {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  opacity: 0;
+  transform: translateX(-0.6rem) rotate(90deg);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.navLinkActive {
+  color: var(--black);
+}
+
+.navLinkActive .navArrow {
+  opacity: 1;
+  transform: translateX(0) rotate(90deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .navLink:hover {
+    color: var(--black);
+  }
+}
+
+.navLink:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+/* ── The cards: one row per part, the text card next to its picture. ── */
+.cards {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding: 1rem 1rem 2rem;
-  border-radius: 2rem;
+  scroll-margin-top: 8rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  scroll-margin-top: 10rem;
+  min-height: 500px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4rem;
+  min-height: 42rem;
+  padding: 2.4rem;
+  border-radius: 2.4rem;
   background-color: var(--light);
 }
 
-/* The picture: a piece of the software on the feature's accent color. It
-   starts near the top and anything too tall is cut off at the bottom, like
-   a screen you're looking at. */
-.art {
-  position: relative;
-  /* aspect-ratio: 4 / 3; */
-  height: 350px;
-  width: 100%;
-  padding: 2rem;
-  border-radius: 1.5rem;
-  overflow: hidden;
-  background-color: var(--toneLight, var(--light2));
+.cardTop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.2rem;
 }
 
-.art > * {
+.number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.4rem;
+  height: 3.4rem;
+  padding: 0 1rem;
+  border-radius: 50px;
+  background-color: var(--white);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--black);
+}
+
+.title {
+  margin-top: 1.4rem;
+  font-size: max(22px, 2.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+  color: var(--black);
+}
+
+.price {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.bullets {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+}
+
+.bullets li {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+  font-family: var(--IBMPlex);
+  text-transform: uppercase;
+}
+
+/* The plus sign in place of the dot. */
+.bullets li::before {
+  content: "-";
+  flex: none;
+  color: var(--black);
+}
+
+.btnContainer {
+  display: flex;
+}
+
+/* The picture's frame: a piece of the software on a grey box, in the
+   photo's place. The piece sits in the middle and never runs past the
+   edges. */
+.art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100%;
+  padding: 3.2rem;
+  border-radius: 24px;
+  overflow: hidden;
+  background-color: var(--light2);
+}
+
+.artInner {
+  width: min(100%, 38rem);
   transition: transform 0.5s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .card:hover .art > * {
+  .row:hover .artInner {
     transform: translateY(-0.6rem);
   }
 }
 
-/* The accent colors, in order across the row (in globals.css). */
-.toneOne {
-  --toneLight: var(--light2);
-}
-
-.toneTwo {
-  --toneLight: var(--light2);
-}
-
-.toneThree {
-  --toneLight: var(--light2);
-}
-
-.toneFour {
-  --toneLight: var(--light2);
-}
-
-.text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1.6rem;
-  padding: 0 1.5rem;
-}
-
-.meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  width: 100%;
-}
-
-.tag,
-.number {
-  font-family: var(--IBMPlex);
-  font-size: 14px;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.tag {
-  padding: 0.6rem 1rem;
-  border-radius: 50px;
-  background-color: var(--accent4);
-  border: 1px solid var(--text);
-  color: var(--black);
-}
-
-.number {
-  color: var(--text);
-}
-
-.title {
-  color: var(--black);
-}
-
-.desc {
-  font-size: 16px;
-}
-
-/* Two to a row. */
-@media screen and (max-width: 1468px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media screen and (max-width: 968px) {
-  .top {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2rem;
-  }
-
-  .count {
-    padding-bottom: 0;
-  }
-
-  .container {
-    padding: 7rem 0rem;
-  }
-
+/* The intro on top, the cards under it. */
+@media screen and (max-width: 1268px) {
   .content {
-    gap: 4rem;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 5rem;
   }
 
-  .grid {
-    grid-template-columns: repeat(1, 1fr);
+  .left {
+    position: static;
+    gap: 3rem;
   }
 }
 
 @media screen and (max-width: 768px) {
+  .container {
+    padding: 7rem 0rem;
+  }
+
+  /* The photo under the text card. */
+  .row {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .card {
+    min-height: 0;
+    padding: 2rem 1.6rem;
+  }
+
+  .art {
+    min-height: 44rem;
+    padding: 2.4rem;
+  }
 }
 
-/* One column. */
 @media screen and (max-width: 568px) {
   .container {
     border-radius: 2rem;
   }
 
+  .card {
+    border-radius: 2rem;
+  }
+
   .art {
-    padding: 1rem;
+    min-height: 36rem;
+    padding: 1.6rem;
+    border-radius: 20px;
   }
 }

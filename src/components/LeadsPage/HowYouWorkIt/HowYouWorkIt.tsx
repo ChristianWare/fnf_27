@@ -4,9 +4,9 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import Analytics from "@/components/shared/icons/Analytics/Analytics";
-import Cursor from "@/components/shared/icons/Cursor/Cursor";
-import Bell from "@/components/shared/icons/Bell/Bell";
 import Notifications from "@/components/shared/icons/Notifications/Notifications";
+import Target from "@/components/shared/icons/Target/Target";
+import Mail from "@/components/shared/icons/Mail/Mail";
 
 type Step = {
   id: number;
@@ -19,31 +19,31 @@ type Step = {
 const steps: Step[] = [
   {
     id: 1,
-    title: "Pipeline",
-    tag: "Every lead",
-    desc: "Track every lead from first contact to won account.",
-    Icon: Analytics,
+    title: "Today",
+    tag: "Every morning at 6",
+    desc: "The new accounts and events near your base, scored out of 100 and sorted best first, with the follow-ups that are due. An email tells you they're in.",
+    Icon: Notifications,
   },
   {
     id: 2,
-    title: "Next-action prompts",
-    tag: "Each day",
-    desc: "The tool tells you who to follow up with today.",
-    Icon: Cursor,
+    title: "Find leads",
+    tag: "Your whole market",
+    desc: "Everything up to 75 miles from your base, by kind, with a lead score, a picture and the venue's rating on each. Open any lead for free.",
+    Icon: Target,
   },
   {
     id: 3,
-    title: "Hot-lead alerts",
-    tag: "This week",
-    desc: "Events in the next two weeks reach you first, while there's still time to book them.",
-    Icon: Bell,
+    title: "Save and reach out",
+    tag: "Contacts and scripts",
+    desc: "Saving a lead finds the decision-maker's email and writes your email, text and call opener. Send them from your own phone or inbox, so replies come straight to you.",
+    Icon: Mail,
   },
   {
     id: 4,
-    title: "Daily digest",
-    tag: "Each morning",
-    desc: "Today's moves in your inbox each morning.",
-    Icon: Notifications,
+    title: "Pipeline",
+    tag: "New to Won",
+    desc: "Log each email, text, call and meeting, move the lead along, and the tool tells you who to follow up with today, so nothing goes cold.",
+    Icon: Analytics,
   },
 ];
 

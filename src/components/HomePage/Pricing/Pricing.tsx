@@ -58,7 +58,7 @@ const plans: Plan[] = [
   {
     id: 1,
     name: "Leads Tool",
-    desc: "Hotels, venues, corporate accounts and events in your market, each with a contact and an outreach script.",
+    desc: "The hotels, venues, companies and events near you that book rides, scored and ready to contact, every morning.",
     price: "$125",
     per: "Monthly",
     setup:
@@ -70,10 +70,11 @@ const plans: Plan[] = [
     featured: false,
     tab: "For winning accounts",
     features: [
-      "Hot, warm and cold leads",
+      "Accounts and events in your market",
+      "Scored out of 100, best first",
       "Decision-maker contacts",
-      "Outreach scripts",
-      "Daily email digest",
+      "Email, text and call scripts",
+      "Pipeline and follow-up reminders",
       "No per-lead fees",
     ],
   },

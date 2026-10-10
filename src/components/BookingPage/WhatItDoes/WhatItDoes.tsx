@@ -1,10 +1,17 @@
-// What the Full Platform does: eight cards, each with a small piece of the
-// software on top (built in HTML, in Vignettes.tsx), the same shape as the
-// Journal cards.
+"use client";
 
+// What the Full Platform does, laid out like the services on the home
+// page: the intro and a list of the eight parts stay on the left while
+// the cards scroll by on the right, and the list marks the card that's in
+// view. Each card has a small piece of the software next to it (built in
+// HTML, in Vignettes.tsx) and a link to that part of the feature list.
+
+import { useEffect, useRef, useState } from "react";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./WhatItDoes.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
+import Button from "@/components/shared/Button/Button";
+import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import {
   AdminArt,
@@ -17,83 +24,159 @@ import {
   RemindersArt,
 } from "./Vignettes";
 
-// Each card's picture sits on one of the accent colors, in order across
-// the row.
 const features = [
   {
     id: 1,
-    tag: "Booking",
     title: "Direct booking",
-    desc: "Riders choose the service, pickup time, route and vehicle, and see the price before they book.",
+    tag: "Booking · on your site, under your name",
+    bullets: [
+      "A live estimate as they book",
+      "Point-to-point, hourly or flat rate",
+      "Airport pickups with flight details",
+      "Extra stops, passengers and luggage",
+      "Guests book without an account",
+    ],
+    btnText: "See every booking feature",
+    href: "#features-booking",
     Art: DirectBookingArt,
-    tone: styles.toneOne,
   },
   {
     id: 2,
-    tag: "Booking",
     title: "Multi-ride trips",
-    desc: "Round trips and multi-day itineraries in one booking, with one payment.",
+    tag: "Booking · one trip, one bill",
+    bullets: [
+      "Up to ten rides in one trip",
+      "Each ride its own time and vehicle",
+      "One estimate, one payment",
+      "Discount codes and share links",
+    ],
+    btnText: "See every booking feature",
+    href: "#features-booking",
     Art: MultiRideArt,
-    tone: styles.toneTwo,
   },
   {
     id: 3,
-    tag: "Dispatch",
     title: "Dispatch and the driver portal",
-    desc: "Assign rides, and drivers see their schedule and update each trip's status from their phone.",
+    tag: "Dispatch · you assign, they drive",
+    bullets: [
+      "Assign a driver and a vehicle",
+      "Conflict warnings on the driver's day",
+      "Their schedule on their phone",
+      "En route, arrived, picked up, done",
+      "Riders texted at each step",
+    ],
+    btnText: "See every dispatch feature",
+    href: "#features-dispatch",
     Art: DriverPortalArt,
-    tone: styles.toneThree,
   },
   {
     id: 4,
-    tag: "Dispatch",
     title: "Flight tracking",
-    desc: "Airport pickups follow the actual landing time.",
+    tag: "Dispatch · for airport pickups",
+    bullets: [
+      "The flight's live status on the booking",
+      "Terminal, gate and delays",
+      "For you and for the driver",
+      "Refresh any time before pickup",
+    ],
+    btnText: "See every dispatch feature",
+    href: "#features-dispatch",
     Art: FlightTrackingArt,
-    tone: styles.toneFour,
   },
   {
     id: 5,
-    tag: "Payments",
     title: "Payments",
-    desc: "Deposits, full payment, card on file, payment links by email, cash recorded by hand, and refunds.",
+    tag: "Payments · through your own Stripe account",
+    bullets: [
+      "Pay by link, no login needed",
+      "Deposits with a balance due date",
+      "Card on file, and cash recorded",
+      "Refunds, full or partial",
+      "Tips go to the driver",
+    ],
+    btnText: "See every payment feature",
+    href: "#features-payments",
     Art: PaymentsArt,
-    tone: styles.toneOne,
   },
   {
     id: 6,
-    tag: "Riders",
     title: "Automatic reminders",
-    desc: "Riders get a reminder 24 hours and 2 hours before pickup, and a payment reminder if a link goes unpaid.",
+    tag: "Riders · sent by the system",
+    bullets: [
+      "24 hours and 2 hours before pickup",
+      "A nudge when a payment link sits unpaid",
+      "A receipt and invoice when they pay",
+      "You hear about rides that need attention",
+    ],
+    btnText: "See every rider feature",
+    href: "#features-riders",
     Art: RemindersArt,
-    tone: styles.toneTwo,
   },
   {
     id: 7,
-    tag: "Accounts",
     title: "Corporate accounts",
-    desc: "Company accounts, their passengers, and invoices.",
+    tag: "Accounts · a portal for each company",
+    bullets: [
+      "Book for employees, with cost centers",
+      "A negotiated rate, applied by itself",
+      "Net terms, or a card on file",
+      "Spend by month, department and person",
+      "Inquiries from your site, approved in a click",
+    ],
+    btnText: "See every corporate feature",
+    href: "#features-corporate",
     Art: CorporateArt,
-    tone: styles.toneThree,
   },
   {
     id: 8,
-    tag: "Admin",
     title: "Admin dashboard",
-    desc: "Bookings, calendar, earnings, driver pay, reports and discount codes.",
+    tag: "Admin · the whole business in one place",
+    bullets: [
+      "Today's rides and what needs you",
+      "Approve, price and assign each ride",
+      "Earnings, driver pay and reports",
+      "Services, rates, vehicles and airports",
+      "Discount codes and company settings",
+    ],
+    btnText: "See every admin feature",
+    href: "#features-admin",
     Art: AdminArt,
-    tone: styles.toneFour,
   },
 ];
 
 export default function WhatItDoes() {
+  const listRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(features[0].id);
+
+  // The card crossing the middle of the screen is the active one.
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const cards = Array.from(list.querySelectorAll<HTMLElement>("[data-id]"));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          setActive(Number((entry.target as HTMLElement).dataset.id));
+        });
+      },
+      // A thin band just above the middle of the screen.
+      { rootMargin: "-40% 0px -55% 0px" },
+    );
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section className={styles.container} aria-labelledby='what-it-does'>
       <Reveal />
       <LayoutWrapper>
         <div className={styles.content}>
-          <div className={styles.top}>
-            <div className={styles.topLeft}>
+          {/* Stays put while the cards scroll past it. */}
+          <div className={styles.left}>
+            <div className={styles.intro}>
               <EyeBrow text='What it does' />
               <h2
                 id='what-it-does'
@@ -103,35 +186,68 @@ export default function WhatItDoes() {
               >
                 Everything a Ride Needs in One System
               </h2>
+              <p className={styles.copy} data-reveal>
+                Eight parts of the Full Platform, from the first click on your
+                site to the money in your account. Every feature in each part is
+                listed further down.
+              </p>
             </div>
-            <span className={styles.count} data-reveal>
-              ({String(features.length).padStart(2, "0")} features)
-            </span>
+
+            <nav className={styles.nav} aria-label='What it does' data-reveal>
+              <ul className={styles.navList}>
+                {features.map((x) => (
+                  <li key={x.id}>
+                    <a
+                      href={`#feature-${x.id}`}
+                      className={`${styles.navLink} ${
+                        x.id === active ? styles.navLinkActive : ""
+                      }`}
+                      aria-current={x.id === active ? "true" : undefined}
+                    >
+                      {x.title}
+                      <Arrow className={styles.navArrow} aria-hidden='true' />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
 
-          <ul className={styles.grid}>
-            {features.map(({ Art, ...feature }) => (
-              <li className={styles.card} key={feature.id} data-reveal='each'>
-                {/* Decorative: the title and text under it say what it is. */}
-                <div
-                  className={`${styles.art} ${feature.tone}`}
-                  aria-hidden='true'
-                >
-                  <Art />
-                </div>
-                <div className={styles.text}>
-                  <div className={styles.meta}>
-                    <span className={styles.tag}>{feature.tag}</span>
-                    <span className={styles.number}>
-                      {String(feature.id).padStart(2, "0")}
+          <div ref={listRef} className={styles.cards}>
+            {features.map(({ Art, ...x }, index) => (
+              <article
+                className={styles.row}
+                key={x.id}
+                id={`feature-${x.id}`}
+                data-id={x.id}
+                data-reveal
+              >
+                <div className={styles.card}>
+                  <div className={styles.cardTop}>
+                    <span className={styles.number} aria-hidden='true'>
+                      0{index + 1}
                     </span>
+                    <h3 className={styles.title}>{x.title}</h3>
+                    <p className={styles.price}>{x.tag}</p>
                   </div>
-                  <h3 className={`${styles.title} h6`}>{feature.title}</h3>
-                  <p className={styles.desc}>{feature.desc}</p>
+                  <ul className={styles.bullets}>
+                    {x.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                  <div className={styles.btnContainer}>
+                    <Button href={x.href} btnType='gray' text={x.btnText} />
+                  </div>
                 </div>
-              </li>
+                {/* Decorative: the card beside it says what it is. */}
+                <div className={styles.art} aria-hidden='true'>
+                  <div className={styles.artInner}>
+                    <Art />
+                  </div>
+                </div>
+              </article>
             ))}
-          </ul>
+          </div>
         </div>
       </LayoutWrapper>
     </section>

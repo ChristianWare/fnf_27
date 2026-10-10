@@ -42,7 +42,7 @@ const options = [
   {
     id: 2,
     title: "Leads Tool",
-    desc: "Hotels, wedding and event venues, corporate travel managers and funeral homes in your market, each with the decision-maker's contact and an outreach script written for that business.",
+    desc: "The hotels, venues, companies and events near your base that book rides, every morning, each scored out of 100 and ready with the decision-maker's contact and scripts written for that business.",
     bullets: [
       "Free for the first 30 days, no card",
       "Then $125/mo, or included with the Full Platform",

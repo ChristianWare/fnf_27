@@ -13,6 +13,7 @@ export type Api =
   | "places_basic"
   | "places_photo"
   | "places_listing"
+  | "places_autocomplete"
   | "routes"
   | "ticketmaster"
   | "eventbrite"
@@ -30,6 +31,7 @@ export const PRICE: Record<Api, number> = {
   places_basic: 5_000, // Place Details Essentials, $5 per 1,000
   places_photo: 7_000, // Place Photos, $7 per 1,000
   places_listing: 35_000, // Text Search Enterprise, $35 per 1,000
+  places_autocomplete: 2_830, // Autocomplete Requests, $2.83 per 1,000
   routes: 5_000, // Compute Routes Essentials, $5 per 1,000
   ticketmaster: 0,
   eventbrite: 4_000, // per event found, $3.99 per 1,000
@@ -47,6 +49,7 @@ export const API_NAMES: Record<Api, string> = {
   places_basic: "Google venue lookups",
   places_photo: "Google photos",
   places_listing: "Google listing searches",
+  places_autocomplete: "Google city suggestions",
   routes: "Google drive times",
   ticketmaster: "Ticketmaster",
   eventbrite: "Eventbrite (Apify)",

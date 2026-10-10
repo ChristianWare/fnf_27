@@ -87,6 +87,27 @@ calendar pages that publish them. Otherwise that box doesn't show.
 
 **The venue's rating and phone line** on events, from Google.
 
+## "Leads in your city" on the leads page
+
+The check on the public leads page is live. Someone types their city,
+picks it from Google's suggestions (US cities only; anything else is
+turned away), and sees what the tool would find there:
+
+- **Where the tool already runs** (a market within 30 miles that has had
+  its first run): the tool's own counts of hotels, venues, other accounts
+  and upcoming events, worded "in the Phoenix area".
+- **Anywhere else:** a quick look, worded "around Tucson, AZ": the tool's
+  own Google searches within 25 miles (IDs only, free; "60+" where it
+  stopped counting) and the events Ticketmaster lists in the next 90 days.
+
+It uses the keys the tool already has (`GOOGLE_MAPS_SERVER_KEY`,
+`TICKETMASTER_API_KEY`). The suggestions cost $2.83 per 1,000 after
+10,000 free a month, and each lookup is one Place Details call ($5 per
+1,000 after 10,000 free). A city's counts are kept for a day, and one
+address gets at most 40 suggestion calls and 8 lookups a minute. Both show
+on **Admin → Leads Tool** as "Google city suggestions" and "Google venue
+lookups".
+
 ## Billing
 
 A 30-day trial, no card. Adding a card (Stripe Checkout), or keeping it

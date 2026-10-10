@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
     return [
       // The audit is a free tool, not a service page. Catch the guessed URL.
       { source: "/services/audit", destination: "/audit", permanent: true },
+      // "Get free leads in your city" everywhere: the sign-up, on the
+      // Leads Tool.
+      {
+        source: "/leads",
+        destination: "/register?plan=leads",
+        permanent: false,
+      },
     ];
   },
 };

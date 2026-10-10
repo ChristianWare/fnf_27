@@ -8,21 +8,21 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 const leads = [
   {
     id: 1,
-    title: "Hot leads",
-    label: "Next 2 weeks",
-    desc: "Events in your market happening in the next two weeks. Call them today, win the transportation.",
+    title: "Accounts that book rides",
+    label: "Nine kinds, near your base",
+    desc: "Hotels, wedding and event venues, corporate offices, law firms, funeral homes, golf and country clubs, casinos, senior living and tour companies. The accounts that book again and again.",
   },
   {
     id: 2,
-    title: "Warm leads",
-    label: "2 weeks to 3 months",
-    desc: "Events two weeks to three months out. Time to build the relationship before they need the ride.",
+    title: "Events coming up",
+    label: "Galas to game days",
+    desc: "Conferences, galas, festivals, concerts, graduations and tournaments in your market, from Ticketmaster, Eventbrite and the calendars of convention centers and universities, with the organizer to call.",
   },
   {
     id: 3,
-    title: "Cold leads",
-    label: "Nine categories",
-    desc: "B2B accounts across nine categories: wedding venues, hotels, casinos, and the prospects that fill calendars for years.",
+    title: "Scored and ready",
+    label: "Out of 100, best first",
+    desc: "Every lead is scored on how likely it is to book, with the decision-maker to reach, an email, a text and a call opener written for that business, and a reminder when a follow-up is due.",
   },
 ];
 
@@ -31,12 +31,12 @@ export default function LeadsTool() {
     <section className={styles.container}>
       <Reveal />
       {/* The background stays put while the page scrolls over it. */}
-      <div className={styles.bg} aria-hidden="true">
+      <div className={styles.bg} aria-hidden='true'>
         <Image
-          src="/images/subSnow.png"
-          alt=""
+          src='/images/subSnow.png'
+          alt=''
           fill
-          sizes="100vw"
+          sizes='100vw'
           className={styles.bgImg}
         />
       </div>
@@ -45,21 +45,21 @@ export default function LeadsTool() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text="Leads tool" color="white" />
+              <EyeBrow text='Leads tool' color='white' />
               <h2 className={styles.heading}>
                 Find your next client before your competition does
               </h2>
               <p className={styles.copy}>
-                Three lead temperatures, delivered to your inbox every morning.
-                Every lead is scored, briefed, and paired with a ready-to-send
-                outreach script.
+                New accounts and events near your base every morning, scored out
+                of 100 so the best ones come first. Each one comes with the
+                person to contact and a script written for that business.
               </p>
             </div>
             <div className={styles.topRight}>
               <Button
-                href="/leads"
-                btnType="white"
-                text="Get free leads in your city"
+                href='/leads'
+                btnType='white'
+                text='Get free leads in your city'
                 arrow
               />
             </div>

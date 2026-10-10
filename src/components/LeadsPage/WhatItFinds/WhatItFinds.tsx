@@ -1,6 +1,7 @@
 "use client";
 
-// The three kinds of leads, as frosted cards over the fixed background.
+// What the tool finds, as three frosted cards over the fixed background:
+// the accounts, the events, and how it picks the ones to call first.
 //
 // On wide screens the section pins for a few screens of scrolling. Each
 // card rises from the bottom and stops just past the middle, stacking on
@@ -24,38 +25,38 @@ const HOLD = 0.25; // a short pause with the row in place
 const leads = [
   {
     id: 1,
-    title: "Cold leads",
-    tag: "Book again and again",
-    desc: "Hotels, wedding and event venues, corporate travel managers and funeral homes. These are the accounts that book again and again.",
+    title: "Accounts",
+    tag: "Nine kinds of business",
+    desc: "The places near your base that book rides again and again, found on Google and read from their own websites.",
     items: [
-      "Hotels",
+      "Hotels and resorts",
       "Wedding and event venues",
-      "Corporate travel managers",
-      "Funeral homes",
+      "Corporate offices and law firms",
+      "Funeral homes, golf clubs, casinos and more",
     ],
   },
   {
     id: 2,
-    title: "Warm leads",
-    tag: "Upcoming events",
-    desc: "Upcoming events in your market, from conventions to galas, with the organizer to contact.",
+    title: "Events",
+    tag: "Weeks to months out",
+    desc: "What's coming up in your market, with the organizer to pitch: conferences, galas, festivals, concerts, graduations and tournaments.",
     items: [
-      "Conventions",
-      "Galas and fundraisers",
+      "Ticketmaster and Eventbrite",
+      "Convention centers and universities",
+      "City, tourism and chamber calendars",
       "The organizer to contact",
-      "In your market",
     ],
   },
   {
     id: 3,
-    title: "Hot leads",
-    tag: "This week",
-    desc: "Events in the next two weeks, while there's still time to get booked. They reach you first.",
+    title: "The ones to call first",
+    tag: "Scored out of 100",
+    desc: "Every lead is scored the same way every time, so the best ones sort to the top, and you can see the points behind each score.",
     items: [
-      "The next 14 days",
-      "Galas and conferences",
-      "The organizer to call",
-      "A script to send",
+      "No car service partner yet",
+      "Size, rating and distance",
+      "New this morning, or in the news",
+      "Events under a week out say to call",
     ],
   },
 ];
@@ -188,7 +189,7 @@ export default function WhatItFinds() {
         <div className={styles.top}>
           <EyeBrow text='What it finds' color='white' />
           <h2 id='what-it-finds' className={styles.heading}>
-            Three Kinds of Leads Sent to your Inbox Every Day
+            The Accounts and Events in Your Market, Every Morning
           </h2>
         </div>
 

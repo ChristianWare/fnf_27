@@ -9,9 +9,9 @@ import HeroImg from "../../../../public/images/leads.jpg";
 const facts = [
   { label: "Price", value: "Free for 30 days, no card" },
   { label: "After that", value: "$125/mo, or included with the Full Platform" },
-  { label: "Leads", value: "Cold, warm and hot" },
-  { label: "Each lead", value: "The decision-maker's contact and a script" },
-  { label: "Delivery", value: "A daily email digest" },
+  { label: "Leads", value: "Accounts and events in your market" },
+  { label: "Each lead", value: "A score, the decision-maker, and scripts" },
+  { label: "Delivery", value: "New leads every morning, with an email" },
   { label: "Built for", value: "Black car & limo operators" },
 ];
 
@@ -31,9 +31,10 @@ export default function LeadsHero() {
             Lead Generation for Limo Companies
           </h1>
           <p className={styles.copy} data-reveal>
-            Find the hotels, venues, corporate accounts and events in your
-            market, with the decision-maker&apos;s contact and an outreach
-            script for each one. Free for 30 days, no card.
+            The hotels, venues, companies and events near you that book rides,
+            every morning, scored so the best come first, with the
+            decision-maker&apos;s contact and a script written for each one.
+            Free for 30 days, no card.
           </p>
           <div className={styles.btnContainer} data-reveal>
             <Button

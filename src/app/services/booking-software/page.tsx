@@ -5,6 +5,7 @@ import BookingHero from "@/components/BookingPage/BookingHero/BookingHero";
 import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
 import WhatItDoes from "@/components/BookingPage/WhatItDoes/WhatItDoes";
 import PlatformWhy from "@/components/BookingPage/PlatformWhy/PlatformWhy";
+import PlatformFeatures from "@/components/BookingPage/PlatformFeatures/PlatformFeatures";
 import HowItCompares from "@/components/BookingPage/HowItCompares/HowItCompares";
 import PlatformPricing from "@/components/BookingPage/PlatformPricing/PlatformPricing";
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
@@ -73,6 +74,7 @@ export default function BookingSoftwarePage() {
       <FeatureMarquee />
       <WhatItDoes />
       <PlatformWhy />
+      <PlatformFeatures />
       <HowItCompares />
       <PlatformPricing />
       <Faq faqs={platformFaqs} heading='Booking Software Questions' />

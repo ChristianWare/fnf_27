@@ -18,13 +18,13 @@ export function DecisionMakerArt() {
       initials: "TA",
       name: "Tom Alvarez",
       title: "Director of Catering",
-      link: "LinkedIn ↗",
+      link: "tom@boojumtree.com ↗",
     },
   ];
   return (
     <div className={styles.ui}>
       <div className={styles.head}>
-        <span className={styles.mono}>Cold lead · Venue</span>
+        <span className={styles.mono}>Venue · 14 mi away</span>
         <span className={styles.pill}>Lead score 78/100</span>
       </div>
 
@@ -33,7 +33,7 @@ export function DecisionMakerArt() {
         <span className={styles.mono}>Phoenix, AZ · ★ 4.7 (312 reviews)</span>
       </div>
 
-      <span className={styles.label}>Verified contacts</span>
+      <span className={styles.label}>Who to reach</span>
       {people.map((person) => (
         <div className={styles.contact} key={person.name}>
           <span className={styles.avatar}>{person.initials}</span>
@@ -66,8 +66,8 @@ export function ScriptArt() {
           <span className={`${styles.format} ${styles.formatActive}`}>
             Email
           </span>
-          <span className={styles.format}>Cold call opener</span>
-          <span className={styles.format}>LinkedIn DM</span>
+          <span className={styles.format}>Text</span>
+          <span className={styles.format}>Call opener</span>
         </div>
         <span className={styles.pill}>Copy</span>
       </div>
@@ -103,8 +103,8 @@ export function BriefArt() {
   return (
     <div className={styles.ui}>
       <div className={styles.head}>
-        <span className={styles.mono}>Strategic brief</span>
-        <span className={styles.pill}>Approaching peak</span>
+        <span className={styles.mono}>The brief</span>
+        <span className={styles.pill}>Busy season ahead</span>
       </div>
 
       <p className={styles.para}>
@@ -125,7 +125,7 @@ export function BriefArt() {
           <dd className={styles.value}>Feb–May, then Sep–Oct</dd>
         </div>
         <div className={styles.row}>
-          <dt className={styles.mono}>Lead with</dt>
+          <dt className={styles.mono}>The angle</dt>
           <dd className={styles.value}>Guest shuttle, preferred-vendor spot</dd>
         </div>
       </dl>
@@ -142,7 +142,7 @@ export function BriefArt() {
 
 // Where the lead sits, and the move for today.
 export function NextStepArt() {
-  const stages = ["New", "Contacted", "Nurturing", "Won"];
+  const stages = ["New", "Contacted", "Talking", "Won"];
   const current = 1;
   return (
     <div className={styles.ui}>
@@ -163,10 +163,10 @@ export function NextStepArt() {
       </ol>
 
       <div className={styles.move}>
-        <span className={styles.mono}>Recommended next move</span>
-        <span className={styles.moveTitle}>No reply — call them today.</span>
+        <span className={styles.mono}>Follow up today</span>
+        <span className={styles.moveTitle}>No reply yet: call them.</span>
         <span className={styles.value}>
-          Email sent 6 days ago. Phone follow-up is the next move.
+          Email sent 6 days ago. A call is the next move.
         </span>
       </div>
 

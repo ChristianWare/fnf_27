@@ -187,7 +187,7 @@
 .note {
   margin-top: 3rem;
   font-family: var(--IBMPlex);
-  font-size: 1.3rem;
+  font-size: 14px;
   letter-spacing: -0.5px;
   text-transform: uppercase;
   color: rgb(255 255 255 / 75%);

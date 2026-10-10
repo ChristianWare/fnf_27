@@ -52,7 +52,7 @@ const columns = [
       {
         title: "Free tools",
         links: [
-          { text: "Free leads tool", href: "/leads" },
+          { text: "Free leads tool", href: "/services/leads" },
           { text: "Website audit", href: "/audit" },
           { text: "Free templates", href: "/resources" },
         ],

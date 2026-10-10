@@ -8,20 +8,20 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 const data = [
   {
     id: 1,
-    title: "What I do",
+    title: "What we do",
     desc: "websites that get you found, booking software with no per-booking fees, and leads in your market.",
     icon: <Arrow className={styles.icon} />,
   },
   {
     id: 2,
-    title: "Who I work with",
+    title: "Who we work with",
     desc: "black car and limo operators across the US.",
     icon: <Arrow className={styles.icon} />,
   },
   {
     id: 3,
-    title: "How I work",
-    desc: " audit first, an honest read, and no pitch if it's not a fit.",
+    title: "How we work",
+    desc: "audit first, an honest read, and no pitch if it's not a fit.",
     icon: <Arrow className={styles.icon} />,
   },
   {
@@ -46,14 +46,15 @@ export default function AboutUsIntro() {
                 data-reveal
                 data-reveal-style='fade'
               >
-                Built by One Developer <br /> for One Industry
+                Built by One Team <br /> for One Industry
               </h2>
               <p className={styles.copy} data-reveal>
-                I'm Chris Ware, the developer behind it. I built the platform
-                and refined it on real bookings, real drivers and real corporate
-                clients until it ran his whole business. When you work with
-                Fonts & Footers, you work with me: the person who built it, not
-                a ticket system.
+                We&apos;re Fonts &amp; Footers, a Phoenix studio that builds for
+                black car and limo operators and nobody else. We built the
+                platform and refined it on real bookings, real drivers and real
+                corporate clients until it ran a whole business. When you work
+                with us, you work with the people who built it, not a ticket
+                system.
               </p>
             </div>
             <div className={styles.topRight} data-reveal>
