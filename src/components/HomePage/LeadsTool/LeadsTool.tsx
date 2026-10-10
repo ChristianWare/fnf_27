@@ -57,7 +57,7 @@ export default function LeadsTool() {
             </div>
             <div className={styles.topRight}>
               <Button
-                href='/leads'
+                href='/register?plan=leads'
                 btnType='white'
                 text='Get free leads in your city'
                 arrow

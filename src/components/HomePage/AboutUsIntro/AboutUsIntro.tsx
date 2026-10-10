@@ -58,7 +58,12 @@ export default function AboutUsIntro() {
               </p>
             </div>
             <div className={styles.topRight} data-reveal>
-              <Button btnType='black' text='More about us' arrow />
+              <Button
+                href='/about'
+                btnType='black'
+                text='More about us'
+                arrow
+              />
             </div>
           </div>
           <div className={styles.bottom}>

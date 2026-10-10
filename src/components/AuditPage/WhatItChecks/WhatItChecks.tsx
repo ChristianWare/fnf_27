@@ -5,7 +5,7 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import BgImg from "../../../../public/images/irr.webp";
 
-// Only the checks that are live.
+// The six checks, in the order the audit goes through them.
 const checks = [
   {
     id: 1,
@@ -69,8 +69,8 @@ export default function WhatItChecks() {
               Six Checks, the Way a Rider Sees You
             </h2>
             <p className={styles.copy} data-reveal>
-              Every check runs on your live site and your Google listing, from a
-              phone, the way a rider would find you.
+              We check your live site and your Google listing from a phone, the
+              way a rider would find you.
             </p>
           </div>
 

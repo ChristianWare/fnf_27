@@ -1,5 +1,5 @@
-// Cloudflare Turnstile: the "are you a person?" check on the contact and
-// sign-up forms. Without TURNSTILE_SECRET_KEY (local development) it's
+// Cloudflare Turnstile: the "are you a person?" check on the contact, audit
+// and sign-up forms. Without TURNSTILE_SECRET_KEY (local development) it's
 // skipped. Server only.
 
 export async function humanCheck(token: string | undefined, ip?: string) {

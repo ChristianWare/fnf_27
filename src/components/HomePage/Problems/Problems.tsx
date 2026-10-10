@@ -21,7 +21,7 @@ const data = [
   {
     id: 4,
     title: "Free Website Audit",
-    price: "$0 · 60 seconds",
+    price: "$0 · Checked by hand",
     bullets: [
       "What riders see on Google",
       "Google visibility",
@@ -29,7 +29,7 @@ const data = [
       "Online booking check",
       "AI search readiness",
     ],
-    btnText: "Run a free website audit",
+    btnText: "Get a free website audit",
     href: "/audit",
     src: Img4,
   },
@@ -44,7 +44,7 @@ const data = [
       "Outreach scripts for each lead",
     ],
     btnText: "Get free leads in your city",
-    href: "/leads",
+    href: "/register?plan=leads",
     src: Img1,
   },
   {

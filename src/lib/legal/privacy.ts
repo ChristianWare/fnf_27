@@ -27,8 +27,8 @@ export const privacy: LegalDocData = {
         {
           type: "list",
           items: [
-            "Contact information: your name, email address, phone number, company name and role when you send the contact form, book a call, run the free audit or sign up for the leads tool.",
-            "Audit information: the website address you submit to the free audit, and the results we generate for it.",
+            "Contact information: your name, email address, phone number, company name and role when you send the contact form, book a call, ask for the free audit or sign up for the leads tool.",
+            "Audit information: the website address and any note you send with an audit request, and the audit we send back.",
             "Account and billing information: the details needed to set up your plan and bill it. Card payments are handled by Stripe; we do not store full card numbers.",
             "Usage information: how you use the Site and our software, such as pages visited, browser type, device, approximate location from your IP address, and the actions taken in your dashboard.",
             "Cookies and similar technologies: see section 8.",
@@ -95,7 +95,7 @@ export const privacy: LegalDocData = {
       blocks: [
         {
           type: "p",
-          text: "We keep your information for as long as we need it to provide our services, keep our records and meet our legal obligations. Audit results are kept so you can come back to them. When an operator cancels, we provide an export of their data on request and delete it from our systems within a reasonable time after the account closes, except where we must keep it by law.",
+          text: "We keep your information for as long as we need it to provide our services, keep our records and meet our legal obligations. Audit requests and the audits we send are kept so we can answer questions about them. When an operator cancels, we provide an export of their data on request and delete it from our systems within a reasonable time after the account closes, except where we must keep it by law.",
         },
       ],
     },

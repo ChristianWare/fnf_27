@@ -3,6 +3,8 @@ import PageTransitions from "@/components/shared/PageTransitions/PageTransitions
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
+import Analytics from "@/components/shared/Analytics/Analytics";
+import { APP_URL } from "@/lib/server/config";
 
 const CreatoDisplayMedium = localFont({
   src: "../../public/fonts/CreatoDisplay-Medium.otf",
@@ -58,13 +60,26 @@ const IBMPlexMonoBold = localFont({
   display: "swap",
 });
 
+// The home page's title and description, and the defaults for any page
+// without its own. Links shared anywhere show the page's own title and
+// description with the share image (opengraph-image.jpg), unless the page
+// brings its own picture (a Journal post).
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    URL.canParse(APP_URL) ? APP_URL : "https://fontsandfooters.com",
+  ),
   title: {
-    default: "Fonts & Footers | Custom Booking Websites",
-    template: "%s - Fonts & Footers",
+    default: "Limo Websites, Booking Software & Leads | Fonts & Footers",
+    template: "%s | Fonts & Footers",
   },
   description:
-    "Fonts & Footers builds lightning-fast, mobile-first booking platforms that cut no-shows, and automate deposits for salons, spas, rentals, and service brands.",
+    "Websites, booking software and leads built only for black car and limo operators. Get found on Google, take bookings with no per-booking fees, and win accounts.",
+  applicationName: "Fonts & Footers",
+  openGraph: {
+    type: "website",
+    siteName: "Fonts & Footers",
+    locale: "en_US",
+  },
   twitter: {
     card: "summary_large_image",
   },
@@ -99,6 +114,7 @@ export default function RootLayout({
           <PageTransitions />
           {children}
         </SmoothScroll>
+        <Analytics />
       </body>
     </html>
   );

@@ -12,7 +12,8 @@ import styles from "./PlanDetails.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import Speedometer from "@/components/shared/icons/Speedometer/Speedometer";
+import { TURNAROUND } from "@/lib/audit";
+import Clock from "@/components/shared/icons/Clock/Clock";
 import Bell from "@/components/shared/icons/Bell/Bell";
 import Lock from "@/components/shared/icons/Lock/Lock";
 import Payment from "@/components/shared/icons/Payment/Payment";
@@ -27,15 +28,15 @@ const options = [
     title: "Free Website Audit",
     desc: "See what's costing you bookings: how you show up on Google, how your site works on a phone, whether riders can book you online, and whether AI search can read you.",
     bullets: [
-      "Score out of 100, in 60 seconds",
+      "All six checks, done by hand",
       "Your top three fixes, ranked",
-      "Full report as a PDF, if you want it",
+      `By email within ${TURNAROUND}`,
     ],
-    stat: "60 sec",
-    statLabel: "To see your score",
+    stat: "6 checks",
+    statLabel: "Done by hand",
     tag: "Free website audit",
-    note: "No card, and no email needed to see your score.",
-    NoteIcon: Speedometer,
+    note: `No card. Ask on the audit page, and the audit comes to your inbox within ${TURNAROUND}.`,
+    NoteIcon: Clock,
     src: AuditImg,
     alt: "An operator in a suit checking his phone",
   },
@@ -117,7 +118,7 @@ export default function PlanDetails() {
             </div>
             <div className={styles.btnContainer} data-reveal>
               <Button
-                href='/leads'
+                href='/register?plan=leads'
                 btnType='black'
                 text='Get free leads in your city'
                 arrow

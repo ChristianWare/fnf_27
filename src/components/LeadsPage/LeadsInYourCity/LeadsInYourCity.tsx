@@ -301,7 +301,7 @@ export default function LeadsInYourCity() {
                     sign up. Free for 30 days, no card.
                   </p>
                   <Button
-                    href='/leads'
+                    href='/register?plan=leads'
                     btnType='black'
                     text='Show me the contacts'
                     arrow

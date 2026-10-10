@@ -239,9 +239,52 @@
   color: var(--text);
 }
 
+.textarea {
+  min-height: 7.8rem;
+  resize: vertical;
+  font-size: 1.8rem;
+  line-height: 1.4;
+}
+
+/* Cloudflare's box, when there is one. */
+.turnstile {
+  padding: 0.4rem 0.4rem 0;
+}
+
+/* Out of sight, but there for screen readers and the trap field. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .error {
   padding: 0 0.4rem;
   color: #b42318;
+}
+
+/* In place of the form once the request is in. */
+.thanks {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 4rem 3rem;
+  border-radius: 1.6rem;
+  background-color: var(--white);
+}
+
+.thanksHeading {
+  color: var(--black);
+}
+
+.thanksText {
+  max-width: 540px;
+  font-size: 16px;
+  color: var(--black);
 }
 
 /* The button fills the width. */
@@ -338,5 +381,9 @@
 
   .field {
     padding: 1.8rem 1.6rem;
+  }
+
+  .thanks {
+    padding: 3rem 2rem;
   }
 }

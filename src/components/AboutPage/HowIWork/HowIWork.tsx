@@ -64,7 +64,7 @@ export default function HowIWork() {
               </h2>
               <p className={styles.copy} data-reveal>
                 We built our platform to solve the real problems operators face.
-                If that sounds good, you're in the right place. So here are four things you
+                If that sounds good, you&apos;re in the right place. So here are four things you
                 can count on, whichever plan you choose.
               </p>
             </div>
@@ -72,7 +72,7 @@ export default function HowIWork() {
               <Button
                 href='/audit'
                 btnType='black'
-                text='Run a free website audit'
+                text='Get a free website audit'
                 arrow
               />
             </div>

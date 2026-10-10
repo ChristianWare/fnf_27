@@ -66,13 +66,13 @@ export default function WhichOne() {
             </div>
             <div className={styles.topRight} data-reveal>
               <p className={styles.note}>
-                Not sure which problem is costing you most? Run a free website
-                audit. It takes 60 seconds and shows where you stand.
+                Not sure which problem is costing you most? Get a free website
+                audit. We check your site by hand and show you where you stand.
               </p>
               <Button
                 href='/audit'
                 btnType='white'
-                text='Run a free website audit'
+                text='Get a free website audit'
                 arrow
               />
             </div>

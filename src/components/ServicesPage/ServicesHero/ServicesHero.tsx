@@ -18,7 +18,7 @@ const services = [
     name: "Website Audit",
     desc: "See what riders and hotels find when they Google you.",
     value: "Free",
-    note: "Results in 60 seconds",
+    note: "Checked by hand",
     href: "/audit",
     src: AuditImg,
     alt: "An operator in a suit checking his phone",

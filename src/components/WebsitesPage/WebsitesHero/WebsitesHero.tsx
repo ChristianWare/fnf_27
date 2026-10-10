@@ -52,7 +52,7 @@ export default function WebsitesHero() {
             <Button
               href='/audit'
               btnType='gray'
-              text='Run a free website audit'
+              text='Get a free website audit'
             />
           </div>
         </div>

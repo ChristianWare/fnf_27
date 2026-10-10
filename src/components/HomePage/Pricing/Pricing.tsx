@@ -11,6 +11,7 @@ import Design from "@/components/shared/icons/Design/Design";
 import Chris from "../../../../public/images/chris.png";
 import Logo from "@/components/shared/Logo/Logo";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import { TURNAROUND } from "@/lib/audit";
 
 type Plan = {
   id: number;
@@ -38,14 +39,14 @@ const auditPlan: Plan = {
   desc: "See what's costing you bookings: how you show up on Google, how your site works on a phone, and whether riders can book you online.",
   price: "$0",
   per: "Always free",
-  setup: "Results in 60 seconds. No card, and no email needed for your score.",
-  btnText: "Run a free website audit",
+  setup: `Checked by hand and emailed within ${TURNAROUND}. No card.`,
+  btnText: "Get a free website audit",
   href: "/audit",
   Icon: AuditIcon,
   featured: false,
   tab: "For seeing where you stand",
   features: [
-    "Score out of 100",
+    "All six checks, done by hand",
     "Top three fixes, ranked",
     "Google visibility",
     "Speed on a phone",
@@ -65,7 +66,7 @@ const plans: Plan[] = [
       "Free for the first 30 days, no card. Included with the Full Platform.",
     badge: "First 30 days free",
     btnText: "Get free leads in your city",
-    href: "/leads",
+    href: "/register?plan=leads",
     Icon: LeadsIcon,
     featured: false,
     tab: "For winning accounts",

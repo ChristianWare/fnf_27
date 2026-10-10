@@ -27,7 +27,7 @@ export default function FinalCta() {
           </p>
           <div className={styles.btnContainer}>
             <Button
-              href='/leads'
+              href='/register?plan=leads'
               btnType='black'
               text='Get free leads in your city'
               arrow

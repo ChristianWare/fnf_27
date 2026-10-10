@@ -1,8 +1,10 @@
 "use client";
 
-// The audit tool: the hero at the top of the page, the form under it, and
-// the results that show after a run. Until the real audit is connected, a
-// run returns the placeholder result in audit.ts.
+// The audit page's hero and the request form under it. An operator asks
+// for the free audit here; the request goes to the studio inbox
+// (requestAudit), and we check the site by hand and email the audit back
+// within TURNAROUND. The automatic audit, with the score on the page, comes
+// later; its results view is in ../AuditResults.
 
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
@@ -10,20 +12,26 @@ import styles from "./AuditTool.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import Speedometer from "@/components/shared/icons/Speedometer/Speedometer";
+import Turnstile from "@/components/shared/Turnstile/Turnstile";
+import Clock from "@/components/shared/icons/Clock/Clock";
 import Money from "@/components/shared/icons/Money/Money";
 import Invoice from "@/components/shared/icons/Invoice/Invoice";
 import Driver from "@/components/shared/icons/Driver/Driver";
-import AuditResults from "../AuditResults/AuditResults";
-import { runAudit, type AuditResult } from "./audit";
+import { ToastProvider, useToast } from "@/components/Dashboard/Toast/Toast";
+import { STAMP_FIELD, TRAP_FIELD } from "@/lib/forms/fields";
+import { cleanUrl, hostOf, TURNAROUND } from "@/lib/audit";
+import { track } from "@/lib/analytics";
+import { requestAudit, type AuditField } from "@/app/audit/actions";
 import HeroImg from "../../../../public/images/audit.jpg";
+
+const Turnaround = TURNAROUND[0].toUpperCase() + TURNAROUND.slice(1);
 
 // The quick facts along the bottom of the hero's text card.
 const heroFacts = [
   { label: "Price", value: "Free, no card" },
-  { label: "Time", value: "60 seconds" },
-  { label: "Score", value: "Out of 100" },
-  { label: "Report", value: "The full PDF, by email" },
+  { label: "Turnaround", value: Turnaround },
+  { label: "Checked by", value: "A person, not a script" },
+  { label: "Report", value: "By email, fixes ranked" },
   { label: "Checks", value: "6, on your live site" },
   { label: "Built for", value: "Black car & limo operators" },
 ];
@@ -32,15 +40,15 @@ const heroFacts = [
 const facts = [
   {
     id: 1,
-    title: "60 seconds",
-    sub: "Results right here on the page",
-    Icon: Speedometer,
+    title: Turnaround,
+    sub: "Checked by a person, not a script",
+    Icon: Clock,
   },
   { id: 2, title: "Free", sub: "No payment and no card", Icon: Money },
   {
     id: 3,
-    title: "The full report by email",
-    sub: "Sent as a PDF, automatically",
+    title: "The audit by email",
+    sub: "Your fixes, ranked, in plain English",
     Icon: Invoice,
   },
   {
@@ -52,80 +60,95 @@ const facts = [
 ];
 
 const youGet = [
-  "A score out of 100",
+  "Where you stand on all six checks",
   "Your top three fixes, ranked",
-  "The full report as a PDF, in your inbox",
+  "Plain English you can hand to any developer",
 ];
 
-// Accepts "yourcompany.com", "www.yourcompany.com" or a full address.
-function cleanUrl(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const withScheme = /^https?:\/\//i.test(trimmed)
-    ? trimmed
-    : `https://${trimmed}`;
-  try {
-    const url = new URL(withScheme);
-    if (!url.hostname.includes(".")) return null;
-    return url.href;
-  } catch {
-    return null;
-  }
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type Props = {
+  /** Cloudflare's site key; without one there's no box. */
+  siteKey?: string;
+  /** When the page was drawn, signed by the server. */
+  stamp: string;
+};
+
+export default function AuditTool(props: Props) {
+  return (
+    <ToastProvider>
+      <Tool {...props} />
+    </ToastProvider>
+  );
 }
 
-const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-type Field = "name" | "website" | "email";
-
-export default function AuditTool() {
+function Tool({ siteKey, stamp }: Props) {
+  const toast = useToast();
   const [name, setName] = useState("");
   const [website, setWebsite] = useState("");
   const [email, setEmail] = useState("");
-  const [error, setError] = useState<{ field: Field; text: string } | null>(
-    null,
-  );
-  const [running, setRunning] = useState(false);
-  const [result, setResult] = useState<AuditResult | null>(null);
+  const [note, setNote] = useState("");
+  const [error, setError] = useState<{
+    field?: AuditField;
+    text: string;
+  } | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  // Counts the failed sends, so the box asks for a fresh token each time.
+  const [failed, setFailed] = useState(0);
+
+  function fail(text: string, field?: AuditField) {
+    setError({ field, text });
+    setFailed((n) => n + 1);
+    toast("That didn't send", { tone: "error", detail: text });
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const url = cleanUrl(website);
+    const form = event.currentTarget;
     if (!name.trim()) {
       setError({ field: "name", text: "Enter your name." });
       return;
     }
-    if (!url) {
+    if (!cleanUrl(website)) {
       setError({
         field: "website",
         text: "Enter your website, like www.yourcompany.com.",
       });
       return;
     }
-    if (!isEmail(email.trim())) {
+    if (!EMAIL_RE.test(email.trim())) {
       setError({
         field: "email",
-        text: "Enter the email address to send the report to.",
+        text: "Enter the email address to send the audit to.",
       });
       return;
     }
     setError(null);
-    setRunning(true);
+    setSending(true);
     try {
-      setResult(
-        await runAudit({ name: name.trim(), url, email: email.trim() }),
-      );
-      // Bring the results into view once they've rendered.
-      requestAnimationFrame(() => {
-        document
-          .getElementById("audit-results")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+      // Everything in the form, the hidden fields and Cloudflare's token
+      // included.
+      const result = await requestAudit(new FormData(form));
+      if (result.ok) {
+        setSent(true);
+        track("Audit request");
+        toast("Request sent", {
+          detail: `Your audit comes to ${email.trim()} within ${TURNAROUND}.`,
+        });
+      } else {
+        fail(result.error, result.field);
+      }
+    } catch {
+      fail("That didn't send. Check your connection and try again.");
     } finally {
-      setRunning(false);
+      setSending(false);
     }
   }
 
-  const invalid = (field: Field) => (error?.field === field ? true : undefined);
+  const invalid = (field: AuditField) =>
+    error?.field === field ? true : undefined;
+  const site = cleanUrl(website);
 
   return (
     <>
@@ -145,15 +168,16 @@ export default function AuditTool() {
               Free Website Audit for Limo &amp; Black Car Companies
             </h1>
             <p className={styles.copy} data-reveal>
-              See what&apos;s costing you bookings in 60 seconds: how you show
-              up on Google, how your site works on a phone, whether riders can
-              book you online, and whether AI search can read you.
+              Find out what&apos;s costing you bookings: how you show up on
+              Google, how your site works on a phone, whether riders can book
+              you online, and whether AI search can read you. We check it by
+              hand and email you the fixes, ranked, within {TURNAROUND}.
             </p>
             <div className={styles.btnContainer} data-reveal>
               <Button
                 href='#audit-form'
                 btnType='black'
-                text='Run my free audit'
+                text='Request my free audit'
                 arrow
               />
               <Button
@@ -191,7 +215,7 @@ export default function AuditTool() {
       <section
         className={styles.tool}
         id='audit-form'
-        aria-label='Run your free audit'
+        aria-label='Request your free audit'
       >
         <Reveal />
         <div className={styles.aside} data-reveal>
@@ -221,90 +245,141 @@ export default function AuditTool() {
           </div>
         </div>
 
-        <form
-          className={styles.form}
-          onSubmit={onSubmit}
-          noValidate
-          data-reveal
-        >
-          <label className={styles.field}>
-            <span className={styles.label}>Full name*</span>
-            <input
-              className={styles.input}
-              type='text'
-              name='name'
-              autoComplete='name'
-              placeholder='Enter your name'
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              aria-invalid={invalid("name")}
-              disabled={running}
-            />
-          </label>
-
-          <div className={styles.row}>
+        {sent ? (
+          <div className={styles.thanks} role='status' data-reveal>
+            <span className={styles.label}>Request sent</span>
+            <p className={`${styles.thanksHeading} h4`}>
+              Thanks, {name.trim().split(" ")[0]}.
+            </p>
+            <p className={styles.thanksText}>
+              We&apos;ll check {site ? hostOf(site) : "your site"} and your
+              Google listing by hand, and email the audit to {email.trim()}{" "}
+              within {TURNAROUND}. If anything comes up before then, reply to
+              that email or write to hello@fontsandfooters.com.
+            </p>
+          </div>
+        ) : (
+          <form
+            className={styles.form}
+            onSubmit={onSubmit}
+            noValidate
+            data-reveal
+          >
             <label className={styles.field}>
-              <span className={styles.label}>Your website*</span>
+              <span className={styles.label}>Full name*</span>
               <input
                 className={styles.input}
                 type='text'
-                name='website'
-                inputMode='url'
-                autoComplete='url'
-                placeholder='www.yourcompany.com'
-                value={website}
-                onChange={(event) => setWebsite(event.target.value)}
-                aria-invalid={invalid("website")}
-                disabled={running}
+                name='name'
+                autoComplete='name'
+                placeholder='Enter your name'
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                aria-invalid={invalid("name")}
+                disabled={sending}
               />
             </label>
+
+            <div className={styles.row}>
+              <label className={styles.field}>
+                <span className={styles.label}>Your website*</span>
+                <input
+                  className={styles.input}
+                  type='text'
+                  name='website'
+                  inputMode='url'
+                  autoComplete='url'
+                  placeholder='www.yourcompany.com'
+                  value={website}
+                  onChange={(event) => setWebsite(event.target.value)}
+                  aria-invalid={invalid("website")}
+                  disabled={sending}
+                />
+              </label>
+
+              <label className={styles.field}>
+                <span className={styles.label}>Email address*</span>
+                <input
+                  className={styles.input}
+                  type='email'
+                  name='email'
+                  inputMode='email'
+                  autoComplete='email'
+                  placeholder='you@yourcompany.com'
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  aria-invalid={invalid("email")}
+                  disabled={sending}
+                />
+              </label>
+            </div>
 
             <label className={styles.field}>
-              <span className={styles.label}>Email address*</span>
-              <input
-                className={styles.input}
-                type='email'
-                name='email'
-                inputMode='email'
-                autoComplete='email'
-                placeholder='you@yourcompany.com'
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                aria-invalid={invalid("email")}
-                aria-describedby='audit-email-note'
-                disabled={running}
+              <span className={styles.label}>
+                Anything we should look at? (optional)
+              </span>
+              <textarea
+                className={`${styles.input} ${styles.textarea}`}
+                name='note'
+                rows={3}
+                placeholder='A city you want to rank in, a page you’re unsure about, your Google listing…'
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                disabled={sending}
               />
             </label>
-          </div>
 
-          <p id='audit-email-note' className={styles.emailNote}>
-            The full report goes to this address as a PDF. I read the audits
-            that come through and sometimes follow up personally to walk an
-            operator through the results. No pitch if it&apos;s not a fit.
-          </p>
-
-          {error && (
-            <p className={styles.error} role='alert'>
-              {error.text}
+            <p className={styles.emailNote}>
+              We&apos;ll email the audit to the address above. If you want, we
+              can walk you through it on a short call. No pitch if it&apos;s not
+              a fit.
             </p>
-          )}
 
-          <div className={styles.submit}>
-            <Button
-              type='submit'
-              btnType='black'
-              text={running ? "Running your audit…" : "Run my free audit"}
-              disabled={running}
-              arrow
+            {/* For bots only: a person never sees this field, so a value
+                in it means a bot filled the form. */}
+            <div className={styles.srOnly} aria-hidden='true'>
+              <label>
+                Leave this empty
+                <input
+                  type='text'
+                  name={TRAP_FIELD}
+                  tabIndex={-1}
+                  autoComplete='off'
+                  defaultValue=''
+                />
+              </label>
+            </div>
+            <input type='hidden' name={STAMP_FIELD} value={stamp} />
+
+            <Turnstile
+              siteKey={siteKey}
+              resetKey={failed}
+              className={styles.turnstile}
             />
-          </div>
-          <p className={styles.note}>
-            Free, and built for black car and limo operators.
-          </p>
-        </form>
-      </section>
 
-      {result && <AuditResults result={result} />}
+            {error && (
+              <p className={styles.error} role='alert'>
+                {error.text}
+              </p>
+            )}
+
+            <div className={styles.submit}>
+              <Button
+                type='submit'
+                btnType='black'
+                text={
+                  sending ? "Sending your request…" : "Request my free audit"
+                }
+                disabled={sending}
+                arrow
+              />
+            </div>
+            <p className={styles.note}>
+              Free, and built for black car and limo operators.
+            </p>
+          </form>
+        )}
+      </section>
     </>
   );
 }

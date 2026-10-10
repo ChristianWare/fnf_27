@@ -24,7 +24,7 @@ const servicesFaqs: FaqItem[] = [
     id: 1,
     question: "Which service should I start with?",
     answer:
-      "Start with the problem you have. If you're nowhere on Google, that's the website. If clients can't book online, that's the booking software on the Full Platform. If business is slow, that's the leads tool. Not sure? Run the free website audit. It takes 60 seconds and shows where you stand.",
+      "Start with the problem you have. If you're nowhere on Google, that's the website. If clients can't book online, that's the booking software on the Full Platform. If business is slow, that's the leads tool. Not sure? Ask for the free website audit. We check your site by hand and show you where you stand.",
   },
   {
     id: 2,
@@ -55,13 +55,13 @@ const servicesFaqs: FaqItem[] = [
     id: 6,
     question: "What does the free website audit check?",
     answer:
-      "How you show up on Google, how your site works on a phone, whether riders can book you online, and whether AI search can read you. You get a score out of 100 and your top three fixes, with no card and no email needed for your score.",
+      "How you show up on Google, how your site works on a phone, whether riders can book you online, and whether AI search can read you. We check it by hand and email you where you stand, with your top three fixes ranked, within two business days. No card.",
   },
   {
     id: 7,
     question: "How long does it take to launch?",
     answer:
-      "Most sites launch within 3 weeks. The leads tool and the free audit work right away.",
+      "Most sites launch within 3 weeks. The leads tool works right away, and the free audit comes back within two business days.",
   },
   {
     id: 8,

@@ -32,9 +32,9 @@ const contactFaqs: FaqItem[] = [
   },
   {
     id: 3,
-    question: "Should I run the free audit first?",
+    question: "Should I get the free audit first?",
     answer:
-      "It helps. The audit takes 60 seconds and shows where your site stands on the searches riders make, so the call starts from real numbers. It's at fontsandfooters.com/audit.",
+      "It helps. We check where your site stands on the searches riders make, so the call starts from real numbers. Ask for it at fontsandfooters.com/audit; it comes back within two business days.",
   },
   {
     id: 4,

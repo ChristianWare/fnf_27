@@ -27,13 +27,15 @@ export default function Hero() {
             </p>
             <div className={styles.btnContainer} data-reveal>
               <Button
+                href='/register?plan=leads'
                 btnType='black'
                 text='Get free leads in your city'
                 arrow
               />
               <Button
+                href='/audit'
                 btnType='gray'
-                text='run a free website audit'
+                text='Get a free website audit'
                 arrow
               />
             </div>

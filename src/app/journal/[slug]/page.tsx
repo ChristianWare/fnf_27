@@ -28,6 +28,7 @@ export async function generateMetadata({
     openGraph: {
       title: post.title,
       description: post.excerpt,
+      siteName: "Fonts & Footers",
       type: "article",
       publishedTime: post.date,
       images: [{ url: post.image, alt: post.imageAlt }],

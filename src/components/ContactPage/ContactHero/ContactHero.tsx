@@ -15,6 +15,7 @@ import Turnstile from "@/components/shared/Turnstile/Turnstile";
 import { ToastProvider, useToast } from "@/components/Dashboard/Toast/Toast";
 import { STAMP_FIELD, TRAP_FIELD } from "@/lib/forms/fields";
 import { sendInquiry } from "@/app/contact/actions";
+import { track } from "@/lib/analytics";
 import HeroImg from "../../../../public/images/newHero.png";
 import Barry from "../../../../public/images/barry.png";
 
@@ -87,6 +88,7 @@ function Hero({ siteKey, stamp }: Props) {
       const result = await sendInquiry(new FormData(form));
       if (result.ok) {
         setSent(true);
+        track("Contact");
         toast("Message sent", {
           detail: `We'll reply to ${values.email.trim()} within 24 hours.`,
         });

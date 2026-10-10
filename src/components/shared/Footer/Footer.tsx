@@ -7,6 +7,7 @@ import LinkedIn from "../icons/LinkedIn/LinkedIn";
 import Instagram from "../icons/Instagram/Instagram";
 import Facebook from "../icons/Facebook/Facebook";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import { newsletterOn } from "@/lib/server/mailchimp";
 
 // Contact details. Keep them exactly as they appear on the Fonts & Footers
 // Google Business Profile. Leave PHONE empty to hide it.
@@ -54,7 +55,6 @@ const columns = [
         links: [
           { text: "Free leads tool", href: "/services/leads" },
           { text: "Website audit", href: "/audit" },
-          { text: "Free templates", href: "/resources" },
         ],
       },
     ],
@@ -115,18 +115,21 @@ export default function Footer() {
                 <span className={styles.brandName}>Fonts &amp; Footers</span>
               </div>
 
-              <div className={styles.newsletter}>
-                <span className={styles.label}>One email a month</span>
-                <NewsletterForm />
-                <p className={styles.small}>
-                  The best post of the month and one tip you can use that week.
-                  By subscribing you agree to our{" "}
-                  <Link href='/privacy' className={styles.inlineLink}>
-                    Privacy Policy
-                  </Link>
-                  .
-                </p>
-              </div>
+              {/* Only once Mailchimp is set up (lib/server/mailchimp.ts). */}
+              {newsletterOn() && (
+                <div className={styles.newsletter}>
+                  <span className={styles.label}>One email a month</span>
+                  <NewsletterForm />
+                  <p className={styles.small}>
+                    The best post of the month and one tip you can use that
+                    week. By subscribing you agree to our{" "}
+                    <Link href='/privacy' className={styles.inlineLink}>
+                      Privacy Policy
+                    </Link>
+                    .
+                  </p>
+                </div>
+              )}
 
               <ul className={styles.socials}>
                 {socials.map(({ id, label, href, Icon }) => (

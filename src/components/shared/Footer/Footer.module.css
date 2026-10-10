@@ -104,6 +104,21 @@
   outline-offset: 3px;
 }
 
+.submit:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+/* Out of sight: the trap field only a bot fills in. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .submitArrow {
   width: 1.4rem;
   height: 1.4rem;

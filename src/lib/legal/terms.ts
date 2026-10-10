@@ -33,7 +33,7 @@ export const terms: LegalDocData = {
             "Website Only: a custom website with an SEO foundation, hosting and edits, for a monthly fee plus a one-time setup fee.",
             "Full Platform: a custom website with the booking, dispatch, driver and admin software built in, and the leads tool included, for a monthly fee plus a one-time setup fee.",
             "Leads tool: a monthly subscription to the leads tool on its own, with a free trial period.",
-            "Free website audit: an automated report on a website you submit, provided as is and for information only.",
+            "Free website audit: a review of a website you submit, provided as is and for information only.",
           ],
         },
         {

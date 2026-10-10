@@ -166,7 +166,7 @@ export default function AuditResults({ result }: { result: AuditResult }) {
               <div>
                 <div className={styles.btnContainer}>
                   <Button
-                    href='/leads'
+                    href='/register?plan=leads'
                     btnType='white'
                     text='Get free leads in your city'
                     arrow

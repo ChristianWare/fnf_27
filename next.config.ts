@@ -18,13 +18,43 @@ const nextConfig: NextConfig = {
     return [
       // The audit is a free tool, not a service page. Catch the guessed URL.
       { source: "/services/audit", destination: "/audit", permanent: true },
-      // "Get free leads in your city" everywhere: the sign-up, on the
-      // Leads Tool.
+
+      // The old site's pages, where Google and old links still send people.
+      // Permanent, so their place in search moves to the new page.
+      { source: "/leads", destination: "/services/leads", permanent: true },
       {
-        source: "/leads",
-        destination: "/register?plan=leads",
-        permanent: false,
+        source: "/websites",
+        destination: "/services/websites",
+        permanent: true,
       },
+      { source: "/portfolio", destination: "/projects", permanent: true },
+      { source: "/components", destination: "/", permanent: true },
+
+      // The old dashboard's pages, linked from emails clients still have
+      // (the morning leads emails, billing, the website steps).
+      ...[
+        [
+          "/dashboard/leads/:kind(hot|warm|cold|place|preview)/:id",
+          "/dashboard/leads",
+        ],
+        ["/dashboard/leads/search", "/dashboard/leads/find"],
+        ["/dashboard/leads/:page(saved|welcome)", "/dashboard/leads"],
+        ["/dashboard/billing/website", "/dashboard/billing"],
+        ["/dashboard/enroll/:plan(leads|website)", "/dashboard/billing"],
+        ["/dashboard/website/change-requests", "/dashboard/website/changes"],
+        ["/dashboard/website/design-selection", "/dashboard/website/design"],
+        [
+          "/dashboard/website/documents/:id/sign",
+          "/dashboard/website/documents",
+        ],
+        ["/admin/change-requests", "/admin/requests"],
+        ["/admin/support", "/admin/messages"],
+        ["/admin/clients/:id/:tab(leads|website)", "/admin/clients/:id"],
+      ].map(([source, destination]) => ({
+        source,
+        destination,
+        permanent: false,
+      })),
     ];
   },
 };

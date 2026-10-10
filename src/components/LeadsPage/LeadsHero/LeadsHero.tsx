@@ -38,7 +38,7 @@ export default function LeadsHero() {
           </p>
           <div className={styles.btnContainer} data-reveal>
             <Button
-              href='/leads'
+              href='/register?plan=leads'
               btnType='black'
               text='Get free leads in your city'
               arrow

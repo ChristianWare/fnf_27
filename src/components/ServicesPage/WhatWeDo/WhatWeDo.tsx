@@ -20,6 +20,7 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
+import { TURNAROUND } from "@/lib/audit";
 import WebsitesImg from "../../../../public/images/websiteOnly.jpg";
 import BookingImg from "../../../../public/images/dispatch.jpg";
 import LeadsImg from "../../../../public/images/leads.jpg";
@@ -73,9 +74,9 @@ const services = [
   {
     id: 4,
     title: "Free website audit",
-    desc: "See what's costing you bookings in 60 seconds: how you show up on Google, how your site works on a phone, whether riders can book you online, and whether AI search can read you.",
-    price: "Free. No card, and no email needed for your score.",
-    link: "Run a free website audit",
+    desc: "See what's costing you bookings: how you show up on Google, how your site works on a phone, whether riders can book you online, and whether AI search can read you.",
+    price: `Free. No card, and it's back within ${TURNAROUND}.`,
+    link: "Get a free website audit",
     href: "/audit",
     src: AuditImg,
   },

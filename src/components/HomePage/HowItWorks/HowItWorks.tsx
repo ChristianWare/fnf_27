@@ -13,7 +13,7 @@ const steps = [
   {
     id: 2,
     title: "See what those leads see when they Google you",
-    desc: "Before you email a hotel, run the free audit. It shows what that hotel finds when it looks you up: your site, your Google profile and your reviews.",
+    desc: "Before you email a hotel, get the free audit. It shows what that hotel finds when it looks you up: your site, your Google profile and your reviews.",
   },
   {
     id: 3,
@@ -40,7 +40,7 @@ export default function HowItWorks() {
               </h2>
               <div className={styles.btnContainer}>
                 <Button
-                  href='/leads'
+                  href='/register?plan=leads'
                   btnType='black'
                   text='Get free leads in your city'
                   arrow

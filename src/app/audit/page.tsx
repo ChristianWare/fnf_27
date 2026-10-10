@@ -7,6 +7,11 @@ import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
 import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
+import { TURNAROUND } from "@/lib/audit";
+import { formStamp } from "@/lib/server/spam";
+
+// Drawn fresh on each visit, so the form's stamp is too.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: {
@@ -14,7 +19,7 @@ export const metadata: Metadata = {
       "Free Website Audit for Limo & Black Car Companies | Fonts & Footers",
   },
   description:
-    "See what's costing you bookings in 60 seconds: how you show up on Google, how your site works on a phone, whether riders can book you online, and whether AI search can read you.",
+    "Find out what's costing you bookings: Google, your site on a phone, online booking and AI search. Checked by hand and free, for limo and black car operators.",
 };
 
 const auditFaqs: FaqItem[] = [
@@ -25,27 +30,31 @@ const auditFaqs: FaqItem[] = [
   },
   {
     id: 2,
-    question: "Do I need to give you my email?",
-    answer:
-      "Yes, so the full report can be sent to you as a PDF. Your score and your top fixes show on this page right away, and the PDF lands in your inbox a minute or two later.",
+    question: "How long does it take?",
+    answer: `Within ${TURNAROUND}. We check your live site and your Google listing by hand, from a phone, the way a rider would find you, and email you what we found.`,
   },
   {
     id: 3,
-    question: "What if my score is low?",
-    answer:
-      "Most operators score lower than they expect. The report ranks the fixes, so you know exactly what to do first, and you can hand it to any developer.",
+    question: "Why do you need my email?",
+    answer: "That's where the audit goes, and where we answer if you reply.",
   },
   {
     id: 4,
-    question: "How long does it take?",
+    question: "What if my site doesn't do well?",
     answer:
-      "About 60 seconds. The checks run on your live site and your Google listing while you wait, and the results show on this page.",
+      "Most operators find more to fix than they expect. The audit ranks the fixes, so you know exactly what to do first, and you can hand it to any developer.",
   },
   {
     id: 5,
+    question: "Will you try to sell me something?",
+    answer:
+      "No. You get the audit either way. If you want help with the fixes, we can talk about it, and if we're not the right fit, we'll say so.",
+  },
+  {
+    id: 6,
     question: "Can I share the results?",
     answer:
-      "Yes. Every report gets its own link you can copy and send to whoever handles your website, and the PDF in your inbox forwards like any other.",
+      "Yes. The audit comes as an email, so you can forward it to whoever handles your website.",
   },
 ];
 
@@ -53,7 +62,10 @@ export default function AuditPage() {
   return (
     <main className={styles.container}>
       <Nav />
-      <AuditTool />
+      <AuditTool
+        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+        stamp={formStamp()}
+      />
       <FeatureMarquee />
       <WhatItChecks />
       <Faq faqs={auditFaqs} heading='Audit Questions' />

@@ -1,0 +1,126 @@
+/* One white card under the nav: the message and the buttons on the left,
+   the places most people are headed on the right. */
+.card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: 6rem;
+  margin: 0 0.5rem;
+  min-height: clamp(56rem, calc(100svh - 9rem), 80rem);
+  padding: 8rem 3rem;
+  border-radius: 3rem;
+  background-color: var(--white);
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heading {
+  max-width: 560px;
+  text-wrap: balance;
+}
+
+.copy {
+  max-width: 480px;
+}
+
+.btnContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.login {
+  margin-top: 1rem;
+}
+
+.loginLink {
+  color: var(--black);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The places: light cards, two to a row. */
+.places {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.place {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  height: 100%;
+  padding: 2.4rem 5rem 2.4rem 2.4rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+  color: var(--black);
+  transition: background-color 0.2s ease;
+}
+
+.place:hover,
+.place:focus-visible {
+  background-color: var(--light2);
+}
+
+.placeTitle {
+  text-transform: none;
+}
+
+.placeDesc {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.arrow {
+  position: absolute;
+  top: 2.6rem;
+  right: 2.4rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.place:hover .arrow {
+  transform: rotate(45deg) translateY(-3px);
+}
+
+@media screen and (max-width: 968px) {
+  .card {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 4rem;
+    min-height: 0;
+    padding: 6rem 3rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .card {
+    padding: 6rem 1.5rem 2rem;
+    border-radius: 2rem;
+  }
+
+  .places {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .place {
+    padding: 2rem 5rem 2rem 1.6rem;
+  }
+
+  .arrow {
+    top: 2.2rem;
+    right: 1.6rem;
+  }
+}

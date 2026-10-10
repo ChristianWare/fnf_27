@@ -48,6 +48,7 @@ test branch of the database):
 | The Leads Tool's keys | See `LEADS.md`: Google (two keys), Ticketmaster, Apify, SerpApi, Apollo, Anthropic |
 | `PLAUSIBLE_API_KEY` | The Growth page's visitors: a Plausible Stats API key. See `GROWTH.md` |
 | `GOOGLE_SEARCH_CONSOLE_KEY` | The Growth page's Google numbers: a service account's JSON key. See `GROWTH.md` |
+| `MAILCHIMP_API_KEY`, `MAILCHIMP_AUDIENCE_ID`, `MAILCHIMP_DC` | Same as the old site. They switch on the footer's newsletter sign-up |
 
 Leave `EMAIL_REDIRECT_TO` unset on Production.
 
@@ -81,7 +82,19 @@ Everyone signs in once after the switch, with the same password. Anyone
 who only ever used "Sign in with Google" on the old site sets a password
 with "Forgot it?" on the login page.
 
-## 4. Afterwards
+## 4. The day after
+
+- **Plausible:** the new site counts visitors on the same site,
+  `fontsandfooters.com`, so the numbers carry on. Under **Site settings →
+  Goals**, add three custom event goals: `Audit request`, `Contact` and
+  `Newsletter`. Add a pageview goal for `/register/check-email` to count
+  sign-ups.
+- **Google Search Console:** open the `fontsandfooters.com` property and
+  submit `https://fontsandfooters.com/sitemap.xml` under **Sitemaps**.
+- Check a few old addresses land in the right place: `/leads`,
+  `/websites`, `/portfolio` (all in `next.config.ts`).
+
+## 5. Afterwards
 
 - Watch Vercel's logs for `/api/webhooks/stripe` on the next 1st.
 - When you're happy: `drop schema old_site cascade;` on the new branch, and
