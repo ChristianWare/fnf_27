@@ -154,7 +154,8 @@
 .photo {
   position: relative;
   width: 6.4rem;
-  height: 6.4rem;
+  min-height: 6.4rem;
+  height: 100%;
   border-radius: 1rem;
   overflow: hidden;
   background-color: var(--light2);
@@ -260,7 +261,7 @@
 
 /* Phones: one column. "Based in" moves under the heading, and the card
    goes full width. */
-@media screen and (max-width: 568px) {
+@media screen and (max-width: 768px) {
   .container {
     height: auto;
     min-height: 600px;

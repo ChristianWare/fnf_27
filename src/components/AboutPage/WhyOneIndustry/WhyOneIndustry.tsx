@@ -42,11 +42,11 @@ export default function WhyOneIndustry() {
             <div className={styles.leftTop}>
               <EyeBrow text='Why only black car operators' />
               <h2
-                className={`${styles.heading} h3`}
+                className={`${styles.heading} h4`}
                 data-reveal
                 data-reveal-style='fade'
               >
-                People ask why I only build for black car and limo operators.
+                People ask why we only build for black car and limo operators.
                 Why not restaurants, gyms, or small businesses in general?
               </h2>
               <div className={styles.copies} data-reveal>

@@ -78,7 +78,8 @@ export default function EachLead() {
               data-reveal
               data-reveal-style='fade'
             >
-              What Comes With Every Lead
+              What Comes with <br />
+              Every Lead
             </h2>
             <p className={styles.introCopy} data-reveal>
               Four things on every lead the tool finds: the person to contact,
