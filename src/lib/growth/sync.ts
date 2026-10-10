@@ -1,8 +1,9 @@
-// Every night, each live site's numbers from Google: visitors from search
-// (Search Console) and their rating and review count (Google Maps). The
-// first pull goes back to launch day, or as far as Search Console keeps
-// (16 months); after that each night re-reads the last ten days, since
-// Google keeps adjusting recent numbers. Server only.
+// Every night, each live site's numbers: everyone who visited, where they
+// came from and where they landed (Plausible), visitors from Google search
+// (Search Console), and their rating and review count (Google Maps). The
+// first pull goes back to launch day (Search Console keeps 16 months);
+// after that each night re-reads the last few days, since recent numbers
+// keep settling. Server only.
 
 import { and, eq, gt, isNull, lt, max, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
@@ -22,6 +23,14 @@ import {
   todayPacific,
 } from "./dates";
 import {
+  plausibleProblem,
+  plausibleText,
+  siteNames,
+  siteRefused,
+  stats,
+  type StatsRow,
+} from "./plausible";
+import {
   domainOf,
   keyProblem,
   listSites,
@@ -32,14 +41,28 @@ import {
   type SearchRow,
 } from "./searchConsole";
 
-const { websites, clients, trafficDays, trafficQueries, reviewDays } = schema;
+const {
+  websites,
+  clients,
+  trafficDays,
+  trafficQueries,
+  reviewDays,
+  visitDays,
+  visitChannels,
+  visitSources,
+  visitPages,
+} = schema;
 
 /** Search Console keeps about 16 months. */
 const HISTORY_DAYS = 486;
 /** Each night re-reads this many days: Google settles them slowly. */
 const REREAD_DAYS = 10;
+/** Plausible's are final the next day; a few more cover a missed night. */
+const VISIT_REREAD_DAYS = 3;
 /** Searches kept a day, most clicks first. */
 const SEARCHES_A_DAY = 100;
+/** Sources and landing pages kept a day, most visitors first. */
+const TOP_A_DAY = 50;
 /** Google Maps' terms: its numbers are kept at most 30 days. */
 const REVIEW_DAYS = 30;
 
@@ -288,6 +311,298 @@ export async function syncTraffic(
   }
 }
 
+type Named = { name: string; visitors: number; visits: number };
+
+/**
+ * A breakdown's rows a day ("Google", "/about"…), the biggest first. Very
+ * long names are cut, and two that end up the same are counted as one.
+ */
+function byDay(rows: StatsRow[], from: string, to: string, top?: number) {
+  const days = new Map<string, Map<string, Named>>();
+  for (const row of rows) {
+    const [day, raw] = row.dimensions;
+    if (!day || day < from || day > to) continue;
+    const name = (raw ?? "").trim().slice(0, 300) || "(none)";
+    const list = days.get(day) ?? new Map<string, Named>();
+    const seen = list.get(name);
+    const visitors = Math.round(row.metrics[0] ?? 0);
+    const visits = Math.round(row.metrics[1] ?? 0);
+    if (seen) {
+      seen.visitors += visitors;
+      seen.visits += visits;
+    } else list.set(name, { name, visitors, visits });
+    days.set(day, list);
+  }
+  const out: (Named & { day: string })[] = [];
+  for (const [day, list] of days)
+    [...list.values()]
+      .filter((r) => r.visitors > 0 || r.visits > 0)
+      .sort((a, b) => b.visitors - a.visitors || b.visits - a.visits)
+      .slice(0, top ?? Infinity)
+      .forEach((r) => out.push({ day, ...r }));
+  return out;
+}
+
+/**
+ * Everyone who visited, from Plausible: a row a day since launch, and the
+ * same days by channel, source and landing page. `full` reads everything
+ * since launch again (the admin's "Pull now").
+ */
+export async function syncVisits(
+  clientId: string,
+  { full = false, now = new Date() } = {},
+): Promise<PullResult> {
+  const site = await siteOf(clientId);
+  if (!site) return { ok: false, error: "They don't have a website plan." };
+  const launchedAt = site.facts.launchedAt;
+  if (!launchedAt)
+    return { ok: false, error: "Their site isn't live yet: nothing to read." };
+  const problem = plausibleProblem();
+  if (problem) return { ok: false, error: problem };
+
+  const [{ last } = { last: null }] = await db
+    .select({ last: max(visitDays.day) })
+    .from(visitDays)
+    .where(eq(visitDays.clientId, clientId));
+  let name = site.plausibleSite ?? undefined;
+  const fail = async (error: string): Promise<PullResult> => {
+    await noteSync(clientId, {
+      visits: {
+        at: now.toISOString(),
+        error,
+        ...(last ? { through: last } : {}),
+      },
+    });
+    return { ok: false, error };
+  };
+
+  // Whole days only: up to yesterday. Plausible counts in the site's own
+  // time zone, and the nightly pull runs once every US day is over.
+  const launchDay = dayKey(launchedAt);
+  const through = addDays(todayAz(now), -1);
+  const start =
+    full || !last
+      ? launchDay
+      : maxDay(launchDay, addDays(last, -VISIT_REREAD_DAYS));
+  if (through < start) {
+    await noteSync(clientId, { visits: { at: now.toISOString() } });
+    return { ok: true, days: 0, property: name };
+  }
+
+  try {
+    const totalsFor = (site: string) =>
+      stats({
+        site,
+        from: start,
+        to: through,
+        metrics: ["visitors", "visits", "pageviews"],
+        dimensions: ["time:day"],
+      });
+
+    // The first time, their site's name in Plausible, from their domain.
+    let totals: StatsRow[] | undefined;
+    if (name) totals = await totalsFor(name);
+    else {
+      const domain = domainOf(site);
+      if (!domain)
+        return await fail(
+          "Add their domain under Site links first, so we know which Plausible site is theirs.",
+        );
+      for (const candidate of siteNames(domain)) {
+        try {
+          totals = await totalsFor(candidate);
+          name = candidate;
+          break;
+        } catch (error) {
+          if (!siteRefused(error)) throw error;
+        }
+      }
+      if (!name || !totals)
+        return await fail(
+          `Plausible doesn't show ${domain} to our key. Check the site is in Plausible under that name, in the same team as the key, or type its name here.`,
+        );
+      await db
+        .update(websites)
+        .set({ plausibleSite: name })
+        .where(eq(websites.clientId, clientId));
+    }
+
+    const counts = new Map(
+      totals.map((r) => [r.dimensions[0] ?? "", r.metrics] as const),
+    );
+    // Nothing at all since launch: Plausible isn't on their site (yet).
+    // Rows of zeros would look like nobody came, so keep none.
+    const anyone = [...counts.entries()].some(
+      ([day, m]) => day >= start && day <= through && (m[0] ?? 0) > 0,
+    );
+    if (!anyone && (full || !last))
+      return await fail(
+        `Plausible has no visitors for ${name} since launch day. Check Plausible's script is on their site.`,
+      );
+
+    const rows = eachDay(start, through).map((day) => {
+      const m = counts.get(day);
+      return {
+        clientId,
+        day,
+        visitors: Math.round(m?.[0] ?? 0),
+        visits: Math.round(m?.[1] ?? 0),
+        pageviews: Math.round(m?.[2] ?? 0),
+      };
+    });
+    // Where they came from and where they landed, the same days, one
+    // question at a time. Sources and pages can run long on a busy site,
+    // so they're asked for three months at a time, keeping each day's top.
+    const split = (dimension: string, from: string, to: string) =>
+      stats({
+        site: name as string,
+        from,
+        to,
+        metrics: ["visitors", "visits"],
+        dimensions: ["time:day", dimension],
+        orderBy: [
+          ["time:day", "asc"],
+          ["visitors", "desc"],
+        ],
+      });
+    const topByDay = async (dimension: string) => {
+      const out: ReturnType<typeof byDay> = [];
+      for (let m = startOfMonth(start); m <= through; m = addMonths(m, 3)) {
+        const from = maxDay(m, start);
+        const to = minDay(endOfMonth(addMonths(m, 2)), through);
+        out.push(
+          ...byDay(await split(dimension, from, to), from, to, TOP_A_DAY),
+        );
+      }
+      return out;
+    };
+    const channels = byDay(
+      await split("visit:channel", start, through),
+      start,
+      through,
+    );
+    const sources = await topByDay("visit:source");
+    const pages = await topByDay("visit:entry_page");
+
+    // Everything asked for: now saved together, so a pull that fails
+    // halfway leaves what was there, and the next one tries again.
+    await db.transaction(async (tx) => {
+      for (let i = 0; i < rows.length; i += 500)
+        await tx
+          .insert(visitDays)
+          .values(rows.slice(i, i + 500))
+          .onConflictDoUpdate({
+            target: [visitDays.clientId, visitDays.day],
+            set: {
+              visitors: sql`excluded.visitors`,
+              visits: sql`excluded.visits`,
+              pageviews: sql`excluded.pageviews`,
+            },
+          });
+      await tx
+        .delete(visitChannels)
+        .where(
+          and(
+            eq(visitChannels.clientId, clientId),
+            sql`${visitChannels.day} between ${start} and ${through}`,
+          ),
+        );
+      await tx
+        .delete(visitSources)
+        .where(
+          and(
+            eq(visitSources.clientId, clientId),
+            sql`${visitSources.day} between ${start} and ${through}`,
+          ),
+        );
+      await tx
+        .delete(visitPages)
+        .where(
+          and(
+            eq(visitPages.clientId, clientId),
+            sql`${visitPages.day} between ${start} and ${through}`,
+          ),
+        );
+      for (let i = 0; i < channels.length; i += 1000)
+        await tx.insert(visitChannels).values(
+          channels.slice(i, i + 1000).map((r) => ({
+            clientId,
+            day: r.day,
+            channel: r.name,
+            visitors: r.visitors,
+            visits: r.visits,
+          })),
+        );
+      for (let i = 0; i < sources.length; i += 1000)
+        await tx.insert(visitSources).values(
+          sources.slice(i, i + 1000).map((r) => ({
+            clientId,
+            day: r.day,
+            source: r.name,
+            visitors: r.visitors,
+            visits: r.visits,
+          })),
+        );
+      for (let i = 0; i < pages.length; i += 1000)
+        await tx.insert(visitPages).values(
+          pages.slice(i, i + 1000).map((r) => ({
+            clientId,
+            day: r.day,
+            page: r.name,
+            visitors: r.visitors,
+            visits: r.visits,
+          })),
+        );
+
+      // Nothing from before launch (if the launch day moved), or past
+      // yesterday.
+      await tx
+        .delete(visitDays)
+        .where(
+          and(
+            eq(visitDays.clientId, clientId),
+            or(lt(visitDays.day, launchDay), gt(visitDays.day, through)),
+          ),
+        );
+      await tx
+        .delete(visitChannels)
+        .where(
+          and(
+            eq(visitChannels.clientId, clientId),
+            or(
+              lt(visitChannels.day, launchDay),
+              gt(visitChannels.day, through),
+            ),
+          ),
+        );
+      await tx
+        .delete(visitSources)
+        .where(
+          and(
+            eq(visitSources.clientId, clientId),
+            or(lt(visitSources.day, launchDay), gt(visitSources.day, through)),
+          ),
+        );
+      await tx
+        .delete(visitPages)
+        .where(
+          and(
+            eq(visitPages.clientId, clientId),
+            or(lt(visitPages.day, launchDay), gt(visitPages.day, through)),
+          ),
+        );
+    });
+
+    await noteSync(clientId, {
+      visits: { at: now.toISOString(), through },
+    });
+    return { ok: true, through, days: rows.length, property: name };
+  } catch (error) {
+    console.error("[growth] visits pull failed:", error);
+    return await fail(plausibleText(error, name));
+  }
+}
+
 /** Their Google rating and review count, once a day. */
 export async function syncReviews(
   clientId: string,
@@ -342,7 +657,7 @@ export async function tidyReviews(now = new Date()) {
     .where(lt(reviewDays.day, addDays(todayAz(now), -REVIEW_DAYS)));
 }
 
-/** Both, for one client: the admin's "Pull now". */
+/** Google's numbers for one client: the Search Console card's "Pull now". */
 export async function syncGrowth(clientId: string, { full = false } = {}) {
   const traffic = await syncTraffic(clientId, { full });
   const reviews = await syncReviews(clientId);
@@ -372,23 +687,31 @@ export async function nightlyGrowth(budgetMs = 240_000, now = new Date()) {
         or(isNull(clients.archivedAt), gt(clients.archivedAt, now)),
       ),
     );
-  rows.sort((a, b) =>
-    (a.sync.traffic?.at ?? "").localeCompare(b.sync.traffic?.at ?? ""),
-  );
+  // The longest without either pull first.
+  const oldest = (sync: GrowthSync) =>
+    [sync.traffic?.at ?? "", sync.visits?.at ?? ""].sort()[0];
+  rows.sort((a, b) => oldest(a.sync).localeCompare(oldest(b.sync)));
 
   const report = {
     sites: rows.length,
+    visits: 0,
     traffic: 0,
     reviews: 0,
     skipped: 0,
     problems: [] as string[],
   };
+  const visitsOn = !plausibleProblem();
   const trafficOn = !keyProblem();
   const today = todayAz(now);
   for (const row of rows) {
     if (Date.now() > until) {
       report.skipped++;
       continue;
+    }
+    if (visitsOn) {
+      const r = await syncVisits(row.clientId, { now });
+      if (r.ok) report.visits++;
+      else report.problems.push(`${row.clientId}: ${r.error}`);
     }
     if (trafficOn) {
       const r = await syncTraffic(row.clientId, { now });

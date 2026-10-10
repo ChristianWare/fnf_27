@@ -46,7 +46,8 @@ test branch of the database):
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Same as the old site |
 | `CRON_SECRET` | A new random string |
 | The Leads Tool's keys | See `LEADS.md`: Google (two keys), Ticketmaster, Apify, SerpApi, Apollo, Anthropic |
-| `GOOGLE_SEARCH_CONSOLE_KEY` | The Growth page's numbers: a service account's JSON key. See `GROWTH.md` |
+| `PLAUSIBLE_API_KEY` | The Growth page's visitors: a Plausible Stats API key. See `GROWTH.md` |
+| `GOOGLE_SEARCH_CONSOLE_KEY` | The Growth page's Google numbers: a service account's JSON key. See `GROWTH.md` |
 
 Leave `EMAIL_REDIRECT_TO` unset on Production.
 

@@ -1,8 +1,10 @@
-// Visitors from Google as bars: a day, a week or a month each. By month,
-// the plan runs through it as a dotted line, and the month we're in shows
-// where it's heading. Point at (or tap) a bar for its numbers.
+// Visitors as bars: a day, a week or a month each, split by where they
+// came from when that's known. By month, the plan runs through it as a
+// dotted line, and the month we're in shows where it's heading. Point at
+// (or tap) a bar for its numbers.
 
 import styles from "./Growth.module.css";
+import { CHANNELS } from "@/lib/growth/channels";
 import { niceTop, type Bucket, type Grain } from "@/lib/growth/traffic";
 
 const n = (value: number) => value.toLocaleString("en-US");
@@ -10,15 +12,22 @@ const n = (value: number) => value.toLocaleString("en-US");
 export default function TrafficChart({
   buckets,
   grain,
+  noun = "visitor",
+  note,
 }: {
   buckets: Bucket[];
   grain: Grain;
+  /** What's counted, one of them: "visitor". */
+  noun?: string;
+  /** A line under the numbers when you point at a bar. */
+  note?: (b: Bucket) => string | undefined;
 }) {
   const plan = grain === "month" && buckets.some((b) => b.target);
+  const stacked = buckets.some((b) => b.parts);
   const top = niceTop(
     Math.max(
       1,
-      ...buckets.map((b) => Math.max(b.clicks, b.pace ?? 0)),
+      ...buckets.map((b) => Math.max(b.value, b.pace ?? 0)),
       ...(plan ? buckets.map((b) => b.target ?? 0) : []),
     ),
   );
@@ -36,9 +45,26 @@ export default function TrafficChart({
   const shown = (i: number, step: number) => (count - 1 - i) % step === 0;
   const dense = count > 16;
   const columns = { gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` };
+  const many = (value: number) => (value === 1 ? noun : `${noun}s`);
+  const planPoints = buckets
+    .map((b, i) =>
+      b.target === undefined
+        ? null
+        : `${((i + 0.5) / count) * 100},${100 - Math.min(100, (b.target / top) * 100)}`,
+    )
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div className={`${styles.chart} ${dense ? styles.chartDense : ""}`}>
+    <div
+      className={[
+        styles.chart,
+        dense && styles.chartDense,
+        stacked && styles.chartStacked,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className={styles.plotArea}>
         <div className={styles.grid} aria-hidden='true'>
           {lines.map((line) => (
@@ -59,17 +85,13 @@ export default function TrafficChart({
             preserveAspectRatio='none'
             aria-hidden='true'
           >
+            {/* A white edge keeps the dots readable over the bars. */}
             <polyline
-              points={buckets
-                .map((b, i) =>
-                  b.target === undefined
-                    ? null
-                    : `${((i + 0.5) / count) * 100},${100 - Math.min(100, (b.target / top) * 100)}`,
-                )
-                .filter(Boolean)
-                .join(" ")}
+              className={styles.planHalo}
+              points={planPoints}
               vectorEffect='non-scaling-stroke'
             />
+            <polyline points={planPoints} vectorEffect='non-scaling-stroke' />
           </svg>
         )}
 
@@ -78,10 +100,25 @@ export default function TrafficChart({
             const edge =
               i < 2 ? styles.tipStart : i >= count - 2 ? styles.tipEnd : "";
             const met =
-              b.target !== undefined && !b.future && b.clicks >= b.target;
+              b.target !== undefined && !b.future && b.value >= b.target;
+            const parts = CHANNELS.map((c) => ({
+              ...c,
+              value: b.parts?.[c.key] ?? 0,
+            })).filter((c) => c.value > 0);
+            const extra = b.future ? undefined : note?.(b);
             const describe = b.future
               ? `${b.title}: still to come${b.target !== undefined ? `, plan ${n(b.target)}` : ""}`
-              : `${b.title}: ${n(b.clicks)} ${b.clicks === 1 ? "visitor" : "visitors"} from Google${b.impressions ? `, shown ${n(b.impressions)} times` : ""}${plan && b.target !== undefined ? `, plan ${n(b.target)}` : ""}${b.pace !== undefined ? `, on pace for ${n(b.pace)}` : ""}`;
+              : [
+                  `${b.title}: ${n(b.value)} ${many(b.value)}`,
+                  ...parts.map((p) => `${p.label} ${n(p.value)}`),
+                  extra,
+                  plan && b.target !== undefined
+                    ? `plan ${n(b.target)}`
+                    : undefined,
+                  b.pace !== undefined ? `on pace for ${n(b.pace)}` : undefined,
+                ]
+                  .filter(Boolean)
+                  .join(", ");
             return (
               <li
                 key={b.key}
@@ -89,7 +126,7 @@ export default function TrafficChart({
                 tabIndex={0}
                 aria-label={describe}
               >
-                {b.pace !== undefined && b.pace > b.clicks && (
+                {b.pace !== undefined && b.pace > b.value && (
                   <div
                     className={styles.ghost}
                     style={{ height: pct(b.pace) }}
@@ -97,11 +134,28 @@ export default function TrafficChart({
                 )}
                 {!b.future && (
                   <div
-                    className={`${styles.bar} ${b.soFar ? styles.barNow : ""}`}
-                    style={{ height: pct(b.clicks) }}
+                    className={[
+                      styles.bar,
+                      b.soFar && styles.barNow,
+                      parts.length > 0 && styles.barSplit,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    style={{ height: pct(b.value) }}
                   >
+                    {parts.length > 0 && (
+                      <span className={styles.stack}>
+                        {parts.map((p) => (
+                          <span
+                            key={p.key}
+                            className={`${styles.seg} ${styles[`ch_${p.key}`]}`}
+                            style={{ flexGrow: p.value }}
+                          />
+                        ))}
+                      </span>
+                    )}
                     {count <= 14 && (
-                      <span className={styles.barValue}>{n(b.clicks)}</span>
+                      <span className={styles.barValue}>{n(b.value)}</span>
                     )}
                   </div>
                 )}
@@ -118,13 +172,24 @@ export default function TrafficChart({
                   ) : (
                     <>
                       <strong className={styles.tipValue}>
-                        {n(b.clicks)} {b.clicks === 1 ? "visitor" : "visitors"}
+                        {n(b.value)} {many(b.value)}
                       </strong>
-                      <span className={styles.tipLine}>
-                        {b.impressions
-                          ? `Shown ${n(b.impressions)} times${b.position ? ` · #${b.position.toFixed(1)}` : ""}`
-                          : "Not shown on Google"}
-                      </span>
+                      {parts.length > 0 && (
+                        <span className={styles.tipParts}>
+                          {parts.map((p) => (
+                            <span key={p.key} className={styles.tipPart}>
+                              <i
+                                className={`${styles.swatch} ${styles[`ch_${p.key}`]}`}
+                              />
+                              <span>{p.label}</span>
+                              <span className={styles.tipPartValue}>
+                                {n(p.value)}
+                              </span>
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                      {extra && <span className={styles.tipLine}>{extra}</span>}
                     </>
                   )}
                   {plan && b.target !== undefined && (

@@ -186,11 +186,13 @@ function planCards(client: Client, now: string): PlanCard[] {
   return [platform, website, leads];
 }
 
-/** Visitors from Google this month, for the snapshot. */
+/** Visitors this month, for the snapshot. */
 export type TrafficSnapshot = {
   status: MonthStatus;
   /** The last few months, the one we're in last. */
-  months: { month: string; clicks: number }[];
+  months: { month: string; value: number }[];
+  /** Everyone, from Plausible; otherwise visitors from Google alone. */
+  everyone: boolean;
 };
 
 export default function Home({
@@ -227,7 +229,7 @@ export default function Home({
   const visits = traffic?.status;
   const monthName = visits ? fmtMonthName(`${visits.month}-01`) : undefined;
   const chartMax = Math.max(
-    ...(traffic?.months.map((m) => m.clicks) ?? []),
+    ...(traffic?.months.map((m) => m.value) ?? []),
     visits?.target ?? 0,
     1,
   );
@@ -359,7 +361,7 @@ export default function Home({
 
           {traffic && visits && (
             <Panel
-              title='Visitors from Google'
+              title={traffic.everyone ? "Visitors" : "Visitors from Google"}
               text={
                 visits.target !== undefined
                   ? `${monthName} so far, against your target of ${visits.target.toLocaleString("en-US")}.`
@@ -410,7 +412,7 @@ export default function Home({
                         <div
                           className={`${styles.miniBar} ${m.month === visits.month ? styles.miniNow : ""}`}
                           style={{
-                            height: `${Math.max(4, (m.clicks / chartMax) * 100)}%`,
+                            height: `${Math.max(4, (m.value / chartMax) * 100)}%`,
                           }}
                         />
                       </div>

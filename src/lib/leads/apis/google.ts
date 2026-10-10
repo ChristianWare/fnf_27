@@ -262,8 +262,20 @@ const toListing = (p: GooglePlace): Listing => ({
   mapsUrl: p.googleMapsUri,
 });
 
-/** Listings matching some text, to pick a client's own (Enterprise). */
+/** Looks like a place ID someone pasted (they're 20-plus characters, no spaces). */
+export const looksLikePlaceId = (text: string) =>
+  /^[A-Za-z0-9_-]{20,}$/.test(text.trim());
+
+/**
+ * Listings matching some text, to pick a client's own (Enterprise). Many
+ * car services have no storefront, and Google leaves those out unless
+ * asked, so they're asked for. A pasted place ID is looked up as it is.
+ */
 export async function findListings(text: string, who: Who) {
+  if (looksLikePlaceId(text)) {
+    const one = await listingDetails(text.trim(), who);
+    if (one) return [one];
+  }
   const res = await callJson<{ places?: GooglePlace[] }>(
     "Google search",
     `${PLACES}/places:searchText`,
@@ -274,7 +286,11 @@ export async function findListings(text: string, who: Who) {
           .map((f) => `places.${f}`)
           .join(","),
       ),
-      body: JSON.stringify({ textQuery: text, pageSize: 5 }),
+      body: JSON.stringify({
+        textQuery: text,
+        pageSize: 5,
+        includePureServiceAreaBusinesses: true,
+      }),
     },
   );
   track("places_listing", who);

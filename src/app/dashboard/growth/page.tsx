@@ -10,13 +10,23 @@ import {
 import { getDashboard, isLive, weekOf } from "@/lib/dashboard";
 import { dayKey } from "@/lib/dashboard/format";
 import { isDay, todayAz } from "@/lib/growth/dates";
-import { loadReviews, loadSeries } from "@/lib/growth/load";
+import { domainOf } from "@/lib/growth/searchConsole";
+import { loadReviews, loadSeries, loadVisits } from "@/lib/growth/load";
 import { RANGES, type RangeKey } from "@/lib/growth/traffic";
 
 export const metadata: Metadata = { title: "Growth" };
 
 const one = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
+
+/** "https://example.com", for links to the pages people land on. */
+function siteUrl(site: { domain?: string | null; liveUrl?: string | null }) {
+  const domain = domainOf({
+    domain: site.domain ?? null,
+    liveUrl: site.liveUrl ?? null,
+  });
+  return domain ? `https://${domain}` : undefined;
+}
 
 export default async function GrowthPage({
   searchParams,
@@ -30,7 +40,7 @@ export default async function GrowthPage({
     <PageHead
       crumb='Your website'
       title='Growth'
-      text='Visitors from Google search by day, week or month, against your 12-month plan, with your Google reviews and the searches that bring people in.'
+      text='Everyone who visits your site by day, week or month, where they come from, and how you show up on Google, against your 12-month plan.'
     />
   );
 
@@ -42,7 +52,7 @@ export default async function GrowthPage({
           <Empty
             icon='chart'
             title='Growth tracking starts on launch day'
-            text='From the day your site goes live, this page tracks your visitors from Google against a 12-month plan, with your reviews and what to do each week to keep the numbers climbing.'
+            text='From the day your site goes live, this page tracks your visitors against a 12-month plan: where they come from, how you show up on Google, and what to do each week to keep the numbers climbing.'
           >
             <ButtonLink href='/dashboard/website' icon='arrow'>
               Project status
@@ -52,8 +62,10 @@ export default async function GrowthPage({
       </>
     );
 
-  const [series, reviews, params] = await Promise.all([
-    loadSeries(client.id, client.website.facts.launchedAt),
+  const launchedAt = client.website.facts.launchedAt;
+  const [visits, google, reviews, params] = await Promise.all([
+    loadVisits(client.id, launchedAt),
+    loadSeries(client.id, launchedAt),
     loadReviews(client.id, now),
     searchParams,
   ]);
@@ -77,12 +89,15 @@ export default async function GrowthPage({
     <>
       {head}
       <Growth
-        series={series}
+        visits={visits}
+        google={google}
         plan={plan}
         growth={client.growth}
         reviews={reviews}
         today={todayAz(now)}
         week={weekOf(now)}
+        launched={launchedAt ? dayKey(launchedAt) : undefined}
+        site={siteUrl(client.website)}
         initial={initial}
       />
     </>

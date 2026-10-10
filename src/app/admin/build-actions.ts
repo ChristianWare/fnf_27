@@ -27,7 +27,8 @@ import {
   pickProperty,
   problemText,
 } from "@/lib/growth/searchConsole";
-import { syncGrowth, syncReviews } from "@/lib/growth/sync";
+import { cleanSiteName } from "@/lib/growth/plausible";
+import { syncGrowth, syncReviews, syncVisits } from "@/lib/growth/sync";
 import {
   findListings,
   googleReady,
@@ -656,17 +657,76 @@ export async function saveGrowthHabits(
 
 /* ── Growth: where the numbers come from ── */
 
-/** Reads everything since launch from Google again, now. */
+/**
+ * Reads everything since launch again, now: from Google (Search Console
+ * and their reviews), or from Plausible (all their visitors).
+ */
 export async function pullGrowth(
   clientId: string,
-): Promise<ActionResult<{ through?: string; days: number }>> {
+  from: "google" | "plausible" = "google",
+): Promise<ActionResult<{ through?: string; days: number; site?: string }>> {
   const a = await admin();
   if (!a.ok) return fail(a.error);
+  if (from === "plausible") {
+    const visits = await syncVisits(clientId, { full: true });
+    refresh();
+    if (!visits.ok) return fail(visits.error);
+    return done({
+      through: visits.through,
+      days: visits.days,
+      site: visits.property,
+    });
+  }
   const { traffic, reviews } = await syncGrowth(clientId, { full: true });
   refresh();
   if (!traffic.ok) return fail(traffic.error);
   if (!reviews.ok) return fail(`Visitors are in. Reviews: ${reviews.error}`);
   return done({ through: traffic.through, days: traffic.days });
+}
+
+/**
+ * Their site's name in Plausible (or none, to find it from their domain
+ * again). Another site's numbers aren't theirs, so a change starts their
+ * visitors again from launch.
+ */
+export async function setPlausibleSite(
+  clientId: string,
+  name: string | null,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const value = name?.trim() ? cleanSiteName(name) : null;
+  if (value === undefined)
+    return fail("Type the site's name as Plausible shows it: example.com.");
+  const [row] = await db
+    .select({ site: s.websites.plausibleSite })
+    .from(s.websites)
+    .where(eq(s.websites.clientId, clientId))
+    .limit(1);
+  if (!row) return fail("They don't have a website plan.");
+  await db.transaction(async (tx) => {
+    await tx
+      .update(s.websites)
+      .set({ plausibleSite: value, updatedAt: new Date() })
+      .where(eq(s.websites.clientId, clientId));
+    if (row.site !== value) {
+      // The last pull was about the old name: forget how it went.
+      await tx
+        .update(s.websites)
+        .set({ growthSync: sql`${s.websites.growthSync} - 'visits'` })
+        .where(eq(s.websites.clientId, clientId));
+      await tx.delete(s.visitDays).where(eq(s.visitDays.clientId, clientId));
+      await tx
+        .delete(s.visitChannels)
+        .where(eq(s.visitChannels.clientId, clientId));
+      await tx
+        .delete(s.visitSources)
+        .where(eq(s.visitSources.clientId, clientId));
+      await tx.delete(s.visitPages).where(eq(s.visitPages.clientId, clientId));
+    }
+  });
+  refresh();
+  return done();
 }
 
 /** The Search Console properties the service account can see. */

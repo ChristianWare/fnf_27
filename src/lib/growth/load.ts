@@ -1,16 +1,141 @@
 // Reading the Growth numbers back: the daily series for the Growth page,
-// the top searches for whatever dates are picked, their Google reviews,
-// and what the admin needs to see about the pulls. Server only.
+// the top searches, sources and landing pages for whatever dates are
+// picked, their Google reviews, and what the admin needs to see about the
+// pulls. Server only.
 
 import { and, asc, count, eq, gte, inArray, max, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { dayKey } from "@/lib/dashboard/format";
 import type { GrowthSync } from "@/lib/dashboard/types";
+import { CHANNELS, channelOf } from "./channels";
 import { addDays, daysFrom, maxDay, todayAz } from "./dates";
-import type { TrafficSeries } from "./traffic";
+import { plausibleProblem } from "./plausible";
+import type { TrafficSeries, VisitSeries } from "./traffic";
 import { keyProblem, serviceAccountEmail } from "./searchConsole";
 
-const { trafficDays, trafficQueries, reviewDays, websites } = schema;
+const {
+  trafficDays,
+  trafficQueries,
+  reviewDays,
+  websites,
+  visitDays,
+  visitChannels,
+  visitSources,
+  visitPages,
+} = schema;
+
+/**
+ * Everyone who visited, a day at a time, from their first visitors on or
+ * after launch day (a site added to Plausible after launch starts there,
+ * not with empty days) to yesterday.
+ */
+export async function loadVisits(
+  clientId: string,
+  launchedAt?: string,
+): Promise<VisitSeries | undefined> {
+  if (!launchedAt) return undefined;
+  const launch = dayKey(launchedAt);
+  const rows = await db
+    .select({
+      day: visitDays.day,
+      visitors: visitDays.visitors,
+      visits: visitDays.visits,
+      pageviews: visitDays.pageviews,
+    })
+    .from(visitDays)
+    .where(and(eq(visitDays.clientId, clientId), gte(visitDays.day, launch)))
+    .orderBy(asc(visitDays.day));
+  const first = rows.find((r) => r.visitors > 0);
+  if (!first) return undefined;
+  const start = first.day;
+  const through = rows[rows.length - 1].day;
+  const n = daysFrom(start, through) + 1;
+  const zeros = () => Array<number>(n).fill(0);
+  const series: VisitSeries = {
+    start,
+    through,
+    visitors: zeros(),
+    visits: zeros(),
+    pageviews: zeros(),
+    channels: Object.fromEntries(CHANNELS.map((c) => [c.key, zeros()])),
+  };
+  for (const r of rows) {
+    const i = daysFrom(start, r.day);
+    if (i < 0 || i >= n) continue;
+    series.visitors[i] = r.visitors;
+    series.visits[i] = r.visits;
+    series.pageviews[i] = r.pageviews;
+  }
+  const split = await db
+    .select({
+      day: visitChannels.day,
+      channel: visitChannels.channel,
+      visitors: visitChannels.visitors,
+    })
+    .from(visitChannels)
+    .where(
+      and(eq(visitChannels.clientId, clientId), gte(visitChannels.day, start)),
+    );
+  for (const r of split) {
+    const i = daysFrom(start, r.day);
+    const values = series.channels[channelOf(r.channel)];
+    if (values && i >= 0 && i < n) values[i] += r.visitors;
+  }
+  return series;
+}
+
+export type TopVisit = { name: string; visitors: number };
+
+/** The sources and landing pages with the most visitors between two days. */
+export async function topVisits(
+  clientId: string,
+  from: string,
+  to: string,
+  limit = 8,
+): Promise<{ sources: TopVisit[]; pages: TopVisit[] }> {
+  const sources = await db
+    .select({
+      name: visitSources.source,
+      visitors: sql<number>`sum(${visitSources.visitors})::int`,
+    })
+    .from(visitSources)
+    .where(
+      and(
+        eq(visitSources.clientId, clientId),
+        sql`${visitSources.day} between ${from} and ${to}`,
+      ),
+    )
+    .groupBy(visitSources.source)
+    .orderBy(
+      sql`sum(${visitSources.visitors}) desc`,
+      sql`sum(${visitSources.visits}) desc`,
+      visitSources.source,
+    )
+    .limit(limit);
+  const pages = await db
+    .select({
+      name: visitPages.page,
+      visitors: sql<number>`sum(${visitPages.visitors})::int`,
+    })
+    .from(visitPages)
+    .where(
+      and(
+        eq(visitPages.clientId, clientId),
+        sql`${visitPages.day} between ${from} and ${to}`,
+      ),
+    )
+    .groupBy(visitPages.page)
+    .orderBy(
+      sql`sum(${visitPages.visitors}) desc`,
+      sql`sum(${visitPages.visits}) desc`,
+      visitPages.page,
+    )
+    .limit(limit);
+  return {
+    sources: sources.filter((r) => r.visitors > 0),
+    pages: pages.filter((r) => r.visitors > 0),
+  };
+}
 
 /**
  * Visitors from Google, a day at a time, from launch day (or as far back
@@ -185,20 +310,33 @@ export async function loadReviews(
 }
 
 export type GrowthAdmin = {
-  /** Why it can't pull at all, if so. */
+  /** Why it can't pull from Search Console at all, if so. */
   keyProblem?: string;
   /** The address to add to their property. */
   email?: string;
   property?: string;
   sync: GrowthSync;
-  /** Days of numbers kept, and the first and last of them. */
+  /** Days of Google's numbers kept, and the first and last of them. */
   stored: number;
   first?: string;
   through?: string;
   placeId?: string;
   reviews?: Reviews;
+  /** Plausible: all their visitors. */
+  plausible: {
+    /** Why it can't pull at all, if so. */
+    problem?: string;
+    /** Their site's name in Plausible. */
+    site?: string;
+    /** Days kept, and the first with visitors and the last. */
+    stored: number;
+    first?: string;
+    through?: string;
+  };
   /** Visitors each month, for the plan: "2026-10" → 412. */
   monthly: Record<string, number>;
+  /** Where those come from: everyone (Plausible), or Google's alone. */
+  monthlyFrom: "visits" | "google";
 };
 
 /** What the admin's Growth tab shows about the pulls. */
@@ -210,6 +348,7 @@ export async function loadGrowthAdmin(
     .select({
       property: websites.searchConsoleSite,
       placeId: websites.googlePlaceId,
+      plausibleSite: websites.plausibleSite,
       sync: websites.growthSync,
     })
     .from(websites)
@@ -223,14 +362,36 @@ export async function loadGrowthAdmin(
     })
     .from(trafficDays)
     .where(eq(trafficDays.clientId, clientId));
-  const months = await db
+  const [visits] = await db
     .select({
-      month: sql<string>`to_char(${trafficDays.day}, 'YYYY-MM')`,
-      clicks: sql<number>`sum(${trafficDays.clicks})::int`,
+      stored: count(),
+      first: sql<
+        string | null
+      >`(min(${visitDays.day}) filter (where ${visitDays.visitors} > 0))::text`,
+      through: max(visitDays.day),
     })
-    .from(trafficDays)
-    .where(eq(trafficDays.clientId, clientId))
-    .groupBy(sql`to_char(${trafficDays.day}, 'YYYY-MM')`);
+    .from(visitDays)
+    .where(eq(visitDays.clientId, clientId));
+
+  // The plan's actuals: everyone when Plausible has them, else Google's.
+  const fromVisits = (visits?.stored ?? 0) > 0 && Boolean(visits?.first);
+  const months = fromVisits
+    ? await db
+        .select({
+          month: sql<string>`to_char(${visitDays.day}, 'YYYY-MM')`,
+          value: sql<number>`sum(${visitDays.visitors})::int`,
+        })
+        .from(visitDays)
+        .where(eq(visitDays.clientId, clientId))
+        .groupBy(sql`to_char(${visitDays.day}, 'YYYY-MM')`)
+    : await db
+        .select({
+          month: sql<string>`to_char(${trafficDays.day}, 'YYYY-MM')`,
+          value: sql<number>`sum(${trafficDays.clicks})::int`,
+        })
+        .from(trafficDays)
+        .where(eq(trafficDays.clientId, clientId))
+        .groupBy(sql`to_char(${trafficDays.day}, 'YYYY-MM')`);
   return {
     keyProblem: keyProblem(),
     email: serviceAccountEmail(),
@@ -241,6 +402,14 @@ export async function loadGrowthAdmin(
     through: days?.through ?? undefined,
     placeId: site?.placeId ?? undefined,
     reviews: site?.placeId ? await loadReviews(clientId, now) : undefined,
-    monthly: Object.fromEntries(months.map((m) => [m.month, m.clicks])),
+    plausible: {
+      problem: plausibleProblem(),
+      site: site?.plausibleSite ?? undefined,
+      stored: visits?.stored ?? 0,
+      first: visits?.first ?? undefined,
+      through: visits?.through ?? undefined,
+    },
+    monthly: Object.fromEntries(months.map((m) => [m.month, m.value])),
+    monthlyFrom: fromVisits ? "visits" : "google",
   };
 }

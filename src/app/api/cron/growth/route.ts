@@ -1,6 +1,7 @@
 // GET /api/cron/growth: once a night, at midnight Arizona time (see
-// vercel.json). Each live site's visitors from Google (Search Console) and
-// its rating and reviews (Google Maps), for their Growth page.
+// vercel.json). Each live site's visitors (Plausible), its visitors from
+// Google (Search Console), and its rating and reviews (Google Maps), for
+// their Growth page.
 //
 // Vercel calls it with "Authorization: Bearer <CRON_SECRET>".
 

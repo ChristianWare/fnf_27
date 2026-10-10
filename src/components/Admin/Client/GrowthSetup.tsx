@@ -1,10 +1,11 @@
 "use client";
 
-// Behind a client's Growth page. The numbers come from Google every night:
-// visitors from their site's Search Console property, and their rating
-// and reviews from their Google listing. Here you see how that's going,
-// connect the two, and set what's yours to set: their 12-month plan, this
-// month's notes and their weekly habits.
+// Behind a client's Growth page. The numbers come in every night: all
+// their visitors from Plausible, visitors from Google search from their
+// site's Search Console property, and their rating and reviews from their
+// Google listing. Here you see how that's going, connect the three, and
+// set what's yours to set: their 12-month plan, this month's notes and
+// their weekly habits.
 
 import { useState } from "react";
 import Icon from "@/components/Dashboard/icons";
@@ -18,6 +19,7 @@ import {
   saveGrowthPlan,
   searchConsoleSites,
   setGoogleListing,
+  setPlausibleSite,
   setSearchConsoleSite,
 } from "@/app/admin/build-actions";
 import { firstOfMonth } from "@/lib/dashboard/billing";
@@ -65,6 +67,9 @@ export default function GrowthSetup({
   now: string;
 }) {
   const { run, pending } = useAction();
+  // Which "Pull now" is running, for its label.
+  const [pulling, setPulling] = useState<"google" | "plausible">();
+  const everyone = admin.monthlyFrom === "visits";
 
   // A plan that's never been saved: 12 months from launch, standard targets.
   const planned = growth?.months.length ? growth.months : undefined;
@@ -100,15 +105,38 @@ export default function GrowthSetup({
           </div>
         )}
 
+        <Plausible
+          clientId={clientId}
+          admin={admin}
+          live={live}
+          domain={domain}
+          pending={pending}
+          pulling={pending && pulling === "plausible"}
+          onPull={() => setPulling("plausible")}
+          run={run}
+        />
+
         <SearchConsole
           clientId={clientId}
           admin={admin}
           live={live}
           domain={domain}
           pending={pending}
+          pulling={pending && pulling === "google"}
+          onPull={() => setPulling("google")}
           run={run}
         />
 
+        <Reviews
+          clientId={clientId}
+          admin={admin}
+          search={[business, city].filter(Boolean).join(" ")}
+          pending={pending}
+          run={run}
+        />
+      </div>
+
+      <div className={styles.column}>
         <section className={styles.card}>
           <div className={styles.cardHead}>
             <div className={styles.titles}>
@@ -116,8 +144,9 @@ export default function GrowthSetup({
                 {firstName}&apos;s 12-month plan
               </h2>
               <p>
-                Visitors from Google each month: the target is the dotted line
-                on their chart. What they got fills in from Google by itself.
+                {everyone
+                  ? "Visitors each month, from everywhere: the target is the dotted line on their chart. What they got fills in from Plausible by itself."
+                  : "Visitors from Google each month, until Plausible is connected: the target is the dotted line on their chart. What they got fills in by itself."}
               </p>
             </div>
             <button
@@ -183,16 +212,6 @@ export default function GrowthSetup({
             </button>
           </div>
         </section>
-      </div>
-
-      <div className={styles.column}>
-        <Reviews
-          clientId={clientId}
-          admin={admin}
-          search={[business, city].filter(Boolean).join(" ")}
-          pending={pending}
-          run={run}
-        />
 
         <section className={styles.card}>
           <div className={styles.titles}>
@@ -325,13 +344,15 @@ export default function GrowthSetup({
 
 type Run = ReturnType<typeof useAction>["run"];
 
-/** Their visitors: Search Console, and how the pulls are going. */
-function SearchConsole({
+/** All their visitors: Plausible, and how the pulls are going. */
+function Plausible({
   clientId,
   admin,
   live,
   domain,
   pending,
+  pulling,
+  onPull,
   run,
 }: {
   clientId: string;
@@ -339,6 +360,175 @@ function SearchConsole({
   live: boolean;
   domain?: string;
   pending: boolean;
+  pulling: boolean;
+  onPull: () => void;
+  run: Run;
+}) {
+  const p = admin.plausible;
+  const sync = admin.sync.visits;
+  const connected = p.stored > 0 && Boolean(p.first) && !sync?.error;
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(p.site ?? "");
+
+  return (
+    <section className={styles.card}>
+      <div className={`${styles.cardHead} ${styles.growthHead}`}>
+        <div className={styles.titles}>
+          <h2 className={styles.heading}>All visitors</h2>
+          <p>
+            From Plausible, every night, back to launch day: everyone who
+            visits, where they came from, and the pages they land on.
+          </p>
+        </div>
+        <Pill tone={p.problem ? "red" : connected ? "lime" : "yellow"} dot>
+          {p.problem
+            ? "Key missing"
+            : connected
+              ? "Connected"
+              : "Not connected yet"}
+        </Pill>
+      </div>
+
+      {p.problem ? (
+        <div className={`${ui.notice} ${ui.noticeBad}`}>
+          <Icon name='info' className={ui.noticeIcon} />
+          <p>
+            {p.problem} The steps are in GROWTH.md: a Stats API key from
+            Plausible, in Vercel. Until then their Growth page counts visitors
+            from Google.
+          </p>
+        </div>
+      ) : (
+        <>
+          <dl className={styles.miniFacts}>
+            <div className={styles.factWide}>
+              <dt>Site in Plausible</dt>
+              <dd className={styles.propertyValue}>
+                {p.site ??
+                  `Found from their domain on the first pull${domain ? `: ${domain}` : ""}`}
+              </dd>
+            </div>
+            <div>
+              <dt>Numbers</dt>
+              <dd>
+                {p.first && p.through
+                  ? `${fmtDayShort(p.first)} – ${fmtDayShort(p.through)}`
+                  : "None yet"}
+              </dd>
+            </div>
+            <div>
+              <dt>Last pull</dt>
+              <dd>
+                {sync?.at
+                  ? `${fmtShort(sync.at)}, ${fmtTime(sync.at)}`
+                  : "Not yet"}
+              </dd>
+            </div>
+          </dl>
+
+          {sync?.error && (
+            <div className={`${ui.notice} ${ui.noticeBad}`}>
+              <Icon name='info' className={ui.noticeIcon} />
+              <p>{sync.error}</p>
+            </div>
+          )}
+
+          {editing && (
+            <form
+              className={styles.pickRow}
+              onSubmit={(e) => {
+                e.preventDefault();
+                run(
+                  () => setPlausibleSite(clientId, name.trim() || null),
+                  () => {
+                    setEditing(false);
+                    return {
+                      message: "Site saved",
+                      detail: "Pull now to read its numbers.",
+                    };
+                  },
+                );
+              }}
+            >
+              <label className={ui.field}>
+                <span className={ui.label}>
+                  Their site&apos;s name in Plausible
+                </span>
+                <input
+                  className={ui.input}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={domain ?? "example.com"}
+                  autoComplete='off'
+                  spellCheck={false}
+                />
+              </label>
+              <button
+                type='submit'
+                className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+                disabled={pending || name.trim() === (p.site ?? "")}
+              >
+                Save
+              </button>
+            </form>
+          )}
+
+          <div className={styles.actions}>
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+              onClick={() => {
+                setName(p.site ?? "");
+                setEditing((open) => !open);
+              }}
+            >
+              {editing ? "Keep this one" : "Change site"}
+            </button>
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+              disabled={pending || !live}
+              onClick={() => {
+                onPull();
+                run(
+                  () => pullGrowth(clientId, "plausible"),
+                  (data) => ({
+                    message: "Pulled from Plausible",
+                    detail: data?.through
+                      ? `Visitors through ${fmtDayLong(data.through)}. They're on their Growth page now.`
+                      : "Their site went live today: its first whole day comes in tonight.",
+                  }),
+                );
+              }}
+            >
+              {pulling ? "Pulling…" : "Pull now"}
+              <Icon name='refresh' className={ui.btnIcon} />
+            </button>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+/** Their visitors from Google: Search Console, and how the pulls go. */
+function SearchConsole({
+  clientId,
+  admin,
+  live,
+  domain,
+  pending,
+  pulling,
+  onPull,
+  run,
+}: {
+  clientId: string;
+  admin: GrowthAdmin;
+  live: boolean;
+  domain?: string;
+  pending: boolean;
+  pulling: boolean;
+  onPull: () => void;
   run: Run;
 }) {
   const [sites, setSites] = useState<string[]>();
@@ -365,7 +555,8 @@ function SearchConsole({
           <h2 className={styles.heading}>Visitors from Google</h2>
           <p>
             From their site&apos;s property in Google Search Console, every
-            night, back to launch day.
+            night, back to launch day: the Google panel and searches on their
+            Growth page.
           </p>
         </div>
         <Pill
@@ -513,19 +704,20 @@ function SearchConsole({
               type='button'
               className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
               disabled={pending || !live}
-              onClick={() =>
+              onClick={() => {
+                onPull();
                 run(
-                  () => pullGrowth(clientId),
+                  () => pullGrowth(clientId, "google"),
                   (data) => ({
                     message: "Pulled from Google",
                     detail: data?.through
                       ? `Numbers through ${fmtDayLong(data.through)}. They're on their Growth page now.`
                       : "Google has no final numbers for their site yet. They come in two or three days after launch.",
                   }),
-                )
-              }
+                );
+              }}
             >
-              {pending ? "Pulling…" : "Pull now"}
+              {pulling ? "Pulling…" : "Pull now"}
               <Icon name='refresh' className={ui.btnIcon} />
             </button>
           </div>
@@ -673,15 +865,31 @@ function Reviews({
             </button>
           </form>
 
+          {found && (
+            <p className={styles.help}>
+              Not theirs? Try the name exactly as Google Maps shows it, with the
+              city. Or find it on{" "}
+              <a
+                href='https://developers.google.com/maps/documentation/places/web-service/place-id#find-id'
+                target='_blank'
+                rel='noopener noreferrer'
+                className={styles.helpLink}
+              >
+                Google&apos;s Place ID Finder
+              </a>{" "}
+              and paste the ID (it starts with ChIJ) in the box above.
+            </p>
+          )}
+
           {found && found.length > 0 && (
             <ul className={styles.listingList}>
               {found.map((place) => (
                 <li key={place.id} className={styles.listingItem}>
                   <span className={styles.listingText}>
                     <span className={styles.listingName}>{place.name}</span>
-                    {place.address && (
-                      <span className={styles.help}>{place.address}</span>
-                    )}
+                    <span className={styles.help}>
+                      {place.address ?? "No storefront: a service area"}
+                    </span>
                     <span className={styles.listingStats}>
                       {place.rating
                         ? `${place.rating.toFixed(1)} stars · `

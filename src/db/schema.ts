@@ -203,6 +203,12 @@ export const websites = pgTable("websites", {
   searchConsoleSite: text("search_console_site"),
   /** Their own Google listing, for the reviews tile. An ID keeps for good. */
   googlePlaceId: text("google_place_id"),
+  /**
+   * Their site's name in Plausible, where all their visitors are counted:
+   * "example.com", as it was added there. Found from the domain the first
+   * time, or set in the admin.
+   */
+  plausibleSite: text("plausible_site"),
   /** How the last nightly pulls went. */
   growthSync: jsonb("growth_sync").$type<GrowthSync>().notNull().default({}),
   createdAt: created(),
@@ -211,10 +217,78 @@ export const websites = pgTable("websites", {
 
 /* ── Growth ──
  *
- * Visitors from Google search, a row a day since launch, from each site's
- * Search Console property (their own numbers, kept for good), and the
- * searches behind them. Their Google rating and review count come from
- * Google Maps, so like everything else from Maps they're kept 30 days. */
+ * Everyone who visits their site, a row a day since launch, from Plausible
+ * (and the same visitors by where they came from, and where they landed).
+ * Visitors from Google search, a row a day too, from each site's Search
+ * Console property, and the searches behind them. All their own numbers,
+ * kept for good. Their Google rating and review count come from Google
+ * Maps, so like everything else from Maps they're kept 30 days. */
+
+/**
+ * Plausible's numbers for a day, in the site's own time zone. Plausible
+ * counts a person once a day, so visitors add up across days the same way
+ * its own dashboard adds them.
+ */
+export const visitDays = pgTable(
+  "visit_days",
+  {
+    clientId: text("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    day: date("day", { mode: "string" }).notNull(),
+    /** People: Plausible's unique visitors that day. */
+    visitors: integer("visitors").notNull().default(0),
+    /** Times they came: one person can visit twice in a day. */
+    visits: integer("visits").notNull().default(0),
+    pageviews: integer("pageviews").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.clientId, t.day] })],
+);
+
+/** Visitors by Plausible's channel: "Organic Search", "Direct"… */
+export const visitChannels = pgTable(
+  "visit_channels",
+  {
+    clientId: text("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    day: date("day", { mode: "string" }).notNull(),
+    channel: text("channel").notNull(),
+    visitors: integer("visitors").notNull().default(0),
+    visits: integer("visits").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.clientId, t.day, t.channel] })],
+);
+
+/** The sites and apps that sent them: "Google", "Facebook"… Top 50 a day. */
+export const visitSources = pgTable(
+  "visit_sources",
+  {
+    clientId: text("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    day: date("day", { mode: "string" }).notNull(),
+    source: text("source").notNull(),
+    visitors: integer("visitors").notNull().default(0),
+    visits: integer("visits").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.clientId, t.day, t.source] })],
+);
+
+/** The pages they landed on first: "/airport-transfers"… Top 50 a day. */
+export const visitPages = pgTable(
+  "visit_pages",
+  {
+    clientId: text("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    day: date("day", { mode: "string" }).notNull(),
+    page: text("page").notNull(),
+    visitors: integer("visitors").notNull().default(0),
+    visits: integer("visits").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.clientId, t.day, t.page] })],
+);
 
 export const trafficDays = pgTable(
   "traffic_days",

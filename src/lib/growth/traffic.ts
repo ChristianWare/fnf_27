@@ -1,8 +1,9 @@
-// Visitors from Google, worked out for whatever dates someone picks: the
-// totals, the bars (by day, week or month), the plan line, and how this
-// month is pacing. Everything starts from one row a day since launch, so
-// every view adds up the same way. Pure functions, safe anywhere.
+// Visitors, worked out for whatever dates someone picks: the totals, the
+// bars (by day, week or month), the plan line, and how this month is
+// pacing. Everything starts from one row a day since launch, so every view
+// adds up the same way. Pure functions, safe anywhere.
 
+import type { ChannelKey } from "./channels";
 import {
   addDays,
   addMonths,
@@ -20,17 +21,55 @@ import {
   startOfMonth,
 } from "./dates";
 
-/** Visitors from Google search, a value a day from `start` to `through`. */
-export type TrafficSeries = {
-  /** Launch day: nothing from before they had the site with us. */
+/** The days a series covers: from launch (or its first numbers) on. */
+export type Days = {
+  /** Launch day, or later: nothing from before they had the site with us. */
   start: string;
-  /** The last day with Google's final numbers (two or three days ago). */
+  /** The last day with final numbers. */
   through: string;
+};
+
+/**
+ * What the Growth page counts, a value a day: everyone who visited, from
+ * Plausible, split by where they came from; or, before Plausible is
+ * connected, visitors from Google search.
+ */
+export type DailySeries = Days & {
+  total: number[];
+  /** The same visitors by where they came from, when that's known. */
+  parts?: Partial<Record<ChannelKey, number[]>>;
+};
+
+/** Everyone who visited, from Plausible, a value a day. */
+export type VisitSeries = Days & {
+  /** People, counted once a day (as Plausible counts them). */
+  visitors: number[];
+  visits: number[];
+  pageviews: number[];
+  /** Visitors by where they came from. */
+  channels: Partial<Record<ChannelKey, number[]>>;
+};
+
+/** Visitors from Google search (Search Console), a value a day. */
+export type TrafficSeries = Days & {
   clicks: number[];
   impressions: number[];
   /** Average position in the results each day; 0 when it never showed. */
   position: number[];
 };
+
+export const fromVisits = (v: VisitSeries): DailySeries => ({
+  start: v.start,
+  through: v.through,
+  total: v.visitors,
+  parts: v.channels,
+});
+
+export const fromGoogle = (g: TrafficSeries): DailySeries => ({
+  start: g.start,
+  through: g.through,
+  total: g.clicks,
+});
 
 /** A month of the 12-month plan: "2026-10" and its target. */
 export type PlanMonth = { month: string; target: number };
@@ -48,7 +87,53 @@ export const RANGES: { key: RangeKey; label: string }[] = [
   { key: "custom", label: "Custom" },
 ];
 
-export type Totals = {
+/** The first and last places in a series' arrays for two days. */
+function places(s: Days, from: string, to: string) {
+  const a = Math.max(0, daysFrom(s.start, from));
+  const b = Math.min(daysFrom(s.start, s.through), daysFrom(s.start, to));
+  return [a, b] as const;
+}
+
+const sum = (values: number[] | undefined, a: number, b: number) => {
+  let total = 0;
+  for (let i = a; i <= b; i++) total += values?.[i] ?? 0;
+  return total;
+};
+
+export type Parts = Partial<Record<ChannelKey, number>>;
+
+export type Count = {
+  value: number;
+  parts?: Parts;
+  /** Days with numbers in it. */
+  days: number;
+};
+
+/** The total between two days, and its parts. */
+export function countFor(s: DailySeries, from: string, to: string): Count {
+  const [a, b] = places(s, from, to);
+  const parts = s.parts
+    ? (Object.fromEntries(
+        Object.entries(s.parts).map(([key, values]) => [
+          key,
+          sum(values, a, b),
+        ]),
+      ) as Parts)
+    : undefined;
+  return { value: sum(s.total, a, b), parts, days: Math.max(0, b - a + 1) };
+}
+
+/** Visits and page views between two days. */
+export function visitsFor(v: VisitSeries, from: string, to: string) {
+  const [a, b] = places(v, from, to);
+  return {
+    visitors: sum(v.visitors, a, b),
+    visits: sum(v.visits, a, b),
+    pageviews: sum(v.pageviews, a, b),
+  };
+}
+
+export type GoogleTotals = {
   clicks: number;
   impressions: number;
   /** Average position, weighted by impressions. */
@@ -56,19 +141,21 @@ export type Totals = {
   days: number;
 };
 
-export function totalsFor(s: TrafficSeries, from: string, to: string): Totals {
-  const a = Math.max(0, daysFrom(s.start, from));
-  const b = Math.min(s.clicks.length - 1, daysFrom(s.start, to));
-  let clicks = 0;
+/** Google's numbers between two days (only the days it has). */
+export function googleTotals(
+  g: TrafficSeries,
+  from: string,
+  to: string,
+): GoogleTotals {
+  const [a, b] = places(g, from, to);
   let impressions = 0;
   let weighted = 0;
   for (let i = a; i <= b; i++) {
-    clicks += s.clicks[i] ?? 0;
-    impressions += s.impressions[i] ?? 0;
-    weighted += (s.position[i] ?? 0) * (s.impressions[i] ?? 0);
+    impressions += g.impressions[i] ?? 0;
+    weighted += (g.position[i] ?? 0) * (g.impressions[i] ?? 0);
   }
   return {
-    clicks,
+    clicks: sum(g.clicks, a, b),
     impressions,
     position: impressions ? weighted / impressions : undefined,
     days: Math.max(0, b - a + 1),
@@ -88,7 +175,7 @@ function planYear(plan: PlanMonth[], day: string) {
 
 export function rangeFor(
   key: RangeKey,
-  s: TrafficSeries,
+  s: Days,
   plan: PlanMonth[],
   custom?: { from: string; to: string },
 ): Range {
@@ -125,7 +212,7 @@ export function rangeFor(
 }
 
 /** The same number of days just before a range, if the site was live. */
-export function previousOf(range: Range, s: TrafficSeries) {
+export function previousOf(range: Range, s: Days) {
   const days = daysFrom(range.from, range.to) + 1;
   const from = addDays(range.from, -days);
   return from >= s.start
@@ -137,9 +224,9 @@ export type Bucket = {
   key: string;
   from: string;
   to: string;
-  clicks: number;
-  impressions: number;
-  position?: number;
+  value: number;
+  /** The same visitors by where they came from, when that's known. */
+  parts?: Parts;
   /** Days with numbers in it: 0 for a month still to come. */
   days: number;
   /** Not a whole week or month: cut by launch day or the latest numbers. */
@@ -163,7 +250,7 @@ export type Bucket = {
 /** The bars for a range: a day, a week or a month each. */
 export function bucketsFor(
   range: Range,
-  s: TrafficSeries,
+  s: DailySeries,
   plan: PlanMonth[],
 ): Bucket[] {
   const out: Bucket[] = [];
@@ -175,15 +262,14 @@ export function bucketsFor(
     label: string,
     title: string,
   ): Bucket => {
-    const t = totalsFor(s, from, to);
+    const count = countFor(s, from, to);
     return {
       key,
       from,
       to,
-      clicks: t.clicks,
-      impressions: t.impressions,
-      position: t.position,
-      days: t.days,
+      value: count.value,
+      parts: count.parts,
+      days: count.days,
       partial,
       soFar: false,
       future: false,
@@ -246,8 +332,7 @@ export function bucketsFor(
         key: month,
         from: m,
         to: endOfMonth(m),
-        clicks: 0,
-        impressions: 0,
+        value: 0,
         days: 0,
         partial: false,
         soFar: false,
@@ -275,7 +360,7 @@ export function bucketsFor(
     bucket.year = year;
     // Where the month we're in is heading, when it started on the 1st.
     if (soFar && from === m && bucket.days > 0)
-      bucket.pace = Math.round((bucket.clicks / bucket.days) * daysInMonth(m));
+      bucket.pace = Math.round((bucket.value / bucket.days) * daysInMonth(m));
     out.push(bucket);
   }
   return out;
@@ -291,12 +376,12 @@ export type MonthStatus = {
   pace?: number;
   through?: string;
   /** Last month, when there are numbers for it. */
-  last?: { month: string; clicks: number; target?: number };
+  last?: { month: string; value: number; target?: number };
 };
 
 /** How the month we're in is going, against the plan. */
 export function monthStatus(
-  s: TrafficSeries | undefined,
+  s: DailySeries | undefined,
   plan: PlanMonth[],
   today: string,
 ): MonthStatus {
@@ -309,7 +394,7 @@ export function monthStatus(
     s.through >= from && from <= endOfMonth(first)
       ? daysFrom(from, minDay(s.through, endOfMonth(first))) + 1
       : 0;
-  const soFar = covered ? totalsFor(s, from, s.through).clicks : 0;
+  const soFar = covered ? countFor(s, from, s.through).value : 0;
   const daysThisMonth = daysFrom(from, endOfMonth(first)) + 1;
   const pace = covered
     ? Math.round((soFar / covered) * daysThisMonth)
@@ -320,11 +405,8 @@ export function monthStatus(
     s.start <= endOfMonth(lastFirst) && s.through >= lastFrom
       ? {
           month: monthOf(lastFirst),
-          clicks: totalsFor(
-            s,
-            lastFrom,
-            minDay(endOfMonth(lastFirst), s.through),
-          ).clicks,
+          value: countFor(s, lastFrom, minDay(endOfMonth(lastFirst), s.through))
+            .value,
           target: plan.find((p) => p.month === monthOf(lastFirst))?.target,
         }
       : undefined;
@@ -333,11 +415,11 @@ export function monthStatus(
 
 /** The last few months' visitors, oldest first, the month we're in last. */
 export function recentMonths(
-  s: TrafficSeries,
+  s: DailySeries,
   today: string,
   count: number,
-): { month: string; clicks: number }[] {
-  const out: { month: string; clicks: number }[] = [];
+): { month: string; value: number }[] {
+  const out: { month: string; value: number }[] = [];
   for (let i = count - 1; i >= 0; i--) {
     const m = addMonths(today, -i);
     if (endOfMonth(m) < s.start) continue;
@@ -345,7 +427,7 @@ export function recentMonths(
     const to = minDay(endOfMonth(m), s.through);
     out.push({
       month: monthOf(m),
-      clicks: to >= from ? totalsFor(s, from, to).clicks : 0,
+      value: to >= from ? countFor(s, from, to).value : 0,
     });
   }
   return out;
@@ -356,6 +438,12 @@ export function changeOf(now: number, before: number | undefined) {
   if (before === undefined || before === 0) return undefined;
   const pct = Math.round(((now - before) / before) * 100);
   return pct;
+}
+
+/** Each part's share of the whole, adding up to 100. */
+export function sharesOf(parts: Parts | undefined) {
+  const total = Object.values(parts ?? {}).reduce((a, b) => a + (b ?? 0), 0);
+  return (key: ChannelKey) => (total ? ((parts?.[key] ?? 0) / total) * 100 : 0);
 }
 
 /**

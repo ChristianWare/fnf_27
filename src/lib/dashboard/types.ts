@@ -173,6 +173,13 @@ export type GrowthSync = {
     through?: string;
     error?: string;
   };
+  /** Plausible: all their visitors. */
+  visits?: {
+    at: string;
+    /** The last whole day read (yesterday, usually). */
+    through?: string;
+    error?: string;
+  };
   reviews?: { at: string; error?: string };
 };
 
