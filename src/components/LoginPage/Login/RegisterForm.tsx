@@ -67,9 +67,11 @@ export default function RegisterForm({
                 <span className={styles.planName}>{p.name}</span>
                 <span className={styles.planRadio} aria-hidden='true' />
               </span>
-              <span className={styles.planPrice}>{p.price}</span>
-              <span className={styles.planNote}>{p.note}</span>
-              <p>{p.blurb}</p>
+              <div className={styles.planPrice}>
+                {p.price} -  <span className={styles.planNote}>{p.note}</span>
+              </div>
+
+              <p className={styles.blurb}>{p.blurb}</p>
             </label>
           ))}
         </div>

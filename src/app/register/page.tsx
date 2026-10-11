@@ -9,7 +9,7 @@ import { homeFor } from "@/lib/auth/users";
 import { money } from "@/lib/dashboard/format";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
 import { formStamp } from "@/lib/server/spam";
-import Photo from "../../../public/images/cadi_drive.png";
+import Photo from "../../../public/images/heroiv.png";
 
 export const metadata: Metadata = {
   title: "Create your account",

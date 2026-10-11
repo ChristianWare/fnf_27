@@ -391,8 +391,9 @@
 
 .planPick {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.8rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
 .planCard {
@@ -409,19 +410,35 @@
     background-color 0.2s ease;
 }
 
+.planCard:nth-child(1) {
+  background-color: var(--accent1Light);
+}
+
+.planCard:nth-child(1).planOn {
+  background-color: var(--accent1);
+}
+
+.planCard:nth-child(2) {
+  background-color: var(--accent2Light);
+}
+
+.planCard:nth-child(2).planOn {
+  background-color: var(--accent2);
+}
+
+.planCard:nth-child(3) {
+  background-color: var(--accent3Light);
+}
+
+.planCard:nth-child(3).planOn {
+  background-color: var(--accent3);
+}
+
 .planCard p {
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.4;
-}
-
-.planCard:hover {
-  border-color: var(--light2);
-}
-
-.planOn,
-.planOn:hover {
-  border-color: var(--black);
-  background-color: var(--white);
+  margin-top: 2rem;
+  color: var(--black);
 }
 
 .planTop {
@@ -462,7 +479,7 @@
   font-size: 14px;
   line-height: 1.2;
   text-transform: uppercase;
-  color: var(--text);
+  /* color: var(--text); */
 }
 
 .srOnly {
