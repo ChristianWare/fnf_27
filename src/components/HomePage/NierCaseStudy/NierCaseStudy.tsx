@@ -31,7 +31,7 @@ export default function NierCaseStudy() {
         <div className={styles.content}>
           <div className={styles.left}>
             <div className={styles.leftTop}>
-              <EyeBrow text="Real results" />
+              <EyeBrow text='Real results' />
               <h2
                 className={`${styles.heading}`}
                 data-reveal
@@ -58,16 +58,16 @@ export default function NierCaseStudy() {
               </figure>
               <div className={styles.btnContainer} data-reveal>
                 <Button
-                  href="/projects/nier-transportation"
-                  btnType="black"
-                  text="Read the Nier case study"
+                  href='/projects/nier-transportation'
+                  btnType='black'
+                  text='Read the Nier case study'
                   arrow
                 />
                 <Button
-                  href="https://www.niertransportation.com/"
-                  target="_blank"
-                  btnType="blackUnderline"
-                  text="See the live site"
+                  href='https://www.niertransportation.com/'
+                  target='_blank'
+                  btnType='gray'
+                  text='See the live site'
                   arrow
                 />
               </div>
@@ -76,7 +76,7 @@ export default function NierCaseStudy() {
             <ul className={styles.facts} data-reveal>
               {facts.map(({ id, text, Icon }) => (
                 <li className={styles.fact} key={id}>
-                  <Icon className={styles.factIcon} aria-hidden="true" />
+                  <Icon className={styles.factIcon} aria-hidden='true' />
                   {text}
                 </li>
               ))}
@@ -84,19 +84,23 @@ export default function NierCaseStudy() {
           </div>
 
           <div className={styles.right} data-reveal>
+            {/* The whole screenshot is a button. A slight dark overlay sits
+                on the image, and the small gray "Click to expand" on top of
+                that. */}
             <button
-              type="button"
+              type='button'
               className={styles.imgContainer}
               onClick={() => setModalOpen(true)}
-              aria-label="Expand the Nier Transportation home page"
+              aria-label='Expand the Nier Transportation home page'
             >
               <Image
                 src={NierHomePage}
-                alt="Nier Transportation home page"
+                alt='Nier Transportation home page'
                 fill
-                sizes="(max-width: 968px) 100vw, 55vw"
+                sizes='(max-width: 968px) 100vw, 55vw'
                 className={styles.img}
               />
+              <span className={styles.overlay} aria-hidden='true' />
               <span className={styles.expand}>Click to expand</span>
             </button>
           </div>
@@ -106,7 +110,7 @@ export default function NierCaseStudy() {
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
         <Image
           src={NierHomePage}
-          alt="Nier Transportation home page, full preview"
+          alt='Nier Transportation home page, full preview'
           className={styles.modalImage}
         />
       </Modal>
