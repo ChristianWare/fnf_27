@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Nav from "@/components/shared/Nav/Nav";
 import styles from "./page.module.css";
 import Hero from "@/components/HomePage/Hero/Hero";
@@ -14,6 +15,16 @@ import JournalPreview from "@/components/HomePage/JournalPreview/JournalPreview"
 import Faq from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+
+export const metadata: Metadata = {
+  title: {
+    absolute:
+      "Limo Software, Websites & Leads for Black Car Operators | Fonts & Footers",
+  },
+  description:
+    "Limo booking and dispatch software, websites and leads built only for black car and limo operators. Get found on Google, take bookings with no per-booking fees, and win accounts.",
+  alternates: { canonical: "/" },
+};
 
 export default function Home() {
   return (

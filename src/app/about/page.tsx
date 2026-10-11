@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   },
   description:
     "A Phoenix company that builds websites, booking software and leads tools only for black car and limo operators.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {

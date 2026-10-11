@@ -29,16 +29,54 @@ export type Post = {
   body: string;
 };
 
+// Each category has its own page at /journal/<slug>, once it has a post.
 export const categories = [
-  { slug: "software-booking", name: "Software & booking" },
-  { slug: "getting-found", name: "Getting found" },
-  { slug: "winning-accounts", name: "Winning accounts" },
+  {
+    slug: "software-booking",
+    name: "Software & booking",
+    description:
+      "Limo booking and dispatch software, per-booking fees, and what it really costs to take rides online.",
+  },
+  {
+    slug: "getting-found",
+    name: "Getting found",
+    description:
+      "SEO for limo companies: Google, your Business Profile, reviews and AI search, from where the traffic actually comes from.",
+  },
+  {
+    slug: "winning-accounts",
+    name: "Winning accounts",
+    description:
+      "How limo and black car operators win corporate clients, hotels, venues and event work, and keep them.",
+  },
   {
     slug: "starting-a-black-car-business",
     name: "Starting a black car business",
+    description:
+      "What a new black car or limo company needs in year one: the website, the listings and the first accounts.",
   },
-  { slug: "build-in-public", name: "Build in public" },
+  {
+    slug: "build-in-public",
+    name: "Build in public",
+    description:
+      "How Fonts & Footers is built: the decisions, the numbers and what we learned along the way.",
+  },
 ];
+
+export type Category = (typeof categories)[number];
+
+export const categoryHref = (category: Pick<Category, "slug">) =>
+  `/journal/${category.slug}`;
+
+export const getCategory = (slug: string | undefined) =>
+  categories.find((c) => c.slug === slug);
+
+/** The categories with at least one post; the others get no page yet. */
+export function activeCategories(posts = getPosts()): Category[] {
+  return categories.filter((c) =>
+    posts.some((post) => post.categorySlug === c.slug),
+  );
+}
 
 const DIR = path.join(process.cwd(), "content", "journal");
 

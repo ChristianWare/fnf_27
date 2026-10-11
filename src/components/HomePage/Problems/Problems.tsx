@@ -121,9 +121,10 @@ export default function Problems() {
                 What We Offer
               </h2>
               <p className={styles.copy} data-reveal>
-                Four ways to grow a black car business: see where you stand,
-                find the accounts in your market, get found on Google, and take
-                bookings on your own site with no per-booking fees.
+                Four ways to grow a black car or limo business: a free audit of
+                where you stand, a leads tool for the accounts in your market,
+                limo website design that gets you found on Google, and booking
+                and dispatch software with no per-booking fees.
               </p>
             </div>
 

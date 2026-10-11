@@ -9,9 +9,10 @@ import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
 
 export const metadata: Metadata = {
-  title: { absolute: "Pricing | Fonts & Footers" },
+  title: { absolute: "Limo Software & Website Pricing | Fonts & Footers" },
   description:
     "Every plan side by side: the free website audit, the leads tool at $125/mo (free for 30 days), Website Only at $199/mo and the Full Platform at $499/mo with leads included.",
+  alternates: { canonical: "/pricing" },
 };
 
 const pricingFaqs: FaqItem[] = [

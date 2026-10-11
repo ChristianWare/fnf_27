@@ -12,6 +12,7 @@ import Chris from "../../../../public/images/chris.png";
 import ShareArticle from "./ShareArticle";
 import { mdxComponents } from "./mdx-components";
 import type { Post } from "@/lib/journal";
+import { AUTHOR_PATH } from "@/lib/seo";
 
 // The site's address, for the share links.
 const SITE = "https://fontsandfooters.com";
@@ -74,17 +75,19 @@ export default async function PostArticle({ post }: { post: Post }) {
                   </div>
                   <div className={styles.row}>
                     <dt className={styles.srOnly}>Author</dt>
-                    <dd className={styles.author}>
-                      <span className={styles.avatar}>
-                        <Image
-                          src={Chris}
-                          alt=''
-                          fill
-                          sizes='28px'
-                          className={styles.avatarImg}
-                        />
-                      </span>
-                      <span className={styles.mono}>{post.author}</span>
+                    <dd>
+                      <Link href={AUTHOR_PATH} className={styles.author}>
+                        <span className={styles.avatar}>
+                          <Image
+                            src={Chris}
+                            alt=''
+                            fill
+                            sizes='28px'
+                            className={styles.avatarImg}
+                          />
+                        </span>
+                        <span className={styles.mono}>{post.author}</span>
+                      </Link>
                     </dd>
                   </div>
                   <div className={styles.row}>

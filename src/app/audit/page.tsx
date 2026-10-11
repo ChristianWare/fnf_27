@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   },
   description:
     "Find out what's costing you bookings: Google, your site on a phone, online booking and AI search. Checked by hand and free, for limo and black car operators.",
+  alternates: { canonical: "/audit" },
 };
 
 const auditFaqs: FaqItem[] = [

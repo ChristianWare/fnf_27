@@ -13,6 +13,8 @@ import WebsitesPricing from "@/components/WebsitesPage/WebsitesPricing/WebsitesP
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+import JsonLd from "@/components/shared/JsonLd/JsonLd";
+import { breadcrumbs, websiteService } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: {
@@ -21,9 +23,22 @@ export const metadata: Metadata = {
   },
   description:
     "A custom website built for the searches your riders make, with a page for every airport, route and city you serve. From $199/mo plus a one-time $500 setup.",
+  alternates: { canonical: "/services/websites" },
 };
 
 const websiteFaqs: FaqItem[] = [
+  {
+    id: 9,
+    question: "How much does a limo website cost?",
+    answer:
+      "Website Only is $199 a month plus a one-time $500 setup, with hosting, security and edits included. The Full Platform is $499 a month and adds your own booking and dispatch system and the leads tool. There's no long-term contract on either.",
+  },
+  {
+    id: 10,
+    question: "Can my website take bookings?",
+    answer:
+      "Yes, either way. On Website Only, the book buttons go to the booking software you already use, like Limo Anywhere or Moovs. On the Full Platform, riders book right on your site, with no per-booking fees, and the trip lands in your own dashboard.",
+  },
   {
     id: 1,
     question: "How long does a site take?",
@@ -77,6 +92,15 @@ const websiteFaqs: FaqItem[] = [
 export default function WebsitesPage() {
   return (
     <main className={styles.container}>
+      <JsonLd
+        data={[
+          websiteService,
+          breadcrumbs([
+            { name: "Services", path: "/services" },
+            { name: "Websites", path: "/services/websites" },
+          ]),
+        ]}
+      />
       <Nav />
       <WebsitesHero />
       <FeatureMarquee />

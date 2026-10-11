@@ -8,6 +8,7 @@ import Instagram from "../icons/Instagram/Instagram";
 import Facebook from "../icons/Facebook/Facebook";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import { newsletterOn } from "@/lib/server/mailchimp";
+import { activeCategories, categoryHref } from "@/lib/journal";
 
 // Contact details. Keep them exactly as they appear on the Fonts & Footers
 // Google Business Profile. Leave PHONE empty to hide it.
@@ -64,25 +65,11 @@ const columns = [
     groups: [
       {
         title: "Journal",
-        links: [
-          {
-            text: "Software & booking",
-            href: "/journal?category=software-booking",
-          },
-          { text: "Getting found", href: "/journal?category=getting-found" },
-          {
-            text: "Winning accounts",
-            href: "/journal?category=winning-accounts",
-          },
-          {
-            text: "Starting a black car business",
-            href: "/journal?category=starting-a-black-car-business",
-          },
-          {
-            text: "Build in public",
-            href: "/journal?category=build-in-public",
-          },
-        ],
+        // Each category with a post, at its own page.
+        links: activeCategories().map((c) => ({
+          text: c.name,
+          href: categoryHref(c),
+        })),
       },
     ],
   },

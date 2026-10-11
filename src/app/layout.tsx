@@ -5,6 +5,8 @@ import "./globals.css";
 import localFont from "next/font/local";
 import Analytics from "@/components/shared/Analytics/Analytics";
 import { APP_URL } from "@/lib/server/config";
+import JsonLd from "@/components/shared/JsonLd/JsonLd";
+import { organization } from "@/lib/seo";
 
 const CreatoDisplayMedium = localFont({
   src: "../../public/fonts/CreatoDisplay-Medium.otf",
@@ -69,7 +71,8 @@ export const metadata: Metadata = {
     URL.canParse(APP_URL) ? APP_URL : "https://fontsandfooters.com",
   ),
   title: {
-    default: "Limo Websites, Booking Software & Leads | Fonts & Footers",
+    default:
+      "Limo Software, Websites & Leads for Black Car Operators | Fonts & Footers",
     template: "%s | Fonts & Footers",
   },
   description:
@@ -115,6 +118,7 @@ export default function RootLayout({
           {children}
         </SmoothScroll>
         <Analytics />
+        <JsonLd data={organization} />
       </body>
     </html>
   );

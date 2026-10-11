@@ -11,6 +11,8 @@ import PlatformPricing from "@/components/BookingPage/PlatformPricing/PlatformPr
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+import JsonLd from "@/components/shared/JsonLd/JsonLd";
+import { bookingSoftware, breadcrumbs } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: {
@@ -19,9 +21,29 @@ export const metadata: Metadata = {
   },
   description:
     "Take bookings on your own site, assign drivers and get paid, all in one system with your website built in. $499/mo, no per-booking fees, leads tool included.",
+  alternates: { canonical: "/services/booking-software" },
 };
 
 const platformFaqs: FaqItem[] = [
+  {
+    id: 8,
+    question: "What is limo dispatch software?",
+    answer:
+      "It's the system a limo or black car company runs its rides on: taking the booking, assigning the vehicle and driver, tracking the flight, and getting paid. On the Full Platform it's built into your own website, so riders book under your name, the trip lands in your admin dashboard, and the driver gets it on their phone.",
+  },
+  {
+    id: 9,
+    question:
+      "What's the difference between limo booking software and reservation software?",
+    answer:
+      "Mostly the name. Reservation software usually means the booking side: the form, the quote and the payment. Dispatch software is what happens after: assigning drivers and running the day. The Full Platform does both, with the website on top, so you aren't paying for three tools that don't talk to each other.",
+  },
+  {
+    id: 10,
+    question: "How much does limo booking software cost?",
+    answer:
+      "Here it's $499 a month plus a one-time $500 setup, with the website and the leads tool included and no per-booking fees. When you compare options, add up the monthly price, any fee per booking or per vehicle, and what you pay separately for a website, since that's what you'll really spend each month.",
+  },
   {
     id: 1,
     question: "Are there really no per-booking fees?",
@@ -69,6 +91,15 @@ const platformFaqs: FaqItem[] = [
 export default function BookingSoftwarePage() {
   return (
     <main className={styles.container}>
+      <JsonLd
+        data={[
+          bookingSoftware,
+          breadcrumbs([
+            { name: "Services", path: "/services" },
+            { name: "Booking software", path: "/services/booking-software" },
+          ]),
+        ]}
+      />
       <Nav />
       <BookingHero />
       <FeatureMarquee />

@@ -11,11 +11,17 @@ import LeadsPricing from "@/components/LeadsPage/LeadsPricing/LeadsPricing";
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+import JsonLd from "@/components/shared/JsonLd/JsonLd";
+import { breadcrumbs, leadsTool } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "Lead Generation for Limo Companies | Fonts & Footers" },
+  title: {
+    absolute:
+      "Limo Leads: Corporate Accounts, Hotels & Events in Your City | Fonts & Footers",
+  },
   description:
     "Find the hotels, venues, corporate accounts and events in your market, with the decision-maker's contact and an outreach script for each one. Free for 30 days, no card.",
+  alternates: { canonical: "/services/leads" },
 };
 
 const leadsFaqs: FaqItem[] = [
@@ -60,6 +66,15 @@ const leadsFaqs: FaqItem[] = [
 export default function LeadsPage() {
   return (
     <main className={styles.container}>
+      <JsonLd
+        data={[
+          leadsTool,
+          breadcrumbs([
+            { name: "Services", path: "/services" },
+            { name: "Leads", path: "/services/leads" },
+          ]),
+        ]}
+      />
       <Nav />
       <LeadsHero />
       <FeatureMarquee />

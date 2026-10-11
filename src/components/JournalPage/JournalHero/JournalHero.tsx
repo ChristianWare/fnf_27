@@ -8,12 +8,17 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 import FeaturedPost from "../FeaturedPost/FeaturedPost";
 import type { Post } from "@/lib/journal";
 
+// A category's page passes its own heading and copy.
 export default function JournalHero({
   featured,
   category,
+  heading = "News and Insights",
+  copy = "Straight answers on booking software, getting found and winning accounts, written for the people who run the cars. No fluff.",
 }: {
   featured: Post;
   category?: string;
+  heading?: string;
+  copy?: string;
 }) {
   return (
     <section className={styles.container}>
@@ -28,12 +33,10 @@ export default function JournalHero({
                 data-reveal
                 data-reveal-style='fade'
               >
-                News and Insights
+                {heading}
               </h1>
               <p className={styles.copy} data-reveal>
-                Straight answers on booking software, getting found and winning
-                accounts, written for the people who run the cars. One post a
-                week, no fluff.
+                {copy}
               </p>
             </div>
 

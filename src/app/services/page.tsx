@@ -8,6 +8,8 @@ import WhatWeDo from "@/components/ServicesPage/WhatWeDo/WhatWeDo";
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+import JsonLd from "@/components/shared/JsonLd/JsonLd";
+import { breadcrumbs } from "@/lib/seo";
 import ComparePlans from "@/components/PricingPage/ComparePlans/ComparePlans";
 import PlanDetails from "@/components/PricingPage/PlanDetails/PlanDetails";
 
@@ -17,6 +19,7 @@ export const metadata: Metadata = {
   },
   description:
     "Websites, booking software and leads for limo and black car companies. Find the one that fixes your problem, with the price on every plan.",
+  alternates: { canonical: "/services" },
 };
 
 const servicesFaqs: FaqItem[] = [
@@ -74,6 +77,7 @@ const servicesFaqs: FaqItem[] = [
 export default function ServicesPage() {
   return (
     <main className={styles.container}>
+      <JsonLd data={breadcrumbs([{ name: "Services", path: "/services" }])} />
       <Nav />
       <ServicesHero />
       <FeatureMarquee />

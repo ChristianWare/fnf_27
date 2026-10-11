@@ -6,7 +6,7 @@ import ProjectHero from "@/components/ProjectPage/ProjectHero/ProjectHero";
 import ProjectDetails from "@/components/ProjectPage/ProjectDetails/ProjectDetails";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
-import { getProject, projects } from "@/lib/projects";
+import { getProject, projectHref, projects } from "@/lib/projects";
 
 type Params = Promise<{ slug: string }>;
 
@@ -26,6 +26,7 @@ export async function generateMetadata({
   return {
     title: { absolute: `${project.name}: ${project.title} | Fonts & Footers` },
     description: project.summary,
+    alternates: { canonical: projectHref(project) },
   };
 }
 

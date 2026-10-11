@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: { absolute: "Terms of Service | Fonts & Footers" },
   description:
     "The terms for Fonts & Footers websites, the Full Platform booking software, the leads tool and the free audit: billing, cancellation, your data and ours.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

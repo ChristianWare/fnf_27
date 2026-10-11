@@ -4,7 +4,12 @@
 
 import type { MetadataRoute } from "next";
 import { APP_URL } from "@/lib/server/config";
-import { getPosts, postHref } from "@/lib/journal";
+import {
+  activeCategories,
+  categoryHref,
+  getPosts,
+  postHref,
+} from "@/lib/journal";
 import { projectHref, projects } from "@/lib/projects";
 
 type Entry = MetadataRoute.Sitemap[number];
@@ -24,6 +29,7 @@ const pages: [
   ["/journal", 0.7, "weekly"],
   ["/projects", 0.6, "monthly"],
   ["/about", 0.6, "monthly"],
+  ["/about/chris-ware", 0.5, "monthly"],
   ["/contact", 0.6, "yearly"],
   ["/privacy", 0.2, "yearly"],
   ["/terms", 0.2, "yearly"],
@@ -39,6 +45,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       ...(path === "/journal" && posts[0]
         ? { lastModified: posts[0].date }
         : {}),
+    })),
+    // Each category with a post, dated by its newest post.
+    ...activeCategories(posts).map((category) => ({
+      url: `${APP_URL}${categoryHref(category)}`,
+      lastModified: posts.find((post) => post.categorySlug === category.slug)
+        ?.date,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
     })),
     ...posts.map((post) => ({
       url: `${APP_URL}${postHref(post)}`,

@@ -136,6 +136,14 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  width: fit-content;
+}
+
+/* The byline goes to Chris's author page. */
+.author:hover .mono,
+.author:focus-visible .mono {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .avatar {

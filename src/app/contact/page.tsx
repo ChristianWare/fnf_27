@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: { absolute: "Contact | Fonts & Footers" },
   description:
     "Tell us a little about your operation and we'll get back within 24 hours to set up a 20-minute call. Websites, booking software and leads for black car and limo operators.",
+  alternates: { canonical: "/contact" },
 };
 
 const contactFaqs: FaqItem[] = [

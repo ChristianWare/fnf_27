@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: { absolute: "Privacy Policy | Fonts & Footers" },
   description:
     "What Fonts & Footers collects when you use the site, the free audit, the leads tool or the booking software, how it's used, and the choices you have.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

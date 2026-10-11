@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: { absolute: "Projects: Limo & Black Car Websites | Fonts & Footers" },
   description:
     "Real work and concept builds for black car and limo operators, starting with Nier Transportation in Phoenix.",
+  alternates: { canonical: "/projects" },
 };
 
 const projectFaqs: FaqItem[] = [
