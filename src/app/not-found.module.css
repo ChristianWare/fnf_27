@@ -1,25 +1,31 @@
-/* One white card under the nav, everything centered: the SUV, the
-   message, and the way home. */
+/* One white card under the nav: the message and the buttons on the left,
+   the places most people are headed on the right. */
 .card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  justify-content: center;
-  gap: 3rem;
+  gap: 6rem;
   margin: 0 0.5rem;
   min-height: clamp(56rem, calc(100svh - 9rem), 80rem);
-  padding: 10rem 3rem 6rem;
+  padding: 8rem 3rem;
   border-radius: 3rem;
   background-color: var(--white);
-  text-align: center;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
 }
 
 /* subNoBG.png is tall with empty space above and below the SUV, so the
    frame is wider than the file and crops to the car. */
 .imgContainer {
   position: relative;
-  width: min(100%, 460px);
+  width: min(100%, 340px);
   aspect-ratio: 1792 / 1500;
+  margin-bottom: 1rem;
 }
 
 .img {
@@ -28,15 +34,111 @@
 }
 
 .heading {
-  max-width: 640px;
+  max-width: 560px;
   text-wrap: balance;
+}
+
+.copy {
+  max-width: 480px;
+}
+
+.btnContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.login {
+  margin-top: 1rem;
+}
+
+.loginLink {
+  color: var(--black);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The places: light cards, two to a row. */
+.places {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.place {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  height: 100%;
+  padding: 2.4rem 5rem 2.4rem 2.4rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+  color: var(--black);
+  transition: background-color 0.2s ease;
+}
+
+.place:hover,
+.place:focus-visible {
+  background-color: var(--light2);
+}
+
+.placeTitle {
+  text-transform: none;
+}
+
+.placeDesc {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.arrow {
+  position: absolute;
+  top: 2.6rem;
+  right: 2.4rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.place:hover .arrow {
+  transform: rotate(45deg) translateY(-3px);
+}
+
+@media screen and (max-width: 968px) {
+  .card {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 4rem;
+    min-height: 0;
+    padding: 6rem 3rem;
+  }
 }
 
 @media screen and (max-width: 568px) {
   .card {
-    gap: 2.4rem;
-    min-height: 0;
-    padding: 9rem 1.5rem 5rem;
+    padding: 6rem 1.5rem 2rem;
     border-radius: 2rem;
+  }
+
+  .imgContainer {
+    width: min(100%, 280px);
+  }
+
+  .places {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .place {
+    padding: 2rem 5rem 2rem 1.6rem;
+  }
+
+  .arrow {
+    top: 2.2rem;
+    right: 1.6rem;
   }
 }
