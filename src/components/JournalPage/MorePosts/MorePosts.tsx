@@ -7,7 +7,7 @@ import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./MorePosts.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import Chris from "../../../../public/images/chris.png";
+import Chris from "../../../../public/images/me.png";
 import { postHref, type Post } from "@/lib/journal";
 
 export default function MorePosts({

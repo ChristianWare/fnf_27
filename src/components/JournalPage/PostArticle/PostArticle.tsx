@@ -8,7 +8,7 @@ import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./PostArticle.module.css";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
-import Chris from "../../../../public/images/chris.png";
+import Chris from "../../../../public/images/me.png";
 import ShareArticle from "./ShareArticle";
 import { mdxComponents } from "./mdx-components";
 import type { Post } from "@/lib/journal";
