@@ -4,7 +4,6 @@ import styles from "../../page.module.css";
 import Nav from "@/components/shared/Nav/Nav";
 import ProjectHero from "@/components/ProjectPage/ProjectHero/ProjectHero";
 import ProjectDetails from "@/components/ProjectPage/ProjectDetails/ProjectDetails";
-import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
 import { getProject, projectHref, projects } from "@/lib/projects";
 
@@ -40,7 +39,6 @@ export default async function ProjectPage({ params }: { params: Params }) {
       <Nav />
       <ProjectHero project={project} />
       <ProjectDetails project={project} />
-      <FinalCta />
       <Footer />
     </main>
   );

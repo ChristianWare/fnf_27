@@ -3,10 +3,12 @@
 // Nier is real. The two concepts are PLACEHOLDERS until those sites exist.
 
 import type { StaticImageData } from "next/image";
+import type { IconName } from "@/components/Dashboard/icons";
 import NierLogo from "../../public/images/nierLogo.png";
 import Barry from "../../public/images/barry.png";
 import NierHero from "../../public/images/cadiv.png";
 import NierStory from "../../public/images/cadiMotion.png";
+import NierHome from "../../public/images/nierHomePage.png";
 import Concept1Hero from "../../public/images/chevy_corp.png";
 import Concept1Story from "../../public/images/cadi_drive.png";
 import Concept2Hero from "../../public/images/branded.jpg";
@@ -20,16 +22,34 @@ export type Stat = {
   value: string;
 };
 
-export type StoryBlock =
-  | { type: "text"; heading: string; paragraphs: string[] }
-  | {
-      type: "quote";
-      text: string;
-      name: string;
-      role: string;
-      avatar?: StaticImageData;
-    }
-  | { type: "image"; src: StaticImageData; alt: string };
+export type Quote = {
+  text: string;
+  name: string;
+  role: string;
+  avatar?: StaticImageData;
+};
+
+/** One row of the scorecard: what it was, what it is now, and why. */
+export type Result = {
+  label: string;
+  before: string;
+  now: string;
+  note: string;
+};
+
+/** One line of the brief: a label on the left, two or three sentences. */
+export type BriefLine = { label: string; text: string };
+
+/** One tile in "What's inside". */
+export type Feature = { icon: IconName; title: string; text: string };
+
+/** A picture in "Screens". `tall` for a full-page screenshot. */
+export type Screen = {
+  src: StaticImageData;
+  alt: string;
+  caption: string;
+  tall?: boolean;
+};
 
 export type Project = {
   slug: string;
@@ -41,9 +61,24 @@ export type Project = {
   summary: string;
   hero: StaticImageData;
   heroAlt: string;
+  /** In the hero, under the title. */
   facts: Fact[];
+  /** "At a glance", beside the case study. */
   stats: Stat[];
-  story: StoryBlock[];
+  /** The scorecard: "What changed" for a client, "Built to" for a concept. */
+  results: {
+    title: string;
+    intro: string;
+    /** What the left side of each row is called: "Before", say. */
+    beforeLabel: string;
+    rows: Result[];
+  };
+  quote?: Quote;
+  brief: BriefLine[];
+  inside: Feature[];
+  screens: Screen[];
+  /** The card beside the case study. */
+  cta: { title: string; text: string };
 };
 
 export const projects: Project[] = [
@@ -75,52 +110,142 @@ export const projects: Project[] = [
       { label: "Airport and\nroute pages", value: "13" },
       { label: "Driving Phoenix\nsince", value: "2004" },
     ],
-    story: [
+    results: {
+      title: "What changed",
+      intro:
+        "Nier's first months on its own platform, against the years on per-booking platforms.",
+      beforeLabel: "Before",
+      rows: [
+        {
+          label: "Per-booking fees",
+          before: "A fee on every ride",
+          now: "$0",
+          note: "Every booking is a direct booking. The fees that grew with every good month are gone.",
+        },
+        {
+          label: "Pages built for search",
+          before: "A brochure site",
+          now: "53",
+          note: "40 city pages, 3 airport pages and 10 route pages, each written for a search Phoenix riders make.",
+        },
+        {
+          label: "Organic traffic",
+          before: "Previous period",
+          now: "+105%",
+          note: 'The route and airport pages already rank for searches like "tucson to phoenix shuttle" and "sky harbor delta terminal".',
+        },
+        {
+          label: "Booking hours",
+          before: "Office hours, by phone",
+          now: "24/7",
+          note: "Riders see the price and book at 11pm without calling. The quote, the booking and the payment all happen on the site.",
+        },
+        {
+          label: "Customer list",
+          before: "The platform's",
+          now: "Nier's",
+          note: "It lives in Nier's dashboard, exportable anytime. No one shows Nier's riders three other companies.",
+        },
+        {
+          label: "Days offline at the switch",
+          before: "",
+          now: "0",
+          note: "New bookings moved over on launch day. Rides already booked finished where they were.",
+        },
+      ],
+    },
+    quote: {
+      text: "Fonts & Footers built us a direct booking platform that looks better than anything our competitors are running, and our clients actually use it. It paid for itself in the first month.",
+      name: "Barry LaNier",
+      role: "Owner, Nier Transportation",
+      avatar: Barry,
+    },
+    brief: [
       {
-        type: "text",
-        heading: "The problem: paying to rent your own customers",
-        paragraphs: [
-          "Nier Transportation has run black car service in Phoenix since 2004. For years its bookings came through platforms that charged a fee on every ride and kept the customer list. A rider who booked Nier once was shown three other companies the next time, and the fees grew with every good month.",
-          "The website was a brochure. It had no way to book, no page for the airport, and nothing that matched the searches riders in Phoenix make. Barry wanted riders to book on his own site, under his own name, and to stop paying for the privilege of someone else owning his customers.",
-        ],
+        label: "The problem",
+        text: "Since 2004, Nier's bookings came through platforms that took a fee on every ride and kept the customer list. A rider who booked Nier once was shown three other companies the next time, and the website was a brochure with no way to book.",
       },
       {
-        type: "quote",
-        text: "Fonts & Footers built us a direct booking platform that looks better than anything our competitors are running, and our clients actually use it. It paid for itself in the first month.",
-        name: "Barry LaNier",
-        role: "Owner, Nier Transportation",
-        avatar: Barry,
+        label: "What we built",
+        text: "A site built around the searches Phoenix riders make: 40 city pages, 3 airport pages for Sky Harbor, Mesa Gateway and Scottsdale, and 10 route pages. Behind it, the Full Platform: booking, dispatch, a driver app and payments through Nier's own Stripe account.",
       },
       {
-        type: "text",
-        heading: "What we built",
-        paragraphs: [
-          "A custom site built around the searches Phoenix riders make: 40 city pages, 3 airport pages for Sky Harbor, Mesa Gateway and Scottsdale, and 10 route pages for the runs Nier drives every week, from Scottsdale to Sky Harbor to Phoenix to Sedona.",
-          "Behind it, the Full Platform. Riders choose the service, pickup time, route and vehicle, see the price, and book, with round trips and multi-day itineraries in one booking and one payment. Barry assigns each ride; his drivers see their schedule and update each trip's status from their phone. Airport pickups track the flight. Payments run through Nier's own Stripe account, with deposits, cards on file, payment links and refunds, and corporate accounts get their own portal and invoices.",
-        ],
+        label: "The switch",
+        text: "We built and tested while the old platform kept running. Vehicles, rates, service areas, corporate accounts and the customer list came over from an export. On launch day new bookings started on niertransportation.com, and there was never a day without a way to book.",
       },
       {
-        type: "image",
-        src: NierStory,
-        alt: "A black SUV driving through downtown Phoenix",
+        label: "What changed",
+        text: "Every booking is direct, with $0 per-booking fees. Confirmations, reminders and receipts carry Nier's name instead of a platform's, and the Leads Tool feeds Barry the hotels, venues and corporate accounts in his market each morning.",
       },
       {
-        type: "text",
-        heading: "The switch, with no day offline",
-        paragraphs: [
-          "We built and tested while the old platform kept running. Nier's vehicles, rates, service areas and corporate accounts were set up from an export, and the customer list came with them. On launch day, new bookings started on niertransportation.com; reservations already on the books stayed where they were until they were done.",
-          "There was never a day without a way to book, and no rider had to learn anything. The confirmation emails, reminders and receipts now carry Nier's name instead of a platform's.",
-        ],
-      },
-      {
-        type: "text",
-        heading: "What changed",
-        paragraphs: [
-          "Every booking is now a direct booking, with $0 per-booking fees. The customer list lives in Nier's dashboard, exportable anytime. Riders book at 11pm without calling, drivers get their trips on their phone, and corporate clients book under their company's name and get one invoice.",
-          'The pages are indexed and climbing: the route and airport pages already rank for searches like "tucson to phoenix shuttle" and "sky harbor delta terminal", and organic traffic is up 105% on the previous period. The leads tool, included with the platform, now feeds Barry the hotels, venues and corporate accounts in his market each morning.',
-        ],
+        label: "Who it's for",
+        text: "Operators paying a platform on every ride, or running a site that can't take a booking, from an owner who drives to a fleet of twenty.",
       },
     ],
+    inside: [
+      {
+        icon: "booking",
+        title: "Online booking",
+        text: "Service, time, route and vehicle, with the price up front. Round trips and multi-day trips in one booking.",
+      },
+      {
+        icon: "clipboard",
+        title: "Dispatch",
+        text: "Barry assigns each ride from one board and sees every trip's status.",
+      },
+      {
+        icon: "phone",
+        title: "Driver app",
+        text: "Drivers see their schedule and update each trip from their phone.",
+      },
+      {
+        icon: "clock",
+        title: "Flight tracking",
+        text: "Airport pickups follow the flight, so a late landing moves the pickup.",
+      },
+      {
+        icon: "users",
+        title: "Corporate portal",
+        text: "Company accounts book under their own name and get one invoice.",
+      },
+      {
+        icon: "card",
+        title: "Payments",
+        text: "Through Nier's own Stripe: deposits, cards on file, payment links and refunds.",
+      },
+      {
+        icon: "globe",
+        title: "City and airport pages",
+        text: "53 pages, each written for a search Phoenix riders make.",
+      },
+      {
+        icon: "target",
+        title: "Leads Tool",
+        text: "Hotels, venues and corporate accounts near Nier, found each morning.",
+      },
+    ],
+    screens: [
+      {
+        src: NierHome,
+        alt: "The Nier Transportation home page, top to bottom",
+        caption: "The home page",
+        tall: true,
+      },
+      {
+        src: NierHero,
+        alt: "A black Cadillac Escalade parked in the Arizona desert",
+        caption: "The fleet",
+      },
+      {
+        src: NierStory,
+        alt: "A black SUV driving through downtown Phoenix",
+        caption: "On the road in Phoenix",
+      },
+    ],
+    cta: {
+      title: "Want this for your fleet?",
+      text: "Run the free audit to see where your site stands today, or book a call and I'll walk you through how Nier's runs.",
+    },
   },
   {
     slug: "concept-1",
@@ -145,28 +270,101 @@ export const projects: Project[] = [
       { label: "Steps to\nbook a ride", value: "3" },
       { label: "Per-booking\nfees", value: "$0" },
     ],
-    story: [
+    // PLACEHOLDER: replace with the concept's own numbers once it's built.
+    results: {
+      title: "Built to",
+      intro:
+        "What this concept is built to do, against the typical corporate black car site.",
+      beforeLabel: "Typical site",
+      rows: [
+        {
+          label: "Per-booking fees",
+          before: "A platform fee per ride",
+          now: "$0",
+          note: "Bookings go straight to the operator, through its own Stripe account.",
+        },
+        {
+          label: "Pages built for search",
+          before: "A homepage and a fleet page",
+          now: "18",
+          note: "A page per airport and per suburb executives travel from, each written for a real search.",
+        },
+        {
+          label: "Steps to book",
+          before: "A form and a callback",
+          now: "3",
+          note: "Pick the ride, see the price, pay. The booking runs end to end in test mode.",
+        },
+        {
+          label: "Corporate accounts",
+          before: "Emails and spreadsheets",
+          now: "A portal",
+          note: "Assistants book under the company's name, and the company gets one invoice.",
+        },
+      ],
+    },
+    brief: [
       {
-        type: "text",
-        heading: "What this concept shows",
-        paragraphs: [
-          "PLACEHOLDER. This is a concept site, built to show what a corporate black car company's site looks like on the Full Platform: a homepage for the city, a page per airport, route pages for the suburbs executives travel from, and a corporate accounts page written for the assistant who books the rides.",
-          "The booking flow is real and runs in test mode, so you can book a ride end to end without anything being charged.",
-        ],
+        label: "What it shows",
+        text: "PLACEHOLDER. What a corporate black car company's site looks like on the Full Platform: a homepage for the city, a page per airport, route pages for the suburbs, and a corporate accounts page written for the assistant who books the rides.",
       },
       {
-        type: "image",
-        src: Concept1Story,
-        alt: "A chauffeur's hands on the steering wheel",
+        label: "Booking",
+        text: "The booking flow is real and runs in test mode, so you can book a ride end to end without anything being charged.",
       },
       {
-        type: "text",
-        heading: "How it would run for a real operator",
-        paragraphs: [
-          "PLACEHOLDER. Replace with the concept's own story once the site is built: the pages, the booking flow, the corporate portal, and what an operator in this niche would see in the first three months.",
-        ],
+        label: "For a real operator",
+        text: "PLACEHOLDER. Replace with the concept's own story once the site is built: the pages, the booking flow, the corporate portal, and the first three months.",
       },
     ],
+    inside: [
+      {
+        icon: "booking",
+        title: "Online booking",
+        text: "The price up front and three steps to book, in test mode.",
+      },
+      {
+        icon: "users",
+        title: "Corporate portal",
+        text: "Company accounts, their bookers and one invoice a month.",
+      },
+      {
+        icon: "clock",
+        title: "Flight tracking",
+        text: "Airport pickups follow the flight.",
+      },
+      {
+        icon: "globe",
+        title: "Airport and route pages",
+        text: "9 pages for the airports and the runs executives take.",
+      },
+      {
+        icon: "clipboard",
+        title: "Dispatch",
+        text: "Every ride assigned from one board, with a driver app.",
+      },
+      {
+        icon: "card",
+        title: "Payments",
+        text: "Cards on file, invoices and refunds through the operator's Stripe.",
+      },
+    ],
+    screens: [
+      {
+        src: Concept1Hero,
+        alt: "A chauffeur shaking hands with a client beside a black SUV",
+        caption: "The home page photo",
+      },
+      {
+        src: Concept1Story,
+        alt: "A chauffeur's hands on the steering wheel",
+        caption: "The service pages",
+      },
+    ],
+    cta: {
+      title: "Want a site like this?",
+      text: "Run the free audit to see where your site stands today, or book a call and I'll show you the booking flow live.",
+    },
   },
   {
     slug: "concept-2",
@@ -191,28 +389,101 @@ export const projects: Project[] = [
       { label: "Steps to\nbook a ride", value: "3" },
       { label: "Per-booking\nfees", value: "$0" },
     ],
-    story: [
+    // PLACEHOLDER: replace with the concept's own numbers once it's built.
+    results: {
+      title: "Built to",
+      intro:
+        "What this concept is built to do, against the typical wedding and party limo site.",
+      beforeLabel: "Typical site",
+      rows: [
+        {
+          label: "Per-booking fees",
+          before: "A platform fee per ride",
+          now: "$0",
+          note: "Bookings go straight to the operator, through its own Stripe account.",
+        },
+        {
+          label: "Event pages",
+          before: "One “weddings” page",
+          now: "12",
+          note: "A page per occasion: weddings, proms, quinceañeras, bachelor and bachelorette parties and more.",
+        },
+        {
+          label: "Fleet gallery",
+          before: "Stock photos",
+          now: "6 vehicles",
+          note: "Every vehicle with real interior photos, seats and what's included.",
+        },
+        {
+          label: "Deposits and balances",
+          before: "Chased by phone",
+          now: "Automatic",
+          note: "A deposit at booking, and the balance link goes out on its own before the day.",
+        },
+      ],
+    },
+    brief: [
       {
-        type: "text",
-        heading: "What this concept shows",
-        paragraphs: [
-          "PLACEHOLDER. This is a concept site, built to show what a wedding and party limo company's site looks like on the Full Platform: a page per occasion, a fleet gallery with real interior photos, and a booking flow that takes a deposit and sends the balance link before the day.",
-          "The booking flow is real and runs in test mode, so you can book a ride end to end without anything being charged.",
-        ],
+        label: "What it shows",
+        text: "PLACEHOLDER. What a wedding and party limo company's site looks like on the Full Platform: a page per occasion, a fleet gallery with real interior photos, and a booking flow that takes a deposit and sends the balance link before the day.",
       },
       {
-        type: "image",
-        src: Concept2Story,
-        alt: "A black SUV on a sand-colored backdrop",
+        label: "Booking",
+        text: "The booking flow is real and runs in test mode, so you can book a ride end to end without anything being charged.",
       },
       {
-        type: "text",
-        heading: "How it would run for a real operator",
-        paragraphs: [
-          "PLACEHOLDER. Replace with the concept's own story once the site is built: the event pages, the fleet gallery, the deposit flow, and what a wedding season looks like with reminders and balance links going out on their own.",
-        ],
+        label: "For a real operator",
+        text: "PLACEHOLDER. Replace with the concept's own story once the site is built: the event pages, the fleet gallery, the deposit flow, and a wedding season with reminders going out on their own.",
       },
     ],
+    inside: [
+      {
+        icon: "booking",
+        title: "Online booking",
+        text: "Pick the occasion, the vehicle and the hours, and see the price.",
+      },
+      {
+        icon: "calendar",
+        title: "Event pages",
+        text: "12 pages, one for each occasion people search for.",
+      },
+      {
+        icon: "image",
+        title: "Fleet gallery",
+        text: "Real interior photos of all 6 vehicles.",
+      },
+      {
+        icon: "card",
+        title: "Deposits",
+        text: "A deposit at booking and a balance link before the day.",
+      },
+      {
+        icon: "bell",
+        title: "Reminders",
+        text: "The couple and the driver hear about the day without a call.",
+      },
+      {
+        icon: "clipboard",
+        title: "Dispatch",
+        text: "Every ride assigned from one board, with a driver app.",
+      },
+    ],
+    screens: [
+      {
+        src: Concept2Hero,
+        alt: "Three men in suits and sunglasses, laughing",
+        caption: "The home page photo",
+      },
+      {
+        src: Concept2Story,
+        alt: "A black SUV on a sand-colored backdrop",
+        caption: "The fleet gallery",
+      },
+    ],
+    cta: {
+      title: "Want a site like this?",
+      text: "Run the free audit to see where your site stands today, or book a call and I'll show you the booking flow live.",
+    },
   },
 ];
 
