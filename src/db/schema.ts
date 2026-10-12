@@ -7,6 +7,14 @@
 
 import type { Growth, GrowthSync } from "@/lib/dashboard/types";
 import type { Contact, Operator, Script } from "@/lib/leads/types";
+import type {
+  Checks,
+  Listing,
+  Rival,
+  SearchResult,
+  SiteFacts,
+  Steps,
+} from "@/lib/audit/types";
 import {
   ACCOUNT_CATEGORIES,
   ACTIVITY_KINDS,
@@ -15,6 +23,7 @@ import {
   LEAD_STAGES,
   SOURCE_IDS,
 } from "../lib/leads/kinds";
+import { AUDIT_SOURCES, AUDIT_STATUSES, FOLLOW_UPS } from "../lib/audit/kinds";
 import { sql } from "drizzle-orm";
 import {
   boolean,
@@ -902,4 +911,87 @@ export const leadsUsage = pgTable(
 export const sentNotices = pgTable("sent_notices", {
   key: text("key").primaryKey(),
   sentAt: at("sent_at").notNull().defaultNow(),
+});
+
+/* ── The free website audit ──
+ *
+ * One row per run: what was typed in, the Google listing it was matched
+ * to, each check's result with what it was based on, and where the studio
+ * is with the operator. Google's terms: the listing's details and the
+ * operators near them are cleared after 30 days (googleClearedAt); the
+ * place ID stays. */
+
+export const audits = pgTable(
+  "audits",
+  {
+    id: text("id").primaryKey(),
+    source: text("source", { enum: AUDIT_SOURCES }).notNull(),
+    status: text("status", { enum: AUDIT_STATUSES }).notNull(),
+    /** What they typed: a website or a business name. */
+    input: text("input").notNull(),
+    /** The homepage, after redirects. Empty for a business with no site. */
+    url: text("url"),
+    /** "azlimo.com", without the www. */
+    domain: text("domain"),
+    business: text("business"),
+    city: text("city"),
+    /** "AZ". */
+    state: text("state"),
+    /** The Google listing they confirmed. Empty: none, or not on Google. */
+    placeId: text("place_id"),
+    listing: jsonb("listing").$type<Listing>(),
+    /** No listing: they said they aren't on Google, or we found none. */
+    noListing: text("no_listing", { enum: ["SAID", "NOT_FOUND"] }),
+    /** The listings offered on "is this you?", until one is picked. */
+    candidates: jsonb("candidates").$type<Listing[]>(),
+    steps: jsonb("steps").$type<Steps>().notNull().default({}),
+    checks: jsonb("checks").$type<Checks>().notNull().default({}),
+    searches: jsonb("searches").$type<SearchResult[]>(),
+    rivals: jsonb("rivals").$type<Rival[]>(),
+    facts: jsonb("facts").$type<SiteFacts>(),
+    /** The homepage on a phone, as PageSpeed saw it (a data: URL). */
+    phoneShot: text("phone_shot"),
+    score: integer("score"),
+    /** The scoring rules it ran under (RULES_VERSION). */
+    rules: integer("rules").notNull().default(1),
+    /** What its outside calls cost at list price, in millionths of a dollar. */
+    costMicros: integer("cost_micros").notNull().default(0),
+    error: text("error"),
+    /** Who asked for the full report, and where it went. */
+    name: text("name"),
+    email: text("email"),
+    unlockedAt: at("unlocked_at"),
+    emailsSent: integer("emails_sent").notNull().default(0),
+    followUp: text("follow_up", { enum: FOLLOW_UPS }).notNull().default("NEW"),
+    notes: text("notes").notNull().default(""),
+    /** The admin who ran it from Admin → Audits. */
+    ranBy: text("ran_by").references(() => users.id, { onDelete: "set null" }),
+    /** Copied from a run of the same site in the last day. */
+    reusedFrom: text("reused_from"),
+    googleClearedAt: at("google_cleared_at"),
+    createdAt: created(),
+    updatedAt: updated(),
+    startedAt: at("started_at"),
+    finishedAt: at("finished_at"),
+  },
+  (t) => [
+    index("audits_created_idx").on(t.createdAt),
+    index("audits_domain_idx").on(t.domain, t.createdAt),
+    index("audits_place_idx").on(t.placeId, t.createdAt),
+  ],
+);
+
+/**
+ * How often riders search each of the audit's phrases in a city, from
+ * Google Ads data through DataForSEO. Kept a month, then asked again.
+ */
+export const auditSearches = pgTable("audit_searches", {
+  /** "phoenix|az". */
+  key: text("key").primaryKey(),
+  /** Where the numbers are for: "Phoenix,Arizona,United States". */
+  location: text("location").notNull(),
+  searches: jsonb("searches")
+    .$type<{ keyword: string; volume: number }[]>()
+    .notNull(),
+  fetchedAt: at("fetched_at").notNull().defaultNow(),
 });

@@ -35,7 +35,7 @@ const contactFaqs: FaqItem[] = [
     id: 3,
     question: "Should I get the free audit first?",
     answer:
-      "It helps. We check where your site stands on the searches riders make, so the call starts from real numbers. Ask for it at fontsandfooters.com/audit; it comes back within two business days.",
+      "It helps. It shows where your site stands on the searches riders make, so the call starts from real numbers. Run it at fontsandfooters.com/audit; your score shows in about a minute.",
   },
   {
     id: 4,

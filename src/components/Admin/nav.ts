@@ -8,6 +8,8 @@ export function adminNav(
   queue: number,
   /** Studio leads to reach or follow up with today. */
   leadsDue = 0,
+  /** Audits from the public page that nobody has followed up yet. */
+  auditsNew = 0,
 ): NavGroup[] {
   return [
     {
@@ -41,6 +43,13 @@ export function adminNav(
           label: "Messages",
           icon: "inbox",
           badge: stats.unread || undefined,
+        },
+        {
+          href: "/admin/audits",
+          label: "Audits",
+          icon: "eye",
+          badge: auditsNew || undefined,
+          match: "prefix",
         },
       ],
     },

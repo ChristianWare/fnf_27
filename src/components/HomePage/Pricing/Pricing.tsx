@@ -11,7 +11,7 @@ import Design from "@/components/shared/icons/Design/Design";
 import Chris from "../../../../public/images/chris.png";
 import Logo from "@/components/shared/Logo/Logo";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import { TURNAROUND } from "@/lib/audit";
+import { RESULTS_IN } from "@/lib/audit";
 
 type Plan = {
   id: number;
@@ -39,14 +39,14 @@ const auditPlan: Plan = {
   desc: "See what's costing you bookings: how you show up on Google, how your site works on a phone, and whether riders can book you online.",
   price: "$0",
   per: "Always free",
-  setup: `Checked by hand and emailed within ${TURNAROUND}. No card.`,
+  setup: `Your score in ${RESULTS_IN}, the full report by email. No card.`,
   btnText: "Get a free website audit",
   href: "/audit",
   Icon: AuditIcon,
   featured: false,
   tab: "For seeing where you stand",
   features: [
-    "All six checks, done by hand",
+    "All six checks, on your live site",
     "Top three fixes, ranked",
     "Google visibility",
     "Speed on a phone",

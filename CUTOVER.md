@@ -49,6 +49,8 @@ test branch of the database):
 | `PLAUSIBLE_API_KEY` | The Growth page's visitors: a Plausible Stats API key. See `GROWTH.md` |
 | `GOOGLE_SEARCH_CONSOLE_KEY` | The Growth page's Google numbers: a service account's JSON key. See `GROWTH.md` |
 | `MAILCHIMP_API_KEY`, `MAILCHIMP_AUDIENCE_ID`, `MAILCHIMP_DC` | Same as the old site. They switch on the footer's newsletter sign-up |
+| `PAGESPEED_API_KEY` | The audit's speed test. A free Google key with the PageSpeed Insights API. See `AUDIT.md` |
+| `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` | The audit's searches. The old site's DataForSEO API login. See `AUDIT.md` |
 
 Leave `EMAIL_REDIRECT_TO` unset on Production.
 
@@ -86,9 +88,9 @@ with "Forgot it?" on the login page.
 
 - **Plausible:** the new site counts visitors on the same site,
   `fontsandfooters.com`, so the numbers carry on. Under **Site settings →
-  Goals**, add three custom event goals: `Audit request`, `Contact` and
-  `Newsletter`. Add a pageview goal for `/register/check-email` to count
-  sign-ups.
+  Goals**, add four custom event goals: `Audit run`, `Audit report`,
+  `Contact` and `Newsletter`. Add a pageview goal for
+  `/register/check-email` to count sign-ups.
 - **Google Search Console:** open the `fontsandfooters.com` property and
   submit `https://fontsandfooters.com/sitemap.xml` under **Sitemaps**.
 - Check a few old addresses land in the right place: `/leads`,

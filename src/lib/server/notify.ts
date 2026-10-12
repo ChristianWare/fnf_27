@@ -17,7 +17,8 @@ export type AdminAlert =
   | "change"
   | "document"
   | "blueprint"
-  | "digest";
+  | "digest"
+  | "audit";
 
 /** What clients can turn off on Profile. */
 export type ClientEmail = "replies" | "changes" | "invoices" | "digest";

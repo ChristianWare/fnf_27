@@ -4,6 +4,8 @@
 // For tests, LEADS_MOCK_URL sends every call to one stand-in server
 // instead (never on the live site).
 
+import { lookup } from "node:dns/promises";
+import { BlockList, isIP } from "node:net";
 import { IS_LIVE } from "@/lib/server/email";
 
 export class ApiError extends Error {
@@ -108,8 +110,58 @@ export async function callJson<T>(
 
 /* ── Reading other people's websites ── */
 
-const PRIVATE_HOST =
-  /^(localhost|.*\.local|.*\.internal|0\.0\.0\.0|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|169\.254\.\d+\.\d+|\[.*\])$/i;
+/** Names that only mean something on a private network. */
+const LOCAL_NAME =
+  /^(localhost|.+\.(localhost|local|internal|lan|home\.arpa))$/i;
+
+/** Addresses that aren't on the public internet. */
+const PRIVATE_IPS = new BlockList();
+for (const [net, bits] of [
+  ["0.0.0.0", 8],
+  ["10.0.0.0", 8],
+  ["100.64.0.0", 10],
+  ["127.0.0.0", 8],
+  ["169.254.0.0", 16],
+  ["172.16.0.0", 12],
+  ["192.0.0.0", 24],
+  ["192.0.2.0", 24],
+  ["192.168.0.0", 16],
+  ["198.18.0.0", 15],
+  ["198.51.100.0", 24],
+  ["203.0.113.0", 24],
+  ["224.0.0.0", 4],
+  ["240.0.0.0", 4],
+] as const)
+  PRIVATE_IPS.addSubnet(net, bits, "ipv4");
+for (const [net, bits] of [
+  ["::", 127],
+  ["64:ff9b::", 96],
+  ["100::", 64],
+  ["2001:db8::", 32],
+  ["fc00::", 7],
+  ["fe80::", 10],
+  ["ff00::", 8],
+] as const)
+  PRIVATE_IPS.addSubnet(net, bits, "ipv6");
+
+/** True for a loopback, private, link-local or reserved address. */
+function isPrivateIp(address: string) {
+  const version = isIP(address);
+  if (version === 4) return PRIVATE_IPS.check(address, "ipv4");
+  if (version !== 6) return false;
+  // An IPv4 address written as IPv6 ("::ffff:127.0.0.1", "::ffff:7f00:1").
+  const mapped = address.match(/^::ffff:(?:0:)?(\d+\.\d+\.\d+\.\d+)$/i);
+  if (mapped) return PRIVATE_IPS.check(mapped[1], "ipv4");
+  const hex = address.match(/^::ffff:(?:0:)?([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+  if (hex) {
+    const [hi, lo] = [parseInt(hex[1], 16), parseInt(hex[2], 16)];
+    return PRIVATE_IPS.check(
+      `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`,
+      "ipv4",
+    );
+  }
+  return PRIVATE_IPS.check(address, "ipv6");
+}
 
 /** A public http(s) address, or undefined: never anything on our network. */
 export function publicUrl(value: string | undefined | null) {
@@ -117,12 +169,34 @@ export function publicUrl(value: string | undefined | null) {
   try {
     const u = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
     if (u.protocol !== "https:" && u.protocol !== "http:") return undefined;
-    if (PRIVATE_HOST.test(u.hostname)) return undefined;
-    if (!u.hostname.includes(".")) return undefined;
+    const host = u.hostname.replace(/\.+$/, "");
+    if (!host || host.startsWith("[") || LOCAL_NAME.test(host))
+      return undefined;
+    if (isIP(host)) return isPrivateIp(host) ? undefined : u;
+    if (!host.includes(".")) return undefined;
     return u;
   } catch {
     return undefined;
   }
+}
+
+/**
+ * Throws unless the address's name leads to the public internet, so a name
+ * pointed at a private address (127.0.0.1.nip.io, say) is never fetched.
+ * Not in tests, where the stand-in server answers for every name.
+ */
+async function checkPublic(u: URL) {
+  if (mockBase()) return;
+  const host = u.hostname.replace(/\.+$/, "");
+  if (isIP(host)) return;
+  let found: { address: string }[];
+  try {
+    found = await lookup(host, { all: true, verbatim: true });
+  } catch {
+    throw new ApiError("website", 0, "That address doesn't exist.");
+  }
+  if (!found.length || found.some((f) => isPrivateIp(f.address)))
+    throw new ApiError("website", 0, "That address isn't a public website.");
 }
 
 export const BOT_AGENT =
@@ -130,22 +204,29 @@ export const BOT_AGENT =
 
 /**
  * A page's text, at most `limit` bytes of it, or undefined. Redirects are
- * followed by hand, so every hop is checked to be a public address.
+ * followed by hand, so every hop is checked to be a public address. The
+ * page gets `timeout` to answer and as long again to arrive; a slow one is
+ * read as far as it got.
  */
 export async function readPage(
   address: string,
-  { limit = 1_500_000, timeout = 10_000 } = {},
+  {
+    limit = 1_500_000,
+    timeout = 10_000,
+    agent = BOT_AGENT,
+  }: { limit?: number; timeout?: number; agent?: string } = {},
 ) {
   let current = publicUrl(address);
   if (!current) return undefined;
   let res: Response | undefined;
   for (let hop = 0; hop < 6; hop++) {
+    await checkPublic(current);
     res = await call(current.toString(), {
       timeout,
       retry: false,
       redirect: "manual",
       headers: {
-        "User-Agent": BOT_AGENT,
+        "User-Agent": agent,
         Accept:
           "text/html,application/xhtml+xml,application/xml,text/calendar,application/rss+xml,*/*;q=0.8",
       },
@@ -173,11 +254,23 @@ export async function readPage(
   if (!reader) return { body: "", type: "", url };
   const chunks: Uint8Array[] = [];
   let size = 0;
-  while (size < limit) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    size += value.length;
+  // Cancelling ends a read that's waiting, as if the page had finished.
+  let late = false;
+  const slow = setTimeout(() => {
+    late = true;
+    reader.cancel().catch(() => undefined);
+  }, timeout);
+  try {
+    while (size < limit) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      size += value.length;
+    }
+  } catch (error) {
+    if (!late) throw error;
+  } finally {
+    clearTimeout(slow);
   }
   await reader.cancel().catch(() => undefined);
   const body = new TextDecoder("utf-8", { fatal: false }).decode(

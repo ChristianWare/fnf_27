@@ -31,6 +31,13 @@ export async function askJson<T>(options: {
   schema: Record<string, unknown>;
   maxTokens?: number;
   who: Who;
+  /** Pictures to look at with the prompt (base64, no data: prefix). */
+  images?: { mime: string; data: string }[];
+  /**
+   * Gets the call's cost instead of the Leads Tool's usage count (the
+   * audit keeps its own), in millionths of a dollar.
+   */
+  onCost?: (micros: number) => void;
 }): Promise<T | undefined> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return undefined;
@@ -54,7 +61,24 @@ export async function askJson<T>(options: {
           model,
           max_tokens: options.maxTokens ?? 1500,
           system: options.system,
-          messages: [{ role: "user", content: options.prompt }],
+          messages: [
+            {
+              role: "user",
+              content: options.images?.length
+                ? [
+                    ...options.images.map((image) => ({
+                      type: "image",
+                      source: {
+                        type: "base64",
+                        media_type: image.mime,
+                        data: image.data,
+                      },
+                    })),
+                    { type: "text", text: options.prompt },
+                  ]
+                : options.prompt,
+            },
+          ],
           tools: [
             {
               name: "answer",
@@ -66,13 +90,11 @@ export async function askJson<T>(options: {
         }),
       });
       const [inRate, outRate] = RATES[options.model];
-      track(
-        "ai",
-        options.who,
-        1,
+      const cost =
         (res.usage?.input_tokens ?? 0) * inRate +
-          (res.usage?.output_tokens ?? 0) * outRate,
-      );
+        (res.usage?.output_tokens ?? 0) * outRate;
+      if (options.onCost) options.onCost(cost);
+      else track("ai", options.who, 1, cost);
       const answer = res.content?.find((c) => c.type === "tool_use")?.input;
       return answer as T | undefined;
     } catch (error) {

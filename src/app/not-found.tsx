@@ -39,7 +39,7 @@ const places = [
   {
     href: "/audit",
     title: "Free website audit",
-    desc: "Where your site stands, checked by hand.",
+    desc: "Where your site stands, in about a minute.",
   },
   {
     href: "/journal",

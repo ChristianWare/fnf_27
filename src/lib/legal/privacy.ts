@@ -7,7 +7,7 @@ import type { LegalDocData } from "./types";
 export const privacy: LegalDocData = {
   eyebrow: "Privacy policy",
   title: "Privacy policy",
-  updated: "October 8, 2026",
+  updated: "October 12, 2026",
   sections: [
     {
       id: "description",
@@ -27,8 +27,8 @@ export const privacy: LegalDocData = {
         {
           type: "list",
           items: [
-            "Contact information: your name, email address, phone number, company name and role when you send the contact form, book a call, ask for the free audit or sign up for the leads tool.",
-            "Audit information: the website address and any note you send with an audit request, and the audit we send back.",
+            "Contact information: your name, email address, phone number, company name and role when you send the contact form, book a call, ask for the free audit's full report or sign up for the leads tool.",
+            "Audit information: the website or business name you enter in the free audit, the Google listing you confirm, and the results we generate for it, including what we read on the website's public pages, a screenshot of its homepage on a phone, and its public Google listing details.",
             "Account and billing information: the details needed to set up your plan and bill it. Card payments are handled by Stripe; we do not store full card numbers.",
             "Usage information: how you use the Site and our software, such as pages visited, browser type, device, approximate location from your IP address, and the actions taken in your dashboard.",
             "Cookies and similar technologies: see section 8.",
@@ -80,7 +80,7 @@ export const privacy: LegalDocData = {
         {
           type: "list",
           items: [
-            "With service providers that help us run the Site and the software, such as hosting, email delivery, payment processing (Stripe), flight data and analytics, and only for that purpose.",
+            "With service providers that help us run the Site and the software, such as hosting, email delivery, payment processing (Stripe), flight data, analytics, and the services the free audit uses to check a website and its search results (Google, DataForSEO and our AI provider), and only for that purpose.",
             "With the operator whose software you are using, when you are a rider, driver or corporate contact of that operator.",
             "To comply with the law, a court order or a government request.",
             "To protect the safety, rights or property of Fonts & Footers, our clients or others.",
@@ -95,7 +95,7 @@ export const privacy: LegalDocData = {
       blocks: [
         {
           type: "p",
-          text: "We keep your information for as long as we need it to provide our services, keep our records and meet our legal obligations. Audit requests and the audits we send are kept so we can answer questions about them. When an operator cancels, we provide an export of their data on request and delete it from our systems within a reasonable time after the account closes, except where we must keep it by law.",
+          text: "We keep your information for as long as we need it to provide our services, keep our records and meet our legal obligations. Audits are kept so we can answer questions about them and show the report at its link; the Google listing details in an audit are cleared within 30 days. You can ask us to delete an audit at any time. When an operator cancels, we provide an export of their data on request and delete it from our systems within a reasonable time after the account closes, except where we must keep it by law.",
         },
       ],
     },

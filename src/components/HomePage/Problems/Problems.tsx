@@ -21,7 +21,7 @@ const data = [
   {
     id: 4,
     title: "Free Website Audit",
-    price: "$0 · Checked by hand",
+    price: "$0 · Your score in a minute",
     bullets: [
       "What riders see on Google",
       "Google visibility",
@@ -165,11 +165,11 @@ export default function Problems() {
                     <h3 className={styles.title}>{x.title}</h3>
                     <p className={styles.price}>{x.price}</p>
                   </div>
-                    <ul className={styles.bullets}>
-                      {x.bullets.map((bullet) => (
-                        <li key={bullet}>{bullet}</li>
-                      ))}
-                    </ul>
+                  <ul className={styles.bullets}>
+                    {x.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
                   <div className={styles.btnContainer}>
                     <Button href={x.href} btnType='gray' text={x.btnText} />
                   </div>

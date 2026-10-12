@@ -1,21 +1,15 @@
-// The free website audit, as it runs today: an operator asks for one on
-// /audit, the request lands in the studio inbox, and we check the site and
-// the Google listing by hand and email the audit back. The automatic audit,
-// with the score on the page, comes later; its results view is already in
-// components/AuditPage/AuditResults. Safe anywhere.
+// The free website audit, the parts any page can use: how soon the score
+// shows, the six checks' names, and reading the website someone typed. The
+// audit itself (checks, scoring, the run) is in the files beside this one,
+// and runs on the server. Safe anywhere.
 
-/** How soon the audit comes back. The page, the FAQ and the toast say it. */
-export const TURNAROUND = "two business days";
+import { CHECK_IDS, CHECKS } from "./kinds";
+
+/** How soon the score shows. The page, the FAQ and the pricing cards say it. */
+export const RESULTS_IN = "about a minute";
 
 /** The six checks, in the order the audit goes through them. */
-export const AUDIT_CHECKS = [
-  "Google visibility",
-  "Your Google Business Profile",
-  "Speed on a phone",
-  "Online booking",
-  "The pages riders search for",
-  "AI readability",
-];
+export const AUDIT_CHECKS = CHECK_IDS.map((id) => CHECKS[id].name);
 
 /**
  * A website as typed ("yourcompany.com", "www.yourcompany.com" or a full

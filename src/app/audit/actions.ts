@@ -1,125 +1,241 @@
 "use server";
 
-// Asking for the free website audit: the request is emailed to the studio
-// inbox with the operator as reply-to, and we send the audit back by hand
-// (see lib/audit.ts). Bots are turned away the same way as on the contact
-// form: Cloudflare's box, the trap field, the stamp that says how long the
-// form was open, and a limit per address.
+// The free website audit, from the public page: starting one (a website or
+// a business name), answering "is this your Google listing?", and asking
+// for the full report by email. Each start costs real money (Google and
+// DataForSEO), so bots are turned away the same way as on the contact
+// form (Cloudflare's box, the trap field, the stamp that says how long the
+// form was open), with limits per address and a daily cap for the whole
+// site. The run itself happens after the response, in lib/audit/run.
 
+import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { tooMany } from "@/lib/auth/accounts";
-import { AUDIT_CHECKS, cleanUrl, hostOf, TURNAROUND } from "@/lib/audit";
+import { alertAuditRun, alertFullReport, sendReport } from "@/lib/audit/emails";
+import { runLater } from "@/lib/audit/run";
+import { beginAudit, pickListing, type Candidate } from "@/lib/audit/start";
+import {
+  countEmail,
+  getAudit,
+  noticeOnce,
+  startedToday,
+  unlockAudit,
+  updateAudit,
+} from "@/lib/audit/store";
 import { STUDIO } from "@/lib/server/config";
-import { render, sendEmail } from "@/lib/server/email";
+import { alertAdmins } from "@/lib/server/notify";
 import {
   botReason,
   botText,
   clientIp,
-  countUrls,
   STAMP_FIELD,
   TRAP_FIELD,
 } from "@/lib/server/spam";
 import { humanCheck } from "@/lib/server/turnstile";
 
-export type AuditField = "name" | "website" | "email";
+export type StartField = "site" | "city";
 
-export type AuditRequestResult =
-  { ok: true } | { ok: false; field?: AuditField; error: string };
+export type StartResult =
+  | { ok: true; id: string; next: "report" }
+  | {
+      ok: true;
+      id: string;
+      next: "pick";
+      candidates: Candidate[];
+      askCity: boolean;
+    }
+  | { ok: false; field?: StartField; error: string };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** How many audits the public page may start in a day, across everyone. */
+const DAILY_CAP = Number(process.env.AUDIT_DAILY_CAP) || 150;
 
-export async function requestAudit(
-  formData: FormData,
-): Promise<AuditRequestResult> {
-  const get = (key: string) =>
-    String(formData.get(key) ?? "")
-      .replace(/\s+/g, " ")
-      .trim();
-  const name = get("name").slice(0, 120);
-  const website = cleanUrl(get("website"));
-  const email = get("email").toLowerCase().slice(0, 200);
-  const note = String(formData.get("note") ?? "")
-    .replace(/\r\n/g, "\n")
-    .trim()
-    .slice(0, 2000);
+const get = (formData: FormData, key: string) =>
+  String(formData.get(key) ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  if (name.length < 2)
-    return { ok: false, field: "name", error: "Enter your name." };
-  if (!website)
+export async function startAudit(formData: FormData): Promise<StartResult> {
+  const site = get(formData, "site").slice(0, 200);
+  const city = get(formData, "city").slice(0, 80);
+  if (site.length < 3)
     return {
       ok: false,
-      field: "website",
-      error: "Enter your website, like www.yourcompany.com.",
-    };
-  if (!EMAIL_RE.test(email))
-    return {
-      ok: false,
-      field: "email",
-      error: "Enter the email address to send the audit to.",
+      field: "site",
+      error: "Enter your website, or your business name.",
     };
 
-  // A bot in the trap is told "sent", with nothing sent. The note isn't
-  // held to the contact form's link rules: a link to a Google listing is
-  // a fair thing to put there. A pile of them isn't.
   const bot = botReason({
-    trap: get(TRAP_FIELD),
-    stamp: get(STAMP_FIELD) || undefined,
-    names: [name],
+    trap: get(formData, TRAP_FIELD),
+    stamp: get(formData, STAMP_FIELD) || undefined,
+    names: [],
     message: "",
   });
-  if (bot === "trap") {
-    console.warn(`[audit] bot turned away: ${email}`);
-    return { ok: true };
+  if (bot) {
+    if (bot === "trap") console.warn(`[audit] bot turned away: ${site}`);
+    return { ok: false, error: botText(bot) };
   }
-  if (bot) return { ok: false, error: botText(bot) };
-  if (countUrls(note) >= 3) return { ok: false, error: botText("links") };
 
   const ip = await clientIp();
-  if (await tooMany(`audit-ip:${ip}`, 5, 60))
+  if (
+    (await tooMany(`audit-ip:${ip}`, 6, 60)) ||
+    (await tooMany(`audit-day:${ip}`, 20, 24 * 60))
+  )
     return {
       ok: false,
-      error: `That's a few requests in a row. Give it an hour, or email ${STUDIO.inbox} directly.`,
+      error: `That's a few audits in a row. Give it an hour, or email ${STUDIO.inbox} and I'll run yours.`,
     };
-  const human = await humanCheck(get("cf-turnstile-response"), ip);
-  if (!human)
+  if (!(await humanCheck(get(formData, "cf-turnstile-response"), ip)))
     return {
       ok: false,
       error: "Please tick the box to show you're not a robot.",
     };
 
-  const first = name.split(" ")[0];
-  const host = hostOf(website);
-  const { html, text } = render({
-    eyebrow: "Audit request",
-    heading: `${name} asked for an audit of ${host}`,
-    preheader: `They were told within ${TURNAROUND}.`,
-    paragraphs: [
-      `${first} asked for the free website audit from the audit page. They were told it comes back by email within ${TURNAROUND}.`,
-    ],
-    ...(note ? { quote: { text: note, by: name } } : {}),
-    details: [
-      ["Name", name],
-      ["Email", email],
-      ["Website", website],
-    ],
-    button: { label: `Open ${host}`, href: website },
-    after: [
-      `The six checks: ${AUDIT_CHECKS.join(", ")}.`,
-      `Replying to this email goes straight to ${first}.`,
-    ],
-  });
-  const sent = await sendEmail({
-    to: STUDIO.inbox,
-    subject: `Audit request: ${host} (${name})`,
-    html,
-    text,
-    replyTo: `${name} <${email}>`,
-  });
-  if (!sent.ok) {
-    console.error(`[audit] couldn't send ${email}'s request: ${sent.error}`);
+  if ((await startedToday()) >= DAILY_CAP) {
+    if (await noticeOnce(`audit-cap:${new Date().toISOString().slice(0, 10)}`))
+      await alertAdmins(
+        "audit",
+        "The free audit hit its daily cap",
+        {
+          eyebrow: "Free audit",
+          heading: `The audit page reached ${DAILY_CAP} runs today`,
+          paragraphs: [
+            "New runs are turned away until tomorrow, with a note to email you instead. If that's real interest rather than a bot, raise AUDIT_DAILY_CAP in Vercel.",
+          ],
+        },
+        `Audit cap of ${DAILY_CAP} reached today`,
+      );
     return {
       ok: false,
-      error: `We couldn't send that just now. Email ${STUDIO.inbox} with your website and we'll take it from there.`,
+      error: `The audit is busy today. Email ${STUDIO.inbox} with your website and I'll run it for you.`,
     };
   }
+
+  const begun = await beginAudit({
+    text: site,
+    city,
+    source: "PAGE",
+    gate: true,
+  });
+  if (!begun.ok) return begun;
+  if (begun.next === "pick")
+    return {
+      ok: true,
+      id: begun.id,
+      next: "pick",
+      candidates: begun.candidates,
+      askCity: begun.askCity,
+    };
+  if (begun.next === "run") runLater(begun.id);
+  // Copied from a run in the last day: you still hear that someone ran it.
+  else after(() => alertAuditRun(begun.id));
+  return { ok: true, id: begun.id, next: "report" };
+}
+
+export type PickResult =
+  { ok: true } | { ok: false; field?: "city"; error: string };
+
+export async function pickAudit(
+  id: string,
+  choice: { placeId?: string; city?: string; notOnGoogle?: boolean },
+): Promise<PickResult> {
+  const ip = await clientIp();
+  if (await tooMany(`audit-pick:${ip}`, 20, 60))
+    return { ok: false, error: "That's a lot of tries. Give it an hour." };
+  const picked = await pickListing(
+    String(id),
+    {
+      placeId: typeof choice.placeId === "string" ? choice.placeId : undefined,
+      city:
+        typeof choice.city === "string" ? choice.city.slice(0, 80) : undefined,
+      notOnGoogle: Boolean(choice.notOnGoogle),
+    },
+    { gate: true },
+  );
+  if (!picked.ok) return picked;
+  if (picked.next === "run") runLater(String(id));
+  else after(() => alertAuditRun(String(id)));
+  return { ok: true };
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Throwaway inboxes: the report should go somewhere real. */
+const THROWAWAY = [
+  "mailinator.com",
+  "guerrillamail.com",
+  "tempmail.com",
+  "yopmail.com",
+  "sharklasers.com",
+  "trashmail.com",
+  "maildrop.cc",
+  "dispostable.com",
+  "10minutemail.com",
+];
+
+export type EmailResult =
+  { ok: true } | { ok: false; field?: "name" | "email"; error: string };
+
+export async function emailFullReport(
+  id: string,
+  formData: FormData,
+): Promise<EmailResult> {
+  const name = get(formData, "name").slice(0, 120);
+  const email = get(formData, "email").toLowerCase().slice(0, 200);
+  if (name.length < 2)
+    return { ok: false, field: "name", error: "Enter your name." };
+  if (!EMAIL_RE.test(email))
+    return {
+      ok: false,
+      field: "email",
+      error: "Enter the email address to send the report to.",
+    };
+  if (THROWAWAY.includes(email.split("@")[1] ?? ""))
+    return {
+      ok: false,
+      field: "email",
+      error: "Use an address you'll check: the report goes there.",
+    };
+
+  const bot = botReason({
+    trap: get(formData, TRAP_FIELD),
+    stamp: get(formData, STAMP_FIELD) || undefined,
+    names: [name],
+    message: "",
+  });
+  if (bot === "trap") return { ok: true };
+  if (bot) return { ok: false, error: botText(bot) };
+
+  const ip = await clientIp();
+  if (await tooMany(`audit-email:${ip}`, 5, 60))
+    return {
+      ok: false,
+      error: `That's a few in a row. Give it an hour, or email ${STUDIO.inbox}.`,
+    };
+
+  const row = await getAudit(String(id));
+  if (!row || row.status !== "DONE")
+    return { ok: false, error: "This audit isn't finished yet." };
+  if (!(await countEmail(row.id)))
+    return {
+      ok: false,
+      error: `The report has been sent a few times already. Email ${STUDIO.inbox} if it hasn't arrived.`,
+    };
+
+  const first = await unlockAudit(row.id);
+  await updateAudit(row.id, { name, email });
+  const updated = {
+    ...row,
+    name,
+    email,
+    unlockedAt: row.unlockedAt ?? new Date(),
+  };
+  const sent = await sendReport(updated, email, name);
+  if (first) await alertFullReport(updated);
+  revalidatePath(`/audit/report/${row.id}`);
+  if (!sent.ok)
+    return {
+      ok: false,
+      error: `Your full report is open below, but the email didn't go out. Try again, or write to ${STUDIO.inbox}.`,
+    };
   return { ok: true };
 }

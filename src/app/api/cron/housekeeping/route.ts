@@ -1,13 +1,15 @@
 // GET /api/cron/housekeeping: once a day, at 7am Arizona time (see
 // vercel.json). Emails each admin who wants it a summary of what's waiting,
 // and tidies up: sign-ups that never confirmed their email, old sign-in
-// counters, used links and old Stripe event ids.
+// counters, used links, old Stripe event ids, and the audits' Google
+// listing details within 30 days (Google's terms).
 //
 // Vercel calls it with "Authorization: Bearer <CRON_SECRET>".
 
 import { lt } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { dropAbandonedSignUps } from "@/lib/auth/accounts";
+import { tidyAudits } from "@/lib/audit/store";
 import { loadClients } from "@/lib/data/clients";
 import { adminQueue } from "@/lib/admin/derive";
 import { alertAdmins } from "@/lib/server/notify";
@@ -60,6 +62,11 @@ export async function GET(request: Request) {
     .where(
       lt(schema.stripeEvents.receivedAt, new Date(now.getTime() - 90 * day)),
     );
+
+  const audits = await tidyAudits(now);
+  report.auditsCleared = audits.cleared;
+  report.auditsDropped = audits.dropped;
+  report.auditsStuck = audits.stuck;
 
   return Response.json({ ok: true, ...report });
 }

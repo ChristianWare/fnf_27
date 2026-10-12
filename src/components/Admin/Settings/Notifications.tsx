@@ -46,6 +46,11 @@ const options = [
     text: "A questionnaire comes in, a design is chosen, a blueprint is approved.",
   },
   {
+    id: "audit",
+    title: "Someone runs the free audit",
+    text: "Their score, their website and the number on their Google listing, and again if they ask for the full report.",
+  },
+  {
     id: "digest",
     title: "A morning summary",
     text: "Everything waiting on you, at 7am Arizona time.",

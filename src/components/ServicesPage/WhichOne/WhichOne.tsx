@@ -67,7 +67,8 @@ export default function WhichOne() {
             <div className={styles.topRight} data-reveal>
               <p className={styles.note}>
                 Not sure which problem is costing you most? Get a free website
-                audit. We check your site by hand and show you where you stand.
+                audit. It checks your site and your Google listing and shows you
+                where you stand in about a minute.
               </p>
               <Button
                 href='/audit'

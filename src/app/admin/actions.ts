@@ -670,6 +670,7 @@ const ADMIN_ALERTS = [
   "blueprint",
   "digest",
   "leads",
+  "audit",
 ];
 
 export async function saveNotifications(

@@ -12,7 +12,7 @@ import styles from "./PlanDetails.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import { TURNAROUND } from "@/lib/audit";
+import { RESULTS_IN } from "@/lib/audit";
 import Clock from "@/components/shared/icons/Clock/Clock";
 import Bell from "@/components/shared/icons/Bell/Bell";
 import Lock from "@/components/shared/icons/Lock/Lock";
@@ -28,14 +28,14 @@ const options = [
     title: "Free Website Audit",
     desc: "See what's costing you bookings: how you show up on Google, how your site works on a phone, whether riders can book you online, and whether AI search can read you.",
     bullets: [
-      "All six checks, done by hand",
-      "Your top three fixes, ranked",
-      `By email within ${TURNAROUND}`,
+      "All six checks, on your live site and Google",
+      "Your score and top three fixes, ranked",
+      "The full report by email, as a PDF",
     ],
-    stat: "6 checks",
-    statLabel: "Done by hand",
+    stat: "1 min",
+    statLabel: "To see your score",
     tag: "Free website audit",
-    note: `No card. Ask on the audit page, and the audit comes to your inbox within ${TURNAROUND}.`,
+    note: `No card, and no email needed to see your score: it shows in ${RESULTS_IN}. I read every audit that comes through.`,
     NoteIcon: Clock,
     src: AuditImg,
     alt: "An operator in a suit checking his phone",

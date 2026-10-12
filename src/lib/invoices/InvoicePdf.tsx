@@ -28,7 +28,10 @@ Font.register({
     { src: font("CreatoDisplay-Bold.otf"), fontWeight: 700 },
   ],
 });
-Font.register({ family: "Copy", src: font("cdCopy.otf") });
+// The body text is Creato too (cdCopy.otf is the same file). One file under
+// two names breaks letters in the invoices drawn after the first, since
+// react-pdf keeps each font's glyphs between documents.
+
 // The PDF renderer can't read the site's copy of IBM Plex Mono, so
 // /public/fonts/pdf holds a Latin subset of it re-saved for PDFs.
 Font.register({ family: "Plex", src: font("pdf/IBMPlexMono-Medium.ttf") });
@@ -47,7 +50,7 @@ const styles = StyleSheet.create({
     paddingTop: 48,
     paddingBottom: 64,
     paddingHorizontal: 48,
-    fontFamily: "Copy",
+    fontFamily: "Creato",
     fontSize: 10,
     lineHeight: 1.4,
     color: BLACK,

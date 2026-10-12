@@ -69,8 +69,8 @@ export default function WhatItChecks() {
               Six Checks, the Way a Rider Sees You
             </h2>
             <p className={styles.copy} data-reveal>
-              We check your live site and your Google listing from a phone, the
-              way a rider would find you.
+              The audit checks your live site, your Google listing and the
+              searches riders make in your city, the way a rider would find you.
             </p>
           </div>
 

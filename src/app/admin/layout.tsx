@@ -6,6 +6,7 @@ import { adminQueue, getAdmin, studioStats } from "@/lib/admin";
 import { initials } from "@/lib/dashboard/format";
 import { STUDIO_ID } from "@/lib/leads/kinds";
 import { leadsSidebar } from "@/lib/leads/workspace";
+import { countNewAudits } from "@/lib/audit/store";
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s - Admin - Fonts & Footers" },
@@ -19,11 +20,14 @@ export default async function AdminLayout({
 }) {
   const { user, clients, now } = await getAdmin();
   const queue = adminQueue(clients, now);
-  const leads = await leadsSidebar(STUDIO_ID);
+  const [leads, auditsNew] = await Promise.all([
+    leadsSidebar(STUDIO_ID),
+    countNewAudits(),
+  ]);
 
   return (
     <Shell
-      nav={adminNav(studioStats(clients), queue.length, leads.due)}
+      nav={adminNav(studioStats(clients), queue.length, leads.due, auditsNew)}
       business='Fonts & Footers'
       plan='Admin'
       tone='admin'

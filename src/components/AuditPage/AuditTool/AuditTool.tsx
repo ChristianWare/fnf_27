@@ -1,13 +1,14 @@
 "use client";
 
-// The audit page's hero and the request form under it. An operator asks
-// for the free audit here; the request goes to the studio inbox
-// (requestAudit), and we check the site by hand and email the audit back
-// within TURNAROUND. The automatic audit, with the score on the page, comes
-// later; its results view is in ../AuditResults.
+// The audit page's hero and the form under it. An operator types their
+// website (or their business name, if they don't have one), says which
+// Google listing is theirs, and goes to their report's own page, where the
+// checks come in as they finish. The score and top three are free; the
+// full report goes to their email when they ask for it there.
 
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import styles from "./AuditTool.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
@@ -19,19 +20,20 @@ import Invoice from "@/components/shared/icons/Invoice/Invoice";
 import Driver from "@/components/shared/icons/Driver/Driver";
 import { ToastProvider, useToast } from "@/components/Dashboard/Toast/Toast";
 import { STAMP_FIELD, TRAP_FIELD } from "@/lib/forms/fields";
-import { cleanUrl, hostOf, TURNAROUND } from "@/lib/audit";
+import { RESULTS_IN } from "@/lib/audit";
 import { track } from "@/lib/analytics";
-import { requestAudit, type AuditField } from "@/app/audit/actions";
+import { pickAudit, startAudit, type StartField } from "@/app/audit/actions";
+import type { Candidate } from "@/lib/audit/start";
 import HeroImg from "../../../../public/images/audit.jpg";
 
-const Turnaround = TURNAROUND[0].toUpperCase() + TURNAROUND.slice(1);
+const ResultsIn = RESULTS_IN[0].toUpperCase() + RESULTS_IN.slice(1);
 
 // The quick facts along the bottom of the hero's text card.
 const heroFacts = [
   { label: "Price", value: "Free, no card" },
-  { label: "Turnaround", value: Turnaround },
-  { label: "Checked by", value: "A person, not a script" },
-  { label: "Report", value: "By email, fixes ranked" },
+  { label: "Your score", value: ResultsIn },
+  { label: "Read by", value: "Me, every one" },
+  { label: "Full report", value: "By email, as a PDF" },
   { label: "Checks", value: "6, on your live site" },
   { label: "Built for", value: "Black car & limo operators" },
 ];
@@ -40,15 +42,15 @@ const heroFacts = [
 const facts = [
   {
     id: 1,
-    title: Turnaround,
-    sub: "Checked by a person, not a script",
+    title: ResultsIn,
+    sub: "Your score, right on the page",
     Icon: Clock,
   },
   { id: 2, title: "Free", sub: "No payment and no card", Icon: Money },
   {
     id: 3,
-    title: "The audit by email",
-    sub: "Your fixes, ranked, in plain English",
+    title: "The full report by email",
+    sub: "Every check and every fix, as a PDF",
     Icon: Invoice,
   },
   {
@@ -60,12 +62,10 @@ const facts = [
 ];
 
 const youGet = [
-  "Where you stand on all six checks",
+  "A score out of 100",
   "Your top three fixes, ranked",
-  "Plain English you can hand to any developer",
+  "How you compare with the operators near you",
 ];
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Props = {
   /** Cloudflare's site key; without one there's no box. */
@@ -73,6 +73,8 @@ type Props = {
   /** When the page was drawn, signed by the server. */
   stamp: string;
 };
+
+type Pick = { id: string; candidates: Candidate[]; askCity: boolean };
 
 export default function AuditTool(props: Props) {
   return (
@@ -84,71 +86,100 @@ export default function AuditTool(props: Props) {
 
 function Tool({ siteKey, stamp }: Props) {
   const toast = useToast();
-  const [name, setName] = useState("");
-  const [website, setWebsite] = useState("");
-  const [email, setEmail] = useState("");
-  const [note, setNote] = useState("");
+  const router = useRouter();
+  const [site, setSite] = useState("");
+  const [city, setCity] = useState("");
   const [error, setError] = useState<{
-    field?: AuditField;
+    field?: StartField;
     text: string;
   } | null>(null);
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [pick, setPick] = useState<Pick | null>(null);
+  const [none, setNone] = useState(false);
+  // Past the first step: what shows next appears as it is, with no fade-in
+  // (<Reveal /> only knows the elements it found when the page loaded).
+  const [moved, setMoved] = useState(false);
   // Counts the failed sends, so the box asks for a fresh token each time.
   const [failed, setFailed] = useState(0);
 
-  function fail(text: string, field?: AuditField) {
+  function fail(text: string, field?: StartField) {
     setError({ field, text });
     setFailed((n) => n + 1);
-    toast("That didn't send", { tone: "error", detail: text });
+    toast("That didn't start", { tone: "error", detail: text });
+  }
+
+  function open(id: string) {
+    track("Audit run");
+    router.push(`/audit/report/${id}`);
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = event.currentTarget;
-    if (!name.trim()) {
-      setError({ field: "name", text: "Enter your name." });
-      return;
-    }
-    if (!cleanUrl(website)) {
+    if (site.trim().length < 3) {
       setError({
-        field: "website",
-        text: "Enter your website, like www.yourcompany.com.",
-      });
-      return;
-    }
-    if (!EMAIL_RE.test(email.trim())) {
-      setError({
-        field: "email",
-        text: "Enter the email address to send the audit to.",
+        field: "site",
+        text: "Enter your website, or your business name.",
       });
       return;
     }
     setError(null);
-    setSending(true);
+    setBusy(true);
     try {
-      // Everything in the form, the hidden fields and Cloudflare's token
-      // included.
-      const result = await requestAudit(new FormData(form));
-      if (result.ok) {
-        setSent(true);
-        track("Audit request");
-        toast("Request sent", {
-          detail: `Your audit comes to ${email.trim()} within ${TURNAROUND}.`,
-        });
-      } else {
+      // Everything in the form, the hidden fields and Cloudflare's token included.
+      const result = await startAudit(new FormData(event.currentTarget));
+      if (!result.ok) {
         fail(result.error, result.field);
+        return;
       }
+      if (result.next === "report") {
+        open(result.id);
+        return;
+      }
+      setMoved(true);
+      setPick({
+        id: result.id,
+        candidates: result.candidates,
+        askCity: result.askCity,
+      });
+      setNone(result.candidates.length === 0);
     } catch {
-      fail("That didn't send. Check your connection and try again.");
+      fail("That didn't start. Check your connection and try again.");
     } finally {
-      setSending(false);
+      setBusy(false);
     }
   }
 
-  const invalid = (field: AuditField) =>
-    error?.field === field ? true : undefined;
-  const site = cleanUrl(website);
+  async function choose(choice: {
+    placeId?: string;
+    city?: string;
+    notOnGoogle?: boolean;
+  }) {
+    if (!pick) return;
+    setError(null);
+    setBusy(true);
+    try {
+      const result = await pickAudit(pick.id, choice);
+      if (!result.ok) {
+        setError({ field: result.field, text: result.error });
+        toast("That didn't start", { tone: "error", detail: result.error });
+        return;
+      }
+      open(pick.id);
+    } catch {
+      setError({
+        text: "That didn't start. Check your connection and try again.",
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function startOver() {
+    setPick(null);
+    setNone(false);
+    setError(null);
+    setFailed((n) => n + 1);
+  }
 
   return (
     <>
@@ -170,14 +201,14 @@ function Tool({ siteKey, stamp }: Props) {
             <p className={styles.copy} data-reveal>
               Find out what&apos;s costing you bookings: how you show up on
               Google, how your site works on a phone, whether riders can book
-              you online, and whether AI search can read you. We check it by
-              hand and email you the fixes, ranked, within {TURNAROUND}.
+              you online, and whether AI search can read you. Your score comes
+              back in {RESULTS_IN}, and I read every audit that comes through.
             </p>
             <div className={styles.btnContainer} data-reveal>
               <Button
                 href='#audit-form'
                 btnType='black'
-                text='Request my free audit'
+                text='Run my free audit'
                 arrow
               />
               <Button
@@ -215,7 +246,7 @@ function Tool({ siteKey, stamp }: Props) {
       <section
         className={styles.tool}
         id='audit-form'
-        aria-label='Request your free audit'
+        aria-label='Run your free audit'
       >
         <Reveal />
         <div className={styles.aside} data-reveal>
@@ -245,94 +276,147 @@ function Tool({ siteKey, stamp }: Props) {
           </div>
         </div>
 
-        {sent ? (
-          <div className={styles.thanks} role='status' data-reveal>
-            <span className={styles.label}>Request sent</span>
-            <p className={`${styles.thanksHeading} h4`}>
-              Thanks, {name.trim().split(" ")[0]}.
-            </p>
-            <p className={styles.thanksText}>
-              We&apos;ll check {site ? hostOf(site) : "your site"} and your
-              Google listing by hand, and email the audit to {email.trim()}{" "}
-              within {TURNAROUND}. If anything comes up before then, reply to
-              that email or write to hello@fontsandfooters.com.
-            </p>
+        {pick ? (
+          <div className={styles.form}>
+            <div className={styles.pickHead}>
+              <span className={styles.label}>Step 2 of 2</span>
+              <p className={`${styles.pickHeading} h5`}>
+                {pick.candidates.length && !none
+                  ? "Is this your Google listing?"
+                  : "We couldn't find your Google listing"}
+              </p>
+              <p className={styles.pickText}>
+                {pick.candidates.length && !none
+                  ? "Pick yours, so the audit checks the right reviews and map results."
+                  : "Enter the city you're based in, so the audit runs the searches riders make there."}
+              </p>
+            </div>
+
+            {pick.candidates.length > 0 && !none && (
+              <ul className={styles.candidates}>
+                {pick.candidates.map((c) => (
+                  <li key={c.placeId}>
+                    <button
+                      type='button'
+                      className={styles.candidate}
+                      onClick={() => choose({ placeId: c.placeId })}
+                      disabled={busy}
+                    >
+                      <span className={styles.candidateName}>{c.name}</span>
+                      {c.address && (
+                        <span className={styles.candidateSub}>{c.address}</span>
+                      )}
+                      <span className={styles.candidateMeta}>
+                        {c.rating ? `${c.rating.toFixed(1)}★ · ` : ""}
+                        {c.reviews} {c.reviews === 1 ? "review" : "reviews"}
+                        {c.website ? ` · ${c.website}` : ""}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {none ? (
+              <form
+                className={styles.form}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void choose({ city });
+                }}
+                noValidate
+              >
+                <label className={styles.field}>
+                  <span className={styles.label}>Your city*</span>
+                  <input
+                    className={styles.input}
+                    type='text'
+                    name='city'
+                    autoComplete='address-level2'
+                    placeholder='Phoenix, AZ'
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    aria-invalid={error?.field === "city" ? true : undefined}
+                    disabled={busy}
+                  />
+                </label>
+                {error && (
+                  <p className={styles.error} role='alert'>
+                    {error.text}
+                  </p>
+                )}
+                <div className={styles.submit}>
+                  <Button
+                    type='submit'
+                    btnType='black'
+                    text={busy ? "Starting your audit…" : "Run the audit"}
+                    disabled={busy}
+                    arrow
+                  />
+                </div>
+              </form>
+            ) : (
+              <>
+                {error && (
+                  <p className={styles.error} role='alert'>
+                    {error.text}
+                  </p>
+                )}
+                <div className={styles.pickLinks}>
+                  <button
+                    type='button'
+                    className={styles.textButton}
+                    onClick={() => (pick.askCity ? setNone(true) : choose({}))}
+                    disabled={busy}
+                  >
+                    None of these is me
+                  </button>
+                  <button
+                    type='button'
+                    className={styles.textButton}
+                    onClick={() => choose({ notOnGoogle: true })}
+                    disabled={busy}
+                  >
+                    I&apos;m not on Google Maps yet
+                  </button>
+                </div>
+              </>
+            )}
+            <button
+              type='button'
+              className={styles.textButton}
+              onClick={startOver}
+              disabled={busy}
+            >
+              ← Start over
+            </button>
           </div>
         ) : (
           <form
             className={styles.form}
             onSubmit={onSubmit}
             noValidate
-            data-reveal
+            data-reveal={moved ? undefined : true}
           >
             <label className={styles.field}>
-              <span className={styles.label}>Full name*</span>
+              <span className={styles.label}>Your website*</span>
               <input
                 className={styles.input}
                 type='text'
-                name='name'
-                autoComplete='name'
-                placeholder='Enter your name'
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                aria-invalid={invalid("name")}
-                disabled={sending}
+                name='site'
+                inputMode='url'
+                autoComplete='url'
+                placeholder='www.yourcompany.com'
+                value={site}
+                onChange={(event) => setSite(event.target.value)}
+                aria-invalid={error?.field === "site" ? true : undefined}
+                aria-describedby='audit-site-note'
+                disabled={busy}
               />
             </label>
-
-            <div className={styles.row}>
-              <label className={styles.field}>
-                <span className={styles.label}>Your website*</span>
-                <input
-                  className={styles.input}
-                  type='text'
-                  name='website'
-                  inputMode='url'
-                  autoComplete='url'
-                  placeholder='www.yourcompany.com'
-                  value={website}
-                  onChange={(event) => setWebsite(event.target.value)}
-                  aria-invalid={invalid("website")}
-                  disabled={sending}
-                />
-              </label>
-
-              <label className={styles.field}>
-                <span className={styles.label}>Email address*</span>
-                <input
-                  className={styles.input}
-                  type='email'
-                  name='email'
-                  inputMode='email'
-                  autoComplete='email'
-                  placeholder='you@yourcompany.com'
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  aria-invalid={invalid("email")}
-                  disabled={sending}
-                />
-              </label>
-            </div>
-
-            <label className={styles.field}>
-              <span className={styles.label}>
-                Anything we should look at? (optional)
-              </span>
-              <textarea
-                className={`${styles.input} ${styles.textarea}`}
-                name='note'
-                rows={3}
-                placeholder='A city you want to rank in, a page you’re unsure about, your Google listing…'
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-                disabled={sending}
-              />
-            </label>
-
-            <p className={styles.emailNote}>
-              We&apos;ll email the audit to the address above. If you want, we
-              can walk you through it on a short call. No pitch if it&apos;s not
-              a fit.
+            <p id='audit-site-note' className={styles.emailNote}>
+              No website? Type your business name and city instead, like
+              &ldquo;Better Line Limo, Phoenix&rdquo;.
             </p>
 
             {/* For bots only: a person never sees this field, so a value
@@ -367,15 +451,14 @@ function Tool({ siteKey, stamp }: Props) {
               <Button
                 type='submit'
                 btnType='black'
-                text={
-                  sending ? "Sending your request…" : "Request my free audit"
-                }
-                disabled={sending}
+                text={busy ? "Finding your business…" : "Run my free audit"}
+                disabled={busy}
                 arrow
               />
             </div>
             <p className={styles.note}>
-              Free, and built for black car and limo operators.
+              Free, and built for black car and limo operators. Your score shows
+              here; the full report goes to your email if you want it.
             </p>
           </form>
         )}
