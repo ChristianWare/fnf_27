@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./ProofStrip.module.css";
 
-import Logo from "@/components/shared/Logo/Logo";
+// import Logo from "@/components/shared/Logo/Logo";
 
 const VIDEO_SRC = "/videos/heroV.mp4";
 const POSTER = "/images/proof-poster.jpg"; // the clip's first frame
@@ -109,9 +109,9 @@ export default function ProofStrip() {
       />
       <div className={styles.overlay} />
 
-      <div className={styles.content}>
+      {/* <div className={styles.content}>
         <Logo noText blur='blur'  />
-      </div>
+      </div> */}
 
       <button
         type='button'

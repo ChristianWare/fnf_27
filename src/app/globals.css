@@ -3,6 +3,7 @@
   --black: #0d0d0e;
   --text: #6d7885;
   --textDark: #82888f;
+  --textDarkiii: #969ba2;
   --light: #f1f2f4;
   --light2: #e0e2e5;
   --accent1: #b5f2e0;
@@ -13,6 +14,7 @@
      large areas like the comparison table cells. */
   --accent1Light: #daf9f0;
   --accent2Light: #e0dbff;
+  --accent2Dark: #5d45fc;
   --accent3Light: #e8ffc9;
   --accent4Light: #fffbc5;
   --white: #ffffff;
