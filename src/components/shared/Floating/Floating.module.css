@@ -1,0 +1,8 @@
+.container {
+  position: relative;
+}
+
+.element {
+  position: absolute;
+  will-change: transform;
+}
