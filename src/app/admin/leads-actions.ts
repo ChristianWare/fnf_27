@@ -3,7 +3,6 @@
 // The admin's Leads Tool page: running a market now, pausing one, adding
 // one, the calendars each market reads, and each client's on/off switch.
 
-import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { and, eq, gt } from "drizzle-orm";
 import { db, schema } from "@/db";
@@ -21,7 +20,7 @@ import {
 import { publicUrl } from "@/lib/leads/apis/http";
 import { eventKind } from "@/lib/leads/classify";
 import { CALENDAR_SOURCES, EVENT_KINDS, STUDIO_ID } from "@/lib/leads/kinds";
-import { runMarket } from "@/lib/leads/runs";
+import { kickMarket } from "@/lib/leads/kick";
 import { flushUsage } from "@/lib/leads/usage";
 import { ensureSettings, locateCity, marketFor } from "@/lib/leads/workspace";
 import type { CalendarSource, EventType } from "@/lib/leads/types";
@@ -55,18 +54,8 @@ export async function runMarketNow(marketId: string): Promise<ActionResult> {
     )
     .limit(1);
   if (busy) return fail("It's running right now. Give it a few minutes.");
-  // Up to about four minutes; a long first run carries on
-  // with another click, or tonight.
-  after(async () => {
-    try {
-      await runMarket(market, {
-        trigger: "MANUAL",
-        deadline: Date.now() + 240_000,
-      });
-    } catch (error) {
-      console.error(`[leads] run for ${market.name} failed:`, error);
-    }
-  });
+  // Rounds of about four minutes, each booking the next, until it's done.
+  await kickMarket(market.id, { force: true });
   return done();
 }
 

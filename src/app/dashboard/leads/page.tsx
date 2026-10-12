@@ -48,6 +48,7 @@ export default async function LeadsPage() {
       <NotReady
         state='LOADING'
         market={page.workspace.settings.base.city}
+        progress={page.workspace.market.loading}
         trialEndsAt={trialEndsAt}
         action={{ href: "/dashboard/leads/settings", label: "Lead settings" }}
       />

@@ -19,7 +19,7 @@ a permission. Each one answers in its own words, with what to turn on.
 | `GOOGLE_MAPS_SERVER_KEY` | Google Cloud → APIs & Services → Credentials. Turn on **Places API (New)** and **Routes API**; restrict the key to those two. | Accounts, details, photos, venues, drive times |
 | `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` | A second key with only the **Maps Embed API**, restricted to your sites (`fontsandfooters.com/*`, `*.vercel.app/*`, `localhost:3000/*`). | The small map on each lead |
 | `TICKETMASTER_API_KEY` | developer.ticketmaster.com → My Apps → Consumer Key | Concerts, games and shows |
-| `APIFY_API_TOKEN` | Apify → Settings → API & Integrations. A token **without limited permissions** (a scoped one needs Run on the actor and Read on runs and datasets, or it says "Insufficient permissions for the Actor"). | Eventbrite, through the `scrapio/eventbrite-scraper` actor (pay per event). `APIFY_EVENTBRITE_ACTOR` swaps in another. |
+| `APIFY_API_TOKEN` | Apify → Settings → API & Integrations. A token **without limited permissions** (a scoped one needs Run on the actor and Read on runs and datasets, or it says "Insufficient permissions for the Actor"). | Eventbrite, through the `santamaria-automations/eventbrite-scraper` actor (pay per event). `APIFY_EVENTBRITE_ACTOR` swaps in another. |
 | `SERPAPI_API_KEY` | serpapi.com → Dashboard | Google Events: 4 searches per market each Monday (about 17 a month; 250 are free) |
 | `APOLLO_API_KEY` | Apollo → Settings → Integrations → API. It must be a **master key**. | The decision-maker's work email when a lead is saved |
 | `ANTHROPIC_API_KEY` | console.anthropic.com | Briefs, scripts, team pages, calendars without a feed, news |
@@ -32,17 +32,23 @@ and anything older is cleared.
 ## The first run
 
 1. `npm run db:migrate` adds the tables, the **Phoenix area** market and 8
-   Phoenix-area calendars to start from. Full Platform clients start with
-   the Leads Tool switched off.
+   Phoenix-area calendars to start from. Everyone with the Full Platform, a
+   trial or a paid plan has the Leads Tool from the start.
 2. **Admin → Leads Tool → Services → Check them all**, and fix anything
    that needs a look.
-3. **Admin → Leads Tool → Run now.** It works in rounds of about four
-   minutes (a first load takes a few) and starts the next round itself
-   while that page is open. Close it and the run finishes tonight; a run
-   left part done shows **Keep going**.
+3. A market loads itself the first time someone who has the tool opens it
+   (or signs up in it): rounds of about four minutes, each starting the
+   next, for about half an hour. The client's page shows how far it's got
+   and fills in when it's done. **Run now** on Admin → Leads Tool does the
+   same by hand, and you can close the page.
 4. **Test** each calendar. Switch off any that find nothing, and add your
    own (iCal files, RSS feeds, or any events page: the AI reads those).
-5. Turn Nier on under **Who has it**. They get a "your leads are in" email.
+5. **Who has it** is for taking the tool away, not giving it: everyone
+   with access is on until you switch them off.
+
+Runs carry on by calling `/api/leads/continue` on the site's own address
+(`NEXT_PUBLIC_APP_URL`) with `CRON_SECRET`, so both need to be set on
+Vercel for that to work.
 
 ## How it runs
 

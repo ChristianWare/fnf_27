@@ -164,7 +164,19 @@ export type LeadsWorkspace = {
   monthly: number;
   settings: LeadsSettings;
   /** Not ready until its first nightly run is in. */
-  market: { name: string; ready: boolean; lastRunAt?: string };
+  market: {
+    id?: string;
+    name: string;
+    ready: boolean;
+    lastRunAt?: string;
+    /** Before the first load is in: how far it's got. */
+    loading?: {
+      stepsDone: number;
+      steps: number;
+      accounts: number;
+      working: boolean;
+    };
+  };
   /** Found after this counts as new this morning. */
   newSince: string;
   accounts: Account[];

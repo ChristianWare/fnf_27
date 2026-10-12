@@ -3,7 +3,7 @@
 // page). Server only.
 
 import { aiReady, askJson } from "./ai";
-import { decodeEntities, pageText, readPage } from "./http";
+import { ApiError, decodeEntities, pageText, readPage } from "./http";
 import type { Who } from "../usage";
 import type { RawEvent } from "../classify";
 import { goodImage, offerPrices } from "../media";
@@ -440,6 +440,10 @@ async function readWithAi(
   return events;
 }
 
+const TURNED_AWAY = new Set([401, 403, 406, 429, 503]);
+const BROWSER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
+
 /** Reads a calendar address, whatever kind it is. Throws with a reason. */
 export async function readCalendar(
   address: string,
@@ -447,7 +451,15 @@ export async function readCalendar(
   now: Date,
   who: Who,
 ): Promise<CalendarRead> {
-  const page = await readPage(address, { timeout: 15_000 });
+  let page: Awaited<ReturnType<typeof readPage>>;
+  try {
+    page = await readPage(address, { timeout: 15_000 });
+  } catch (error) {
+    // Some tourism sites turn bots away (403): once more, as a browser.
+    if (!(error instanceof ApiError && TURNED_AWAY.has(error.status)))
+      throw error;
+    page = await readPage(address, { timeout: 15_000, agent: BROWSER_AGENT });
+  }
   if (!page) throw new Error("That isn't a public web address.");
   const body = page.body.trimStart();
   if (/^BEGIN:VCALENDAR/i.test(body) || /text\/calendar/i.test(page.type)) {

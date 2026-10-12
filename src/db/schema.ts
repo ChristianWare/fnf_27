@@ -788,7 +788,7 @@ export const leadsRuns = pgTable(
       .default("RUNNING"),
     /** The steps finished so far, and where the current one got to. */
     cursor: jsonb("cursor")
-      .$type<{ done: string[]; queue?: unknown[] }>()
+      .$type<{ done: string[]; queue?: unknown[]; rounds?: number }>()
       .notNull()
       .default({ done: [] }),
     counts: jsonb("counts")

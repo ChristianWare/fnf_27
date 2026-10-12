@@ -15,6 +15,7 @@ import {
   sql,
 } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { kickMarket, loadProgress } from "./kick";
 import { createId } from "@/lib/server/ids";
 import { alertAdmins } from "@/lib/server/notify";
 import { url } from "@/lib/server/config";
@@ -213,13 +214,16 @@ export async function ensureSettings(clientId: string) {
     .from(s.websites)
     .where(eq(s.websites.clientId, clientId))
     .limit(1);
-  return settingsFor(clientId, {
+  const row = await settingsFor(clientId, {
     company: client.business,
     name: person?.name ?? "",
     phone: person?.phone ?? client.phone ?? "",
     website: site?.domain ?? client.websiteUrl ?? undefined,
     city: [client.city, client.state].filter(Boolean).join(", "),
   });
+  // A market nobody's had before starts loading now, not tonight.
+  await kickMarket(row?.marketId).catch(() => undefined);
+  return row;
 }
 
 export const toSettings = (
@@ -502,8 +506,10 @@ export async function loadWorkspace(owner: Owner): Promise<Loaded> {
         .limit(1)
     : [];
   // Before its market's first run, there's nothing around them yet: the
-  // pages say so, and settings and saved leads still work.
+  // pages say so, and settings and saved leads still work. Opening the
+  // tool is enough to get that first run going.
   const ready = Boolean(market?.firstLoadedAt);
+  if (!ready) await kickMarket(market?.id).catch(() => undefined);
   const settings = toSettings(row, owner.morningEmail);
   const base = settings.base;
   const box = boxAround(base, REACH_MILES);
@@ -605,9 +611,11 @@ export async function loadWorkspace(owner: Owner): Promise<Loaded> {
       monthly: LEADS.monthly,
       settings,
       market: {
+        id: market?.id,
         name: market?.name ?? `${row.baseCity} area`,
         ready,
         lastRunAt: market?.lastRunAt?.toISOString(),
+        loading: !ready && market ? await loadProgress(market.id) : undefined,
       },
       newSince: ready
         ? newSince(now, market!.firstLoadedAt!.toISOString())

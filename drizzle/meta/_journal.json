@@ -43,6 +43,13 @@
       "when": 1791797564881,
       "tag": "0005_audits",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791797564882,
+      "tag": "0006_leads_on_for_everyone",
+      "breakpoints": true
     }
   ]
 }

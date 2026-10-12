@@ -316,7 +316,7 @@ function Market({ market, now }: { market: AdminMarket; now: string }) {
             {market.firstLoadedAt
               ? `First loaded ${fmtDate(market.firstLoadedAt)}. Last full run ${market.lastRunAt ? ago(market.lastRunAt, now) : "not yet"}.`
               : latest?.status === "RUNNING"
-                ? `Loading for the first time: step ${Math.min(latest.stepsDone + 1, STEPS)} of ${STEPS}. It works in rounds of a few minutes and carries on while this page is open; close it and it finishes tonight.`
+                ? `Loading for the first time: step ${Math.min(latest.stepsDone + 1, STEPS)} of ${STEPS}. It works in rounds of a few minutes and carries on by itself; you can close this page.`
                 : "Not loaded yet: its clients see “on the way” until the first run finishes. Run it now, or it runs tonight once someone uses it."}
           </p>
         </div>
@@ -336,7 +336,7 @@ function Market({ market, now }: { market: AdminMarket; now: string }) {
                   return {
                     message: `${market.name} is running`,
                     detail:
-                      "It works in rounds of a few minutes and carries on while this page is open. The numbers update as it goes.",
+                      "It works in rounds of a few minutes and carries on by itself. The numbers update as it goes.",
                   };
                 },
               )
@@ -852,10 +852,11 @@ function Clients({ data }: { data: LeadsAdmin }) {
       <div className={styles.titles}>
         <h2 className={styles.heading}>Who has it</h2>
         <p>
-          Switched off, a client sees “being set up” instead of the tool. Turn
-          Full Platform clients on once their market&apos;s first run is in.
-          Costs: what their own saves used (contacts, scripts, drive times),
-          plus an even share of their market&apos;s nightly runs.
+          Everyone with the Full Platform, a trial or a paid plan has it from
+          the moment they sign up; their market loads on its own. Switch someone
+          off only to take it away (they see &ldquo;switched off&rdquo; and can
+          ask you). Costs: what their own saves used (contacts, scripts, drive
+          times), plus an even share of their market&apos;s nightly runs.
         </p>
       </div>
       <div className={ui.tableWrap}>

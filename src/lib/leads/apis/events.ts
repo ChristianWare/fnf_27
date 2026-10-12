@@ -193,12 +193,12 @@ export async function ticketmasterCount(
 
 const APIFY = "https://api.apify.com/v2";
 export const apifyReady = () => Boolean(process.env.APIFY_API_TOKEN);
-/** The actor's id the way Apify's API wants it: "scrapio~eventbrite-scraper". */
+/** The actor's id the way Apify's API wants it: "santamaria-automations~eventbrite-scraper". */
 export const eventbriteActor = () =>
-  (process.env.APIFY_EVENTBRITE_ACTOR ?? "scrapio/eventbrite-scraper").replace(
-    "/",
-    "~",
-  );
+  (
+    process.env.APIFY_EVENTBRITE_ACTOR ??
+    "santamaria-automations/eventbrite-scraper"
+  ).replace("/", "~");
 const actor = eventbriteActor;
 
 /** Eventbrite's address for a city: "az--phoenix". */

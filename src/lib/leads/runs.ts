@@ -36,6 +36,7 @@ import {
   ticketmasterEvents,
 } from "./apis/events";
 import { readCalendar } from "./apis/calendars";
+import { ApiError } from "./apis/http";
 import { openings } from "./apis/news";
 import { SEARCHES } from "./catalog";
 import {
@@ -74,6 +75,7 @@ const STEPS = [
   "tidy",
 ] as const;
 type Step = (typeof STEPS)[number];
+export const STEP_COUNT = STEPS.length;
 
 export const STEP_NAMES: Record<Step, string> = {
   eventbrite_start: "Eventbrite started",
@@ -122,6 +124,8 @@ async function pool<T>(
   await Promise.all(lanes);
   return next >= items.length;
 }
+
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const message = (e: unknown) =>
   e instanceof Error ? e.message.slice(0, 300) : String(e).slice(0, 300);
@@ -303,7 +307,7 @@ async function stepDetails(ctx: Ctx) {
     if (!rows.length) return true;
     await pool(
       rows,
-      5,
+      4,
       () => ctx.left() < 15_000,
       async (row) => {
         try {
@@ -337,6 +341,17 @@ async function stepDetails(ctx: Ctx) {
             .where(eq(s.leadsPlaces.id, row.id));
           ctx.count("details");
         } catch (e) {
+          // Google's per-minute limit: wait it out and the row comes
+          // round again, rather than losing it for the night.
+          if (e instanceof ApiError && e.status === 429) {
+            ctx.count("detailWaits");
+            if ((ctx.run.counts.detailWaits ?? 0) === 1)
+              ctx.fail(
+                "Google details: the per-minute limit was reached, so it slowed down (raise 'Place Details requests per minute' in Google Cloud to speed first loads up).",
+              );
+            await wait(8_000);
+            return;
+          }
           ctx.count("detailErrors");
           // Don't ask again tonight; it's tried again tomorrow.
           await db
@@ -1123,6 +1138,7 @@ async function runFor(
 
 export type RunReport = {
   market: string;
+  marketId: string;
   status: "DONE" | "RUNNING" | "SKIPPED" | "BUSY";
   counts?: Record<string, number>;
   errors?: string[];
@@ -1135,7 +1151,8 @@ export async function runMarket(
 ): Promise<RunReport> {
   const now = new Date();
   const run = await runFor(market, options.trigger, now);
-  if (!run) return { market: market.name, status: "SKIPPED" };
+  if (!run)
+    return { market: market.name, marketId: market.id, status: "SKIPPED" };
 
   // One worker at a time.
   const lockFor = Math.max(60_000, options.deadline - Date.now() + 60_000);
@@ -1152,7 +1169,8 @@ export async function runMarket(
       ),
     )
     .returning();
-  if (!claimed) return { market: market.name, status: "BUSY" };
+  if (!claimed)
+    return { market: market.name, marketId: market.id, status: "BUSY" };
 
   const state: Run = {
     ...claimed,
@@ -1222,6 +1240,7 @@ export async function runMarket(
   }
   return {
     market: market.name,
+    marketId: market.id,
     status: complete ? "DONE" : "RUNNING",
     counts: state.counts,
     errors: state.errors,
