@@ -33,13 +33,13 @@
 
 .copies {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4rem;
-  width: 100%;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 2rem;
+  max-width: 550px;
 }
 
 .copy {
-  font-size: max(16px, 1.6rem);
+  font-size: 15px;
   line-height: 1.45;
 }
 
