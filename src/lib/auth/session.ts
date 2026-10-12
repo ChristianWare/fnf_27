@@ -127,3 +127,20 @@ export const sessionCookieOptions = (expires: Date) => ({
   path: "/",
   expires,
 });
+
+/**
+ * A second cookie beside the session, readable by the page's scripts, that
+ * only says someone is signed in and where their account lives ("admin" or
+ * "dashboard"). The nav uses it to show "My account" instead of "Log in"
+ * without every page having to read the real session. It proves nothing:
+ * the real session is still checked on every page behind the login.
+ */
+export { SIGNED_IN_COOKIE } from "./signed-in";
+
+export const signedInCookieOptions = (expires: Date) => ({
+  httpOnly: false,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+  expires,
+});

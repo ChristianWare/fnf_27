@@ -5,18 +5,36 @@ import styles from "./Nav.module.css";
 import Link from "next/link";
 import Logo from "../Logo/Logo";
 import Button from "../Button/Button";
-import { useEffect, useState, MouseEvent } from "react";
+import { useEffect, useState, useSyncExternalStore, MouseEvent } from "react";
 import { usePathname } from "next/navigation";
 import LayoutWrapper from "../LayoutWrapper";
+import { SIGNED_IN_COOKIE } from "@/lib/auth/signed-in";
 
+/**
+ * "Log in", or "My account" for someone who's signed in. The pages are
+ * drawn once for everyone, so this comes from the fnf_in cookie in the
+ * browser (the real session is checked behind the login itself); the
+ * server, with no cookie to read, draws "Log in".
+ */
+const whereSignedIn = () => {
+  const where = document.cookie
+    .split("; ")
+    .find((c) => c.startsWith(`${SIGNED_IN_COOKIE}=`))
+    ?.split("=")[1];
+  return where === "admin" || where === "dashboard" ? `/${where}` : "/login";
+};
+const noChanges = () => () => {};
+
+function useAccountLink() {
+  const href = useSyncExternalStore(noChanges, whereSignedIn, () => "/login");
+  return { href, text: href === "/login" ? "Log in" : "My account" };
+}
 
 interface NavProps {
   hamburgerColor?: string;
 }
 
-export default function Nav({
-  hamburgerColor = "",
-}: NavProps) {
+export default function Nav({ hamburgerColor = "" }: NavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const lenis = useLenis();
 
@@ -65,14 +83,10 @@ export default function Nav({
     { text: "Journal", href: "/journal" },
     { text: "About", href: "/about" },
     { text: "Contact", href: "/contact" },
-
-    // { text: "Work", href: "/work" },
-    // { text: "My Account", href: "/dashboard" },
   ];
 
-  
-
   const pathname = usePathname();
+  const account = useAccountLink();
 
   const isActive = (href: string) =>
     href === "/"
@@ -104,7 +118,6 @@ export default function Nav({
           >
             {items.map((item) => {
               const active = isActive(item.href);
-              
 
               return (
                 <Link
@@ -118,6 +131,13 @@ export default function Nav({
                 </Link>
               );
             })}
+            <Link
+              href={account.href}
+              onClick={closeMenu}
+              className={`${styles.navItem} ${styles.accountItem}`}
+            >
+              {account.text}
+            </Link>
             <div className={styles.btnContainerii}>
               <Button
                 href='https://calendly.com/chris-ware-dev/discovery-call'
@@ -131,8 +151,11 @@ export default function Nav({
           </div>
 
           <div className={styles.navRight}>
+            <Link href={account.href} className={styles.accountLink}>
+              {account.text}
+            </Link>
             <div className={styles.btnContainer}>
-              <Button href='/' text='Contact now' btnType='grayNav' />
+              <Button href='/contact' text='Contact now' btnType='grayNav' />
             </div>
             <div
               className={`${styles.hamburgerContainer} ${isOpen ? styles.hamburgerContainerOpen : ""}`}

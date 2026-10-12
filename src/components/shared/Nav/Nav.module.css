@@ -64,10 +64,41 @@
   color: var(--white);
 }
 
+.navRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2.4rem;
+}
+
 .btnContainer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+/* "Log in" / "My account": a plain link beside the button on desktop. */
+.accountLink {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.6rem;
+  line-height: 140%;
+  font-weight: 500;
+  color: var(--black);
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.accountLink:hover,
+.accountLink:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+/* The same link inside the mobile menu, hidden on desktop. */
+.accountItem {
+  display: none;
 }
 
 .navItemsMobile,
@@ -209,8 +240,13 @@
     height: 185px;
   }
 
-  .btnContainer {
+  .btnContainer,
+  .accountLink {
     display: none;
+  }
+
+  .accountItem {
+    display: block;
   }
 
   .hamburgerContainer {

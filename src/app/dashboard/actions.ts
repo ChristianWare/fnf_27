@@ -22,8 +22,10 @@ import {
 } from "@/lib/auth/accounts";
 import {
   SESSION_COOKIE,
+  SIGNED_IN_COOKIE,
   sessionCookieOptions,
   signSession,
+  signedInCookieOptions,
 } from "@/lib/auth/session";
 import { done, fail, VIEW_ONLY, type ActionResult } from "@/lib/actions";
 import { addActivity, setFact } from "@/lib/data/write";
@@ -769,7 +771,13 @@ export async function changePassword(
     .where(eq(s.users.id, a.user.id));
   // Signed out everywhere else; this session carries on.
   const { token, expires } = await signSession(a.user.id);
-  (await cookies()).set(SESSION_COOKIE, token, sessionCookieOptions(expires));
+  const jar = await cookies();
+  jar.set(SESSION_COOKIE, token, sessionCookieOptions(expires));
+  jar.set(
+    SIGNED_IN_COOKIE,
+    a.user.role === "ADMIN" ? "admin" : "dashboard",
+    signedInCookieOptions(expires),
+  );
   return done();
 }
 

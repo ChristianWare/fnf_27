@@ -9,9 +9,11 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import {
   SESSION_COOKIE,
+  SIGNED_IN_COOKIE,
   authConfigured,
   sessionCookieOptions,
   signSession,
+  signedInCookieOptions,
 } from "@/lib/auth/session";
 import { VIEW_AS_COOKIE } from "@/lib/auth/dal";
 import {
@@ -46,9 +48,15 @@ async function clientIp() {
   );
 }
 
-async function startSession(userId: string) {
+async function startSession(userId: string, role: Role) {
   const { token, expires } = await signSession(userId);
-  (await cookies()).set(SESSION_COOKIE, token, sessionCookieOptions(expires));
+  const jar = await cookies();
+  jar.set(SESSION_COOKIE, token, sessionCookieOptions(expires));
+  jar.set(
+    SIGNED_IN_COOKIE,
+    role === "ADMIN" ? "admin" : "dashboard",
+    signedInCookieOptions(expires),
+  );
   await db
     .update(schema.users)
     .set({ lastActiveAt: new Date() })
@@ -130,13 +138,14 @@ export async function signIn(
   }
 
   await clearAttempts(`signin:${email}`);
-  await startSession(user.id);
+  await startSession(user.id, user.role);
   redirect(safeNext(formData.get("next"), user.role));
 }
 
 export async function signOut() {
   const jar = await cookies();
   jar.delete(SESSION_COOKIE);
+  jar.delete(SIGNED_IN_COOKIE);
   jar.delete(VIEW_AS_COOKIE);
   redirect("/login");
 }
@@ -404,6 +413,6 @@ export async function setNewPassword(
   if (!user) return { error: "We couldn't find that account." };
 
   await clearAttempts(`signin:${user.email}`);
-  await startSession(user.id);
+  await startSession(user.id, user.role);
   redirect(homeFor(user));
 }
