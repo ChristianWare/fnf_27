@@ -18,7 +18,9 @@ export default function Hero() {
               data-reveal
               data-reveal-style='fade'
             >
-              Expand your 👨‍✈️ <br /> Black Car Business
+              Expand your
+               {/* 👨‍✈️  */}
+               <br /> Black Car Business
             </h1>
             <p className={styles.copy} data-reveal>
               Get found on Google, take bookings directly with no per-booking
