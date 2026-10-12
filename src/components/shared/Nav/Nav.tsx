@@ -138,7 +138,7 @@ export default function Nav({ hamburgerColor = "" }: NavProps) {
             >
               {account.text}
             </Link>
-            <div className={styles.btnContainerii}>
+            {/* <div className={styles.btnContainerii}>
               <Button
                 href='https://calendly.com/chris-ware-dev/discovery-call'
                 target='_blank'
@@ -147,7 +147,7 @@ export default function Nav({ hamburgerColor = "" }: NavProps) {
                 onClick={closeMenu}
                 arrow
               />
-            </div>
+            </div> */}
           </div>
 
           <div className={styles.navRight}>

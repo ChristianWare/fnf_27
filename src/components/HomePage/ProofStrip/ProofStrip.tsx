@@ -110,7 +110,7 @@ export default function ProofStrip() {
       <div className={styles.overlay} />
 
       <div className={styles.content}>
-        <Logo noText blur='blur' logoLarge='logoLarge' />
+        <Logo noText blur='blur'  />
       </div>
 
       <button
