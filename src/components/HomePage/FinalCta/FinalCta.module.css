@@ -12,7 +12,6 @@
   border-radius: 3rem;
   overflow: hidden;
   isolation: isolate;
-  background-color: var(--black);
 }
 
 .video {
@@ -77,7 +76,7 @@
 }
 
 .heading {
-  line-height: 1.2;
+  max-width: 600px;
 }
 
 .copy {
