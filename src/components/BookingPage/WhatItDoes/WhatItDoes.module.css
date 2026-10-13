@@ -188,7 +188,8 @@
 }
 
 .btnContainer {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
 }
 
 /* The picture's frame: a piece of the software on a grey box, in the

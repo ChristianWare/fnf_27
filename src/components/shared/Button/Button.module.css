@@ -52,6 +52,7 @@
 .green:visited {
   background-color: var(--accent3);
   color: var(--black);
+  border: 1px solid var(--accent3Dark)
 }
 
 .blackUnderline,

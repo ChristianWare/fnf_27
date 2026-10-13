@@ -171,7 +171,12 @@ export default function Problems() {
                     ))}
                   </ul>
                   <div className={styles.btnContainer}>
-                    <Button href={x.href} btnType='gray' text={x.btnText} />
+                    <Button
+                      href={x.href}
+                      btnType='green'
+                      text={x.btnText}
+                      arrow
+                    />
                   </div>
                 </div>
                 <SlideInImage

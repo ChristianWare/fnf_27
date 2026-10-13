@@ -187,7 +187,8 @@
 }
 
 .btnContainer {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
 }
 
 /* The photo's frame. The sliding, the clipping and the image itself live
