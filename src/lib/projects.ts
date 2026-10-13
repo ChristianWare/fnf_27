@@ -87,7 +87,7 @@ export const projects: Project[] = [
     name: "Nier Transportation",
     logo: NierLogo,
     title:
-      "Off the per-booking platforms: $0 fees, and bookings 24/7 on its own site",
+      "Nier Transportation",
     summary:
       "How a 20-year Phoenix black car operator moved from per-booking platforms to its own website, booking system and dispatch, with $0 per-booking fees.",
     hero: NierHero,

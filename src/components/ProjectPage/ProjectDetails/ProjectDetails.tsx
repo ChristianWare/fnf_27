@@ -21,6 +21,41 @@ export default function ProjectDetails({ project }: { project: Project }) {
     <section className={styles.container} aria-label='Case study'>
       <Reveal />
       <div className={styles.column}>
+        {/* ── The brief ── */}
+        <section className={styles.panel} data-reveal='each'>
+          <div className={styles.titles}>
+            <h2 className={styles.title}>The brief</h2>
+            <p>The short version, start to finish.</p>
+          </div>
+          <dl className={styles.brief}>
+            {brief.map((line) => (
+              <div key={line.label} className={styles.briefRow}>
+                <dt>{line.label}</dt>
+                <dd>{line.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {/* ── What's inside ── */}
+        <section className={styles.panel} data-reveal='each'>
+          <div className={styles.titles}>
+            <h2 className={styles.title}>What&apos;s inside</h2>
+            <p>The parts of the platform this project runs on.</p>
+          </div>
+          <ul className={styles.inside}>
+            {inside.map((f) => (
+              <li key={f.title} className={styles.feature}>
+                <span className={styles.featureIcon}>
+                  <Icon name={f.icon} />
+                </span>
+                <span className={styles.featureTitle}>{f.title}</span>
+                <p>{f.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         {/* ── The scorecard ── */}
         <section className={styles.panel} data-reveal='each'>
           <div className={styles.titles}>
@@ -74,42 +109,10 @@ export default function ProjectDetails({ project }: { project: Project }) {
             </figcaption>
           </figure>
         )}
+      </div>
 
-        {/* ── The brief ── */}
-        <section className={styles.panel} data-reveal='each'>
-          <div className={styles.titles}>
-            <h2 className={styles.title}>The brief</h2>
-            <p>The short version, start to finish.</p>
-          </div>
-          <dl className={styles.brief}>
-            {brief.map((line) => (
-              <div key={line.label} className={styles.briefRow}>
-                <dt>{line.label}</dt>
-                <dd>{line.text}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-
-        {/* ── What's inside ── */}
-        <section className={styles.panel} data-reveal='each'>
-          <div className={styles.titles}>
-            <h2 className={styles.title}>What&apos;s inside</h2>
-            <p>The parts of the platform this project runs on.</p>
-          </div>
-          <ul className={styles.inside}>
-            {inside.map((f) => (
-              <li key={f.title} className={styles.feature}>
-                <span className={styles.featureIcon}>
-                  <Icon name={f.icon} />
-                </span>
-                <span className={styles.featureTitle}>{f.title}</span>
-                <p>{f.text}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-
+      {/* ── Beside it: what to do next, and the numbers ── */}
+      <aside className={styles.aside}>
         {/* ── Screens ── */}
         {screens.length > 0 && (
           <section className={styles.panel} data-reveal='each'>
@@ -120,10 +123,7 @@ export default function ProjectDetails({ project }: { project: Project }) {
             <Screens screens={screens} name={project.name} />
           </section>
         )}
-      </div>
 
-      {/* ── Beside it: what to do next, and the numbers ── */}
-      <aside className={styles.aside}>
         <section className={styles.cta}>
           <span className={styles.ctaIcon}>
             <Icon name='zap' />

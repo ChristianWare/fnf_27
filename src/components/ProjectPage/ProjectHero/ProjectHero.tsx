@@ -13,15 +13,15 @@ export default function ProjectHero({ project }: { project: Project }) {
         <Reveal onLoad step={150} />
         <div className={styles.top}>
           <div className={styles.client} data-reveal>
-            {project.logo && (
+            {/* {project.logo && (
               <Image
                 src={project.logo}
                 alt=''
                 className={styles.logo}
                 sizes='40px'
               />
-            )}
-            <span className={styles.clientName}>{project.name}</span>
+            )} */}
+            {/* <span className={styles.clientName}>{project.name}</span> */}
           </div>
           <h1
             className={`${styles.heading} heading2`}
@@ -30,6 +30,7 @@ export default function ProjectHero({ project }: { project: Project }) {
           >
             {project.title}
           </h1>
+          <p className={styles.copy}>{project.summary}</p>
         </div>
 
         <dl className={styles.facts} data-reveal>

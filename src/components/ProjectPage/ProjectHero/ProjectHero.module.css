@@ -23,7 +23,11 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2.4rem;
+  gap: 2rem;
+}
+
+.copy {
+  max-width: 600px;
 }
 
 /* The client's mark and name, where the reference has a logo. */

@@ -268,7 +268,7 @@
   gap: 0.8rem;
   padding: 2rem;
   border-radius: 2rem;
-  background-color: var(--light);
+  background-color: var(--accent2Light);
 }
 
 .feature p {
@@ -284,8 +284,8 @@
   width: 4.4rem;
   height: 4.4rem;
   margin-bottom: 0.6rem;
-  border-radius: 1.2rem;
-  background-color: var(--white);
+  border-radius: 1rem;
+  background-color: var(--accent2);
   color: var(--black);
 }
 
