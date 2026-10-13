@@ -7,8 +7,12 @@ import type { IconName } from "@/components/Dashboard/icons";
 import NierLogo from "../../public/images/nierLogo.png";
 import Barry from "../../public/images/barry.png";
 import NierHero from "../../public/images/cadiv.png";
-import NierStory from "../../public/images/cadiMotion.png";
+import NierStory from "../../public/images/nierIntro.png";
 import NierHome from "../../public/images/nierHomePage.png";
+import NierBlog from "../../public/images/nierBlogPage.png";
+import NierCorp from "../../public/images/nierCorporatePage.png";
+import NierServ from "../../public/images/nierServicesPage.png";
+import NierTerm from "../../public/images/nierTerminalPage.png";
 import Concept1Hero from "../../public/images/chevy_corp.png";
 import Concept1Story from "../../public/images/cadi_drive.png";
 import Concept2Hero from "../../public/images/branded.jpg";
@@ -216,16 +220,40 @@ export const projects: Project[] = [
         caption: "The fleet",
       },
       {
+        src: NierBlog,
+        alt: "The Nier Transportation home page, top to bottom",
+        caption: "The home page",
+        top: true,
+      },
+      {
+        src: NierCorp,
+        alt: "The Nier Transportation home page, top to bottom",
+        caption: "The home page",
+        top: true,
+      },
+      {
+        src: NierServ,
+        alt: "The Nier Transportation home page, top to bottom",
+        caption: "The home page",
+        top: true,
+      },
+      {
         src: NierHome,
         alt: "The Nier Transportation home page, top to bottom",
         caption: "The home page",
         top: true,
       },
       {
-        src: NierStory,
-        alt: "A black SUV driving through downtown Phoenix",
-        caption: "On the road in Phoenix",
+        src: NierTerm,
+        alt: "The Nier Transportation home page, top to bottom",
+        caption: "The home page",
+        top: true,
       },
+      // {
+      //   src: NierStory,
+      //   alt: "A black SUV driving through downtown Phoenix",
+      //   caption: "On the road in Phoenix",
+      // },
     ],
     cta: {
       title: "Want this for your fleet?",
