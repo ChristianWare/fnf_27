@@ -105,6 +105,182 @@
   object-position: center;
 }
 
+/* A full-page screenshot shows its top. */
+.imgTop {
+  object-position: top;
+}
+
+/* ── The carousel ── */
+.photo:focus-visible {
+  outline: 3px solid var(--black);
+  outline-offset: 3px;
+}
+
+/* Every photo sits in the frame; the shown one fades in over the rest. */
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(1.04);
+  transition:
+    opacity 0.7s ease,
+    transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.slideOn {
+  z-index: 1;
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Dark at the bottom, so the previews and the caption read on any photo. */
+.shadeBottom {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  height: 22rem;
+  background: linear-gradient(to top, rgb(13 13 14 / 62%), rgb(13 13 14 / 0%));
+  pointer-events: none;
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.2rem;
+  height: 5.2rem;
+  border: 0;
+  border-radius: 50%;
+  background-color: rgb(255 255 255 / 86%);
+  color: var(--black);
+  cursor: pointer;
+  transform: translateY(-50%);
+  backdrop-filter: blur(6px);
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.arrow svg {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.arrow:focus-visible {
+  outline: 3px solid var(--white);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .arrow:hover {
+    background-color: var(--white);
+    transform: translateY(-50%) scale(1.06);
+  }
+}
+
+.arrowPrev {
+  left: 2rem;
+}
+
+.arrowPrev svg {
+  transform: rotate(180deg);
+}
+
+.arrowNext {
+  right: 2rem;
+}
+
+.carouselFoot {
+  position: absolute;
+  inset: auto 2rem 2rem;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.caption {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.count {
+  padding: 0.5rem 0.9rem;
+  border-radius: 50px;
+  background-color: rgb(13 13 14 / 55%);
+}
+
+/* The previews, 100px square, scrolling sideways when there are many. */
+.thumbs {
+  display: flex;
+  gap: 0.8rem;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.thumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.thumbs li {
+  flex: none;
+}
+
+.thumb {
+  position: relative;
+  display: block;
+  width: 100px;
+  height: 100px;
+  padding: 0;
+  border: 2px solid rgb(255 255 255 / 0%);
+  border-radius: 1.4rem;
+  overflow: hidden;
+  background-color: var(--light2);
+  opacity: 0.6;
+  cursor: pointer;
+  transition:
+    opacity 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.thumbOn {
+  border-color: var(--white);
+  opacity: 1;
+}
+
+.thumb:focus-visible {
+  outline: 3px solid var(--white);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .thumb:hover {
+    opacity: 1;
+  }
+}
+
+.thumbImg {
+  object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide {
+    transform: none;
+    transition: opacity 0.3s ease;
+  }
+}
+
 @media screen and (max-width: 1268px) {
   .facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -140,7 +316,25 @@
 
   .photo {
     height: 100vw;
+    min-height: 40rem;
     border-radius: 2rem;
+  }
+
+  .arrow {
+    width: 4.4rem;
+    height: 4.4rem;
+  }
+
+  .arrowPrev {
+    left: 1.2rem;
+  }
+
+  .arrowNext {
+    right: 1.2rem;
+  }
+
+  .carouselFoot {
+    inset: auto 1.2rem 1.2rem;
   }
 
   .facts {

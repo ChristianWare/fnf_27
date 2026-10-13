@@ -16,12 +16,6 @@ import Concept2Story from "../../public/images/cadiii.png";
 
 export type Fact = { label: string; value: string; href?: string };
 
-export type Stat = {
-  /** Two short lines, shown in mono above the number. */
-  label: string;
-  value: string;
-};
-
 export type Quote = {
   text: string;
   name: string;
@@ -43,12 +37,15 @@ export type BriefLine = { label: string; text: string };
 /** One tile in "What's inside". */
 export type Feature = { icon: IconName; title: string; text: string };
 
-/** A picture in "Screens". `tall` for a full-page screenshot. */
-export type Screen = {
+/**
+ * A picture in the hero's carousel. `top` keeps the top of the picture in
+ * view, for a full-page screenshot.
+ */
+export type Photo = {
   src: StaticImageData;
   alt: string;
   caption: string;
-  tall?: boolean;
+  top?: boolean;
 };
 
 export type Project = {
@@ -57,14 +54,10 @@ export type Project = {
   logo?: StaticImageData;
   /** The page title: the result, in one line. */
   title: string;
-  /** For the page's metadata. */
+  /** Under the title in the hero, and the page's description. */
   summary: string;
-  hero: StaticImageData;
-  heroAlt: string;
   /** In the hero, under the title. */
   facts: Fact[];
-  /** "At a glance", beside the case study. */
-  stats: Stat[];
   /** The scorecard: "What changed" for a client, "Built to" for a concept. */
   results: {
     title: string;
@@ -76,7 +69,8 @@ export type Project = {
   quote?: Quote;
   brief: BriefLine[];
   inside: Feature[];
-  screens: Screen[];
+  /** The hero's carousel, in order: the first one shows first. */
+  photos: Photo[];
   /** The card beside the case study. */
   cta: { title: string; text: string };
 };
@@ -86,12 +80,9 @@ export const projects: Project[] = [
     slug: "nier-transportation",
     name: "Nier Transportation",
     logo: NierLogo,
-    title:
-      "Nier Transportation",
+    title: "Nier Transportation",
     summary:
       "How a 20-year Phoenix black car operator moved from per-booking platforms to its own website, booking system and dispatch, with $0 per-booking fees.",
-    hero: NierHero,
-    heroAlt: "A black Cadillac Escalade parked in the Arizona desert",
     facts: [
       { label: "Location", value: "Phoenix, AZ" },
       { label: "Year", value: "2026" },
@@ -103,12 +94,6 @@ export const projects: Project[] = [
         value: "niertransportation.com",
         href: "https://www.niertransportation.com",
       },
-    ],
-    stats: [
-      { label: "Per-booking fees\non every ride", value: "$0" },
-      { label: "City pages\nbuilt for search", value: "40" },
-      { label: "Airport and\nroute pages", value: "13" },
-      { label: "Driving Phoenix\nsince", value: "2004" },
     ],
     results: {
       title: "What changed",
@@ -224,17 +209,17 @@ export const projects: Project[] = [
         text: "Hotels, venues and corporate accounts near Nier, found each morning.",
       },
     ],
-    screens: [
-      {
-        src: NierHome,
-        alt: "The Nier Transportation home page, top to bottom",
-        caption: "The home page",
-        tall: true,
-      },
+    photos: [
       {
         src: NierHero,
         alt: "A black Cadillac Escalade parked in the Arizona desert",
         caption: "The fleet",
+      },
+      {
+        src: NierHome,
+        alt: "The Nier Transportation home page, top to bottom",
+        caption: "The home page",
+        top: true,
       },
       {
         src: NierStory,
@@ -254,8 +239,6 @@ export const projects: Project[] = [
       "A corporate black car site with airport and route pages and a working booking flow",
     summary:
       "A concept site for a corporate and executive black car company: airport and route pages, corporate accounts and a booking flow in test mode.",
-    hero: Concept1Hero,
-    heroAlt: "A chauffeur shaking hands with a client beside a black SUV",
     facts: [
       { label: "Location", value: "Concept" },
       { label: "Year", value: "2026" },
@@ -263,12 +246,6 @@ export const projects: Project[] = [
       { label: "Industry", value: "Corporate & executive black car" },
       { label: "Client", value: "Concept, not a real company" },
       { label: "Booking", value: "Live, in test mode" },
-    ],
-    stats: [
-      { label: "Pages built\nfor search", value: "18" },
-      { label: "Airport and\nroute pages", value: "9" },
-      { label: "Steps to\nbook a ride", value: "3" },
-      { label: "Per-booking\nfees", value: "$0" },
     ],
     // PLACEHOLDER: replace with the concept's own numbers once it's built.
     results: {
@@ -349,7 +326,7 @@ export const projects: Project[] = [
         text: "Cards on file, invoices and refunds through the operator's Stripe.",
       },
     ],
-    screens: [
+    photos: [
       {
         src: Concept1Hero,
         alt: "A chauffeur shaking hands with a client beside a black SUV",
@@ -373,8 +350,6 @@ export const projects: Project[] = [
       "A wedding and party limo site with event pages, fleet galleries and online booking",
     summary:
       "A concept site for a wedding and party limo company: event pages, fleet galleries and a booking flow in test mode.",
-    hero: Concept2Hero,
-    heroAlt: "Three men in suits and sunglasses, laughing",
     facts: [
       { label: "Location", value: "Concept" },
       { label: "Year", value: "2026" },
@@ -382,12 +357,6 @@ export const projects: Project[] = [
       { label: "Industry", value: "Wedding & party limo" },
       { label: "Client", value: "Concept, not a real company" },
       { label: "Booking", value: "Live, in test mode" },
-    ],
-    stats: [
-      { label: "Event pages\nbuilt for search", value: "12" },
-      { label: "Vehicles in\nthe fleet gallery", value: "6" },
-      { label: "Steps to\nbook a ride", value: "3" },
-      { label: "Per-booking\nfees", value: "$0" },
     ],
     // PLACEHOLDER: replace with the concept's own numbers once it's built.
     results: {
@@ -468,7 +437,7 @@ export const projects: Project[] = [
         text: "Every ride assigned from one board, with a driver app.",
       },
     ],
-    screens: [
+    photos: [
       {
         src: Concept2Hero,
         alt: "Three men in suits and sunglasses, laughing",

@@ -4,6 +4,7 @@
 import Image from "next/image";
 import styles from "./ProjectHero.module.css";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import HeroCarousel from "./HeroCarousel";
 import type { Project } from "@/lib/projects";
 
 export default function ProjectHero({ project }: { project: Project }) {
@@ -56,17 +57,7 @@ export default function ProjectHero({ project }: { project: Project }) {
         </dl>
       </div>
 
-      <div className={styles.photo}>
-        <Image
-          src={project.hero}
-          alt={project.heroAlt}
-          fill
-          sizes='(max-width: 968px) 100vw, 50vw'
-          loading='eager'
-          fetchPriority='high'
-          className={styles.img}
-        />
-      </div>
+      <HeroCarousel photos={project.photos} name={project.name} />
     </section>
   );
 }

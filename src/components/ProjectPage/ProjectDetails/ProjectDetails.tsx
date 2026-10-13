@@ -1,21 +1,19 @@
 // Everything under a project's hero, laid out like a lead's page: white
-// panels on the grey, the case study on the left (the scorecard, the
-// client's words, the brief, what's inside, the screens) and a card on the
-// right that stays in view, with the call to action and the numbers. On a
-// phone the right column drops below.
+// panels on the grey, the case study on the left (the brief, what's
+// inside, the scorecard, the client's words) and the call to action on the
+// right, staying in view. On a phone it drops below.
 
 import Image from "next/image";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import Icon from "@/components/Dashboard/icons";
-import Screens from "./Screens";
 import styles from "./ProjectDetails.module.css";
 import type { Project } from "@/lib/projects";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 
 export default function ProjectDetails({ project }: { project: Project }) {
-  const { results, quote, brief, inside, screens, stats, cta } = project;
+  const { results, quote, brief, inside, cta } = project;
 
   return (
     <section className={styles.container} aria-label='Case study'>
@@ -111,19 +109,8 @@ export default function ProjectDetails({ project }: { project: Project }) {
         )}
       </div>
 
-      {/* ── Beside it: what to do next, and the numbers ── */}
+      {/* ── Beside it: what to do next ── */}
       <aside className={styles.aside}>
-        {/* ── Screens ── */}
-        {screens.length > 0 && (
-          <section className={styles.panel} data-reveal='each'>
-            <div className={styles.titles}>
-              <h2 className={styles.title}>Screens</h2>
-              <p>Click any one to see it full size.</p>
-            </div>
-            <Screens screens={screens} name={project.name} />
-          </section>
-        )}
-
         <section className={styles.cta}>
           <span className={styles.ctaIcon}>
             <Icon name='zap' />
@@ -139,18 +126,6 @@ export default function ProjectDetails({ project }: { project: Project }) {
               text='Book a call'
             />
           </div>
-        </section>
-
-        <section className={styles.panel}>
-          <h2 className={styles.title}>At a glance</h2>
-          <dl className={styles.glance}>
-            {stats.map((stat) => (
-              <div key={stat.label} className={styles.stat}>
-                <dt>{stat.label.replace("\n", " ")}</dt>
-                <dd>{stat.value}</dd>
-              </div>
-            ))}
-          </dl>
         </section>
       </aside>
     </section>
