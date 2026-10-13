@@ -38,8 +38,7 @@ const projects: Project[] = [
     logo: NierLogo,
     category: "Black car service",
     label: "Phoenix, AZ",
-    title:
-      "Off per-booking platforms and onto its own site: $0 per-booking fees, 40 city pages and online booking 24/7.",
+    title: "Nier Transportation",
     href: "/projects/nier-transportation",
     button: "Read the case study",
     src: NierImg,
@@ -50,8 +49,7 @@ const projects: Project[] = [
     name: "[Concept 1]",
     category: "Corporate & executive black car",
     label: "Concept",
-    title:
-      "A concept site for a corporate black car company, with airport and route pages, corporate accounts and a working booking flow in test mode.",
+    title: "Project 2",
     href: "/projects/concept-1",
     button: "See the concept",
     src: Concept1Img,
@@ -62,8 +60,7 @@ const projects: Project[] = [
     name: "[Concept 2]",
     category: "Wedding & party limo",
     label: "Concept",
-    title:
-      "A concept site for a wedding and party limo company, with event pages, fleet galleries and a working booking flow in test mode.",
+    title: "Project 3",
     href: "/projects/concept-2",
     button: "See the concept",
     src: Concept2Img,
@@ -92,7 +89,7 @@ function ProjectCard({ project }: { project: Project }) {
           />
         </Link>
         <span className={styles.brand} aria-hidden='true'>
-          {project.logo && (
+          {/* {project.logo && (
             <Image
               src={project.logo}
               alt=''
@@ -101,13 +98,13 @@ function ProjectCard({ project }: { project: Project }) {
               className={styles.brandMark}
             />
           )}
-          {project.name}
+          {project.name} */}
+          <span className={styles.tag}>{project.category}</span>
         </span>
       </div>
 
       <div className={styles.body}>
         <div className={styles.meta}>
-          <span className={styles.tag}>{project.category}</span>
           <span className={styles.label}>{project.label}</span>
         </div>
         <h3 className={`${styles.title} h6`}>
@@ -183,13 +180,13 @@ export default function ProjectGrid() {
             {projects.map((project) => (
               <ProjectCard project={project} key={project.id} />
             ))}
-            {showNext && <NextCard />}
+            {/* {showNext && <NextCard />} */}
           </div>
 
-          <p className={styles.note} data-reveal='each'>
+          {/* <p className={styles.note} data-reveal='each'>
             Concept sites are designs we built to show our range. They
             aren&apos;t real companies.
-          </p>
+          </p> */}
         </div>
       </LayoutWrapper>
     </section>

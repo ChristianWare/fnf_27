@@ -82,7 +82,7 @@ export default function Faq({
         <div className={styles.content}>
           <div className={styles.left}>
             <EyeBrow text={eyebrow} />
-            <h2 className={styles.heading}>{heading}</h2>
+            <h2 className={`${styles.heading} h3`}>{heading}</h2>
             <div className={styles.btnContainer}>
               <Button
                 href='/contact'

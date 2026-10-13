@@ -7,6 +7,7 @@ import ProjectGrid from "@/components/ProjectsPage/ProjectGrid/ProjectGrid";
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+import JournalPreview from "@/components/HomePage/JournalPreview/JournalPreview";
 
 export const metadata: Metadata = {
   title: { absolute: "Projects: Limo & Black Car Websites | Fonts & Footers" },
@@ -55,6 +56,7 @@ export default function ProjectsPage() {
       <ProjectsHero />
       <FeatureMarquee />
       <ProjectGrid />
+      <JournalPreview />
       <Faq faqs={projectFaqs} heading='Project Questions' />
       <FinalCta />
       <Footer />
