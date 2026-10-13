@@ -235,8 +235,7 @@ export const projects: Project[] = [
   {
     slug: "concept-1",
     name: "[Concept 1]",
-    title:
-      "A corporate black car site with airport and route pages and a working booking flow",
+    title: "Concept 1",
     summary:
       "A concept site for a corporate and executive black car company: airport and route pages, corporate accounts and a booking flow in test mode.",
     facts: [
@@ -346,8 +345,7 @@ export const projects: Project[] = [
   {
     slug: "concept-2",
     name: "[Concept 2]",
-    title:
-      "A wedding and party limo site with event pages, fleet galleries and online booking",
+    title: "Concept 2",
     summary:
       "A concept site for a wedding and party limo company: event pages, fleet galleries and a booking flow in test mode.",
     facts: [

@@ -56,9 +56,9 @@ export default function ProjectsHero() {
                 </span>
               </span>
               <span className={styles.clientText}>
-                Built with Nier Transportation
+                Featured Project: Nier Transportation
                 <br />
-                Phoenix · In business since 2004
+                Phoenix, AZ · In business since 2004
               </span>
             </div>
           </div>
