@@ -35,25 +35,6 @@ export default function ProjectDetails({ project }: { project: Project }) {
           </dl>
         </section>
 
-        {/* ── What's inside ── */}
-        <section className={styles.panel} data-reveal='each'>
-          <div className={styles.titles}>
-            <h2 className={styles.title}>What&apos;s inside</h2>
-            <p>The parts of the platform this project runs on.</p>
-          </div>
-          <ul className={styles.inside}>
-            {inside.map((f) => (
-              <li key={f.title} className={styles.feature}>
-                <span className={styles.featureIcon}>
-                  <Icon name={f.icon} />
-                </span>
-                <span className={styles.featureTitle}>{f.title}</span>
-                <p>{f.text}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-
         {/* ── The scorecard ── */}
         <section className={styles.panel} data-reveal='each'>
           <div className={styles.titles}>
@@ -111,6 +92,24 @@ export default function ProjectDetails({ project }: { project: Project }) {
 
       {/* ── Beside it: what to do next ── */}
       <aside className={styles.aside}>
+        {/* ── What's inside ── */}
+        <section className={styles.panel} data-reveal='each'>
+          <div className={styles.titles}>
+            <h2 className={styles.title}>What&apos;s inside</h2>
+            <p>The parts of the platform this project runs on.</p>
+          </div>
+          <ul className={styles.inside}>
+            {inside.map((f) => (
+              <li key={f.title} className={styles.feature}>
+                <span className={styles.featureIcon}>
+                  <Icon name={f.icon} />
+                </span>
+                <span className={styles.featureTitle}>{f.title}</span>
+                <p>{f.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
         <section className={styles.cta}>
           <span className={styles.ctaIcon}>
             <Icon name='zap' />
