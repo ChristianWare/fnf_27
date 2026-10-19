@@ -4,10 +4,12 @@
 import Image from "next/image";
 import styles from "./ProjectHero.module.css";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import HeroCarousel from "./HeroCarousel";
 import type { Project } from "@/lib/projects";
 
 export default function ProjectHero({ project }: { project: Project }) {
+  // The first photo is the hero's. The rest are in the grid below.
+  const hero = project.photos[0];
+
   return (
     <section className={styles.container}>
       <div className={styles.textCard}>
@@ -57,7 +59,20 @@ export default function ProjectHero({ project }: { project: Project }) {
         </dl>
       </div>
 
-      <HeroCarousel photos={project.photos} name={project.name} />
+      {hero && (
+        <div className={styles.photo}>
+          <Image
+            src={hero.src}
+            alt={hero.alt}
+            fill
+            sizes='(max-width: 968px) 100vw, 50vw'
+            // The page's main picture: load it first.
+            loading='eager'
+            fetchPriority='high'
+            className={`${styles.img} ${hero.top ? styles.imgTop : ""}`}
+          />
+        </div>
+      )}
     </section>
   );
 }
