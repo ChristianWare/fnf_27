@@ -5,7 +5,8 @@
 
 import type { StaticImageData } from "next/image";
 import type { IconName } from "@/components/Dashboard/icons";
-import NierLogo from "../../public/images/nierLogo.png";
+// Client logos. PLACEHOLDER: every project uses Nier's until its own is in.
+import NierLogo from "../../public/images/logos/nierLogo.png";
 import Barry from "../../public/images/barry.png";
 import NierHero from "../../public/images/cadiv.png";
 import NierStory from "../../public/images/nierIntro.png";
@@ -57,7 +58,8 @@ export type Photo = {
 export type Project = {
   slug: string;
   name: string;
-  logo?: StaticImageData;
+  /** Shown beside the client's name in the facts card. */
+  logo: StaticImageData;
   /** The page title: the result, in one line. */
   title: string;
   /** Under the title in the hero, and the page's description. */
@@ -265,6 +267,7 @@ export const projects: Project[] = [
   {
     slug: "mesa-midnight",
     name: "Mesa Midnight",
+    logo: NierLogo, // PLACEHOLDER
     title: "Mesa Midnight",
     summary:
       "A concept black car company in Mesa, Arizona, built on the Full Platform: a live site you can book on in test mode, with the admin, driver, rider and corporate dashboards behind it.",
@@ -409,6 +412,7 @@ export const projects: Project[] = [
   {
     slug: "concept-2",
     name: "[Concept 2]",
+    logo: NierLogo, // PLACEHOLDER
     title: "Concept 2",
     summary:
       "A concept site for a wedding and party limo company: event pages, fleet galleries and a booking flow in test mode.",

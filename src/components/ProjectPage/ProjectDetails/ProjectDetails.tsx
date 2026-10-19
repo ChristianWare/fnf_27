@@ -114,19 +114,12 @@ export default function ProjectDetails({ project }: { project: Project }) {
         <aside className={styles.aside}>
           <section className={styles.factsCard} aria-label='Project facts'>
             <div className={styles.client}>
-              <span className={styles.clientMark}>
-                {project.logo ? (
-                  <Image
-                    src={project.logo}
-                    alt=''
-                    fill
-                    sizes='40px'
-                    className={styles.clientLogo}
-                  />
-                ) : (
-                  <span aria-hidden='true'>{project.name.charAt(0)}</span>
-                )}
-              </span>
+              <Image
+                src={project.logo}
+                alt={`${project.name} logo`}
+                sizes='44px'
+                className={styles.clientLogo}
+              />
               <span className={styles.clientName}>{project.name}</span>
             </div>
             <dl className={styles.facts}>

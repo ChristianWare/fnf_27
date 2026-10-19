@@ -5,6 +5,12 @@
   gap: 1.2rem;
 }
 
+.gallery:focus-visible {
+  outline: 3px solid var(--black);
+  outline-offset: 4px;
+  border-radius: 2.4rem;
+}
+
 /* 4 by 3, never taller than 900px. Every photo sits in the frame and the
    shown one fades in over the rest. */
 .frame {
@@ -20,27 +26,13 @@
 .slide {
   position: absolute;
   inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
   opacity: 0;
-  cursor: zoom-in;
   transition: opacity 0.5s ease;
-  pointer-events: none;
 }
 
 .slideOn {
   z-index: 1;
   opacity: 1;
-  pointer-events: auto;
-}
-
-.slide:focus-visible {
-  outline: 3px solid var(--black);
-  outline-offset: -3px;
 }
 
 .img {
@@ -51,43 +43,6 @@
 /* A full-page screenshot shows its top. */
 .imgTop {
   object-position: top;
-}
-
-/* "Click to expand", on hover. */
-.expand {
-  position: absolute;
-  bottom: 1.6rem;
-  left: 1.6rem;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.8rem 1.2rem;
-  border-radius: 50px;
-  background-color: rgb(13 13 14 / 62%);
-  font-family: var(--IBMPlex);
-  font-size: 14px;
-  line-height: 1;
-  text-transform: uppercase;
-  color: var(--white);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-
-.expand svg {
-  width: 1.4rem;
-  height: 1.4rem;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .frame:hover .expand {
-    opacity: 1;
-  }
-}
-
-.frame:has(.slide:focus-visible) .expand {
-  opacity: 1;
 }
 
 /* ── The smaller pictures: the shown one full strength, the rest faded ── */
@@ -146,8 +101,8 @@
   object-fit: cover;
 }
 
-/* Phone only: a next arrow and dots. */
-.next,
+/* Phone only: back and next arrows, and dots. */
+.arrow,
 .dots {
   display: none;
 }
@@ -175,15 +130,13 @@
     border-radius: 1.6rem;
   }
 
-  .thumbs,
-  .expand {
+  .thumbs {
     display: none;
   }
 
-  .next {
+  .arrow {
     position: absolute;
     top: 50%;
-    right: 1.2rem;
     z-index: 3;
     display: inline-flex;
     align-items: center;
@@ -199,13 +152,28 @@
     transform: translateY(-50%);
   }
 
-  .next svg {
+  .arrow svg {
     width: 2rem;
     height: 2rem;
+  }
+
+  .prev {
+    left: 1.2rem;
+  }
+
+  .prev svg {
+    transform: rotate(90deg);
+  }
+
+  .next {
+    right: 1.2rem;
+  }
+
+  .next svg {
     transform: rotate(-90deg);
   }
 
-  .next:focus-visible {
+  .arrow:focus-visible {
     outline: 2px solid var(--white);
     outline-offset: 2px;
   }

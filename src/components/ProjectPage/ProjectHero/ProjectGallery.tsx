@@ -3,12 +3,11 @@
 // The project's photos: one large picture, and the smaller ones under it to
 // switch between (the shown one at full strength, the rest faded). On a
 // phone the small ones give way to a next arrow and dots, and a swipe goes
-// either way. Click the large picture to see it full size.
+// either way, and back and next arrows sit on the picture.
 
 import Image from "next/image";
-import { useCallback, useRef, useState, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
 import Icon from "@/components/Dashboard/icons";
-import ProjectLightbox from "./ProjectLightbox";
 import styles from "./ProjectGallery.module.css";
 import type { Photo } from "@/lib/projects";
 
@@ -21,9 +20,7 @@ export default function ProjectGallery({
   name: string;
 }) {
   const [at, setAt] = useState(0);
-  const [open, setOpen] = useState<number | null>(null);
   const swipe = useRef<{ x: number; y: number } | null>(null);
-  const close = useCallback(() => setOpen(null), []);
 
   const count = photos.length;
   if (count === 0) return null;
@@ -47,6 +44,7 @@ export default function ProjectGallery({
       role='region'
       aria-roledescription='carousel'
       aria-label={`Photos of ${name}`}
+      tabIndex={many ? 0 : undefined}
       onKeyDown={onKey}
     >
       <div
@@ -68,14 +66,13 @@ export default function ProjectGallery({
         }}
       >
         {photos.map((photo, i) => (
-          <button
+          <div
             key={`${photo.caption}-${i}`}
-            type='button'
             className={`${styles.slide} ${i === at ? styles.slideOn : ""}`}
-            onClick={() => setOpen(i)}
-            tabIndex={i === at ? 0 : -1}
             aria-hidden={i !== at}
-            aria-label={`See photo ${i + 1} of ${count} full size: ${photo.caption}`}
+            role='group'
+            aria-roledescription='slide'
+            aria-label={`${i + 1} of ${count}: ${photo.caption}`}
           >
             <Image
               src={photo.src}
@@ -88,20 +85,23 @@ export default function ProjectGallery({
               fetchPriority={i === 0 ? "high" : "low"}
               className={`${styles.img} ${photo.top ? styles.imgTop : ""}`}
             />
-          </button>
+          </div>
         ))}
-
-        <span className={styles.expand} aria-hidden='true'>
-          <Icon name='expand' />
-          Click to expand
-        </span>
 
         {many && (
           <>
-            {/* On a phone: next, and a dot for each photo. */}
+            {/* On a phone: back and next, and a dot for each photo. */}
             <button
               type='button'
-              className={styles.next}
+              className={`${styles.arrow} ${styles.prev}`}
+              onClick={() => go(-1)}
+              aria-label='Previous photo'
+            >
+              <Icon name='chevron' />
+            </button>
+            <button
+              type='button'
+              className={`${styles.arrow} ${styles.next}`}
               onClick={() => go(1)}
               aria-label='Next photo'
             >
@@ -147,16 +147,6 @@ export default function ProjectGallery({
         </ul>
       )}
 
-      <ProjectLightbox
-        photos={photos}
-        index={open}
-        onIndex={(i) => {
-          setOpen(i);
-          setAt(i);
-        }}
-        onClose={close}
-        title={name}
-      />
     </div>
   );
 }
