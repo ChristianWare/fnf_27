@@ -7,7 +7,7 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 import NierLogo from "../../../../public/images/nierLogo.png";
 // Placeholder photos until you have real ones for each project.
 import NierImg from "../../../../public/images/clients/nier/nier1.png";
-import Concept1Img from "../../../../public/images/chevy_corp.png";
+import Concept1Img from "../../../../public/images/clients/mesa_midnight/mm1.png";
 import Concept2Img from "../../../../public/images/branded.jpg";
 import NextImg from "../../../../public/images/cadiiv.png";
 
@@ -56,17 +56,17 @@ const projects: Project[] = [
     src: Concept1Img,
     alt: "The Mesa Midnight home page",
   },
-  {
-    id: 3,
-    name: "[Concept 2]",
-    category: "Wedding & party limo",
-    label: "Concept",
-    title: "Concept 2",
-    href: "/projects/concept-2",
-    button: "See the concept",
-    src: Concept2Img,
-    alt: "Three men in suits and sunglasses, laughing",
-  },
+  // {
+  //   id: 3,
+  //   name: "[Concept 2]",
+  //   category: "Wedding & party limo",
+  //   label: "Concept",
+  //   title: "Concept 2",
+  //   href: "/projects/concept-2",
+  //   button: "See the concept",
+  //   src: Concept2Img,
+  //   alt: "Three men in suits and sunglasses, laughing",
+  // },
 ];
 
 function ProjectCard({ project }: { project: Project }) {

@@ -5,7 +5,6 @@
 
 import type { StaticImageData } from "next/image";
 import type { IconName } from "@/components/Dashboard/icons";
-// Client logos. PLACEHOLDER: every project uses Nier's until its own is in.
 import NierLogo from "../../public/images/logos/nierLogo.png";
 import Barry from "../../public/images/barry.png";
 import NierHero from "../../public/images/clients/nier/nier1.png";
@@ -14,9 +13,12 @@ import NierBlog from "../../public/images/clients/nier/nier3.png";
 import NierCorp from "../../public/images/clients/nier/nier4.png";
 import NierServ from "../../public/images/clients/nier/nier5.png";
 import NierTerm from "../../public/images/clients/nier/nier6.png";
-// PLACEHOLDER images for Mesa Midnight: replace with its own screenshots.
-import Concept1Hero from "../../public/images/chevy_corp.png";
-import Concept1Story from "../../public/images/cadi_drive.png";
+import Concept1Hero from "../../public/images/clients/mesa_midnight/mm1.png";
+import Concept1Story from "../../public/images/clients/mesa_midnight/mm2.png";
+import Concept2 from "../../public/images/clients/mesa_midnight/mm3.png";
+import Concept3 from "../../public/images/clients/mesa_midnight/mm4.png";
+import Concept4 from "../../public/images/clients/mesa_midnight/mm5.png";
+import Concept5 from "../../public/images/clients/mesa_midnight/mm6.png";
 import Concept2Hero from "../../public/images/branded.jpg";
 import Concept2Story from "../../public/images/cadiii.png";
 
@@ -399,6 +401,26 @@ export const projects: Project[] = [
       },
       {
         src: Concept1Story,
+        alt: "The Mesa Midnight booking flow",
+        caption: "The booking flow",
+      },
+      {
+        src: Concept2,
+        alt: "The Mesa Midnight booking flow",
+        caption: "The booking flow",
+      },
+      {
+        src: Concept3,
+        alt: "The Mesa Midnight booking flow",
+        caption: "The booking flow",
+      },
+      {
+        src: Concept4,
+        alt: "The Mesa Midnight booking flow",
+        caption: "The booking flow",
+      },
+      {
+        src: Concept5,
         alt: "The Mesa Midnight booking flow",
         caption: "The booking flow",
       },
