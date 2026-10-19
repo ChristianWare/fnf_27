@@ -1,8 +1,3 @@
-// Everything under a project's photos, as an article: the brief, the
-// scorecard, what's inside and the client's words, one after another on
-// the left. On the right, staying in view: the project's facts and the
-// call to action. On a tablet or phone they drop below.
-
 import Image from "next/image";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
@@ -23,7 +18,7 @@ export default function ProjectDetails({ project }: { project: Project }) {
           {/* ── The brief ── */}
           <section className={styles.section} data-reveal='each'>
             <div className={styles.titles}>
-              <h2 className={styles.title}>The Brief</h2>
+              <h2 className={`${styles.title} h3`}>The Brief</h2>
               <p>The short version, start to finish.</p>
             </div>
             <dl className={styles.brief}>
@@ -39,8 +34,8 @@ export default function ProjectDetails({ project }: { project: Project }) {
           {/* ── The scorecard ── */}
           <section className={styles.section} data-reveal='each'>
             <div className={styles.titles}>
-              <span className={styles.eyebrow}>{project.name}</span>
-              <h2 className={styles.title}>{results.title}</h2>
+              {/* <span className={styles.eyebrow}>{project.name}</span> */}
+              <h2 className={`${styles.title} h3`}>{results.title}</h2>
               <p>{results.intro}</p>
             </div>
             <ul className={styles.results}>
@@ -48,7 +43,7 @@ export default function ProjectDetails({ project }: { project: Project }) {
                 <li key={row.label} className={styles.result}>
                   <span className={styles.resultTop}>
                     <span className={styles.resultLabel}>{row.label}</span>
-                    <span className={styles.resultNow}>{row.now}</span>
+                    <span className={`${styles.resultNow} h6`}>{row.now}</span>
                   </span>
                   {row.before && (
                     <span className={styles.before}>
@@ -67,7 +62,7 @@ export default function ProjectDetails({ project }: { project: Project }) {
           {/* ── What's inside ── */}
           <section className={styles.section} data-reveal='each'>
             <div className={styles.titles}>
-              <h2 className={styles.title}>What&apos;s inside</h2>
+              <h2 className={`${styles.title} h3`}>What&apos;s inside</h2>
               <p>The parts of the platform this project runs on.</p>
             </div>
             <ul className={styles.inside}>
