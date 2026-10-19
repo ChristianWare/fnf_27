@@ -1,0 +1,238 @@
+/* The large picture, and the smaller ones under it. */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* 4 by 3, never taller than 900px. Every photo sits in the frame and the
+   shown one fades in over the rest. */
+.frame {
+  position: relative;
+  width: 100%;
+  max-height: 900px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 2.4rem;
+  background-color: var(--light2);
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  opacity: 0;
+  cursor: zoom-in;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.slideOn {
+  z-index: 1;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.slide:focus-visible {
+  outline: 3px solid var(--black);
+  outline-offset: -3px;
+}
+
+.img {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* A full-page screenshot shows its top. */
+.imgTop {
+  object-position: top;
+}
+
+/* "Click to expand", on hover. */
+.expand {
+  position: absolute;
+  bottom: 1.6rem;
+  left: 1.6rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 50px;
+  background-color: rgb(13 13 14 / 62%);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--white);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.expand svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .frame:hover .expand {
+    opacity: 1;
+  }
+}
+
+.frame:has(.slide:focus-visible) .expand {
+  opacity: 1;
+}
+
+/* ── The smaller pictures: the shown one full strength, the rest faded ── */
+.thumbs {
+  display: flex;
+  gap: 1.2rem;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.thumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.thumbs li {
+  flex: 0 1 173.333px;
+  min-width: 12rem;
+}
+
+.thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 173.333px;
+  max-height: 130px;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 0;
+  border-radius: 1.2rem;
+  overflow: hidden;
+  background-color: var(--light2);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.thumbOn {
+  opacity: 1;
+}
+
+.thumb:focus-visible {
+  outline: 3px solid var(--black);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .thumb:hover {
+    opacity: 1;
+  }
+}
+
+.thumbImg {
+  object-fit: cover;
+}
+
+/* Phone only: a next arrow and dots. */
+.next,
+.dots {
+  display: none;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide {
+    transition: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .frame {
+    border-radius: 1.6rem;
+  }
+
+  .thumbs,
+  .expand {
+    display: none;
+  }
+
+  .next {
+    position: absolute;
+    top: 50%;
+    right: 1.2rem;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    padding: 0;
+    border: 0;
+    border-radius: 1rem;
+    background-color: rgb(13 13 14 / 86%);
+    color: var(--white);
+    cursor: pointer;
+    transform: translateY(-50%);
+  }
+
+  .next svg {
+    width: 2rem;
+    height: 2rem;
+    transform: rotate(-90deg);
+  }
+
+  .next:focus-visible {
+    outline: 2px solid var(--white);
+    outline-offset: 2px;
+  }
+
+  .dots {
+    position: absolute;
+    bottom: 1.2rem;
+    left: 50%;
+    z-index: 3;
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 50px;
+    background-color: rgb(13 13 14 / 40%);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background-color: rgb(255 255 255 / 50%);
+    transition: background-color 0.3s ease;
+  }
+
+  .dotOn {
+    background-color: var(--white);
+  }
+}

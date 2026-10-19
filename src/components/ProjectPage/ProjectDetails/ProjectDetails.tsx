@@ -1,7 +1,7 @@
-// Everything under a project's hero, laid out like a lead's page: white
-// panels on the grey, the case study on the left (the brief, what's
-// inside, the scorecard, the client's words) and the call to action on the
-// right, staying in view. On a phone it drops below.
+// Everything under a project's photos, as an article: the brief, the
+// scorecard, what's inside and the client's words, one after another on
+// the left. On the right, staying in view: the project's facts and the
+// call to action. On a tablet or phone they drop below.
 
 import Image from "next/image";
 import Button from "@/components/shared/Button/Button";
@@ -13,120 +13,163 @@ import type { Project } from "@/lib/projects";
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 
 export default function ProjectDetails({ project }: { project: Project }) {
-  const { results, quote, brief, inside, cta } = project;
+  const { results, quote, brief, inside, cta, facts } = project;
 
   return (
     <section className={styles.container} aria-label='Case study'>
       <Reveal />
-      <div className={styles.column}>
-        {/* ── The brief ── */}
-        <section className={styles.panel} data-reveal='each'>
-          <div className={styles.titles}>
-            <h2 className={styles.title}>The brief</h2>
-            <p>The short version, start to finish.</p>
-          </div>
-          <dl className={styles.brief}>
-            {brief.map((line) => (
-              <div key={line.label} className={styles.briefRow}>
-                <dt>{line.label}</dt>
-                <dd>{line.text}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
+      <div className={styles.inner}>
+        <article className={styles.article}>
+          {/* ── The brief ── */}
+          <section className={styles.section} data-reveal='each'>
+            <div className={styles.titles}>
+              <h2 className={styles.title}>The brief</h2>
+              <p>The short version, start to finish.</p>
+            </div>
+            <dl className={styles.brief}>
+              {brief.map((line) => (
+                <div key={line.label} className={styles.briefRow}>
+                  <dt>{line.label}</dt>
+                  <dd>{line.text}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
 
-        {/* ── The scorecard ── */}
-        <section className={styles.panel} data-reveal='each'>
-          <div className={styles.titles}>
-            <span className={styles.eyebrow}>{project.name}</span>
-            <h2 className={styles.title}>{results.title}</h2>
-            <p>{results.intro}</p>
-          </div>
-          <ul className={styles.results}>
-            {results.rows.map((row) => (
-              <li key={row.label} className={styles.result}>
-                <span className={styles.resultTop}>
-                  <span className={styles.resultLabel}>{row.label}</span>
-                  <span className={styles.resultNow}>{row.now}</span>
-                </span>
-                {row.before && (
-                  <span className={styles.before}>
-                    <span className={styles.compareLabel}>
-                      {results.beforeLabel}
+          {/* ── The scorecard ── */}
+          <section className={styles.section} data-reveal='each'>
+            <div className={styles.titles}>
+              <span className={styles.eyebrow}>{project.name}</span>
+              <h2 className={styles.title}>{results.title}</h2>
+              <p>{results.intro}</p>
+            </div>
+            <ul className={styles.results}>
+              {results.rows.map((row) => (
+                <li key={row.label} className={styles.result}>
+                  <span className={styles.resultTop}>
+                    <span className={styles.resultLabel}>{row.label}</span>
+                    <span className={styles.resultNow}>{row.now}</span>
+                  </span>
+                  {row.before && (
+                    <span className={styles.before}>
+                      <span className={styles.compareLabel}>
+                        {results.beforeLabel}
+                      </span>
+                      <s>{row.before}</s>
                     </span>
-                    <s>{row.before}</s>
+                  )}
+                  <p>{row.note}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* ── What's inside ── */}
+          <section className={styles.section} data-reveal='each'>
+            <div className={styles.titles}>
+              <h2 className={styles.title}>What&apos;s inside</h2>
+              <p>The parts of the platform this project runs on.</p>
+            </div>
+            <ul className={styles.inside}>
+              {inside.map((f) => (
+                <li key={f.title} className={styles.feature}>
+                  <span className={styles.featureIcon}>
+                    <Icon name={f.icon} />
+                  </span>
+                  <span className={styles.featureTitle}>{f.title}</span>
+                  <p>{f.text}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* ── The client's words ── */}
+          {quote && (
+            <figure className={styles.quote} data-reveal='each'>
+              <blockquote className={styles.quoteText}>
+                &ldquo;{quote.text}&rdquo;
+              </blockquote>
+              <figcaption className={styles.quoteBy}>
+                {quote.avatar && (
+                  <span className={styles.quoteAvatar}>
+                    <Image
+                      src={quote.avatar}
+                      alt=''
+                      fill
+                      sizes='48px'
+                      className={styles.quoteAvatarImg}
+                    />
                   </span>
                 )}
-                <p>{row.note}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
+                <span className={styles.quoteWho}>
+                  <span className={styles.quoteName}>{quote.name}</span>
+                  <span className={styles.quoteRole}>{quote.role}</span>
+                </span>
+              </figcaption>
+            </figure>
+          )}
+        </article>
 
-        {/* ── The client's words ── */}
-        {quote && (
-          <figure className={styles.quote} data-reveal='each'>
-            <blockquote className={styles.quoteText}>
-              &ldquo;{quote.text}&rdquo;
-            </blockquote>
-            <figcaption className={styles.quoteBy}>
-              {quote.avatar && (
-                <span className={styles.quoteAvatar}>
+        {/* ── Beside it: the facts, and what to do next ── */}
+        <aside className={styles.aside}>
+          <section className={styles.factsCard} aria-label='Project facts'>
+            <div className={styles.client}>
+              <span className={styles.clientMark}>
+                {project.logo ? (
                   <Image
-                    src={quote.avatar}
+                    src={project.logo}
                     alt=''
                     fill
-                    sizes='48px'
-                    className={styles.quoteAvatarImg}
+                    sizes='40px'
+                    className={styles.clientLogo}
                   />
-                </span>
-              )}
-              <span className={styles.quoteWho}>
-                <span className={styles.quoteName}>{quote.name}</span>
-                <span className={styles.quoteRole}>{quote.role}</span>
+                ) : (
+                  <span aria-hidden='true'>{project.name.charAt(0)}</span>
+                )}
               </span>
-            </figcaption>
-          </figure>
-        )}
-      </div>
+              <span className={styles.clientName}>{project.name}</span>
+            </div>
+            <dl className={styles.facts}>
+              {facts.map((fact) => (
+                <div className={styles.fact} key={fact.label}>
+                  <dt>{fact.label}</dt>
+                  <dd>
+                    {fact.href ? (
+                      <a
+                        href={fact.href}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className={styles.factLink}
+                      >
+                        {fact.value}
+                      </a>
+                    ) : (
+                      fact.value
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
 
-      {/* ── Beside it: what to do next ── */}
-      <aside className={styles.aside}>
-        {/* ── What's inside ── */}
-        <section className={styles.panel} data-reveal='each'>
-          <div className={styles.titles}>
-            <h2 className={styles.title}>What&apos;s inside</h2>
-            <p>The parts of the platform this project runs on.</p>
-          </div>
-          <ul className={styles.inside}>
-            {inside.map((f) => (
-              <li key={f.title} className={styles.feature}>
-                <span className={styles.featureIcon}>
-                  <Icon name={f.icon} />
-                </span>
-                <span className={styles.featureTitle}>{f.title}</span>
-                <p>{f.text}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <section className={styles.cta}>
-          <span className={styles.ctaIcon}>
-            <Icon name='zap' />
-          </span>
-          <h2 className={styles.ctaTitle}>{cta.title}</h2>
-          <p>{cta.text}</p>
-          <div className={styles.ctaButtons}>
-            <Button href='/audit' btnType='black' text='Run the free audit' />
-            <Button
-              href={CALENDAR}
-              target='_blank'
-              btnType='white'
-              text='Book a call'
-            />
-          </div>
-        </section>
-      </aside>
+          <section className={styles.cta}>
+            <span className={styles.ctaIcon}>
+              <Icon name='zap' />
+            </span>
+            <h2 className={styles.ctaTitle}>{cta.title}</h2>
+            <p>{cta.text}</p>
+            <div className={styles.ctaButtons}>
+              <Button href='/audit' btnType='black' text='Run the free audit' />
+              <Button
+                href={CALENDAR}
+                target='_blank'
+                btnType='white'
+                text='Book a call'
+              />
+            </div>
+          </section>
+        </aside>
+      </div>
     </section>
   );
 }

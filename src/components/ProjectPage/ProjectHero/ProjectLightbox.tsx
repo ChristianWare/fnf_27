@@ -9,7 +9,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import Icon from "@/components/Dashboard/icons";
-import styles from "./ProjectPhotos.module.css";
+import styles from "./ProjectLightbox.module.css";
 import type { Photo } from "@/lib/projects";
 
 export default function ProjectLightbox({

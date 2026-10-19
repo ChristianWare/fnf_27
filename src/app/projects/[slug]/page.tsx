@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import styles from "../../page.module.css";
 import Nav from "@/components/shared/Nav/Nav";
 import ProjectHero from "@/components/ProjectPage/ProjectHero/ProjectHero";
-import ProjectPhotos from "@/components/ProjectPage/ProjectPhotos/ProjectPhotos";
 import ProjectDetails from "@/components/ProjectPage/ProjectDetails/ProjectDetails";
 import Footer from "@/components/shared/Footer/Footer";
 import { getProject, projectHref, projects } from "@/lib/projects";
@@ -39,7 +38,6 @@ export default async function ProjectPage({ params }: { params: Params }) {
     <main className={styles.container}>
       <Nav />
       <ProjectHero project={project} />
-      <ProjectPhotos photos={project.photos} name={project.name} />
       <ProjectDetails project={project} />
       <Footer />
     </main>

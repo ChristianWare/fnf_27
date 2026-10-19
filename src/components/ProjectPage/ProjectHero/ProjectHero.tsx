@@ -1,78 +1,56 @@
-// A project's hero: the client, the result and the facts on the left, the
-// photo on the right. The same frame as the Websites and Leads heroes.
+// A project's hero: the title and summary across the top, with the site
+// link and a call beside them, then the photos: one large picture with the
+// smaller ones under it to switch between.
 
-import Image from "next/image";
 import styles from "./ProjectHero.module.css";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import Button from "@/components/shared/Button/Button";
+import ProjectGallery from "./ProjectGallery";
 import type { Project } from "@/lib/projects";
 
+const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
+
 export default function ProjectHero({ project }: { project: Project }) {
-  // The first photo is the hero's. The rest are in the grid below.
-  const hero = project.photos[0];
+  // The project's own site, if it has one: the fact with a link.
+  const site = project.facts.find((fact) => fact.href);
 
   return (
     <section className={styles.container}>
-      <div className={styles.textCard}>
-        <Reveal onLoad step={150} />
-        <div className={styles.top}>
-          <div className={styles.client} data-reveal>
-            {/* {project.logo && (
-              <Image
-                src={project.logo}
-                alt=''
-                className={styles.logo}
-                sizes='40px'
-              />
-            )} */}
-            {/* <span className={styles.clientName}>{project.name}</span> */}
+      <Reveal onLoad step={150} />
+      <div className={styles.inner}>
+        <header className={styles.head}>
+          <div className={styles.titles}>
+            <h1
+              className={styles.heading}
+              data-reveal
+              data-reveal-style='fade'
+            >
+              {project.title}
+            </h1>
+            <p className={styles.copy} data-reveal>
+              {project.summary}
+            </p>
           </div>
-          <h1
-            className={`${styles.heading} heading2`}
-            data-reveal
-            data-reveal-style='fade'
-          >
-            {project.title}
-          </h1>
-          <p className={styles.copy}>{project.summary}</p>
-        </div>
+          <div className={styles.buttons} data-reveal>
+            {site?.href && (
+              <Button
+                href={site.href}
+                target='_blank'
+                btnType='gray'
+                text='Visit the site'
+              />
+            )}
+            <Button
+              href={CALENDAR}
+              target='_blank'
+              btnType='black'
+              text='Book a call'
+            />
+          </div>
+        </header>
 
-        <dl className={styles.facts} data-reveal>
-          {project.facts.map((fact) => (
-            <div className={styles.fact} key={fact.label}>
-              <dt className={styles.factLabel}>{fact.label}:</dt>
-              <dd className={styles.factValue}>
-                {fact.href ? (
-                  <a
-                    href={fact.href}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className={styles.factLink}
-                  >
-                    {fact.value}
-                  </a>
-                ) : (
-                  fact.value
-                )}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <ProjectGallery photos={project.photos} name={project.name} />
       </div>
-
-      {hero && (
-        <div className={styles.photo}>
-          <Image
-            src={hero.src}
-            alt={hero.alt}
-            fill
-            sizes='(max-width: 968px) 100vw, 50vw'
-            // The page's main picture: load it first.
-            loading='eager'
-            fetchPriority='high'
-            className={`${styles.img} ${hero.top ? styles.imgTop : ""}`}
-          />
-        </div>
-      )}
     </section>
   );
 }
