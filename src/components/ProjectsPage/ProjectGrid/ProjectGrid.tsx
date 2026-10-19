@@ -6,7 +6,7 @@ import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import NierLogo from "../../../../public/images/nierLogo.png";
 // Placeholder photos until you have real ones for each project.
-import NierImg from "../../../../public/images/cadi.png";
+import NierImg from "../../../../public/images/clients/nier/nier1.png";
 import Concept1Img from "../../../../public/images/chevy_corp.png";
 import Concept2Img from "../../../../public/images/branded.jpg";
 import NextImg from "../../../../public/images/cadiiv.png";
@@ -90,17 +90,8 @@ function ProjectCard({ project }: { project: Project }) {
           />
         </Link>
         <span className={styles.brand} aria-hidden='true'>
-          {/* {project.logo && (
-            <Image
-              src={project.logo}
-              alt=''
-              width={27}
-              height={24}
-              className={styles.brandMark}
-            />
-          )}
-          {project.name} */}
           <span className={styles.tag}>{project.category}</span>
+          {/* <span className={styles.tag}>{project.title}</span> */}
         </span>
       </div>
 
@@ -108,14 +99,14 @@ function ProjectCard({ project }: { project: Project }) {
         <div className={styles.meta}>
           <span className={styles.label}>{project.label}</span>
         </div>
-        <h3 className={`${styles.title} h6`}>
+        {/* <h3 className={`${styles.title} h6`}>
           <span className={styles.srOnly}>{project.name}: </span>
           {project.title}
-        </h3>
+        </h3> */}
         <div className={styles.btnContainer}>
-          <Button href={project.href} btnType='black'>
-            {project.button}
-            <span className={styles.srOnly}>: {project.name}</span>
+          <Button href={project.href} btnType='blackUnderline' arrow>
+            {/* {project.button} */}
+             {project.name}
           </Button>
         </div>
       </div>
@@ -123,8 +114,6 @@ function ProjectCard({ project }: { project: Project }) {
   );
 }
 
-// Fills the empty spot when there's an odd number of projects, using the
-// copy doc's closing call to action.
 function NextCard() {
   return (
     <article className={styles.card} data-reveal='each'>
@@ -183,11 +172,6 @@ export default function ProjectGrid() {
             ))}
             {/* {showNext && <NextCard />} */}
           </div>
-
-          {/* <p className={styles.note} data-reveal='each'>
-            Concept sites are designs we built to show our range. They
-            aren&apos;t real companies.
-          </p> */}
         </div>
       </LayoutWrapper>
     </section>

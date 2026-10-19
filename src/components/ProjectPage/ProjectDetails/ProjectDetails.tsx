@@ -144,15 +144,21 @@ export default function ProjectDetails({ project }: { project: Project }) {
             <span className={styles.ctaIcon}>
               <Icon name='zap' />
             </span>
-            <h2 className={styles.ctaTitle}>{cta.title}</h2>
+            <h2 className={`${styles.ctaTitle} h5`}>{cta.title}</h2>
             <p>{cta.text}</p>
             <div className={styles.ctaButtons}>
-              <Button href='/audit' btnType='black' text='Run the free audit' />
+              <Button
+                href='/audit'
+                btnType='black'
+                text='Run the free audit'
+                arrow
+              />
               <Button
                 href={CALENDAR}
                 target='_blank'
                 btnType='white'
                 text='Book a call'
+                arrow
               />
             </div>
           </section>

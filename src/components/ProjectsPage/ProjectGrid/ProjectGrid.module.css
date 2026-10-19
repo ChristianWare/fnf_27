@@ -139,17 +139,17 @@
 
 .title {
   max-width: 58rem;
-  color: var(--black);
+  font-family: var(--CreatoDisplayExtraBold);
 }
 
 /* The buttons sit at the bottom, so they line up across a row. */
 .btnContainer {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  width: 100%;
   gap: 1rem;
   margin-top: auto;
-  padding-top: 0.8rem;
+
 }
 
 .note {

@@ -118,7 +118,7 @@
 
 .resultNow {
   font-family: var(--CreatoDisplayExtraBold);
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 /* What it was, crossed out. */
@@ -379,7 +379,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 1.6rem;
-  padding: 4rem;
+  padding: 3rem;
   border-radius: 3rem;
   background-color: var(--accent3);
 }
@@ -407,16 +407,14 @@
 }
 
 .ctaTitle {
-  font-family: var(--CreatoDisplayMedium);
-  font-size: max(26px, 3.2rem);
-  line-height: 1.1;
-  letter-spacing: -0.5px;
-  color: var(--black);
+  font-family: var(--CreatoDisplayExtraBold);
+  text-transform: capitalize;
 }
 
 .ctaButtons {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  width: 100%;
   gap: 0.8rem;
   margin-top: 0.8rem;
 }

@@ -8,13 +8,12 @@ import type { IconName } from "@/components/Dashboard/icons";
 // Client logos. PLACEHOLDER: every project uses Nier's until its own is in.
 import NierLogo from "../../public/images/logos/nierLogo.png";
 import Barry from "../../public/images/barry.png";
-import NierHero from "../../public/images/cadiv.png";
-import NierStory from "../../public/images/nierIntro.png";
-import NierHome from "../../public/images/nierHomePage.png";
-import NierBlog from "../../public/images/nierBlogPage.png";
-import NierCorp from "../../public/images/nierCorporatePage.png";
-import NierServ from "../../public/images/nierServicesPage.png";
-import NierTerm from "../../public/images/nierTerminalPage.png";
+import NierHero from "../../public/images/clients/nier/nier1.png";
+import NierHome from "../../public/images/clients/nier/nier2.png";
+import NierBlog from "../../public/images/clients/nier/nier3.png";
+import NierCorp from "../../public/images/clients/nier/nier4.png";
+import NierServ from "../../public/images/clients/nier/nier5.png";
+import NierTerm from "../../public/images/clients/nier/nier6.png";
 // PLACEHOLDER images for Mesa Midnight: replace with its own screenshots.
 import Concept1Hero from "../../public/images/chevy_corp.png";
 import Concept1Story from "../../public/images/cadi_drive.png";
