@@ -73,6 +73,7 @@
   line-height: 1.15;
   letter-spacing: -0.3px;
   color: var(--black);
+  text-transform: capitalize;
 }
 
 /* ── The scorecard ── */

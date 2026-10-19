@@ -23,7 +23,7 @@ export default function ProjectDetails({ project }: { project: Project }) {
           {/* ── The brief ── */}
           <section className={styles.section} data-reveal='each'>
             <div className={styles.titles}>
-              <h2 className={styles.title}>The brief</h2>
+              <h2 className={styles.title}>The Brief</h2>
               <p>The short version, start to finish.</p>
             </div>
             <dl className={styles.brief}>

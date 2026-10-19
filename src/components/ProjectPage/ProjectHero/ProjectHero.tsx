@@ -21,7 +21,7 @@ export default function ProjectHero({ project }: { project: Project }) {
         <header className={styles.head}>
           <div className={styles.titles}>
             <h1
-              className={styles.heading}
+              className={`${styles.heading} h2`}
               data-reveal
               data-reveal-style='fade'
             >
