@@ -46,14 +46,15 @@ const projects: Project[] = [
   },
   {
     id: 2,
-    name: "[Concept 1]",
-    category: "Corporate & executive black car",
+    name: "Mesa Midnight",
+    category: "Late-night & executive black car",
     label: "Concept",
-    title: "Concept 1",
-    href: "/projects/concept-1",
+    title: "Mesa Midnight",
+    href: "/projects/mesa-midnight",
     button: "See the concept",
+    // PLACEHOLDER image: replace with a Mesa Midnight screenshot.
     src: Concept1Img,
-    alt: "A chauffeur shaking hands with a client beside a black SUV",
+    alt: "The Mesa Midnight home page",
   },
   {
     id: 3,

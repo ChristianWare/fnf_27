@@ -1,6 +1,7 @@
 // The projects with a page of their own at /projects/[slug]. The cards on
 // /projects live in ProjectGrid; keep the slugs here matching its hrefs.
-// Nier is real. The two concepts are PLACEHOLDERS until those sites exist.
+// Nier is real. Mesa Midnight is a live concept site. Concept 2 is a
+// PLACEHOLDER until that site exists.
 
 import type { StaticImageData } from "next/image";
 import type { IconName } from "@/components/Dashboard/icons";
@@ -13,6 +14,7 @@ import NierBlog from "../../public/images/nierBlogPage.png";
 import NierCorp from "../../public/images/nierCorporatePage.png";
 import NierServ from "../../public/images/nierServicesPage.png";
 import NierTerm from "../../public/images/nierTerminalPage.png";
+// PLACEHOLDER images for Mesa Midnight: replace with its own screenshots.
 import Concept1Hero from "../../public/images/chevy_corp.png";
 import Concept1Story from "../../public/images/cadi_drive.png";
 import Concept2Hero from "../../public/images/branded.jpg";
@@ -261,24 +263,27 @@ export const projects: Project[] = [
     },
   },
   {
-    slug: "concept-1",
-    name: "[Concept 1]",
-    title: "Concept 1",
+    slug: "mesa-midnight",
+    name: "Mesa Midnight",
+    title: "Mesa Midnight",
     summary:
-      "A concept site for a corporate and executive black car company: airport and route pages, corporate accounts and a booking flow in test mode.",
+      "A concept black car company in Mesa, Arizona, built on the Full Platform: a live site you can book on in test mode, with the admin, driver, rider and corporate dashboards behind it.",
     facts: [
-      { label: "Location", value: "Concept" },
+      { label: "Location", value: "Mesa, AZ" },
       { label: "Year", value: "2026" },
-      { label: "Service", value: "Website + booking, test mode" },
-      { label: "Industry", value: "Corporate & executive black car" },
+      { label: "Service", value: "Full Platform, in test mode" },
+      { label: "Industry", value: "Late-night & executive black car" },
       { label: "Client", value: "Concept, not a real company" },
-      { label: "Booking", value: "Live, in test mode" },
+      {
+        label: "Website",
+        value: "mesamidnighttransport.com",
+        href: "https://www.mesamidnighttransport.com",
+      },
     ],
-    // PLACEHOLDER: replace with the concept's own numbers once it's built.
     results: {
       title: "Built to",
       intro:
-        "What this concept is built to do, against the typical corporate black car site.",
+        "What Mesa Midnight is built to do, against the typical East Valley black car site.",
       beforeLabel: "Typical site",
       rows: [
         {
@@ -290,84 +295,115 @@ export const projects: Project[] = [
         {
           label: "Pages built for search",
           before: "A homepage and a fleet page",
-          now: "18",
-          note: "A page per airport and per suburb executives travel from, each written for a real search.",
+          now: "22",
+          note: "5 service pages, 7 vehicle pages, 4 airport pages, 3 city pages and 3 route pages, each written for a search East Valley riders make.",
         },
         {
           label: "Steps to book",
           before: "A form and a callback",
           now: "3",
-          note: "Pick the ride, see the price, pay. The booking runs end to end in test mode.",
+          note: "Trip details, vehicle, confirm. The price shows before the rider pays, worked out from the real route.",
         },
         {
-          label: "Corporate accounts",
-          before: "Emails and spreadsheets",
-          now: "A portal",
-          note: "Assistants book under the company's name, and the company gets one invoice.",
+          label: "Booking hours",
+          before: "Office hours, by phone",
+          now: "24/7",
+          note: "Built for the 2am Sky Harbor run: riders book and pay at any hour without a call.",
+        },
+        {
+          label: "Dashboards",
+          before: "Email and a spreadsheet",
+          now: "4",
+          note: "Admin, driver, rider and corporate, each with its own login, filled with sample rides so you can click through every screen.",
+        },
+        {
+          label: "Sample rides",
+          before: "",
+          now: "676",
+          note: "Months of demo bookings, payments and invoices, so the reports and calendars look like a working company's.",
         },
       ],
     },
     brief: [
       {
         label: "What it shows",
-        text: "PLACEHOLDER. What a corporate black car company's site looks like on the Full Platform: a homepage for the city, a page per airport, route pages for the suburbs, and a corporate accounts page written for the assistant who books the rides.",
+        text: "What a black car company's site looks like on the Full Platform, end to end. Mesa Midnight is a made-up late-night and executive operator in Mesa, with a site built around Sky Harbor and Mesa Gateway runs, corporate travel and event rides.",
       },
       {
-        label: "Booking",
-        text: "The booking flow is real and runs in test mode, so you can book a ride end to end without anything being charged.",
+        label: "What we built",
+        text: "The public site: a booking widget on the home page, 22 pages for the searches East Valley riders make, a fleet with a page per vehicle, and a flight tracker. Behind it, the same platform Nier runs on: booking, dispatch, a driver app, a corporate portal and payments through Stripe.",
       },
       {
-        label: "For a real operator",
-        text: "PLACEHOLDER. Replace with the concept's own story once the site is built: the pages, the booking flow, the corporate portal, and the first three months.",
+        label: "Try it",
+        text: "Everything runs in test mode, so you can book a ride end to end with Stripe's test card and nothing is charged. A banner on every page says it's a demo, and the site is kept out of search results.",
+      },
+      {
+        label: "Behind the login",
+        text: "The dashboards are filled with sample data: riders, drivers, corporate accounts, invoices and hundreds of rides. On a call I'll log in as each role and show you how a ride moves from booking to dispatch to payout.",
+      },
+      {
+        label: "Who it's for",
+        text: "Operators who want to see the whole platform before they commit, from the booking page a rider sees to the board a dispatcher works from.",
       },
     ],
     inside: [
       {
         icon: "booking",
         title: "Online booking",
-        text: "The price up front and three steps to book, in test mode.",
-      },
-      {
-        icon: "users",
-        title: "Corporate portal",
-        text: "Company accounts, their bookers and one invoice a month.",
-      },
-      {
-        icon: "clock",
-        title: "Flight tracking",
-        text: "Airport pickups follow the flight.",
-      },
-      {
-        icon: "globe",
-        title: "Airport and route pages",
-        text: "9 pages for the airports and the runs executives take.",
+        text: "Address search, a route map and the price up front, in three steps.",
       },
       {
         icon: "clipboard",
         title: "Dispatch",
-        text: "Every ride assigned from one board, with a driver app.",
+        text: "Every ride assigned from one board, with a calendar of the week.",
+      },
+      {
+        icon: "phone",
+        title: "Driver app",
+        text: "Drivers see their schedule, update each trip and track their earnings.",
+      },
+      {
+        icon: "clock",
+        title: "Flight tracking",
+        text: "Look up any flight, and airport pickups follow the landing time.",
+      },
+      {
+        icon: "users",
+        title: "Corporate portal",
+        text: "Company accounts, their employees and one invoice a month.",
       },
       {
         icon: "card",
         title: "Payments",
-        text: "Cards on file, invoices and refunds through the operator's Stripe.",
+        text: "Stripe in test mode: deposits, payment links, receipts and refunds.",
+      },
+      {
+        icon: "globe",
+        title: "Search pages",
+        text: "22 pages for services, vehicles, airports, cities and routes.",
+      },
+      {
+        icon: "bell",
+        title: "Notifications",
+        text: "Emails and push alerts for riders, drivers and dispatch, sent on their own.",
       },
     ],
+    // PLACEHOLDER photos: swap in screenshots of mesamidnighttransport.com.
     photos: [
       {
         src: Concept1Hero,
-        alt: "A chauffeur shaking hands with a client beside a black SUV",
-        caption: "The home page photo",
+        alt: "The Mesa Midnight home page",
+        caption: "The home page",
       },
       {
         src: Concept1Story,
-        alt: "A chauffeur's hands on the steering wheel",
-        caption: "The service pages",
+        alt: "The Mesa Midnight booking flow",
+        caption: "The booking flow",
       },
     ],
     cta: {
       title: "Want a site like this?",
-      text: "Run the free audit to see where your site stands today, or book a call and I'll show you the booking flow live.",
+      text: "Book a ride on the live demo, run the free audit to see where your site stands today, or book a call and I'll walk you through the dashboards.",
     },
   },
   {
