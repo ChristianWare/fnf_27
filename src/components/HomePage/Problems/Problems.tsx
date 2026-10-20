@@ -173,7 +173,7 @@ export default function Problems() {
                   <div className={styles.btnContainer}>
                     <Button
                       href={x.href}
-                      btnType='green'
+                      btnType='blackUnderline'
                       text={x.btnText}
                       arrow
                     />
