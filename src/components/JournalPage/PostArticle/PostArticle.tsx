@@ -21,6 +21,9 @@ export default async function PostArticle({ post }: { post: Post }) {
   const { content } = await compileMDX({
     source: post.body,
     components: mdxComponents,
+    // The posts are our own files, so props can be arrays (a <Table>'s
+    // rows). Dangerous code (eval, imports, globals) stays blocked.
+    options: { blockJS: false },
   });
   const url = `${SITE}/journal/${post.slug}`;
 

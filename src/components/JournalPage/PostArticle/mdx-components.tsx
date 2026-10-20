@@ -1,6 +1,6 @@
 // What the MDX in content/journal renders as. Plain markdown (headings,
-// paragraphs, lists, links) gets the article styles; <Figure> and <Quote>
-// are the two components a post can use.
+// paragraphs, lists, links) gets the article styles; <Figure>, <Quote> and
+// <Table> are the components a post can use.
 
 import Image from "next/image";
 import type { ReactNode } from "react";
@@ -33,6 +33,60 @@ export function Figure({
   );
 }
 
+/**
+ * A comparison table. The first column is the row label; on a phone the
+ * table scrolls sideways inside its frame.
+ *
+ *   <Table
+ *     caption='Prices checked October 2026.'
+ *     head={["", "Option A", "Option B"]}
+ *     rows={[["Monthly price", "$99", "$149"]]}
+ *   />
+ */
+export function Table({
+  head,
+  rows,
+  caption,
+}: {
+  head: string[];
+  rows: string[][];
+  caption?: string;
+}) {
+  return (
+    <figure className={styles.tableFigure}>
+      <div className={styles.tableScroll}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              {head.map((cell, i) => (
+                <th key={i} scope='col'>
+                  {cell}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, r) => (
+              <tr key={r}>
+                {row.map((cell, i) =>
+                  i === 0 ? (
+                    <th key={i} scope='row'>
+                      {cell}
+                    </th>
+                  ) : (
+                    <td key={i}>{cell}</td>
+                  ),
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {caption && <figcaption className={styles.caption}>{caption}</figcaption>}
+    </figure>
+  );
+}
+
 /** A pull quote on a black card. */
 export function Quote({ children }: { children: ReactNode }) {
   return (
@@ -45,6 +99,7 @@ export function Quote({ children }: { children: ReactNode }) {
 export const mdxComponents: MDXComponents = {
   Figure,
   Quote,
+  Table,
   h2: (props) => <h2 className={`${styles.h2} h6`} {...props} />,
   h3: (props) => <h3 className={`${styles.h3} subHeading`} {...props} />,
   p: (props) => <p className={styles.p} {...props} />,
