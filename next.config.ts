@@ -30,6 +30,16 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       { source: "/portfolio", destination: "/projects", permanent: true },
+      { source: "/work", destination: "/projects", permanent: true },
+      // The old blog's posts became the Journal. The no-shows post's topic
+      // (reminders, deposits) lives on the booking software page now.
+      {
+        source: "/blog/how-to-eliminate-no-shows-with-smart-booking-technology",
+        destination: "/services/booking-software",
+        permanent: true,
+      },
+      { source: "/blog", destination: "/journal", permanent: true },
+      { source: "/blog/:slug*", destination: "/journal", permanent: true },
       { source: "/components", destination: "/", permanent: true },
 
       // The old dashboard's pages, linked from emails clients still have
