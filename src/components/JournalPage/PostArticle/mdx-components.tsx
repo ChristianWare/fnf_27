@@ -37,7 +37,7 @@ export function Figure({
 export function Quote({ children }: { children: ReactNode }) {
   return (
     <blockquote className={styles.quote}>
-      <p className={styles.quoteText}>{children}</p>
+      <div className={styles.quoteText}>{children}</div>
     </blockquote>
   );
 }
