@@ -79,11 +79,16 @@
 }
 
 .number {
-  padding: 1rem;
-  border-radius: 50px;
-  background-color: var(--white);
-  font-family: var(--IBMPlex);
   font-size: 14px;
+  font-family: var(--IBMPlex);
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-color: var(--accent3);
+  border: 1px solid var(--accent3Dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
   color: var(--black);
 }

@@ -116,12 +116,24 @@
   gap: 0.8rem;
 }
 
+.value {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+
+.arrow {
+  transform: rotate(45deg);
+}
+
 .name,
 .note {
   font-family: var(--IBMPlex);
   font-size: 14px;
   line-height: 1.4;
   text-transform: uppercase;
+  color:var(--accent3)
 }
 
 .note {

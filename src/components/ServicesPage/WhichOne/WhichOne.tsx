@@ -72,7 +72,7 @@ export default function WhichOne() {
               </p>
               <Button
                 href='/audit'
-                btnType='white'
+                btnType='green'
                 text='Get a free website audit'
                 arrow
               />
@@ -111,7 +111,7 @@ export default function WhichOne() {
                 </Link> */}
                 <div className={styles.btnContainer}>
                   <Button
-                    btnType='green'
+                    btnType='white'
                     text={item.link}
                     href={item.href}
                     arrow
