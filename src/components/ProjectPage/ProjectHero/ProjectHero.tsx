@@ -20,6 +20,11 @@ export default function ProjectHero({ project }: { project: Project }) {
       <div className={styles.inner}>
         <header className={styles.head}>
           <div className={styles.titles}>
+            {project.status && (
+              <span className={styles.status} data-reveal>
+                {project.status}
+              </span>
+            )}
             <h1
               className={`${styles.heading} h2`}
               data-reveal
