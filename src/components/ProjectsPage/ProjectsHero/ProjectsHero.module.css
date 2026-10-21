@@ -247,6 +247,7 @@
 @media screen and (max-width: 568px) {
   .container {
     border-radius: 2rem;
+    padding-top: 1rem;
   }
 
   .photo {
