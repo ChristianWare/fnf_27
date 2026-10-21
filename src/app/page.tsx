@@ -17,6 +17,7 @@ import JournalPreview from "@/components/HomePage/JournalPreview/JournalPreview"
 import Faq from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+import Process from "@/components/AboutPage/Process/Process";
 
 export const metadata: Metadata = {
   title: {
@@ -43,6 +44,7 @@ export default function Home() {
       <LiveDemos />
       <LeadsTool />
       <BookingFeatures />
+      <Process />
       <Pricing />
       <JournalPreview />
       <Faq />

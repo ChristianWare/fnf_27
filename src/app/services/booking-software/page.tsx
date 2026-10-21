@@ -18,6 +18,7 @@ import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
 import JsonLd from "@/components/shared/JsonLd/JsonLd";
 import { bookingSoftware, breadcrumbs } from "@/lib/seo";
+import Process from "@/components/AboutPage/Process/Process";
 
 export const metadata: Metadata = {
   title: {
@@ -113,6 +114,7 @@ export default function BookingSoftwarePage() {
       <WhatItDoes />
       <UserTour />
       <PlatformWhy />
+      <Process />
       <LiveDemos />
       <PlatformFeatures />
       <HowItCompares />
