@@ -279,12 +279,16 @@
 
 @media screen and (max-width: 568px) {
   .container {
-    padding-bottom: 4rem;
+    padding-bottom: 6rem;
     border-radius: 2rem;
   }
 
+  .top {
+    border-top: none;
+  }
+
   .content {
-    margin-top: 22rem;
+    margin-top: 5rem;
   }
 
   .card {

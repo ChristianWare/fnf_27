@@ -180,6 +180,7 @@
 @media screen and (max-width: 568px) {
   .stage {
     border-radius: 2rem;
+    padding: 5rem 0rem;
   }
 
   .cards {
