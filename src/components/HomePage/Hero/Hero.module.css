@@ -169,6 +169,7 @@
 
 @media screen and (max-width: 568px) {
   .container {
+    padding: 1rem 0rem;
     border-radius: 2rem;
   }
 
