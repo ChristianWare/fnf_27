@@ -425,7 +425,7 @@
 
 @media screen and (max-width: 568px) {
   .container {
-    padding: 8rem 0rem 6rem;
+    padding: 0rem 0rem 6rem;
     border-radius: 2rem;
   }
 
