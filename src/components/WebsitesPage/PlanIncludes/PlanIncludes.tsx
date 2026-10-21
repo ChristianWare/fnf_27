@@ -108,7 +108,7 @@ export default function PlanIncludes() {
             data-reveal
             data-reveal-style='fade'
           >
-            What&apos;s Included in Each Plan
+            What&apos;s Included in Each Website
           </h2>
         </div>
 

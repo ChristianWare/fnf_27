@@ -37,7 +37,7 @@ export default function NierCaseStudy() {
                 data-reveal
                 data-reveal-style='fade'
               >
-                Built with a working operator in Phoenix
+                Built with a Working Operator in Phoenix
               </h2>
               <p className={styles.copy} data-reveal>
                 Nier Transportation has run black car service in Phoenix since
