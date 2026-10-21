@@ -209,9 +209,11 @@
 }
 
 @media screen and (max-width: 568px) {
-  .container {
+.container {
+    padding: 5rem 0rem;
     border-radius: 2rem;
   }
+
 
   .imgContainer {
     min-height: 38rem;

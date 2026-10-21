@@ -22,7 +22,7 @@ export default function JournalPreview() {
         <div className={styles.content}>
           <div className={styles.left} data-reveal>
             <EyeBrow text='Journal' />
-            <h2 className={styles.heading}>Guides for operators</h2>
+            <h2 className={styles.heading}>Guides for Operators</h2>
             <p className={styles.copy}>
               Straight answers on booking software, getting found and winning
               accounts.

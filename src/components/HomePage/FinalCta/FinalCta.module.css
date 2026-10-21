@@ -142,4 +142,10 @@
   .card {
     padding: 5rem 2rem;
   }
+
+  .btnContainer {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(1, 1fr);
+  }
 }

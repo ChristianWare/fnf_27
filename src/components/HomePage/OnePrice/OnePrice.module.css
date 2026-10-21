@@ -145,8 +145,18 @@
 
 @media screen and (max-width: 568px) {
   .container {
-    padding: 7rem 0;
+    padding: 5rem 0rem;
     border-radius: 2rem;
+  }
+
+  .top {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .heading {
+    font-size: 2.8rem;
   }
 
   .tool,
@@ -154,4 +164,14 @@
     padding: 2.4rem 1.8rem;
     border-radius: 2rem;
   }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 2rem;
+    width: 100%;
+    margin-top: 3rem;
+  }
 }
+
+

@@ -173,7 +173,20 @@
 
 @media screen and (max-width: 568px) {
   .container {
+    padding: 5rem 0rem;
     border-radius: 2rem;
+  }
+
+  .topLeft,
+  .top,
+  .topMiddle {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .topMiddle {
+    font-size: 2.8rem;
+    text-align: center;
   }
 
   .card {

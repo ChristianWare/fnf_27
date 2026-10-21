@@ -219,7 +219,6 @@
     padding: 7rem 0rem;
   }
 
-  /* The photo under the text card. */
   .row {
     grid-template-columns: repeat(1, 1fr);
   }
@@ -236,7 +235,18 @@
 
 @media screen and (max-width: 568px) {
   .container {
+    padding: 5rem 0rem;
     border-radius: 2rem;
+  }
+
+  .intro {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .heading {
+    font-size: 2.8rem;
+    text-align: center;
   }
 
   .card {

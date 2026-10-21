@@ -194,8 +194,20 @@
 }
 
 @media screen and (max-width: 568px) {
-  .container {
+.container {
+    padding: 5rem 0rem;
     border-radius: 2rem;
+  }
+
+  .left {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .heading {
+    /* font-size: 2.8rem; */
+    text-align: center;
   }
 
   /* Photo on top, text underneath. */

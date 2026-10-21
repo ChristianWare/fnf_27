@@ -37,6 +37,7 @@ export default function FinalCta() {
               target='_blank'
               btnType='gray'
               text='Book a 20-minute call'
+              arrow
             />
           </div>
         </div>
