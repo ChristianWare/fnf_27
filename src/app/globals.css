@@ -147,6 +147,9 @@ button {
   border: none;
   background-color: transparent;
   outline: none;
+  /* Safari on iPhone colors button text blue by default. Buttons take the
+     text color around them unless their own class sets one. */
+  color: inherit;
 }
 
 p,

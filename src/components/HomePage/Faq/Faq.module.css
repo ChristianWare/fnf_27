@@ -51,6 +51,7 @@
   width: 100%;
   padding: 2.6rem 0;
   text-align: left;
+  color: var(--black);
   cursor: pointer;
 }
 

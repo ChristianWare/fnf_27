@@ -81,6 +81,8 @@ export default function BookingFeatures() {
     if (!wrap || !sticky || !viewport || !track) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // On a phone the cards simply stack and scroll with the page.
+    const phone = window.matchMedia("(max-width: 568px)");
 
     let pinned = false;
     let distance = 0; // how far the cards travel sideways, in px
@@ -92,7 +94,7 @@ export default function BookingFeatures() {
       wrap.dataset.pinned = "true";
       const panel = sticky.offsetHeight;
       const screen = window.innerHeight;
-      pinned = !reduced.matches;
+      pinned = !reduced.matches && !phone.matches;
 
       if (!pinned) {
         delete wrap.dataset.pinned;
@@ -150,6 +152,7 @@ export default function BookingFeatures() {
     resize.observe(track);
     window.addEventListener("resize", onResize);
     reduced.addEventListener("change", measure);
+    phone.addEventListener("change", measure);
 
     // Only do the work while the section is on (or near) the screen.
     const visible = new IntersectionObserver(
@@ -166,6 +169,7 @@ export default function BookingFeatures() {
       visible.disconnect();
       window.removeEventListener("resize", onResize);
       reduced.removeEventListener("change", measure);
+      phone.removeEventListener("change", measure);
       cancelAnimationFrame(raf);
     };
   }, []);

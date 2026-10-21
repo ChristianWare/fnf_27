@@ -217,6 +217,9 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 2rem;
+  /* Fills its column, so a wide table scrolls inside its own frame. */
+  width: 100%;
+  min-width: 0;
   max-width: 880px;
   padding-left: 2rem;
   border-left: 1px solid var(--light);
@@ -311,6 +314,8 @@
 
 /* A comparison table: the labels down the left, one column per option. */
 .tableFigure {
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
@@ -320,6 +325,7 @@
 
 .tableScroll {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--light2);
   border-radius: 1.5rem;
@@ -399,7 +405,9 @@
   }
 
   .body {
-    grid-template-columns: repeat(1, 1fr);
+    /* minmax(0, …) so a wide table scrolls inside its frame instead of
+       stretching the column past the screen. */
+    grid-template-columns: minmax(0, 1fr);
     gap: 4rem;
   }
 

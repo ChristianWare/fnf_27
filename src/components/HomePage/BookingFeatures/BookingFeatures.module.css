@@ -319,3 +319,34 @@
     width: 100%;
   }
 }
+
+/* On a phone: no sideways scrolling. The features stack and scroll with
+   the page, with space between each one. */
+@media screen and (max-width: 568px) {
+  .viewport {
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .track {
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    transform: none !important;
+  }
+
+  .set {
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .photo {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .quote {
+    width: 100%;
+  }
+}
