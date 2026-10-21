@@ -39,7 +39,7 @@
 }
 
 .navItem {
-  font-family: var(--CreatoDisplayMedium);
+  font-family: var(--CreatoDisplayExtraBold);
   font-size: 1.6rem;
   line-height: 140%;
   color: var(--black);
