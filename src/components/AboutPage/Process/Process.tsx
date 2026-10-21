@@ -8,11 +8,11 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import Chris from "../../../../public/images/me.png";
-import AuditImg from "../../../../public/images/auditImg.jpg";
-import MapImg from "../../../../public/images/mapImg.jpg";
-import BuildImg from "../../../../public/images/buildImg.jpg";
-import LaunchImg from "../../../../public/images/launch.jpg";
-import OngoingImg from "../../../../public/images/ongoingImg.jpg";
+import AuditImg from "../../../../public/images/blog/blog8.png";
+import MapImg from "../../../../public/images/blog/blog9.png";
+import BuildImg from "../../../../public/images/blog/blog10.png";
+import LaunchImg from "../../../../public/images/blog/blog11.png";
+import OngoingImg from "../../../../public/images/blog/blog12.png";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 const CAROUSEL = "(max-width: 968px)";
