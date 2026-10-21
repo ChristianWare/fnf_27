@@ -11,13 +11,14 @@
   --accent3: #d1ff93;
   --accent4: #fff78b;
   /* Lighter versions of the accents (half accent, half white), for
-     large areas like the comparison table cells. */
+  large areas like the comparison table cells. */
   --accent1Light: #daf9f0;
   --accent2Light: #e0dbff;
   --accent2Dark: #5d45fc;
   --accent3Light: #e8ffc9;
   --accent3Dark: #8ada21;
   --accent4Light: #fffbc5;
+  --accent4Dark: #d8cc25;
   --white: #ffffff;
 }
 
@@ -370,20 +371,30 @@ textarea:focus {
     letter-spacing: -0.3px;
   }
 
+  .h1,
+  h1 {
+    font-family: var(--CreatoDisplayExtraBold);
+    text-transform: uppercase;
+  }
+  
   h2,
   .h2 {
+    text-transform: uppercase;
     font-size: 32px;
     line-height: 1.1;
     letter-spacing: -0.4px;
+    font-family: var(--CreatoDisplayExtraBold);
   }
-
+  
   h3,
   .h3 {
+    text-transform: uppercase;
+    font-family: var(--CreatoDisplayExtraBold);
     font-size: 30px;
     line-height: 1.1;
     letter-spacing: -0.6px;
   }
-
+  
   h4,
   .h4 {
     font-size: 28px;
@@ -403,6 +414,7 @@ textarea:focus {
     font-size: 20px;
     line-height: 1.2;
     letter-spacing: 0;
+    font-family: var(--CreatoDisplayExtraBold);
   }
 }
 

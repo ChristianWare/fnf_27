@@ -45,7 +45,7 @@ export default function LeadsTool() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text='Leads tool' color='white' />
+              <EyeBrow text='Leads tool' color='black' />
               <h2 className={styles.heading}>
                 Find your next client before your competition does
               </h2>

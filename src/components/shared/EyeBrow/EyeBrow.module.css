@@ -3,6 +3,9 @@
   align-items: center;
   justify-content: flex-start;
   gap: 0.5rem;
+  background-color: var(--accent2);
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
 }
 
 .dot {
@@ -10,11 +13,12 @@
   border-radius: 50%;
   width: 6px;
   height: 6px;
+  display: none;
 }
 
 .text {
   font-family: var(--IBMPlex);
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   letter-spacing: -0.5px;
   text-transform: uppercase;
 }
@@ -26,4 +30,8 @@
 
 .white .text {
   color: var(--white);
+}
+
+.black .text {
+  color: var(--black);
 }

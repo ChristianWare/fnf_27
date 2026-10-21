@@ -50,10 +50,6 @@
 
 /* The paragraph continues the heading at the same size, in gray. */
 .statement {
-  font-family:
-    var(--CreatoDisplayMedium, "Creato Display"), system-ui, sans-serif;
-  color: var(--black);
-  hyphens: none;
   max-width: 700px;
 }
 
@@ -184,9 +180,12 @@
     justify-content: center;
   }
 
-  .topMiddle {
-    font-size: 2.8rem;
+  .statement {
+    font-size: 2.5rem;
     text-align: center;
+    width: 100%;
+    max-width: 100%;
+  
   }
 
   .card {
