@@ -80,8 +80,8 @@ export default function Nav({ hamburgerColor = "" }: NavProps) {
     { text: "Services", href: "/services" },
     { text: "Pricing", href: "/pricing" },
     { text: "Projects", href: "/projects" },
-    { text: "Journal", href: "/journal" },
     { text: "About", href: "/about" },
+    { text: "Journal", href: "/journal" },
     { text: "Contact", href: "/contact" },
   ];
 
