@@ -394,6 +394,7 @@ tbody tr:last-child .cell {
 /* 568px: the tabs sit two by two, and the rows tighten up. */
 @media screen and (max-width: 568px) {
   .container {
+    padding: 5rem 0rem;
     border-radius: 2rem;
   }
 
