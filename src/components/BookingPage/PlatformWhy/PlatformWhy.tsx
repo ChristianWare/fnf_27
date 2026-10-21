@@ -14,8 +14,12 @@ const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 // The three steps of a switch, in the third card.
 const switching = [
   {
-    label: "What moves over",
-    text: "Send us an export from your current system, and we set up your vehicles, rates, service areas and corporate accounts, and bring over your customer list.",
+    label: "Your part",
+    text: "Send us an export from your current system and a 20-minute call. That's it.",
+  },
+  {
+    label: "Our part",
+    text: "We set up your vehicles, rates, service areas and corporate accounts, and bring over your customer list. You don't import anything.",
   },
   {
     label: "What the switch looks like",
@@ -130,7 +134,7 @@ export default function PlatformWhy() {
               </div>
 
               <h3 className={`${styles.problem} h5`}>
-                Switching from your current system
+                Done for you: switching from your current system
               </h3>
 
               <dl className={styles.answer}>

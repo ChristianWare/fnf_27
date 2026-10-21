@@ -37,9 +37,10 @@ export default function WebsitesHero() {
             Limo Website Design for Black Car &amp; Chauffeur Companies
           </h1>
           <p className={styles.copy} data-reveal>
-            A custom website built for the searches your riders make, with a
-            page for every airport, route and city you serve. From $199/mo plus
-            a one-time $500 setup.
+            Someone in your city is searching for a car to the airport right
+            now. A site with a page for every airport, route and city you serve
+            means they find you, not the next company. From $199/mo plus a
+            one-time $500 setup, month to month.
           </p>
           <div className={styles.btnContainer} data-reveal>
             <Button

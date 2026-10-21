@@ -6,17 +6,18 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 import HeroImg from "../../../../public/images/fullPlatformii.jpg";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
-// A live booking flow, on an operator's own site.
-const DEMO = "https://www.niertransportation.com/book";
+// The live demo: a concept site whose booking flow runs in test mode, so
+// nothing is charged and no real operator gets the request.
+const DEMO = "https://www.mesamidnighttransport.com/book";
 
 // The quick facts along the bottom of the text card.
 const facts = [
   { label: "Price", value: "$499/mo" },
-  { label: "Setup", value: "$500 one time" },
+  { label: "Setup", value: "$500 one time, done for you" },
   { label: "Per-booking fees", value: "None" },
-  { label: "Leads tool", value: "Included" },
-  { label: "Website", value: "Built in" },
-  { label: "Payments", value: "Through your own Stripe account" },
+  { label: "Drivers & vehicles", value: "Unlimited" },
+  { label: "Website & leads tool", value: "Included" },
+  { label: "Contract", value: "Month to month, cancel anytime" },
 ];
 
 // Two cards side by side: the text on the left, a photo on the right.
@@ -32,26 +33,26 @@ export default function BookingHero() {
             data-reveal
             data-reveal-style='fade'
           >
-            Limo Booking &amp; Dispatch Software, Website Included
+            Limo Booking Software That Runs Every Ride From Your Own Site
           </h1>
           <p className={styles.copy} data-reveal>
-            Take bookings on your own site, assign drivers and get paid, all in
-            one system with your website built in. $499/mo, no per-booking fees,
-            leads tool included.
+            Booking, dispatch, a driver portal and payments, built into your own
+            website, with the leads tool included. Unlimited drivers and
+            vehicles, no per-booking fees, one flat $499 a month.
           </p>
           <div className={styles.btnContainer} data-reveal>
             <Button
-              href={CALENDAR}
+              href={DEMO}
               target='_blank'
               btnType='black'
-              text='Book a demo call'
+              text='Try a live demo'
               arrow
             />
             <Button
-              href={DEMO}
+              href={CALENDAR}
               target='_blank'
               btnType='gray'
-              text='Try the booking flow'
+              text='Book a call'
             />
           </div>
         </div>

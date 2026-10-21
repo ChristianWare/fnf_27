@@ -11,6 +11,9 @@ import BuildProcess from "@/components/WebsitesPage/BuildProcess/BuildProcess";
 import WebsitesCaseStudy from "@/components/WebsitesPage/WebsitesCaseStudy/WebsitesCaseStudy";
 import WebsitesPricing from "@/components/WebsitesPage/WebsitesPricing/WebsitesPricing";
 import Faq, { type FaqItem } from "@/components/HomePage/Faq/Faq";
+import ProofBand from "@/components/shared/ProofBand/ProofBand";
+import LiveDemos from "@/components/shared/LiveDemos/LiveDemos";
+import WhatWeDont from "@/components/WebsitesPage/WhatWeDont/WhatWeDont";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
 import JsonLd from "@/components/shared/JsonLd/JsonLd";
@@ -104,12 +107,15 @@ export default function WebsitesPage() {
       <Nav />
       <WebsitesHero />
       <FeatureMarquee />
+      <ProofBand />
       <PlanIncludes />
       <PageMap />
       <TemplateVsCustom />
       <LimoSeo />
       <BuildProcess />
       <WebsitesCaseStudy />
+      <LiveDemos />
+      <WhatWeDont />
       <WebsitesPricing />
       <Faq faqs={websiteFaqs} heading='Website Questions' />
       <FinalCta />

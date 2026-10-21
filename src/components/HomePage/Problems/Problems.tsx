@@ -19,19 +19,20 @@ import Img4 from "../../../../public/images/audit.jpg";
 
 const data = [
   {
-    id: 4,
-    title: "Free Website Audit",
-    price: "$0 · Your score in a minute",
+    id: 2,
+    title: "Full Platform",
+    price: "$499/mo + $500 setup · Website + booking + leads tool",
     bullets: [
-      "What riders see on Google",
-      "Google visibility",
-      "Speed on a phone",
-      "Online booking check",
-      "AI search readiness",
+      "Website, booking software and leads tool in one",
+      "No per-booking fees",
+      "Driver and admin portals",
+      "Flight tracking and payments",
+      "Unlimited drivers and vehicles",
+      "Month to month, cancel anytime",
     ],
-    btnText: "Get a free website audit",
-    href: "/audit",
-    src: Img4,
+    btnText: "See the Full Platform",
+    href: "/services/booking-software",
+    src: Img2,
   },
   {
     id: 1,
@@ -63,19 +64,19 @@ const data = [
     src: Img3,
   },
   {
-    id: 2,
-    title: "Full Platform",
-    price: "$499/mo + $500 setup · Leads tool included",
+    id: 4,
+    title: "Free Website Audit",
+    price: "$0 · Your score in a minute",
     bullets: [
-      "Website and booking software in one",
-      "No per-booking fees",
-      "Driver and admin portals",
-      "Flight tracking and payments",
-      "SEO foundation, leads tool included",
+      "What riders see on Google",
+      "Google visibility",
+      "Speed on a phone",
+      "Online booking check",
+      "AI search readiness",
     ],
-    btnText: "See the Full Platform",
-    href: "/services/booking-software",
-    src: Img2,
+    btnText: "Get a free website audit",
+    href: "/audit",
+    src: Img4,
   },
 ];
 
@@ -121,10 +122,10 @@ export default function Problems() {
                 What We Offer
               </h2>
               <p className={styles.copy} data-reveal>
-                Four ways to grow a black car or limo business: a free audit of
-                where you stand, a leads tool for the accounts in your market,
-                limo website design that gets you found on Google, and booking
-                and dispatch software with no per-booking fees.
+                The Full Platform puts your website, booking and dispatch
+                software and the leads tool in one system for $499 a month.
+                Need only one part? The leads tool and the website come on
+                their own too, and the audit is always free.
               </p>
             </div>
 

@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import styles from "../../page.module.css";
 import Nav from "@/components/shared/Nav/Nav";
 import BookingHero from "@/components/BookingPage/BookingHero/BookingHero";
+import ProofBand from "@/components/shared/ProofBand/ProofBand";
+import Included from "@/components/BookingPage/Included/Included";
+import UserTour from "@/components/BookingPage/UserTour/UserTour";
+import LiveDemos from "@/components/shared/LiveDemos/LiveDemos";
+import FeeCalculator from "@/components/BookingPage/FeeCalculator/FeeCalculator";
 import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
 import WhatItDoes from "@/components/BookingPage/WhatItDoes/WhatItDoes";
 import PlatformWhy from "@/components/BookingPage/PlatformWhy/PlatformWhy";
@@ -103,10 +108,15 @@ export default function BookingSoftwarePage() {
       <Nav />
       <BookingHero />
       <FeatureMarquee />
+      <ProofBand />
+      <Included />
       <WhatItDoes />
+      <UserTour />
       <PlatformWhy />
+      <LiveDemos />
       <PlatformFeatures />
       <HowItCompares />
+      <FeeCalculator />
       <PlatformPricing />
       <Faq faqs={platformFaqs} heading='Booking Software Questions' />
       <FinalCta />

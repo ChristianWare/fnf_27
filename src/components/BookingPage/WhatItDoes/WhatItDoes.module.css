@@ -160,6 +160,15 @@
   color: var(--black);
 }
 
+/* The result of the feature, in one plain sentence. */
+.outcome {
+  margin-top: 1.2rem;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 17px;
+  line-height: 1.35;
+  color: var(--black);
+}
+
 .bullets {
   list-style: none;
   display: flex;

@@ -44,9 +44,9 @@ export default function Hero() {
               <br /> Black Car Business
             </h1>
             <p className={styles.copy} data-reveal>
-              Get found on Google, take bookings directly with no per-booking
-              fees, and fill the slow months with corporate accounts, hotels and
-              events in your market.
+              Your website, booking and dispatch software, and a leads tool, in
+              one system for $499 a month. No per-booking fees. Start with free
+              leads in your city.
             </p>
             <div className={styles.btnContainer} data-reveal>
               <Button

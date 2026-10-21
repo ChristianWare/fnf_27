@@ -17,26 +17,31 @@ const steps = [
   {
     id: 1,
     label: "The call",
+    when: "Day 1",
     text: "A 20-minute call about your market, your fleet and your current setup.",
   },
   {
     id: 2,
     label: "The page map",
-    text: "The page map for your airports, routes and cities.",
+    when: "Week 1",
+    text: "The page map for your airports, routes and cities. You send your logo, photos and rates.",
   },
   {
     id: 3,
     label: "The build",
+    when: "Weeks 1–3",
     text: "The build: design, pages and, on the Full Platform, booking set up with your vehicles and rates.",
   },
   {
     id: 4,
     label: "Launch",
+    when: "Around week 3",
     text: "Launch: we point your domain at the new site. Your phone number stays the same.",
   },
   {
     id: 5,
     label: "After launch",
+    when: "Every month",
     text: "After launch: edits are included, and new pages get added as you grow.",
   },
 ];
@@ -66,7 +71,7 @@ export default function BuildProcess() {
                 key={step.id}
               >
                 <span className={styles.label}>
-                  Step {step.id} · {step.label}
+                  Step {step.id} · {step.label} · {step.when}
                 </span>
                 <div className={styles.cardBottom}>
                   <p className={styles.text}>{step.text}</p>

@@ -28,6 +28,7 @@ const features = [
   {
     id: 1,
     title: "Direct booking",
+    outcome: "The 11pm airport run books itself, on your site.",
     tag: "Booking · on your site, under your name",
     bullets: [
       "A live estimate as they book",
@@ -43,6 +44,7 @@ const features = [
   {
     id: 2,
     title: "Multi-ride trips",
+    outcome: "A whole weekend of rides, booked and paid in one go.",
     tag: "Booking · one trip, one bill",
     bullets: [
       "Up to ten rides in one trip",
@@ -57,6 +59,7 @@ const features = [
   {
     id: 3,
     title: "Dispatch and the driver portal",
+    outcome: "Every ride assigned from one screen, and no driver double-booked.",
     tag: "Dispatch · you assign, they drive",
     bullets: [
       "Assign a driver and a vehicle",
@@ -72,6 +75,7 @@ const features = [
   {
     id: 4,
     title: "Flight tracking",
+    outcome: "Late landings move the pickup, not your chauffeur's patience.",
     tag: "Dispatch · for airport pickups",
     bullets: [
       "The flight's live status on the booking",
@@ -86,6 +90,7 @@ const features = [
   {
     id: 5,
     title: "Payments",
+    outcome: "The money lands in your account, not a platform's.",
     tag: "Payments · through your own Stripe account",
     bullets: [
       "Pay by link, no login needed",
@@ -101,6 +106,7 @@ const features = [
   {
     id: 6,
     title: "Automatic reminders",
+    outcome: "Riders stop calling to ask where their car is.",
     tag: "Riders · sent by the system",
     bullets: [
       "24 hours and 2 hours before pickup",
@@ -115,6 +121,7 @@ const features = [
   {
     id: 7,
     title: "Corporate accounts",
+    outcome: "Companies book under their own login and get one invoice.",
     tag: "Accounts · a portal for each company",
     bullets: [
       "Book for employees, with cost centers",
@@ -130,6 +137,7 @@ const features = [
   {
     id: 8,
     title: "Admin dashboard",
+    outcome: "The whole business on one screen, every morning.",
     tag: "Admin · the whole business in one place",
     bullets: [
       "Today's rides and what needs you",
@@ -229,6 +237,7 @@ export default function WhatItDoes() {
                     </span>
                     <h3 className={styles.title}>{x.title}</h3>
                     <p className={styles.price}>{x.tag}</p>
+                    <p className={styles.outcome}>{x.outcome}</p>
                   </div>
                   <ul className={styles.bullets}>
                     {x.bullets.map((bullet) => (

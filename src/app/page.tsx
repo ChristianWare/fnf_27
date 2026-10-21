@@ -3,6 +3,8 @@ import Nav from "@/components/shared/Nav/Nav";
 import styles from "./page.module.css";
 import Hero from "@/components/HomePage/Hero/Hero";
 import ProofStrip from "@/components/HomePage/ProofStrip/ProofStrip";
+import OnePrice from "@/components/HomePage/OnePrice/OnePrice";
+import LiveDemos from "@/components/shared/LiveDemos/LiveDemos";
 import AboutUsIntro from "@/components/HomePage/AboutUsIntro/AboutUsIntro";
 import Problems from "@/components/HomePage/Problems/Problems";
 import HowItWorks from "@/components/HomePage/HowItWorks/HowItWorks";
@@ -32,11 +34,13 @@ export default function Home() {
       <Nav />
       <Hero />
       <ProofStrip />
+      <OnePrice />
       <AboutUsIntro />
       <Problems />
       <HowItWorks />
       <FeatureMarquee />
       <NierCaseStudy />
+      <LiveDemos />
       <LeadsTool />
       <BookingFeatures />
       <Pricing />
