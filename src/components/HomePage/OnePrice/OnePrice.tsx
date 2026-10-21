@@ -50,7 +50,9 @@ export default function OnePrice() {
           <ol className={styles.tools}>
             {tools.map((tool) => (
               <li className={styles.tool} key={tool.id} data-reveal='each'>
-                <span className={styles.mono}>0{tool.id} · {tool.job}</span>
+                <span className={styles.mono}>
+                  <span className={styles.number}>0{tool.id}</span> - {tool.job}
+                </span>
                 <h3 className={styles.name}>{tool.name}</h3>
                 <p className={styles.text}>{tool.text}</p>
               </li>
@@ -68,12 +70,13 @@ export default function OnePrice() {
                 btnType='white'
                 text='See the Full Platform'
                 arrow
-              />
+                />
               <Button
                 href='https://www.mesamidnighttransport.com/book'
                 target='_blank'
-                btnType='gray'
+                btnType='green'
                 text='Try a live demo'
+                arrow
               />
             </div>
           </div>
