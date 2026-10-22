@@ -16,6 +16,7 @@ import {
   signedInCookieOptions,
 } from "@/lib/auth/session";
 import { VIEW_AS_COOKIE } from "@/lib/auth/dal";
+import { formatPhone } from "@/lib/phone";
 import {
   accountForSignIn,
   checkPassword,
@@ -214,7 +215,8 @@ export async function register(
     name: get("name").slice(0, 120),
     business: get("business").slice(0, 160),
     email: normalEmail(get("email")).slice(0, 200),
-    phone: get("phone").slice(0, 40),
+    // Stored the way the form shows it: (602) 555-5555.
+    phone: formatPhone(get("phone")),
     city: get("city").slice(0, 120),
     website: get("website").slice(0, 300),
     message: get("message").slice(0, 2000),

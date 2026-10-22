@@ -93,7 +93,18 @@ export default function Shell({
 
     return (
       <li key={item.href}>
-        {item.external ? (
+        {item.disabled ? (
+          <span
+            className={`${styles.link} ${styles.disabled}`}
+            aria-disabled='true'
+            title='Opens once your account is approved'
+            data-tour={item.href}
+          >
+            <Icon name={item.icon} className={styles.icon} />
+            <span className={styles.linkLabel}>{item.label}</span>
+            <Icon name='lock' className={styles.trailing} />
+          </span>
+        ) : item.external ? (
           <a
             href={item.href}
             target='_blank'

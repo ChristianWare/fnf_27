@@ -1,0 +1,4 @@
+/* The address we sent the link to. */
+.email {
+  color: var(--accent2Dark);
+}

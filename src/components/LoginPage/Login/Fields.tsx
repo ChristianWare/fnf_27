@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { formatPhone } from "@/lib/phone";
 import styles from "./Login.module.css";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
@@ -62,5 +63,28 @@ export function PasswordField({ label, extra, help, ...input }: InputProps) {
       </span>
       {help && <span className={styles.help}>{help}</span>}
     </div>
+  );
+}
+
+/** A phone field that only takes numbers and formats them as they type. */
+export function PhoneField({
+  defaultValue,
+  ...props
+}: Omit<InputProps, "type" | "value" | "onChange" | "defaultValue"> & {
+  defaultValue?: string;
+}) {
+  const [value, setValue] = useState(formatPhone(defaultValue ?? ""));
+  return (
+    <Field
+      {...props}
+      type='tel'
+      inputMode='numeric'
+      placeholder={props.placeholder ?? "(602) 555-5555"}
+      value={value}
+      onChange={(e) => setValue(formatPhone(e.target.value))}
+      // A ten-digit number, or nothing.
+      pattern='\(\d{3}\) \d{3}-\d{4}'
+      title='A 10-digit phone number, like (602) 555-5555'
+    />
   );
 }

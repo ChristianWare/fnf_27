@@ -3,7 +3,12 @@ import type { ReactNode } from "react";
 import Shell from "@/components/Dashboard/Shell/Shell";
 import { buildNav } from "@/components/Dashboard/Shell/nav";
 import ViewAs from "@/components/Dashboard/ViewAs/ViewAs";
-import { getDashboard, leadsAccess, planName } from "@/lib/dashboard";
+import {
+  awaitingApproval,
+  getDashboard,
+  leadsAccess,
+  planName,
+} from "@/lib/dashboard";
 import { initials } from "@/lib/dashboard/format";
 import { leadsSidebar } from "@/lib/leads/workspace";
 import Tour from "@/components/Dashboard/Tour/Tour";
@@ -24,10 +29,13 @@ export default async function DashboardLayout({
     leadsAccess(client) !== "NONE" && client.leads.enabled
       ? await leadsSidebar(client.id)
       : { ready: false, due: 0 };
+  const pending = awaitingApproval(client);
+  // The plan they have, or the one they asked for while we approve it.
+  const planId = client.website?.plan ?? (pending ? client.request?.plan : undefined);
   const tone =
-    client.website?.plan === "FULL_PLATFORM"
+    planId === "FULL_PLATFORM"
       ? "platform"
-      : client.website
+      : planId === "WEBSITE_ONLY"
         ? "website"
         : "leads";
 
@@ -48,7 +56,7 @@ export default async function DashboardLayout({
         email: user.email,
         initials: initials(user.name),
       }}
-      promo={!client.website}
+      promo={!client.website && !pending}
       banner={
         viewingAs ? (
           <ViewAs business={client.business} clientId={client.id} />

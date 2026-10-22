@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Support from "@/components/Dashboard/Support/Support";
 import { PageHead } from "@/components/Dashboard/ui/ui";
 import TourButton from "@/components/Dashboard/Tour/TourButton";
-import { getDashboard } from "@/lib/dashboard";
+import { requireApproved } from "@/lib/dashboard";
 
 export const metadata: Metadata = { title: "Support" };
 
 export default async function SupportPage() {
-  const { client } = await getDashboard();
+  const { client } = await requireApproved();
   return (
     <>
       <PageHead

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Profile from "@/components/Dashboard/Profile/Profile";
 import { Notice, PageHead } from "@/components/Dashboard/ui/ui";
-import { getDashboard, leadsAccess } from "@/lib/dashboard";
+import { requireApproved, leadsAccess } from "@/lib/dashboard";
 import { findUserById } from "@/lib/auth/accounts";
 
 export const metadata: Metadata = { title: "Profile" };
@@ -11,7 +11,7 @@ export default async function ProfilePage({
 }: {
   searchParams: Promise<{ email?: string | string[] }>;
 }) {
-  const { user, client, viewingAs } = await getDashboard();
+  const { user, client, viewingAs } = await requireApproved();
   const { email } = await searchParams;
   // Viewing as a client: their details, not the admin's.
   const row = viewingAs ? undefined : await findUserById(user.id);

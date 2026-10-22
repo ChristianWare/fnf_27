@@ -6,7 +6,7 @@ import styles from "./Login.module.css";
 import Turnstile from "@/components/shared/Turnstile/Turnstile";
 import { STAMP_FIELD, TRAP_FIELD } from "@/lib/forms/fields";
 import { register, type RegisterState } from "@/app/login/actions";
-import { Field, PasswordField } from "./Fields";
+import { Field, PasswordField, PhoneField } from "./Fields";
 
 export type PlanCard = {
   id: "FULL_PLATFORM" | "WEBSITE_ONLY" | "LEADS";
@@ -103,12 +103,11 @@ export default function RegisterForm({
           defaultValue={v.email}
           required
         />
-        <Field
+        <PhoneField
           label='Phone'
-          type='tel'
           name='phone'
           autoComplete='tel'
-          placeholder='Optional'
+          placeholder='(602) 555-5555, optional'
           defaultValue={v.phone}
         />
       </div>

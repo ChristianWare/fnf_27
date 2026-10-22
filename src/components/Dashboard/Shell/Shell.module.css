@@ -177,11 +177,22 @@
     color 0.15s ease;
 }
 
+/* Not open yet (waiting for approval): greyed out and not clickable. */
+.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .link:hover,
   .foldBtn:hover {
     background-color: var(--light);
   }
+}
+
+/* Greyed-out items don't light up on hover. */
+.link.disabled:hover {
+  background-color: transparent;
 }
 
 .link:focus-visible,

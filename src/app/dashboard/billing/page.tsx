@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Billing from "@/components/Dashboard/Billing/Billing";
 import { Notice, PageHead } from "@/components/Dashboard/ui/ui";
-import { getDashboard, isLive, leadsAccess } from "@/lib/dashboard";
+import { requireApproved, isLive, leadsAccess } from "@/lib/dashboard";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
 
 export const metadata: Metadata = { title: "Billing" };
@@ -31,7 +31,7 @@ export default async function BillingPage({
 }: {
   searchParams: Promise<{ done?: string; error?: string }>;
 }) {
-  const { client, now, viewingAs } = await getDashboard();
+  const { client, now, viewingAs } = await requireApproved();
   const website = client.website;
   const { done, error } = await searchParams;
   const back = done ? BACK[done] : undefined;

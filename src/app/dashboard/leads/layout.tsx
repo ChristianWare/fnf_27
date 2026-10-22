@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { LeadsProvider } from "@/components/Dashboard/Leads/Store";
 import { getLeads } from "@/lib/leads/server";
+import { requireLeadsOffered } from "@/lib/dashboard";
 
 // Saving a lead finds the decision-maker and writes the scripts, which can
 // take a little while.
@@ -13,6 +14,8 @@ export default async function LeadsLayout({
 }: {
   children: ReactNode;
 }) {
+  // Website Only clients, and sign-ups awaiting approval, aren't offered it.
+  await requireLeadsOffered();
   const { page, viewingAs } = await getLeads();
   if (page.state !== "READY") return children;
   return (

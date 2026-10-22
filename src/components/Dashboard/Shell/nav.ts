@@ -7,9 +7,11 @@
 import type { IconName } from "../icons";
 import type { Client } from "@/lib/dashboard/types";
 import {
+  awaitingApproval,
   blueprintCounts,
   isLive,
   leadsAccess,
+  leadsOffered,
   projectSteps,
 } from "@/lib/dashboard";
 
@@ -22,6 +24,8 @@ export type NavItem = {
   external?: boolean;
   /** Opens after launch. */
   locked?: boolean;
+  /** Greyed out and not a link: opens once we approve their account. */
+  disabled?: boolean;
   /** Also active on the pages under it, e.g. one client's page. */
   match?: "prefix";
 };
@@ -43,6 +47,35 @@ export function buildNav(
   const groups: NavGroup[] = [
     { items: [{ href: "/dashboard", label: "Dashboard", icon: "home" }] },
   ];
+
+  // Waiting for approval: the home page, and the account pages greyed out
+  // until their plan, prices and any waived fee are set.
+  if (awaitingApproval(client)) {
+    groups.push({
+      title: "Account",
+      items: [
+        {
+          href: "/dashboard/billing",
+          label: "Billing",
+          icon: "card",
+          disabled: true,
+        },
+        {
+          href: "/dashboard/support",
+          label: "Support",
+          icon: "message",
+          disabled: true,
+        },
+        {
+          href: "/dashboard/profile",
+          label: "Profile",
+          icon: "user",
+          disabled: true,
+        },
+      ],
+    });
+    return groups;
+  }
 
   const website = client.website;
   const live = isLive(client);
@@ -160,7 +193,8 @@ export function buildNav(
       external: true,
     });
   }
-  if (leadsAccess(client) === "NONE" || !leads.ready) {
+  // Website Only clients aren't offered the Leads Tool.
+  if (leadsOffered(client) && (leadsAccess(client) === "NONE" || !leads.ready)) {
     tools.push({
       href: "/dashboard/leads",
       label: "Leads Tool",

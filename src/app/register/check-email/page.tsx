@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AuthFrame from "@/components/LoginPage/Login/Login";
 import { ResendForm } from "@/components/LoginPage/Login/AccountForms";
+import styles from "./page.module.css";
 import Photo from "../../../../public/images/cadi_drive.png";
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default async function CheckEmailPage({
       title='Check your email'
       intro={
         <>
-          We sent a link to <strong>{address || "your email"}</strong>. Click it
+          We sent a link to <strong className={styles.email}>{address || "your email"}</strong>. Click it
           to confirm your email, then sign in. It works for 48 hours.
         </>
       }

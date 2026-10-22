@@ -6,6 +6,7 @@ import { ButtonLink, Panel, Pill, Progress, type Tone } from "../ui/ui";
 import TourButton from "../Tour/TourButton";
 import ChrisImg from "../../../../public/images/chris.png";
 import {
+  awaitingApproval,
   isLive,
   leadsAccess,
   projectSteps,
@@ -175,6 +176,11 @@ function planCards(client: Client, now: string): PlanCard[] {
       href: "/dashboard/leads",
       icon: "arrow",
     };
+  } else if (plan === "WEBSITE_ONLY") {
+    // Not offered on its own to Website Only clients: it comes with the
+    // Full Platform.
+    leads.status = { text: "With Full Platform", tone: "white" };
+    leads.note = "Included when you upgrade to the Full Platform.";
   } else {
     leads.cta = {
       label: `Start ${LEADS.trialDays}-day free trial`,
@@ -182,6 +188,23 @@ function planCards(client: Client, now: string): PlanCard[] {
       icon: "arrow",
     };
     leads.note = "No card needed.";
+  }
+
+  // Waiting for approval: the plan they asked for is marked, and nothing
+  // else is offered until their account is set up.
+  if (awaitingApproval(client)) {
+    const asked = client.request?.plan === "FULL_PLATFORM" ? platform : website;
+    for (const card of [platform, website, leads]) {
+      card.cta = undefined;
+      card.note = undefined;
+      card.status = undefined;
+    }
+    asked.current = true;
+    asked.status = { text: "Requested", tone: "black" };
+    asked.note = "We'll email you once your account is approved.";
+    if (asked === platform) {
+      leads.status = { text: "Included", tone: "white" };
+    }
   }
 
   return [platform, website, leads];
@@ -211,6 +234,7 @@ export default function Home({
   const done = steps.filter((s) => s.state === "done").length;
   const list = todos(client, now);
   const cards = planCards(client, now);
+  const pending = awaitingApproval(client);
 
   let status: string;
   if (live && client.website?.facts.launchedAt) {
@@ -271,9 +295,11 @@ export default function Home({
               </ButtonLink>
             )
           ) : (
-            <ButtonLink href='/dashboard/leads' icon='arrow'>
-              Open Leads Tool
-            </ButtonLink>
+            !pending && (
+              <ButtonLink href='/dashboard/leads' icon='arrow'>
+                Open Leads Tool
+              </ButtonLink>
+            )
           )}
           <TourButton />
         </div>
@@ -575,17 +601,21 @@ export default function Home({
               </span>
             </div>
             <p className={styles.helpText}>
-              Questions about your site, your plan or anything else? Message me
-              and I&apos;ll reply within one business day.
+              {pending
+                ? "Questions while we set up your account? Book a quick call, and once you're approved you can message me right here."
+                : "Questions about your site, your plan or anything else? Message me and I'll reply within one business day."}
             </p>
             <div className={styles.helpActions}>
-              <ButtonLink
-                href='/dashboard/support'
-                variant='lime'
-                icon='message'
-              >
-                Message Chris
-              </ButtonLink>
+              {/* Support opens once their account is approved. */}
+              {!pending && (
+                <ButtonLink
+                  href='/dashboard/support'
+                  variant='lime'
+                  icon='message'
+                >
+                  Message Chris
+                </ButtonLink>
+              )}
               <ButtonLink href={CALENDAR} variant='white' icon='arrowUpRight'>
                 Book a call
               </ButtonLink>

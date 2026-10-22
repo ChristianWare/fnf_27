@@ -5,6 +5,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getViewAs, requireUser } from "@/lib/auth/dal";
 import { loadClient } from "@/lib/data/clients";
+import { awaitingApproval, leadsOffered } from "./helpers";
 
 export * from "./helpers";
 
@@ -24,3 +25,20 @@ export const getDashboard = cache(async () => {
   if (!client) redirect(viewingAs ? "/admin" : "/login");
   return { user, client, now: now.toISOString(), viewingAs };
 });
+
+/**
+ * The account pages (Billing, Support, Profile) open once we approve a
+ * website sign-up; until then they go back to the home page.
+ */
+export async function requireApproved() {
+  const dashboard = await getDashboard();
+  if (awaitingApproval(dashboard.client)) redirect("/dashboard");
+  return dashboard;
+}
+
+/** The Leads Tool's pages, for clients it's offered to. */
+export async function requireLeadsOffered() {
+  const dashboard = await getDashboard();
+  if (!leadsOffered(dashboard.client)) redirect("/dashboard");
+  return dashboard;
+}

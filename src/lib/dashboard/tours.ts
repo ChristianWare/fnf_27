@@ -1,6 +1,7 @@
 // The guided tour a client sees the first time they sign in: one tour for
 // each plan and stage, pointing at the sidebar items they actually have.
 //
+//   pending         Signed up for a website plan, waiting for approval
 //   website:build   Website Only, before launch
 //   platform:build  Full Platform, before launch
 //   leads           The Leads Tool on its own
@@ -15,10 +16,17 @@
 // keys in users.notify, written by markTourSeen).
 
 import type { NavGroup } from "@/components/Dashboard/Shell/nav";
-import { isLive, leadsAccess, projectSteps } from "./helpers";
+import {
+  awaitingApproval,
+  isLive,
+  leadsAccess,
+  projectSteps,
+} from "./helpers";
+import { PLANS } from "./plans";
 import type { Client } from "./types";
 
 export const TOUR_IDS = [
+  "pending",
   "website:build",
   "platform:build",
   "leads",
@@ -80,6 +88,38 @@ export function tourFor(client: Client, nav: NavGroup[]): Tour {
     body: "Your name, email, password and which emails you get from us.",
   };
 
+  // ── Signed up for a website plan, waiting for approval ──
+  if (awaitingApproval(client)) {
+    const asked =
+      client.request?.plan === "FULL_PLATFORM"
+        ? PLANS.FULL_PLATFORM.name
+        : PLANS.WEBSITE_ONLY.name;
+    return {
+      id: "pending",
+      steps: keep([
+        {
+          title: `Welcome, ${first}`,
+          body: `Thanks for signing up for the ${asked}. We're reviewing your sign-up and setting up your plan, usually within one business day. Here's a quick look at what happens next.`,
+        },
+        {
+          target: "/dashboard",
+          title: "Dashboard",
+          body: "Your home base. Right now it shows the plan you asked for. Once you're approved, your build steps appear here, with your next step always at the top.",
+        },
+        {
+          target: "/dashboard/billing",
+          title: "Billing, Support and Profile",
+          body: "These open as soon as your account is approved, with your plan and prices set up for you.",
+        },
+        {
+          title: "Watch your inbox",
+          body: "You'll get an email from us when your account is approved. Sign back in then, and we'll walk you through your full dashboard.",
+        },
+      ]),
+      finish: { label: "Got it", href: "/dashboard" },
+    };
+  }
+
   // ── The Leads Tool on its own ──
   if (!website) {
     const ready = have.has("/dashboard/leads/find");
@@ -136,15 +176,20 @@ export function tourFor(client: Client, nav: NavGroup[]): Tour {
   }
 
   const platform = website.plan === "FULL_PLATFORM";
-  const leadsStep: TourStep = {
-    target: "/dashboard/leads",
-    title: "Leads Tool",
-    body: platform
-      ? "Included in your plan: the hotels, venues and companies near you that book rides, every morning, with who to ask for and what to say."
-      : access === "NONE"
-        ? "Not part of your plan, but you can try it free for 30 days: the hotels, venues and companies near you that book rides, every morning."
-        : "Your Leads Tool: the hotels, venues and companies near you that book rides, every morning, with who to ask for and what to say.",
-  };
+  // The Leads Tool comes with the Full Platform; Website Only clients
+  // only hear about it if they already have it.
+  const leadsSteps: TourStep[] =
+    platform || access !== "NONE"
+      ? [
+          {
+            target: "/dashboard/leads",
+            title: "Leads Tool",
+            body: platform
+              ? "Included in your plan: the hotels, venues and companies near you that book rides, every morning, with who to ask for and what to say."
+              : "Your Leads Tool: the hotels, venues and companies near you that book rides, every morning, with who to ask for and what to say.",
+          },
+        ]
+      : [];
 
   // ── After launch: what changed ──
   if (isLive(client)) {
@@ -185,14 +230,7 @@ export function tourFor(client: Client, nav: NavGroup[]): Tour {
           title: "Build history",
           body: "Your questionnaire, brand assets, blueprint and design are kept here if you ever need them.",
         },
-        {
-          ...leadsStep,
-          body: platform
-            ? leadsStep.body
-            : access === "NONE"
-              ? "Now that riders can find you, go after the corporate accounts too. Try it free for 30 days."
-              : leadsStep.body,
-        },
+        ...leadsSteps,
         support,
         {
           title: "You're all set",
@@ -254,7 +292,7 @@ export function tourFor(client: Client, nav: NavGroup[]): Tour {
         title: "Change requests and Growth",
         body: "These unlock when your site goes live. You'll ask for edits here and see your traffic on Growth.",
       },
-      leadsStep,
+      ...leadsSteps,
       support,
       billing,
       profile,

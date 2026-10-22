@@ -84,6 +84,27 @@ export function leadsAccess(client: Client): LeadsAccess {
 export const isLive = (client: Client) =>
   Boolean(client.website?.facts.launchedAt);
 
+/**
+ * Signed up for a website plan and waiting for us to approve them: there's
+ * no plan on their account yet, only what they asked for. Until then their
+ * dashboard is just the home page.
+ */
+export const awaitingApproval = (client: Client) =>
+  !client.website &&
+  !client.approvedAt &&
+  client.leads.status === "NONE" &&
+  (client.request?.plan === "FULL_PLATFORM" ||
+    client.request?.plan === "WEBSITE_ONLY");
+
+/**
+ * Whether the Leads Tool is offered to them at all: included with the Full
+ * Platform, theirs already, or their plan on its own. Website Only clients
+ * and anyone awaiting approval aren't offered it.
+ */
+export const leadsOffered = (client: Client) =>
+  leadsAccess(client) !== "NONE" ||
+  (!client.website && !awaitingApproval(client));
+
 /* ── The build, step by step ── */
 
 export type StepState = "done" | "you" | "us" | "upcoming";
@@ -375,7 +396,13 @@ export function trialDaysLeft(client: Client, now: string) {
 }
 
 export const planName = (client: Client) =>
-  client.website ? PLANS[client.website.plan].name : LEADS.name;
+  client.website
+    ? PLANS[client.website.plan].name
+    : awaitingApproval(client) &&
+        (client.request?.plan === "FULL_PLATFORM" ||
+          client.request?.plan === "WEBSITE_ONLY")
+      ? `${PLANS[client.request.plan].name} · Pending`
+      : LEADS.name;
 
 /** The Monday that starts this week in Arizona, e.g. "2026-10-05". */
 export function weekOf(now: string) {
