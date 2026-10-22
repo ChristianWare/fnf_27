@@ -126,7 +126,7 @@ export async function signDocument(
     heading: `${business} signed ${doc.title}`,
     paragraphs: [
       `Signed by ${signer} on ${fmtDate(now)}.`,
-      ...(doc.kind === "AGREEMENT" ? ["Next for them: the setup fee."] : []),
+      ...(doc.kind === "AGREEMENT" ? ["Next for them: the setup fee, or adding their card if it's waived."] : []),
     ],
     button: {
       label: "Open their files",

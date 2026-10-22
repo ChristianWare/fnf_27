@@ -1,4 +1,5 @@
-// GET /dashboard/billing/pay: off to Stripe to pay the setup fee.
+// GET /dashboard/billing/pay: off to Stripe to pay the setup fee, or, when
+// it's waived, to save the card for the monthly plan.
 
 import { NextResponse } from "next/server";
 import { getDashboard } from "@/lib/dashboard";

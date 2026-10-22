@@ -37,6 +37,9 @@ export default function Approve({
   );
   const [monthly, setMonthly] = useState(String(PLANS[plan].monthly));
   const [setup, setSetup] = useState(String(PLANS[plan].setup));
+  // Waiving sets the fee to $0: they add a card instead of paying.
+  const [waive, setWaive] = useState(false);
+  const setupDue = waive ? 0 : Number(setup) || 0;
   const [note, setNote] = useState("");
   const [done, setDone] = useState<"approved" | "declined" | null>(null);
   const [declining, setDeclining] = useState(false);
@@ -58,9 +61,10 @@ export default function Approve({
           <h2 className={styles.heading}>Approved</h2>
           <p>
             {business} is on the {PLANS[plan].name} at {money(Number(monthly))}{" "}
-            a month and {money(Number(setup))} setup. {first} has been emailed:
-            sign the agreement, pay the setup fee, and monthly billing starts{" "}
-            the 1st after that.
+            a month
+            {setupDue > 0
+              ? ` and ${money(setupDue)} setup. ${first} has been emailed: sign the agreement, pay the setup fee, and monthly billing starts the 1st after that.`
+              : `, setup fee waived. ${first} has been emailed: sign the agreement, add a card, and monthly billing starts the 1st after that.`}
           </p>
         </div>
       </section>
@@ -86,7 +90,7 @@ export default function Approve({
           <h2 className={styles.heading}>Approve {business}</h2>
           <p>
             Set the plan and prices. Approving emails {first} the agreement and
-            the setup fee.
+            the setup fee, or the card step if you waive it.
           </p>
         </div>
       </div>
@@ -145,14 +149,34 @@ export default function Approve({
             <input
               className={ui.input}
               inputMode='decimal'
-              value={setup}
+              value={waive ? "0" : setup}
+              disabled={waive}
               onChange={(e) => setSetup(e.target.value.replace(/[^\d.]/g, ""))}
             />
           </span>
         </label>
       </div>
+      <div className={styles.waiveRow}>
+        <div className={styles.waiveText}>
+          <span className={styles.waiveLabel}>Waive the setup fee</span>
+          <span className={styles.help}>
+            They add a card instead of paying, and the agreement and welcome
+            email say it&apos;s waived.
+          </span>
+        </div>
+        <button
+          type='button'
+          role='switch'
+          aria-checked={waive}
+          aria-label='Waive the setup fee'
+          className={ui.switch}
+          onClick={() => setWaive((on) => !on)}
+        />
+      </div>
       <p className={styles.help}>
-        If they pay the setup fee this month, the first{" "}
+        {setupDue > 0
+          ? "If they pay the setup fee this month, the first "
+          : "If they add their card this month, the first "}
         {money(Number(monthly) || 0)} is charged on {fmtShort(nextFirst)}.
       </p>
 
@@ -184,7 +208,7 @@ export default function Approve({
                 approveClient(clientId, {
                   plan,
                   monthly: Number(monthly),
-                  setup: Number(setup) || 0,
+                  setup: setupDue,
                   note,
                 }),
               () => {

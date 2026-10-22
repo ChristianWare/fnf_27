@@ -278,17 +278,26 @@ export async function approveClient(
       eyebrow: "You're approved",
       heading: `You're in, ${first(client.contact.name)}`,
       paragraphs: [
-        `${client.business} is on the ${PLANS[input.plan].name}: ${money(monthly)} a month, with a ${money(setup)} setup fee.`,
+        setup > 0
+          ? `${client.business} is on the ${PLANS[input.plan].name}: ${money(monthly)} a month, with a ${money(setup)} setup fee.`
+          : `${client.business} is on the ${PLANS[input.plan].name}: ${money(monthly)} a month, and your ${money(PLANS[input.plan].setup)} setup fee is waived.`,
       ],
       ...(note ? { quote: { text: note, by: a.user.name } } : {}),
       details: [
         ["1", "Sign your agreement"],
-        ["2", `Pay the ${money(setup)} setup fee`],
+        [
+          "2",
+          setup > 0
+            ? `Pay the ${money(setup)} setup fee`
+            : "Add your card (your setup fee is waived)",
+        ],
         ["3", "Fill in the questionnaire"],
       ],
       button: { label: "Open your dashboard", href: url("/dashboard") },
       after: [
-        `Monthly billing starts on the 1st after your setup fee: if you pay it this month, the first ${money(monthly)} is on ${fmtDate(nextFirst(now))}.`,
+        setup > 0
+          ? `Monthly billing starts on the 1st after your setup fee: if you pay it this month, the first ${money(monthly)} is on ${fmtDate(nextFirst(now))}.`
+          : `Monthly billing starts on the 1st after you add your card: if you add it this month, the first ${money(monthly)} is on ${fmtDate(nextFirst(now))}.`,
       ],
     },
   );

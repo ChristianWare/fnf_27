@@ -28,6 +28,8 @@ type Props = {
     monthly: number;
     setupFee: number;
     setupPaidAt?: string;
+    /** The plan's list setup fee, shown crossed out when theirs is waived. */
+    listSetupFee?: number;
     nextBillingAt?: string;
     live: boolean;
     status: "ACTIVE" | "PAST_DUE" | "CANCELLING" | "CANCELLED";
@@ -77,6 +79,8 @@ export default function Billing({
   const [leadsEnds, setLeadsEnds] = useState(leads.nextBillingAt);
   const [stoppingLeads, setStoppingLeads] = useState(false);
   const ended = plan?.status === "CANCELLED";
+  // A setup fee of $0: the step is adding a card, not paying.
+  const waived = plan ? plan.setupFee <= 0 : false;
 
   const startTrial = () =>
     run(
@@ -152,21 +156,39 @@ export default function Billing({
               <dl className={styles.rows}>
                 <div className={styles.row}>
                   <dt className={ui.monoMuted}>Setup fee</dt>
-                  <dd>
-                    {money(plan.setupFee)}
-                    {plan.setupPaidAt
-                      ? ` · Paid ${fmtDate(plan.setupPaidAt)}`
-                      : plan.agreementSigned
-                        ? " · Due now"
-                        : " · Due after you sign your agreement"}
-                  </dd>
+                  {waived ? (
+                    <dd>
+                      {plan.listSetupFee ? (
+                        <s className={styles.struck}>
+                          {money(plan.listSetupFee)}
+                        </s>
+                      ) : null}{" "}
+                      Waived
+                      {plan.setupPaidAt
+                        ? ` · Card added ${fmtDate(plan.setupPaidAt)}`
+                        : plan.agreementSigned
+                          ? " · Add your card to start"
+                          : " · Add your card after you sign your agreement"}
+                    </dd>
+                  ) : (
+                    <dd>
+                      {money(plan.setupFee)}
+                      {plan.setupPaidAt
+                        ? ` · Paid ${fmtDate(plan.setupPaidAt)}`
+                        : plan.agreementSigned
+                          ? " · Due now"
+                          : " · Due after you sign your agreement"}
+                    </dd>
+                  )}
                 </div>
                 <div className={styles.row}>
                   <dt className={ui.monoMuted}>Monthly billing</dt>
                   <dd>
                     {plan.nextBillingAt
                       ? `Next bill ${fmtDate(plan.nextBillingAt)} · the 1st of every month`
-                      : "Starts the 1st after your setup fee"}
+                      : waived
+                        ? "Starts the 1st after you add your card"
+                        : "Starts the 1st after your setup fee"}
                   </dd>
                 </div>
                 <div className={styles.row}>
@@ -181,7 +203,9 @@ export default function Billing({
                     className={`${ui.btn} ${ui.btn_black}`}
                     data-no-transition
                   >
-                    Pay the {money(plan.setupFee)} setup fee
+                    {waived
+                      ? "Add your card"
+                      : `Pay the ${money(plan.setupFee)} setup fee`}
                     <Icon name='arrow' className={ui.btnIcon} />
                   </a>
                 )}
@@ -671,7 +695,7 @@ export default function Billing({
             <p className={styles.small}>
               {plan.live
                 ? `It ends at the end of this month${endsOn ? `, on ${fmtDate(endsOn)}` : ""}. Your site stays up until then, nothing more is charged, and we'll send an export of your content and data on request. Your domain stays yours.`
-                : `We stop the build at the end of this month${endsOn ? `, on ${fmtDate(endsOn)}` : ""}, and nothing more is charged. The ${money(plan.setupFee)} setup fee isn't refundable once work has begun.`}
+                : `We stop the build at the end of this month${endsOn ? `, on ${fmtDate(endsOn)}` : ""}, and nothing more is charged.${plan.setupFee > 0 ? ` The ${money(plan.setupFee)} setup fee isn't refundable once work has begun.` : ""}`}
             </p>
             <p className={styles.small}>
               If something isn&apos;t working, tell us first: most problems are

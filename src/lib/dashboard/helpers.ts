@@ -127,16 +127,27 @@ export function projectSteps(client: Client): Step[] {
       href: "/dashboard/website/documents",
       cta: "Sign",
     },
-    {
-      id: "setup",
-      title: "Pay the setup fee",
-      text: `${money(website.setupFee)}, once. Monthly billing starts on the 1st after it.`,
-      owner: "you",
-      after: ["agreement"],
-      doneAt: f.setupFeePaidAt,
-      href: "/dashboard/billing",
-      cta: "Pay",
-    },
+    website.setupFee > 0
+      ? {
+          id: "setup",
+          title: "Pay the setup fee",
+          text: `${money(website.setupFee)}, once. Monthly billing starts on the 1st after it.`,
+          owner: "you",
+          after: ["agreement"],
+          doneAt: f.setupFeePaidAt,
+          href: "/dashboard/billing",
+          cta: "Pay",
+        }
+      : {
+          id: "setup",
+          title: "Add your card",
+          text: "Your setup fee is waived. Add the card for your monthly plan; billing starts on the 1st after.",
+          owner: "you",
+          after: ["agreement"],
+          doneAt: f.setupFeePaidAt,
+          href: "/dashboard/billing",
+          cta: "Add card",
+        },
     {
       id: "questionnaire",
       title: "Fill in the questionnaire",

@@ -61,6 +61,11 @@ export async function setupCheckoutUrl(clientId: string, origin?: string) {
       "Sign your agreement first, then pay the setup fee.",
     );
 
+  // A waived setup fee: nothing to pay, so Stripe saves their card instead,
+  // and saving it starts the monthly plan (completeCardCheckout).
+  if (row.site.setupFeeCents <= 0)
+    return cardCheckoutUrl(clientId, "waived", origin);
+
   const plan = PLANS[row.site.plan].name;
   const customer = await ensureCustomer(clientId);
   const session = await stripe().checkout.sessions.create({
@@ -193,7 +198,8 @@ export async function completeSetupCheckout(sessionId: string) {
 /** A Stripe page to add or replace the card. Card details never touch us. */
 export async function cardCheckoutUrl(
   clientId: string,
-  purpose: "card" | "leads" = "card",
+  /** "waived": the card for a plan whose setup fee was waived. */
+  purpose: "card" | "leads" | "waived" = "card",
   origin?: string,
 ) {
   const back = (path: string) => (origin ? `${origin}${path}` : url(path));
@@ -256,7 +262,7 @@ export async function completeCardCheckout(sessionId: string) {
       });
   }
   await cacheCard(clientId, method);
-  if (!already) {
+  if (!already && session.metadata?.purpose !== "waived") {
     await addActivity(
       clientId,
       "invoice",
@@ -267,6 +273,26 @@ export async function completeCardCheckout(sessionId: string) {
   if (row?.site.status === "PAST_DUE") await retryWebsitePayment(clientId);
   if (client.leadsStatus === "PAST_DUE")
     await retryLeadsPayment(clientId).catch(() => undefined);
+  // The setup fee was waived: the card is all they needed, so the setup
+  // step is done and the monthly plan starts, first bill on the next 1st.
+  if (session.metadata?.purpose === "waived") {
+    await setFact(clientId, "setupFeeWaivedAt", new Date().toISOString());
+    const first = await setFact(
+      clientId,
+      "setupFeePaidAt",
+      new Date().toISOString(),
+    );
+    await startWebsiteSubscription(clientId, method.id);
+    if (first) {
+      await addActivity(
+        clientId,
+        "build",
+        "You added your card. Your setup fee was waived",
+        "/dashboard/billing",
+      );
+    }
+    return { waived: "ok" as const };
+  }
   // Added to keep the Leads Tool: its subscription starts now. A declined
   // card is the client's to fix, not a webhook to retry.
   if (session.metadata?.purpose === "leads") {

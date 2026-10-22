@@ -29,6 +29,8 @@ export async function GET(request: Request) {
             : "/dashboard/billing?done=leads#leads",
         );
       }
+      if (session.metadata?.purpose === "waived")
+        return back("/dashboard/billing?done=waived");
       return back("/dashboard/billing?done=card");
     }
     await completeSetupCheckout(id);

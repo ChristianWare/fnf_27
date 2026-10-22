@@ -12,6 +12,10 @@ const BACK: Record<string, { tone: "good" | "info"; text: string }> = {
     text: "Setup fee paid. Thank you! Your receipt is on its way by email, and monthly billing starts on the 1st.",
   },
   card: { tone: "good", text: "Card saved. We'll use it from now on." },
+  waived: {
+    tone: "good",
+    text: "Card saved, and your setup fee is waived. Monthly billing starts on the 1st.",
+  },
   leads: {
     tone: "good",
     text: "Card saved. Your Leads Tool is all set to keep going.",
@@ -55,6 +59,7 @@ export default async function BillingPage({
             monthly: website.monthly,
             setupFee: website.setupFee,
             setupPaidAt: website.facts.setupFeePaidAt,
+            listSetupFee: PLANS[website.plan].setup,
             nextBillingAt: website.nextBillingAt,
             live: isLive(client),
             status: website.status,

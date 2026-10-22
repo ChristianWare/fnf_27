@@ -178,9 +178,17 @@ export default function ClientBilling({
                     }
                   />
                 </span>
-                {website.setupPaidAt && (
+                {website.setupPaidAt ? (
                   <span className={styles.sourceHelp}>
-                    Paid {fmtDate(website.setupPaidAt)}
+                    {website.setupFee > 0
+                      ? `Paid ${fmtDate(website.setupPaidAt)}`
+                      : `Waived · card added ${fmtDate(website.setupPaidAt)}`}
+                  </span>
+                ) : (
+                  <span className={styles.sourceHelp}>
+                    Set it to 0 to waive it: they add a card instead of
+                    paying. Their signed agreement keeps the fee it was sent
+                    with.
                   </span>
                 )}
               </label>

@@ -148,6 +148,11 @@
   border-bottom: 1px solid var(--light);
 }
 
+/* A waived setup fee's list price. */
+.struck {
+  color: var(--text);
+}
+
 .row dd {
   font-family: var(--cdCopy);
   font-size: 16px;

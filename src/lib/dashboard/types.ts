@@ -11,6 +11,8 @@ export type LeadsStatus = "NONE" | "TRIAL" | "ACTIVE";
 export type ProjectFacts = {
   agreementSignedAt?: string;
   setupFeePaidAt?: string;
+  /** The setup fee was waived: set with setupFeePaidAt when they add their card. */
+  setupFeeWaivedAt?: string;
   questionnaireSubmittedAt?: string;
   assetsCompleteAt?: string;
   blueprintApprovedAt?: string;

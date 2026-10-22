@@ -491,8 +491,12 @@ export function billingAttention(clients: Client[], now: string): MoneyFlag[] {
         id: `${c.id}-setup`,
         tone: "yellow",
         icon: "card",
-        title: "Setup fee not paid yet",
-        detail: `${money(w.setupFee)}. Monthly billing starts the 1st after it's paid.`,
+        title:
+          w.setupFee > 0 ? "Setup fee not paid yet" : "Card not added yet",
+        detail:
+          w.setupFee > 0
+            ? `${money(w.setupFee)}. Monthly billing starts the 1st after it's paid.`
+            : "Setup fee waived. Monthly billing starts the 1st after they add their card.",
       });
     }
 

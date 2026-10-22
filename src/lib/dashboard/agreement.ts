@@ -29,7 +29,10 @@ export function serviceAgreement(
     },
     {
       heading: "Fees",
-      text: `A one-time setup fee of ${money(info.setup)}, due before work starts and not refundable once work has begun. Then ${money(info.monthly)} a month, charged on the 1st of each month, starting the 1st after the setup fee is paid. There are no per-booking fees.`,
+      text:
+        info.setup > 0
+          ? `A one-time setup fee of ${money(info.setup)}, due before work starts and not refundable once work has begun. Then ${money(info.monthly)} a month, charged on the 1st of each month, starting the 1st after the setup fee is paid. There are no per-booking fees.`
+          : `The one-time setup fee of ${money(PLANS[plan].setup)} is waived. You pay ${money(info.monthly)} a month, charged automatically to your card on the 1st of each month, starting the 1st after you add your card. There are no per-booking fees.`,
     },
     {
       heading: "Changes",
