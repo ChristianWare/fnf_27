@@ -123,7 +123,7 @@ export default function ProposalForm({
       ...prev,
       plan,
       ...presets[plan],
-      waiveSetup: presets[plan].setup > 0 ? prev.waiveSetup : false,
+      waiveSetup: prev.waiveSetup,
     }));
 
   const setupDue = p.waiveSetup ? 0 : p.setup;
@@ -363,12 +363,14 @@ export default function ProposalForm({
             </Field>
           </div>
 
-          {p.setup > 0 && (
+          {/* Always shown, so a waived fee is never lost by a 0 in the
+              fee field. */}
+          {(p.monthly > 0 || p.setup > 0) && (
             <div className={styles.waive}>
               <Switch
                 on={p.waiveSetup}
                 label='Waive the setup fee'
-                text='The PDF shows the fee crossed out, with $0 due for it.'
+                text='Keep the fee amount in the field above. The PDF shows it crossed out, with $0 due to start.'
                 onChange={(on) => set("waiveSetup", on)}
               />
               {p.waiveSetup && (
@@ -449,13 +451,16 @@ export default function ProposalForm({
             {p.business || p.contactName || "your client"}
           </p>
           <dl className={styles.sumRows}>
-            {p.setup > 0 && (
+            {(p.setup > 0 || p.waiveSetup) && (
               <div className={styles.sumRow}>
                 <dt>{p.monthly > 0 ? "Setup" : "One-time"}</dt>
                 <dd>
                   {p.waiveSetup ? (
                     <>
-                      <s className={styles.struck}>{money(p.setup)}</s> Waived
+                      {p.setup > 0 && (
+                        <s className={styles.struck}>{money(p.setup)}</s>
+                      )}{" "}
+                      Waived
                     </>
                   ) : (
                     money(p.setup)

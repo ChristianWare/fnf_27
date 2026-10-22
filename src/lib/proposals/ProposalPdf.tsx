@@ -288,7 +288,8 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
   // waived); the first monthly charge comes on the next 1st.
   const dueToStart = setupDue;
   const firstCharge = fmtDate(firstChargeDate(p.date, p.trialDays));
-  const hasSetupLine = p.setup > 0;
+  // A waived fee still gets its row, even when no amount was entered.
+  const hasSetupLine = p.setup > 0 || p.waiveSetup;
 
   return (
     <Document
@@ -410,7 +411,9 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
                 <View style={styles.cAmount}>
                   {p.waiveSetup ? (
                     <>
-                      <Text style={styles.struck}>{money(p.setup)}</Text>
+                      {p.setup > 0 && (
+                        <Text style={styles.struck}>{money(p.setup)}</Text>
+                      )}
                       <Text style={styles.amount}>$0</Text>
                       <View style={styles.waived}>
                         <Text style={styles.waivedText}>Waived</Text>
