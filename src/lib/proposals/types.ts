@@ -58,7 +58,7 @@ export const PLAN_LABELS: Record<ProposalPlan, string> = {
 // proposal; the signed agreement is still what governs.
 const LIMO_TERMS = [
   "Month to month. Cancel anytime with 30 days' notice in writing.",
-  "Monthly billing starts when your account is activated, and is charged automatically to the card on file on the 1st of every month.",
+  "The monthly plan is charged automatically to the card on file on the 1st of every month, starting the 1st after your account is activated.",
   "Payments are non-refundable once work on the current billing cycle has started.",
   "You'll provide your logo, photos and details, and review each stage within 5 business days. The timeline moves with them.",
   "One round of revisions after the design review is included. Changes after approval are quoted separately.",
@@ -252,4 +252,18 @@ export function proposalFileName(p: Proposal) {
     .trim()
     .replace(/\s+/g, "-");
   return `Fonts-and-Footers-Proposal${who ? `-${who}` : ""}.pdf`;
+}
+
+/**
+ * The first monthly charge for a start on the proposal's date: the 1st of
+ * the month after it, or after the free days when there are some. As
+ * YYYY-MM-DD.
+ */
+export function firstChargeDate(iso: string, trialDays = 0) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const start = new Date(Date.UTC(y, m - 1, d + trialDays));
+  const first = new Date(
+    Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1),
+  );
+  return first.toISOString().slice(0, 10);
 }

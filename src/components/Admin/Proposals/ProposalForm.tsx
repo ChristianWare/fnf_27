@@ -9,6 +9,7 @@ import { ui } from "@/components/Dashboard/ui/ui";
 import { useToast } from "@/components/Dashboard/Toast/Toast";
 import {
   PLAN_LABELS,
+  firstChargeDate,
   type Proposal,
   type ProposalPlan,
 } from "@/lib/proposals/types";
@@ -126,8 +127,17 @@ export default function ProposalForm({
     }));
 
   const setupDue = p.waiveSetup ? 0 : p.setup;
-  const dueToStart =
-    setupDue + (p.monthly > 0 && p.trialDays === 0 ? p.monthly : 0);
+  // Only the one-time fee is due to start; the monthly plan begins on the
+  // next 1st.
+  const dueToStart = setupDue;
+  const firstCharge = /^\d{4}-\d{2}-\d{2}$/.test(p.date)
+    ? new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(new Date(`${firstChargeDate(p.date, p.trialDays)}T00:00:00Z`))
+    : "";
 
   async function generate() {
     if (busy) return;
@@ -460,6 +470,12 @@ export default function ProposalForm({
                   {money(p.monthly)}/mo
                   {p.trialDays > 0 ? ` after ${p.trialDays} free days` : ""}
                 </dd>
+              </div>
+            )}
+            {p.monthly > 0 && firstCharge && (
+              <div className={styles.sumRow}>
+                <dt>First monthly charge</dt>
+                <dd>{firstCharge}</dd>
               </div>
             )}
             <div className={`${styles.sumRow} ${styles.sumTotal}`}>

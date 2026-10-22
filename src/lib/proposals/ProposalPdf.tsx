@@ -16,7 +16,7 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import { SUPPORT_EMAIL } from "@/lib/dashboard/plans";
-import { lines, type Proposal } from "./types";
+import { firstChargeDate, lines, type Proposal } from "./types";
 
 const publicDir = path.join(process.cwd(), "public");
 const font = (file: string) => path.join(publicDir, "fonts", file);
@@ -159,14 +159,21 @@ const styles = StyleSheet.create({
     textDecoration: "line-through",
     textAlign: "right",
   },
+  // Centered the same way as the Proposal pill.
   waived: {
     marginTop: 4,
-    paddingVertical: 3,
+    height: 16,
     paddingHorizontal: 8,
-    borderRadius: 20,
+    paddingBottom: 2,
+    borderRadius: 8,
     backgroundColor: LIME,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  waivedText: {
     fontFamily: "Plex",
     fontSize: 7.5,
+    lineHeight: 1,
     letterSpacing: 0.4,
     textTransform: "uppercase",
     color: BLACK,
@@ -277,10 +284,10 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
   const included = lines(p.included);
   const terms = lines(p.terms);
   const setupDue = p.waiveSetup ? 0 : p.setup;
-  // What's paid to start: the one-time fee, plus the first month unless
-  // there's a free period first.
-  const firstMonth = p.monthly > 0 && p.trialDays === 0 ? p.monthly : 0;
-  const dueToStart = setupDue + firstMonth;
+  // What's paid to start is the one-time fee alone (nothing when it's
+  // waived); the first monthly charge comes on the next 1st.
+  const dueToStart = setupDue;
+  const firstCharge = fmtDate(firstChargeDate(p.date, p.trialDays));
   const hasSetupLine = p.setup > 0;
 
   return (
@@ -405,7 +412,9 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
                     <>
                       <Text style={styles.struck}>{money(p.setup)}</Text>
                       <Text style={styles.amount}>$0</Text>
-                      <Text style={styles.waived}>Waived</Text>
+                      <View style={styles.waived}>
+                        <Text style={styles.waivedText}>Waived</Text>
+                      </View>
                     </>
                   ) : (
                     <Text style={styles.amount}>{money(p.setup)}</Text>
@@ -420,8 +429,8 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
                   <Text style={styles.lineTitle}>{p.service}, monthly</Text>
                   <Text style={styles.lineDetail}>
                     {p.trialDays > 0
-                      ? `Free for the first ${p.trialDays} days, then charged automatically to your card on the 1st of every month.`
-                      : "Charged automatically to your card on the 1st of every month. Month to month, no long-term contract."}
+                      ? `Free for the first ${p.trialDays} days, then charged automatically to your card on the 1st of every month. For example, if we start today, your first monthly payment won't be due until ${firstCharge}.`
+                      : `Charged automatically to your card on the 1st of every month. Month to month, no long-term contract. For example, if we start today, your first monthly payment won't be due until ${firstCharge}.`}
                   </Text>
                 </View>
                 <View style={styles.cAmount}>
@@ -439,8 +448,8 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
             {p.monthly > 0 && (
               <Text style={styles.then}>
                 {p.trialDays > 0
-                  ? `Then ${money(p.monthly)} a month after ${p.trialDays} free days, auto-deducted on the 1st of every month.`
-                  : `Then ${money(p.monthly)} a month, auto-deducted on the 1st of every month.`}
+                  ? `Then ${money(p.monthly)} a month after ${p.trialDays} free days, starting ${firstCharge}.`
+                  : `Then ${money(p.monthly)} a month, starting ${firstCharge}.`}
               </Text>
             )}
           </View>
