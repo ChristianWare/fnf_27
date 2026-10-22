@@ -81,19 +81,28 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   brand: { flexDirection: "row", alignItems: "center", gap: 10 },
-  logo: { width: 40, height: 25 },
-  brandName: { fontSize: 16, color: BLACK },
+  logo: { width: 30, height: 19 },
+  brandName: { fontSize: 12.5, color: BLACK },
   from: { alignItems: "flex-end", gap: 1 },
   fromLine: { fontSize: 9.5, color: TEXT },
   titleBlock: { marginTop: 40, gap: 10 },
+  // A fixed-height box with the word centered in it; padding on the text
+  // itself sat the word high in the pill.
   pill: {
     alignSelf: "flex-start",
-    paddingVertical: 5,
+    height: 20,
     paddingHorizontal: 10,
-    borderRadius: 20,
+    // Plex sits low in its line box; this lifts the caps to the middle.
+    paddingBottom: 2,
+    borderRadius: 10,
     backgroundColor: PURPLE,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  pillText: {
     fontFamily: "Plex",
     fontSize: 8,
+    lineHeight: 1,
     letterSpacing: 0.4,
     textTransform: "uppercase",
     color: BLACK,
@@ -296,10 +305,14 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
         </View>
 
         <View style={styles.titleBlock}>
-          <Text style={styles.pill}>Proposal</Text>
-          <Text style={styles.title}>
-            {p.service} for {who}
-          </Text>
+          <View style={styles.pill}>
+            <Text style={styles.pillText}>Proposal</Text>
+          </View>
+          {/* The service on one line, the client on the next. */}
+          <View>
+            <Text style={styles.title}>{p.service} for</Text>
+            <Text style={styles.title}>{who}</Text>
+          </View>
         </View>
 
         <View style={styles.rule} />
@@ -407,8 +420,8 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
                   <Text style={styles.lineTitle}>{p.service}, monthly</Text>
                   <Text style={styles.lineDetail}>
                     {p.trialDays > 0
-                      ? `Free for the first ${p.trialDays} days, then billed monthly.`
-                      : "Billed monthly. Month to month, no long-term contract."}
+                      ? `Free for the first ${p.trialDays} days, then charged automatically to your card on the 1st of every month.`
+                      : "Charged automatically to your card on the 1st of every month. Month to month, no long-term contract."}
                   </Text>
                 </View>
                 <View style={styles.cAmount}>
@@ -426,8 +439,8 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
             {p.monthly > 0 && (
               <Text style={styles.then}>
                 {p.trialDays > 0
-                  ? `Then ${money(p.monthly)} a month after ${p.trialDays} free days.`
-                  : `Then ${money(p.monthly)} a month.`}
+                  ? `Then ${money(p.monthly)} a month after ${p.trialDays} free days, auto-deducted on the 1st of every month.`
+                  : `Then ${money(p.monthly)} a month, auto-deducted on the 1st of every month.`}
               </Text>
             )}
           </View>
@@ -459,7 +472,8 @@ function ProposalPdf({ p, logo }: { p: Proposal; logo: Buffer }) {
         )}
 
         {terms.length > 0 && (
-          <View style={styles.section}>
+          // Kept whole, so the heading never sits alone at a page's foot.
+          <View style={styles.section} wrap={false}>
             <Text style={styles.mono}>Key terms</Text>
             <View style={styles.list}>
               {terms.map((term, i) => (
