@@ -187,7 +187,7 @@ export default function WhatItFinds() {
 
       <div className={styles.stage}>
         <div className={styles.top}>
-          <EyeBrow text='What it finds' color='white' />
+          <EyeBrow text='What it finds' color='black' />
           <h2 id='what-it-finds' className={styles.heading}>
             The Accounts and Events in Your Market, Every Morning
           </h2>

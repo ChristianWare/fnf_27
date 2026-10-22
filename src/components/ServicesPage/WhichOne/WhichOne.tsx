@@ -54,7 +54,7 @@ export default function WhichOne() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text='Which one do I need?' color='white' />
+              <EyeBrow text='Which one do I need?' color='black' />
               <h2
                 id='which-one-heading'
                 className={`${styles.heading} h3`}
