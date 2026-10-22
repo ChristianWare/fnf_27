@@ -1,0 +1,167 @@
+/* The tour sits over everything, the phone menu included. */
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  pointer-events: none;
+}
+
+/* Catches clicks so the page underneath can't be used mid-tour. */
+.blocker {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  transition: background-color 0.25s ease;
+}
+
+.dim {
+  background-color: rgb(13 13 14 / 55%);
+}
+
+/* The lit-up item: a clear window in a dark page. */
+.spot {
+  position: fixed;
+  border-radius: 1.4rem;
+  box-shadow:
+    0 0 0 2px var(--white),
+    0 0 0 9999px rgb(13 13 14 / 55%);
+  transition:
+    top 0.3s ease,
+    left 0.3s ease,
+    width 0.3s ease,
+    height 0.3s ease;
+}
+
+.card {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  padding: 2.4rem;
+  border-radius: 2rem;
+  background-color: var(--white);
+  box-shadow: 0 2rem 6rem rgb(13 13 14 / 25%);
+  pointer-events: auto;
+  outline: none;
+  animation: cardIn 0.25s ease both;
+}
+
+/* No item to point at: the middle of the screen. */
+.center {
+  top: 50%;
+  left: 50%;
+  width: min(44rem, calc(100vw - 3.2rem));
+  transform: translate(-50%, -50%);
+  animation-name: cardInCenter;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    translate: 0 0.6rem;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes cardInCenter {
+  from {
+    opacity: 0;
+    scale: 0.97;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.count {
+  font-family: var(--IBMPlex);
+  font-size: 13px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.skip {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.skip:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.progress {
+  height: 3px;
+  border-radius: 3px;
+  background-color: var(--light2);
+  overflow: hidden;
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background-color: var(--black);
+  transition: width 0.3s ease;
+}
+
+.title {
+  font-family: var(--CreatoDisplayMedium);
+  text-transform: none;
+  font-size: 2.2rem;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--black);
+}
+
+.body {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .center {
+    animation: none;
+  }
+
+  .spot,
+  .progressFill,
+  .blocker {
+    transition: none;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .card {
+    padding: 2rem 1.8rem;
+  }
+}

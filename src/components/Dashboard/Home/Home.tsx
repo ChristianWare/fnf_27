@@ -3,6 +3,7 @@ import Link from "next/link";
 import styles from "./Home.module.css";
 import Icon, { type IconName } from "../icons";
 import { ButtonLink, Panel, Pill, Progress, type Tone } from "../ui/ui";
+import TourButton from "../Tour/TourButton";
 import ChrisImg from "../../../../public/images/chris.png";
 import {
   isLive,
@@ -274,6 +275,7 @@ export default function Home({
               Open Leads Tool
             </ButtonLink>
           )}
+          <TourButton />
         </div>
       </header>
 

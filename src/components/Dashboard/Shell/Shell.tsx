@@ -62,6 +62,14 @@ export default function Shell({
 
   const close = () => setOpen(false);
 
+  // The guided tour opens and closes the menu on phones, to point at it.
+  useEffect(() => {
+    const onMenu = (e: Event) =>
+      setOpen(Boolean((e as CustomEvent<{ open: boolean }>).detail?.open));
+    window.addEventListener("fnf:menu", onMenu);
+    return () => window.removeEventListener("fnf:menu", onMenu);
+  }, []);
+
   const link = (item: NavItem) => {
     const active =
       !item.external &&
@@ -92,6 +100,7 @@ export default function Shell({
             rel='noopener noreferrer'
             className={styles.link}
             onClick={close}
+            data-tour={item.href}
           >
             {content}
             <span className={styles.srOnly}> (opens in a new tab)</span>
@@ -102,6 +111,7 @@ export default function Shell({
             className={`${styles.link} ${active ? styles.active : ""} ${item.locked ? styles.locked : ""}`}
             aria-current={active ? "page" : undefined}
             onClick={close}
+            data-tour={item.href}
           >
             {content}
           </Link>
@@ -199,6 +209,7 @@ export default function Shell({
                         type='button'
                         className={styles.foldBtn}
                         onClick={() => setFoldOpen((value) => !value)}
+                        data-tour='fold'
                         aria-expanded={Boolean(showFold)}
                       >
                         <Icon name='history' className={styles.icon} />
