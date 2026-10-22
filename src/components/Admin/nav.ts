@@ -44,6 +44,7 @@ export function adminNav(
           icon: "inbox",
           badge: stats.unread || undefined,
         },
+        { href: "/admin/proposals", label: "Proposals", icon: "file" },
         {
           href: "/admin/audits",
           label: "Audits",
