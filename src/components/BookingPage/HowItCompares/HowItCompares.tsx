@@ -4,6 +4,7 @@
 // dispatch software, in the same table as the pricing page's comparison.
 
 import { useState, type KeyboardEvent } from "react";
+import Link from "next/link";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./HowItCompares.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
@@ -197,6 +198,27 @@ export default function HowItCompares() {
               </dl>
             </div>
           </div>
+
+          {/* The side-by-side pages for the two systems operators ask
+              about most. */}
+          <p className={styles.more} data-reveal>
+            Comparing a specific system? See the Full Platform next to{" "}
+            <Link href='/compare/limo-anywhere' className={styles.link}>
+              Limo Anywhere
+            </Link>{" "}
+            or{" "}
+            <Link href='/compare/moovs' className={styles.link}>
+              Moovs
+            </Link>
+            , or run your own numbers in the{" "}
+            <Link
+              href='/tools/booking-fee-calculator'
+              className={styles.link}
+            >
+              booking fee calculator
+            </Link>
+            .
+          </p>
         </div>
       </LayoutWrapper>
     </section>

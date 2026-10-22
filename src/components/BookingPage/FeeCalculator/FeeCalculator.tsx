@@ -27,8 +27,18 @@ const clamp = (value: string, min: number, max: number) => {
   return Math.min(max, Math.max(min, n));
 };
 
-export default function FeeCalculator() {
+export default function FeeCalculator({
+  standalone = false,
+}: {
+  /**
+   * On its own page (/tools/booking-fee-calculator) the title is the
+   * page's h1 and the card links to the booking software; on the booking
+   * page it's an h2 and links to the full math.
+   */
+  standalone?: boolean;
+}) {
   const id = useId();
+  const Heading = standalone ? "h1" : "h2";
   const [rides, setRides] = useState(200);
   const [fare, setFare] = useState(120);
   const [percent, setPercent] = useState(15);
@@ -44,17 +54,20 @@ export default function FeeCalculator() {
         <div className={styles.content}>
           <div className={styles.left}>
             <EyeBrow text='Fee calculator' />
-            <h2
+            <Heading
               id={`${id}-title`}
-              className={`${styles.heading} h3`}
+              className={`${styles.heading} ${standalone ? "heading2" : "h3"}`}
               data-reveal
               data-reveal-style='fade'
             >
-              What per-booking fees cost you in a year
-            </h2>
+              {standalone
+                ? "Booking Fee Calculator for Limo Operators"
+                : "What per-booking fees cost you in a year"}
+            </Heading>
             <p className={styles.copy} data-reveal>
-              Enter last month&apos;s numbers. Card processing isn&apos;t
-              included on either side, since every option pays it.
+              {standalone
+                ? "See what a booking platform's per-booking fee costs you in a month and a year, next to a flat monthly price. Enter last month's numbers. Card processing isn't included on either side, since every option pays it."
+                : "Enter last month's numbers. Card processing isn't included on either side, since every option pays it."}
             </p>
 
             <div className={styles.fields} data-reveal>
@@ -117,9 +130,13 @@ export default function FeeCalculator() {
                 : "At this volume, the fees cost less than $499 a month. The case for switching is owning your site and your customers, not the fee."}
             </p>
             <Button
-              href='/journal/what-per-booking-fees-really-cost'
+              href={
+                standalone
+                  ? "/services/booking-software"
+                  : "/journal/what-per-booking-fees-really-cost"
+              }
               btnType='white'
-              text='See the math in full'
+              text={standalone ? "See the Full Platform" : "See the math in full"}
               arrow
             />
           </div>

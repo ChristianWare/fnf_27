@@ -26,7 +26,7 @@ export const metadata: Metadata = {
       "Limo Booking & Dispatch Software, Website Included | Fonts & Footers",
   },
   description:
-    "Take bookings on your own site, assign drivers and get paid, all in one system with your website built in. $499/mo, no per-booking fees, leads tool included.",
+    "Limo software for reservations, dispatch and payments, built into your own website, for limo, black car and chauffeur companies. $499/mo, no per-booking fees.",
   alternates: { canonical: "/services/booking-software" },
 };
 
@@ -49,6 +49,18 @@ const platformFaqs: FaqItem[] = [
     question: "How much does limo booking software cost?",
     answer:
       "Here it's $499 a month plus a one-time $500 setup, with the website and the leads tool included and no per-booking fees. When you compare options, add up the monthly price, any fee per booking or per vehicle, and what you pay separately for a website, since that's what you'll really spend each month.",
+  },
+  {
+    id: 11,
+    question: "What's the best limo software for a small company?",
+    answer:
+      "For one to twenty cars, the best system is the one that does the daily jobs well (bookings in one place, conflict-free assignment, the driver's details on their phone, flight tracking, rider updates and payments) at a price that doesn't climb with your trip count. Limo Anywhere suits operators who farm rides in and out through its network; Moovs suits operators starting on a free plan. The Full Platform suits operators who want the website, booking and dispatch in one system at one flat price.",
+  },
+  {
+    id: 12,
+    question: "Is this software for chauffeur and black car companies too?",
+    answer:
+      "Yes. It's built for any company that runs pre-booked rides with professional drivers: black car, chauffeur, limo, sprinter and party bus operators. Each vehicle type gets its own rates and capacity, and riders pick the one they want when they book.",
   },
   {
     id: 1,

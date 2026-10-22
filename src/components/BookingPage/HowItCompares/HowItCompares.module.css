@@ -29,6 +29,21 @@
   white-space: nowrap;
 }
 
+/* The links to the comparison pages, under the table. */
+.more {
+  max-width: 640px;
+  padding-top: 3rem;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.link {
+  color: var(--black);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ── The table (wide screens) ── */
 .tableWrap {
   width: 100%;

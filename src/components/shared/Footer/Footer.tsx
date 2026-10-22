@@ -56,6 +56,7 @@ const columns = [
         links: [
           { text: "Free leads tool", href: "/services/leads" },
           { text: "Website audit", href: "/audit" },
+          { text: "Fee calculator", href: "/tools/booking-fee-calculator" },
         ],
       },
     ],
@@ -70,6 +71,13 @@ const columns = [
           text: c.name,
           href: categoryHref(c),
         })),
+      },
+      {
+        title: "Compare",
+        links: [
+          { text: "vs Limo Anywhere", href: "/compare/limo-anywhere" },
+          { text: "vs Moovs", href: "/compare/moovs" },
+        ],
       },
     ],
   },

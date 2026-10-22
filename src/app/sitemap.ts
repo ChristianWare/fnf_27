@@ -11,6 +11,7 @@ import {
   postHref,
 } from "@/lib/journal";
 import { projectHref, projects } from "@/lib/projects";
+import { compareHref, getComparisons } from "@/lib/compare";
 
 type Entry = MetadataRoute.Sitemap[number];
 
@@ -26,6 +27,7 @@ const pages: [
   ["/services/leads", 0.9, "monthly"],
   ["/pricing", 0.8, "monthly"],
   ["/audit", 0.8, "monthly"],
+  ["/tools/booking-fee-calculator", 0.7, "yearly"],
   ["/journal", 0.7, "weekly"],
   ["/projects", 0.6, "monthly"],
   ["/about", 0.6, "monthly"],
@@ -59,6 +61,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: post.date,
       changeFrequency: "yearly" as const,
       priority: 0.6,
+    })),
+    // The comparison pages, dated by their last check of the prices.
+    ...getComparisons().map((page) => ({
+      url: `${APP_URL}${compareHref(page)}`,
+      lastModified: page.date,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
     // Concepts still named in brackets are placeholders; they join when
     // they get a real name.

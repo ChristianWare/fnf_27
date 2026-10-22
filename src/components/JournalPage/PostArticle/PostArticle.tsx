@@ -17,7 +17,17 @@ import { AUTHOR_PATH } from "@/lib/seo";
 // The site's address, for the share links.
 const SITE = "https://fontsandfooters.com";
 
-export default async function PostArticle({ post }: { post: Post }) {
+export default async function PostArticle({
+  post,
+  basePath = "/journal",
+  back = { href: "/journal", label: "All posts" },
+}: {
+  post: Post;
+  /** Where the page lives: /journal for posts, /compare for comparisons. */
+  basePath?: string;
+  /** The link above the title. */
+  back?: { href: string; label: string };
+}) {
   const { content } = await compileMDX({
     source: post.body,
     components: mdxComponents,
@@ -25,7 +35,7 @@ export default async function PostArticle({ post }: { post: Post }) {
     // rows). Dangerous code (eval, imports, globals) stays blocked.
     options: { blockJS: false },
   });
-  const url = `${SITE}/journal/${post.slug}`;
+  const url = `${SITE}${basePath}/${post.slug}`;
 
   return (
     <article className={styles.container}>
@@ -34,9 +44,9 @@ export default async function PostArticle({ post }: { post: Post }) {
         <div className={styles.content}>
           {/* The top: back link, title, photo. */}
           <header className={styles.top}>
-            <Link href='/journal' className={styles.back} data-reveal>
+            <Link href={back.href} className={styles.back} data-reveal>
               <Arrow className={styles.backArrow} aria-hidden='true' />
-              All posts
+              {back.label}
             </Link>
             <h1
               className={`${styles.heading} heading2`}

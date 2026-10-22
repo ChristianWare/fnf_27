@@ -20,6 +20,18 @@ const nextConfig: NextConfig = {
     return [
       // The audit is a free tool, not a service page. Catch the guessed URL.
       { source: "/services/audit", destination: "/audit", permanent: true },
+      // The comparison pages and the calculator have no index page of their
+      // own. Temporary, in case one is added later.
+      {
+        source: "/compare",
+        destination: "/services/booking-software",
+        permanent: false,
+      },
+      {
+        source: "/tools",
+        destination: "/tools/booking-fee-calculator",
+        permanent: false,
+      },
 
       // The old site's pages, where Google and old links still send people.
       // Permanent, so their place in search moves to the new page.

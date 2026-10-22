@@ -78,8 +78,6 @@ export function activeCategories(posts = getPosts()): Category[] {
   );
 }
 
-const DIR = path.join(process.cwd(), "content", "journal");
-
 export const postHref = (post: Pick<Post, "slug">) => `/journal/${post.slug}`;
 
 const MONTHS = [
@@ -103,9 +101,9 @@ function formatDate(iso: string) {
   return `${String(d).padStart(2, "0")} ${MONTHS[m - 1]} ${y}`;
 }
 
-function readPost(file: string): Post {
+function readPost(dir: string, file: string): Post {
   const slug = file.replace(/\.mdx?$/, "");
-  const raw = fs.readFileSync(path.join(DIR, file), "utf8");
+  const raw = fs.readFileSync(path.join(dir, file), "utf8");
   const { data, content } = matter(raw);
   const categorySlug = String(data.categorySlug ?? "");
   const category =
@@ -129,14 +127,23 @@ function readPost(file: string): Post {
   };
 }
 
+/**
+ * Every MDX file in a folder under content/, newest first. The Journal
+ * reads content/journal; the comparison pages read content/compare.
+ */
+export function readFolder(folder: string): Post[] {
+  const dir = path.join(process.cwd(), "content", folder);
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((file) => /\.mdx?$/.test(file))
+    .map((file) => readPost(dir, file))
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+}
+
 /** Every post, newest first. */
 export function getPosts(): Post[] {
-  if (!fs.existsSync(DIR)) return [];
-  return fs
-    .readdirSync(DIR)
-    .filter((file) => /\.mdx?$/.test(file))
-    .map(readPost)
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  return readFolder("journal");
 }
 
 export function getPost(slug: string): Post | undefined {

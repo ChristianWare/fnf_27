@@ -36,8 +36,9 @@ export default function BookingHero() {
             Limo Booking Software That Runs Every Ride From Your Own Site
           </h1>
           <p className={styles.copy} data-reveal>
-            Booking, dispatch, a driver portal and payments, built into your own
-            website, with the leads tool included. Unlimited drivers and
+            Reservations, dispatch, a driver portal and payments for limo,
+            black car and chauffeur companies, built into your own website,
+            with the leads tool included. Unlimited drivers and
             vehicles, no per-booking fees, one flat $499 a month.
           </p>
           <div className={styles.btnContainer} data-reveal>
