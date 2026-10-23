@@ -14,7 +14,7 @@ import {
   relabelAsset,
   removeAsset,
 } from "@/app/dashboard/actions";
-import { assetNeeds } from "@/lib/dashboard/helpers";
+import { assetLabelName, assetNeeds } from "@/lib/dashboard/helpers";
 import { fmtShort, thumb } from "@/lib/dashboard/format";
 import type { Asset, AssetLabel } from "@/lib/dashboard/types";
 
@@ -43,7 +43,14 @@ const guessLabel = (file: File): AssetLabel => {
   return "Other";
 };
 
-export default function Assets({ initial }: { initial: Asset[] }) {
+export default function Assets({
+  initial,
+  general = false,
+}: {
+  initial: Asset[];
+  /** A client outside the limo world: general photo names. */
+  general?: boolean;
+}) {
   const toast = useToast();
   const { run } = useAction();
   const [assets, setAssets] = useState(initial);
@@ -51,7 +58,7 @@ export default function Assets({ initial }: { initial: Asset[] }) {
   const [uploading, setUploading] = useState(0);
   const input = useRef<HTMLInputElement>(null);
 
-  const needs = assetNeeds(assets);
+  const needs = assetNeeds(assets, general);
   const required = needs.filter((n) => n.need > 0);
   const have = required.reduce((sum, n) => sum + Math.min(n.have, n.need), 0);
   const need = required.reduce((sum, n) => sum + n.need, 0);
@@ -223,7 +230,9 @@ export default function Assets({ initial }: { initial: Asset[] }) {
                       aria-label={`What ${asset.name} is`}
                     >
                       {LABELS.map((label) => (
-                        <option key={label}>{label}</option>
+                        <option key={label} value={label}>
+                          {assetLabelName(label, general)}
+                        </option>
                       ))}
                     </select>
                   </div>

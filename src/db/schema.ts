@@ -5,6 +5,7 @@
 // To change it: edit this file, run `npm run db:generate` to write the SQL
 // migration into /drizzle, then `npm run db:migrate`.
 
+import type { CustomQuestions } from "@/lib/dashboard/customQuestions";
 import type { Growth, GrowthSync } from "@/lib/dashboard/types";
 import type { Contact, Operator, Script } from "@/lib/leads/types";
 import type {
@@ -390,6 +391,8 @@ export const questionnaires = pgTable("questionnaires", {
     .default({}),
   /** Answers from the old site's questionnaire, kept for reference. */
   legacyAnswers: jsonb("legacy_answers"),
+  /** An admin's own questions for this client, from a .md file. */
+  custom: jsonb("custom").$type<CustomQuestions>(),
   savedAt: at("saved_at"),
   submittedAt: at("submitted_at"),
 });

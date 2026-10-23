@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Design from "@/components/Dashboard/Design/Design";
 import { NoWebsite, PageHead } from "@/components/Dashboard/ui/ui";
-import { getDashboard, isLive } from "@/lib/dashboard";
+import { requireBuildUnlocked, isLive } from "@/lib/dashboard";
 
 export const metadata: Metadata = { title: "Design" };
 
 export default async function DesignPage() {
-  const { client } = await getDashboard();
+  const { client } = await requireBuildUnlocked();
   if (!client.website) return <NoWebsite crumb='Your website' title='Design' />;
   return (
     <>

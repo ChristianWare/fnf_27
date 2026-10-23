@@ -25,6 +25,8 @@ import {
   type QuestionSection,
 } from "@/lib/dashboard/questionnaire";
 import type { Answers, Asset, Designs, Doc } from "@/lib/dashboard/types";
+import type { CustomQuestions as Custom } from "@/lib/dashboard/customQuestions";
+import CustomQuestions from "./CustomQuestions";
 import styles from "./Client.module.css";
 
 const show = (value: Answers[string] | undefined) =>
@@ -35,6 +37,7 @@ export default function Files({
   firstName,
   email,
   sections,
+  custom,
   answers,
   submittedAt,
   assets,
@@ -45,6 +48,8 @@ export default function Files({
   firstName: string;
   email: string;
   sections: QuestionSection[];
+  /** Their own questions from a .md file, if any. */
+  custom?: Custom;
   answers: Answers;
   submittedAt?: string;
   assets: Asset[];
@@ -55,7 +60,7 @@ export default function Files({
   const { run, pending } = useAction();
   const all = sections.flatMap((s) => s.questions);
   const answered = all.filter((q) => isAnswered(answers[q.id])).length;
-  const needs = assetNeeds(assets);
+  const needs = assetNeeds(assets, custom?.mode === "replace");
 
   const [uploads, setUploads] = useState<(Uploaded & { label: string })[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -207,6 +212,12 @@ export default function Files({
               </button>
             )}
           </div>
+          <CustomQuestions
+            clientId={clientId}
+            firstName={firstName}
+            custom={custom}
+            submitted={Boolean(submittedAt)}
+          />
           {answered > 0 && (
             <div className={styles.accordion}>
               {sections.map((section, i) => {

@@ -18,6 +18,7 @@
 import type { NavGroup } from "@/components/Dashboard/Shell/nav";
 import {
   awaitingApproval,
+  buildUnlocked,
   isLive,
   leadsAccess,
   projectSteps,
@@ -243,12 +244,19 @@ export function tourFor(client: Client, nav: NavGroup[]): Tour {
 
   // ── Before launch: the build, in order ──
   const next = projectSteps(client).find((step) => step.state === "you");
+  const general = client.customQuestions?.mode === "replace";
+  const unlocked = buildUnlocked(client);
+  const waived = website.setupFee <= 0;
+  // Locked build pages say so; once open, they just say what they're for.
+  const opens = unlocked
+    ? ""
+    : " It opens once you've signed and set up billing.";
   return {
     id: platform ? "platform:build" : "website:build",
     steps: keep([
       {
         title: `Welcome, ${first}`,
-        body: `This is your Fonts & Footers dashboard, where we build your new ${platform ? "website and booking system" : "website"} together. This quick tour shows you where everything is. It takes about a minute.`,
+        body: `This is your Fonts & Footers dashboard, where we build your new ${platform ? "website and booking system" : "website"} together. This quick tour shows you where everything is, and what to do first. It takes about a minute.`,
       },
       {
         target: "/dashboard",
@@ -262,30 +270,50 @@ export function tourFor(client: Client, nav: NavGroup[]): Tour {
       },
       {
         target: "/dashboard/website/documents",
-        title: "Documents",
-        body: "Sign your agreement here first. Nothing starts until it's signed, and a copy stays here for you.",
+        title: "Step 1: Documents",
+        body: "Sign your agreement here first. It sets out your plan and your fees, and a copy stays here for you.",
       },
+      {
+        target: "/dashboard/billing",
+        title: "Step 2: Billing",
+        body: waived
+          ? "Next, add the card for your monthly plan. Your setup fee is waived, so nothing is charged today, and monthly billing starts on the 1st after."
+          : `Next, pay your ${website.setupFee.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })} setup fee here. Monthly billing starts on the 1st after, and your invoices are kept here.`,
+      },
+      ...(unlocked
+        ? []
+        : [
+            {
+              target: "/dashboard/website/questionnaire",
+              title: "Unlocks after steps 1 and 2",
+              body: "Questionnaire, Brand assets, Blueprint and Design are greyed out for now. They open as soon as you've signed your agreement and set up billing, and we'll take you straight to them.",
+            },
+          ]),
       {
         target: "/dashboard/website/questionnaire",
         title: "Questionnaire",
-        body: platform
-          ? "About 20 minutes on your rides, your fleet and your brand. Your site's pages and wording come from these answers, and your booking system is set up from them. It saves as you go."
-          : "About 20 minutes on your rides, your fleet and your brand, and the booking system you use now. Your site's pages and wording come from these answers. It saves as you go.",
+        body: general
+          ? `About 30 minutes on your business, your customers and your brand. Your site's pages and wording come from these answers. It saves as you go.${opens}`
+          : platform
+            ? `About 30 minutes on your story, your rides, your fleet and your prices. Your site's pages and wording come from these answers, and your booking system is set up from them. It saves as you go.${opens}`
+            : `About 30 minutes on your story, your rides, your fleet and your prices, and the booking system you use now. Your site's pages and wording come from these answers. It saves as you go.${opens}`,
       },
       {
         target: "/dashboard/website/assets",
         title: "Brand assets",
-        body: "Upload your logo, vehicle photos and anything else we should use. Real photos of your cars make the biggest difference.",
+        body: general
+          ? `Upload your logo, photos of your work and anything else we should use. Real photos beat stock photos every time.${opens}`
+          : `Upload your logo, vehicle photos and anything else we should use. Real photos of your cars make the biggest difference.${opens}`,
       },
       {
         target: "/dashboard/website/blueprint",
         title: "Blueprint",
-        body: "The page-by-page plan for your site. Read it, comment on anything you'd change, then approve it.",
+        body: `The page-by-page plan for your site. Read it, comment on anything you'd change, then approve it.${opens}`,
       },
       {
         target: "/dashboard/website/design",
         title: "Design",
-        body: "Pick the look you like best from the options we prepare for you.",
+        body: `Pick the look you like best from the options we prepare for you.${opens}`,
       },
       {
         target: "/dashboard/website/changes",
@@ -294,7 +322,6 @@ export function tourFor(client: Client, nav: NavGroup[]): Tour {
       },
       ...leadsSteps,
       support,
-      billing,
       profile,
       {
         title: "That's the tour",

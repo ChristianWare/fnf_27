@@ -2,6 +2,8 @@
 // from the database by src/lib/data/clients.ts. Dates are ISO strings and
 // money is in dollars.
 
+import type { CustomQuestions } from "./customQuestions";
+
 export type PlanId = "FULL_PLATFORM" | "WEBSITE_ONLY";
 
 /** The Leads Tool on its own. Full Platform clients have it included. */
@@ -274,6 +276,8 @@ export type Client = {
   };
   documents: Doc[];
   answers: Answers;
+  /** Their own questions, uploaded by an admin, if any. */
+  customQuestions?: CustomQuestions;
   assets: Asset[];
   blueprint: BlueprintPage[];
   designs: Designs;

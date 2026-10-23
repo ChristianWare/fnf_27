@@ -408,6 +408,7 @@ export async function loadClients(scope: ClientScope): Promise<Client[]> {
       leads: leadsView(c, now),
       documents,
       answers: quest?.answers ?? {},
+      customQuestions: quest?.custom ?? undefined,
       assets,
       blueprint,
       designs: { ...designs, options: designs.options ?? [] },

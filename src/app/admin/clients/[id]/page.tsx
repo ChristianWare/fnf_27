@@ -12,7 +12,7 @@ import styles from "@/components/Admin/Client/Client.module.css";
 import { clientKind, getAdminClient } from "@/lib/admin";
 import { nextFirst } from "@/lib/dashboard/billing";
 import { blueprintCounts, isLive } from "@/lib/dashboard/helpers";
-import { questionnaireFor } from "@/lib/dashboard/questionnaire";
+import { questionsFor } from "@/lib/dashboard/customQuestions";
 import { url } from "@/lib/server/config";
 import { loadGrowthAdmin } from "@/lib/growth/load";
 import { domainOf } from "@/lib/growth/searchConsole";
@@ -108,7 +108,8 @@ export default async function ClientPage({
           clientId={client.id}
           firstName={first}
           email={client.contact.email}
-          sections={questionnaireFor(w.plan)}
+          sections={questionsFor(client)}
+          custom={client.customQuestions}
           answers={client.answers}
           submittedAt={w.facts.questionnaireSubmittedAt}
           assets={client.assets}

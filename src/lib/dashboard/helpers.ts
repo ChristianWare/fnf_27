@@ -16,7 +16,23 @@ export type AssetNeed = {
   need: number;
 };
 
-export function assetNeeds(assets: Pick<Asset, "label">[]): AssetNeed[] {
+/**
+ * What an asset label is called on screen. Clients outside the limo world
+ * (their own questions replace the standard ones) see general names; the
+ * saved label stays the same.
+ */
+export const assetLabelName = (label: Asset["label"], general = false) =>
+  general && label === "Fleet photo"
+    ? "Photo of your work"
+    : general && label === "Team photo"
+      ? "Photo of you or your team"
+      : label;
+
+export function assetNeeds(
+  assets: Pick<Asset, "label">[],
+  /** A client outside the limo world: no fleet or chauffeur wording. */
+  general = false,
+): AssetNeed[] {
   const count = (label: Asset["label"]) =>
     assets.filter((asset) => asset.label === label).length;
   return [
@@ -29,15 +45,19 @@ export function assetNeeds(assets: Pick<Asset, "label">[]): AssetNeed[] {
     },
     {
       id: "fleet",
-      label: "Fleet photos",
-      text: "At least six: each vehicle, outside and in.",
+      label: general ? "Photos of your work" : "Fleet photos",
+      text: general
+        ? "At least six: your place, your products or your work."
+        : "At least six: each vehicle, outside and in.",
       have: count("Fleet photo"),
       need: 6,
     },
     {
       id: "team",
-      label: "You or a chauffeur",
-      text: "One photo of a real person by the car. It builds trust.",
+      label: general ? "You or your team" : "You or a chauffeur",
+      text: general
+        ? "One photo of a real person. It builds trust."
+        : "One photo of a real person by the car. It builds trust.",
       have: count("Team photo"),
       need: 1,
     },
@@ -95,6 +115,17 @@ export const awaitingApproval = (client: Client) =>
   client.leads.status === "NONE" &&
   (client.request?.plan === "FULL_PLATFORM" ||
     client.request?.plan === "WEBSITE_ONLY");
+
+/**
+ * The build pages (Questionnaire, Brand assets, Blueprint, Design) open
+ * once the agreement is signed and billing is set up: the setup fee paid,
+ * or the card added when it's waived.
+ */
+export const buildUnlocked = (client: Client) => {
+  const f = client.website?.facts;
+  if (!f) return false;
+  return Boolean(f.launchedAt || (f.agreementSignedAt && f.setupFeePaidAt));
+};
 
 /**
  * Whether the Leads Tool is offered to them at all: included with the Full
@@ -172,7 +203,9 @@ export function projectSteps(client: Client): Step[] {
     {
       id: "questionnaire",
       title: "Fill in the questionnaire",
-      text: "About 20 minutes: your rides, your fleet and your brand.",
+      text: client.customQuestions?.mode === "replace"
+        ? "About 30 minutes on your business, your customers and your brand."
+        : "About 30 minutes: your story, your rides, your fleet and your brand.",
       owner: "you",
       after: ["setup"],
       doneAt: f.questionnaireSubmittedAt,

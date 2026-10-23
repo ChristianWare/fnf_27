@@ -21,6 +21,10 @@ import {
 } from "@/lib/server/cloudinary";
 import { firstOfMonth } from "@/lib/dashboard/billing";
 import {
+  parseQuestions,
+  type CustomQuestions,
+} from "@/lib/dashboard/customQuestions";
+import {
   domainOf,
   keyProblem,
   listSites,
@@ -832,6 +836,50 @@ export async function setGoogleListing(
       return fail(result.error);
     }
   }
+  refresh();
+  return done();
+}
+
+/* ── Their own questions ── */
+
+/**
+ * Sets a client's questions from an uploaded .md file: replacing the
+ * standard questionnaire, or added after it. Answers they've already given
+ * stay saved, and show again under any question with the same wording.
+ */
+export async function setCustomQuestions(
+  clientId: string,
+  input: { markdown: string; fileName: string; mode: "replace" | "add" },
+): Promise<ActionResult<{ count: number }>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const markdown = String(input.markdown ?? "").slice(0, 100_000);
+  const parsed = parseQuestions(markdown);
+  if (parsed.errors.length) return fail(parsed.errors[0]);
+  const custom: CustomQuestions = {
+    markdown,
+    fileName: String(input.fileName ?? "questions.md").slice(0, 120),
+    mode: input.mode === "add" ? "add" : "replace",
+    uploadedAt: new Date().toISOString(),
+  };
+  await db
+    .insert(s.questionnaires)
+    .values({ clientId, answers: {}, custom })
+    .onConflictDoUpdate({ target: s.questionnaires.clientId, set: { custom } });
+  refresh();
+  return done({ count: parsed.count });
+}
+
+/** Back to the standard questionnaire. */
+export async function removeCustomQuestions(
+  clientId: string,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  await db
+    .update(s.questionnaires)
+    .set({ custom: null })
+    .where(eq(s.questionnaires.clientId, clientId));
   refresh();
   return done();
 }

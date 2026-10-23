@@ -5,7 +5,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getViewAs, requireUser } from "@/lib/auth/dal";
 import { loadClient } from "@/lib/data/clients";
-import { awaitingApproval, leadsOffered } from "./helpers";
+import { awaitingApproval, buildUnlocked, leadsOffered } from "./helpers";
 
 export * from "./helpers";
 
@@ -40,5 +40,17 @@ export async function requireApproved() {
 export async function requireLeadsOffered() {
   const dashboard = await getDashboard();
   if (!leadsOffered(dashboard.client)) redirect("/dashboard");
+  return dashboard;
+}
+
+/**
+ * The build pages (Questionnaire, Brand assets, Blueprint, Design), once
+ * the agreement is signed and billing is set up; until then, Project
+ * status, which shows what to do first.
+ */
+export async function requireBuildUnlocked() {
+  const dashboard = await getDashboard();
+  if (dashboard.client.website && !buildUnlocked(dashboard.client))
+    redirect("/dashboard/website");
   return dashboard;
 }

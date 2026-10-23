@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Blueprint from "@/components/Dashboard/Blueprint/Blueprint";
 import { NoWebsite, PageHead } from "@/components/Dashboard/ui/ui";
-import { getDashboard } from "@/lib/dashboard";
+import { requireBuildUnlocked } from "@/lib/dashboard";
 
 export const metadata: Metadata = { title: "Blueprint" };
 
 export default async function BlueprintPage() {
-  const { client } = await getDashboard();
+  const { client } = await requireBuildUnlocked();
   if (!client.website)
     return <NoWebsite crumb='Your website' title='Blueprint' />;
   return (

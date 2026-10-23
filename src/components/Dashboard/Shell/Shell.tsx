@@ -97,7 +97,7 @@ export default function Shell({
           <span
             className={`${styles.link} ${styles.disabled}`}
             aria-disabled='true'
-            title='Opens once your account is approved'
+            title={item.disabledReason}
             data-tour={item.href}
           >
             <Icon name={item.icon} className={styles.icon} />

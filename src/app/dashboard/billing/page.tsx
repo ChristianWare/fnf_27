@@ -3,6 +3,7 @@ import Billing from "@/components/Dashboard/Billing/Billing";
 import { Notice, PageHead } from "@/components/Dashboard/ui/ui";
 import { requireApproved, isLive, leadsAccess } from "@/lib/dashboard";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
+import NextStepOnLoad from "@/components/Dashboard/NextStep/NextStepOnLoad";
 
 export const metadata: Metadata = { title: "Billing" };
 
@@ -44,6 +45,20 @@ export default async function BillingPage({
         text='Your plan, your card and your invoices. Month to month, no contracts, no per-booking fees.'
       />
       {back && <Notice tone={back.tone}>{back.text}</Notice>}
+      {/* Billing set up during the build: on to Project status. */}
+      {(done === "setup" || done === "waived") &&
+        website &&
+        !isLive(client) && (
+          <NextStepOnLoad
+            step={{
+              done: done === "waived" ? "Card added" : "Setup fee paid",
+              title: "You're all set",
+              text: "Your questionnaire, brand assets, blueprint and design are unlocked. We'll take you to Project status, where you can see every step and what comes next.",
+              label: "Go to Project status",
+              href: "/dashboard/website",
+            }}
+          />
+        )}
       {error && (
         <Notice tone='bad'>
           {error === "view-as"

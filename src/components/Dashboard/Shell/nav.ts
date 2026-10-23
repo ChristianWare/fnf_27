@@ -9,6 +9,7 @@ import type { Client } from "@/lib/dashboard/types";
 import {
   awaitingApproval,
   blueprintCounts,
+  buildUnlocked,
   isLive,
   leadsAccess,
   leadsOffered,
@@ -24,8 +25,10 @@ export type NavItem = {
   external?: boolean;
   /** Opens after launch. */
   locked?: boolean;
-  /** Greyed out and not a link: opens once we approve their account. */
+  /** Greyed out and not a link, until something's done first. */
   disabled?: boolean;
+  /** Why it's greyed out, shown on hover. */
+  disabledReason?: string;
   /** Also active on the pages under it, e.g. one client's page. */
   match?: "prefix";
 };
@@ -59,18 +62,21 @@ export function buildNav(
           label: "Billing",
           icon: "card",
           disabled: true,
+          disabledReason: "Opens once your account is approved",
         },
         {
           href: "/dashboard/support",
           label: "Support",
           icon: "message",
           disabled: true,
+          disabledReason: "Opens once your account is approved",
         },
         {
           href: "/dashboard/profile",
           label: "Profile",
           icon: "user",
           disabled: true,
+          disabledReason: "Opens once your account is approved",
         },
       ],
     });
@@ -123,6 +129,16 @@ export function buildNav(
       icon: "palette",
       badge: yours("design"),
     };
+    // The build pages open once the agreement is signed and billing is
+    // set up.
+    if (!buildUnlocked(client)) {
+      for (const item of [questionnaire, assets, blueprint, design]) {
+        item.disabled = true;
+        item.badge = undefined;
+        item.disabledReason =
+          "Opens once you've signed your agreement and set up billing";
+      }
+    }
     const changes: NavItem = {
       href: "/dashboard/website/changes",
       label: "Change requests",

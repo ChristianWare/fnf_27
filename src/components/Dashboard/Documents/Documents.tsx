@@ -9,14 +9,19 @@ import styles from "./Documents.module.css";
 import { signDocument } from "@/app/dashboard/actions";
 import { fmtDate } from "@/lib/dashboard/format";
 import type { Doc } from "@/lib/dashboard/types";
+import NextStep, { type NextStepInfo } from "../NextStep/NextStep";
 
 export default function Documents({
   documents,
   signer,
+  afterAgreement,
 }: {
   documents: Doc[];
   signer: string;
+  /** Where to go once the agreement is signed: billing, if not set up yet. */
+  afterAgreement?: NextStepInfo;
 }) {
+  const [next, setNext] = useState(false);
   const { run, pending } = useAction();
   const [docs, setDocs] = useState(documents);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -50,6 +55,11 @@ export default function Documents({
               : doc,
           ),
         );
+        // The agreement: on to billing.
+        if (open.kind === "AGREEMENT" && afterAgreement) {
+          setOpenId(null);
+          setNext(true);
+        }
         return {
           message: `Signed: ${open.title}`,
           detail: "Thank you. A copy stays here in Documents.",
@@ -241,6 +251,13 @@ export default function Documents({
           </div>
         )}
       </Modal>
+      {afterAgreement && (
+        <NextStep
+          step={afterAgreement}
+          open={next}
+          onClose={() => setNext(false)}
+        />
+      )}
     </>
   );
 }
