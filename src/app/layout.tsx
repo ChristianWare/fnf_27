@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
 import Analytics from "@/components/shared/Analytics/Analytics";
+import NavProgress from "@/components/shared/NavProgress/NavProgress";
 import { APP_URL } from "@/lib/server/config";
 import JsonLd from "@/components/shared/JsonLd/JsonLd";
 import { organization } from "@/lib/seo";
@@ -117,6 +118,7 @@ export default function RootLayout({
           <PageTransitions />
           {children}
         </SmoothScroll>
+        <NavProgress />
         <Analytics />
         <JsonLd data={organization} />
       </body>
