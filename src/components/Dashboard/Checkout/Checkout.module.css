@@ -1,0 +1,248 @@
+/* The form on the left, the order on the right. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 42rem);
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.blockHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.blockTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--black);
+  text-transform: none;
+}
+
+.edit {
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.who {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.whoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  padding: 1.4rem 1.6rem;
+  border-radius: 1.2rem;
+  background-color: var(--light);
+}
+
+.whoItem dd {
+  overflow: hidden;
+  font-size: 16px;
+  color: var(--black);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.whoWide {
+  grid-column: 1 / -1;
+}
+
+.small {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.error {
+  padding: 1.2rem 1.6rem;
+  border-radius: 1.2rem;
+  background-color: #ffe4de;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #a2301c;
+}
+
+/* While Stripe's form loads: three soft bars. */
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loading span {
+  height: 4.8rem;
+  border-radius: 1.2rem;
+  background-color: var(--light);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.loading span:nth-child(2) {
+  width: 70%;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* The order: a light card, sticky beside the form. */
+.order {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.orderHead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.orderTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.8rem;
+  line-height: 1.1;
+  letter-spacing: -0.4px;
+  color: var(--black);
+  text-transform: none;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem 1.8rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid var(--light2);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.line:last-child {
+  border-bottom: none;
+}
+
+.line dt {
+  color: var(--text);
+}
+
+.line dd {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  text-align: right;
+  color: var(--black);
+}
+
+.was {
+  color: var(--text);
+}
+
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.6rem;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 18px;
+  color: var(--black);
+}
+
+.totalValue {
+  font-size: 3.2rem;
+  letter-spacing: -0.6px;
+}
+
+.pay {
+  width: 100%;
+  min-height: 5.8rem;
+  justify-content: center;
+  font-size: 17px;
+}
+
+.fine {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.secure {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.secure svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: none;
+}
+
+@media screen and (max-width: 1068px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .order {
+    position: static;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .block,
+  .order {
+    padding: 2.4rem 1.6rem;
+  }
+
+  .who {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading span {
+    animation: none;
+  }
+}

@@ -90,6 +90,18 @@ export function blueprintCounts(pages: BlueprintPage[]) {
 export type PageStatus = "APPROVED" | "CHANGES" | "REVIEW" | "DRAFT";
 
 /**
+ * Where the whole blueprint stands. It's sent, approved and changed as
+ * one, so its sections move together.
+ */
+export function blueprintStatus(pages: BlueprintPage[]): PageStatus {
+  const all = pages.flatMap((p) => p.sections);
+  if (all.length && all.every((s) => s.status === "APPROVED")) return "APPROVED";
+  if (all.some((s) => s.status === "CHANGES")) return "CHANGES";
+  if (all.some((s) => s.status === "REVIEW")) return "REVIEW";
+  return "DRAFT";
+}
+
+/**
  * Where a blueprint page stands, from its sections. Clients approve, or ask
  * for changes to, a whole page at a time.
  */
@@ -250,14 +262,10 @@ export function projectSteps(client: Client): Step[] {
     {
       id: "blueprint",
       title: "Approve your blueprint",
-      text: (() => {
-        const waiting = client.blueprint.filter(
-          (page) => pageStatus(page) === "REVIEW",
-        ).length;
-        return waiting > 0
-          ? `${waiting} page${waiting === 1 ? " is" : "s are"} waiting for you to approve.`
-          : "Every page and section, written for the searches riders make.";
-      })(),
+      text:
+        blueprintStatus(client.blueprint) === "REVIEW"
+          ? `Every page of your site, ${client.blueprint.length} in all, ready for you to read and approve.`
+          : "Every page and section, written for the searches riders make.",
       waitText:
         counts.total > 0
           ? "We're working through your notes."
@@ -269,7 +277,7 @@ export function projectSteps(client: Client): Step[] {
         (counts.total > 0 && counts.approved === counts.total
           ? f.questionnaireSubmittedAt
           : undefined),
-      ready: counts.review > 0,
+      ready: blueprintStatus(client.blueprint) === "REVIEW",
       href: "/dashboard/website/blueprint",
       cta: "Review",
     },
@@ -426,6 +434,9 @@ function stepLink(client: Client, step: Step): Step["link"] {
     return { href: step.href, label: "View blueprint" };
   if (step.id === "questionnaire" || step.id === "assets")
     return { href: step.href, label: "Open" };
+  // The design page, always: the options show up there when they're ready.
+  if (step.id === "design")
+    return { href: step.href, label: "View design page" };
   if (step.state === "upcoming" && step.id === "booking")
     return { href: step.href, label: "Open the questionnaire" };
   return undefined;

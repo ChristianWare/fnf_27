@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { recordFailedInvoice, recordPaidInvoice } from "./invoices";
 import { cacheCard, clientByCustomer, stripe } from "./stripe";
+import { SOURCE, finishCheckout } from "./checkout";
 import {
   completeCardCheckout,
   completeSetupCheckout,
@@ -35,6 +36,12 @@ export async function handleStripeEvent(event: Stripe.Event) {
         if (object.mode === "setup") await completeCardCheckout(object.id!);
         else if (object.metadata?.purpose === "setup")
           await completeSetupCheckout(object.id!);
+        break;
+      // Paid or saved on our own checkout page. (Stripe's hosted page
+      // makes intents too; those finish through checkout.session above.)
+      case "payment_intent.succeeded":
+      case "setup_intent.succeeded":
+        if (object.metadata?.source === SOURCE) await finishCheckout(object.id!);
         break;
       case "invoice.paid":
       case "invoice.payment_succeeded":

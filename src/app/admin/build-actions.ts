@@ -1017,18 +1017,34 @@ export async function importBlueprint(
         .where(inArray(s.blueprintPages.id, gonePages));
   });
 
-  if (sent > 0) {
+  // Sending: the whole blueprint goes to them as one, to approve again.
+  if (input.send) {
+    const all = await blueprintSections(clientId);
+    const written = all.filter((x) => x.copy.length > 0);
+    if (written.length)
+      await db
+        .update(s.blueprintSections)
+        .set({ status: "REVIEW", updatedAt: new Date() })
+        .where(
+          inArray(
+            s.blueprintSections.id,
+            written.map((x) => x.id),
+          ),
+        );
+    sent = written.length;
+  }
+  if (sent > 0 && input.send) {
     await addActivity(
       clientId,
       "build",
-      `${sent} blueprint section${sent === 1 ? " is" : "s are"} ready for you`,
+      "Your blueprint is ready for you",
       "/dashboard/website/blueprint",
     );
     await emailClient(clientId, "Your blueprint is ready for you", {
       eyebrow: "Blueprint",
       heading: "Your blueprint is ready to read",
       paragraphs: [
-        "Read each page through, then approve it, or tell us what to change and we'll rewrite it.",
+        "It's every page of your new site, section by section. Read it through, then approve it, or tell us what to change and we'll send it back.",
       ],
       button: {
         label: "Review your blueprint",
@@ -1039,4 +1055,102 @@ export async function importBlueprint(
   refresh();
   const client = await loadClient(clientId);
   return done({ pages: client?.blueprint ?? [], sent });
+}
+
+/* ── The whole blueprint, sent and approved as one ── */
+
+/** Every section of the client's blueprint. */
+async function blueprintSections(clientId: string) {
+  return db
+    .select({ section: s.blueprintSections })
+    .from(s.blueprintSections)
+    .innerJoin(
+      s.blueprintPages,
+      eq(s.blueprintPages.id, s.blueprintSections.pageId),
+    )
+    .where(eq(s.blueprintPages.clientId, clientId))
+    .then((rows) => rows.map((r) => r.section));
+}
+
+/**
+ * Sends the whole blueprint to the client to approve, as one: every
+ * written section goes to them, with one email. Again after their
+ * changes, it sends the updated version.
+ */
+export async function sendBlueprint(
+  clientId: string,
+): Promise<ActionResult<{ sent: number; empty: number }>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const all = await blueprintSections(clientId);
+  const written = all.filter((x) => x.copy.length > 0);
+  if (!written.length) return fail("Write some copy first: every section is empty.");
+  const again = all.some((x) => x.status === "CHANGES");
+  await db
+    .update(s.blueprintSections)
+    .set({ status: "REVIEW", updatedAt: new Date() })
+    .where(
+      inArray(
+        s.blueprintSections.id,
+        written.map((x) => x.id),
+      ),
+    );
+  await addActivity(
+    clientId,
+    "build",
+    again ? "Your updated blueprint is ready for you" : "Your blueprint is ready for you",
+    "/dashboard/website/blueprint",
+  );
+  await emailClient(
+    clientId,
+    again ? "Your updated blueprint is ready" : "Your blueprint is ready for you",
+    {
+      eyebrow: "Blueprint",
+      heading: again
+        ? "We've made your changes"
+        : "Your blueprint is ready to read",
+      paragraphs: [
+        "It's every page of your new site, section by section. Read it through, then approve it, or tell us what to change and we'll send it back.",
+      ],
+      button: {
+        label: "Read your blueprint",
+        href: url("/dashboard/website/blueprint"),
+      },
+    },
+  );
+  refresh();
+  return done({ sent: written.length, empty: all.length - written.length });
+}
+
+/** Approved by phone or email: the blueprint is done. */
+export async function markBlueprintApproved(
+  clientId: string,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const all = await blueprintSections(clientId);
+  if (!all.length) return fail("There's no blueprint yet.");
+  await db
+    .update(s.blueprintSections)
+    .set({ status: "APPROVED", updatedAt: new Date() })
+    .where(
+      inArray(
+        s.blueprintSections.id,
+        all.map((x) => x.id),
+      ),
+    );
+  const first = await setFact(
+    clientId,
+    "blueprintApprovedAt",
+    new Date().toISOString(),
+  );
+  if (first)
+    await addActivity(
+      clientId,
+      "build",
+      "Your blueprint is approved",
+      "/dashboard/website/blueprint",
+    );
+  refresh();
+  return done();
 }

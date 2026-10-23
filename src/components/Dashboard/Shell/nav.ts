@@ -8,7 +8,7 @@ import type { IconName } from "../icons";
 import type { Client } from "@/lib/dashboard/types";
 import {
   awaitingApproval,
-  blueprintCounts,
+  blueprintStatus,
   buildUnlocked,
   isLive,
   leadsAccess,
@@ -121,7 +121,7 @@ export function buildNav(
       href: "/dashboard/website/blueprint",
       label: "Blueprint",
       icon: "blueprint",
-      badge: blueprintCounts(client.blueprint).review || undefined,
+      badge: blueprintStatus(client.blueprint) === "REVIEW" ? 1 : undefined,
     };
     const design: NavItem = {
       href: "/dashboard/website/design",

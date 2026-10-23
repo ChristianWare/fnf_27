@@ -118,7 +118,7 @@ export default function BlueprintFile({
         <span className={styles.title}>Blueprint file</span>
         <span className={styles.help}>
           Write every page in one .md file and upload it. Unchanged sections
-          keep their approval.
+          keep their notes.
         </span>
       </div>
       <div className={styles.actions}>
@@ -211,7 +211,7 @@ export default function BlueprintFile({
                 className={ui.chip}
                 onClick={() => setSend(true)}
               >
-                Send to {firstName} to review
+                Send the blueprint to {firstName}
               </button>
               <button
                 type='button'
@@ -225,8 +225,8 @@ export default function BlueprintFile({
             </div>
             <p className={styles.help}>
               {send
-                ? `New and rewritten sections go to ${firstName} now, with an email. Unchanged ones keep their status and comments.`
-                : "New and rewritten sections stay drafts until you send them. Unchanged ones keep their status and comments."}
+                ? `The whole blueprint goes to ${firstName} now, with an email, for them to approve as one. Unchanged sections keep their notes.`
+                : "New and rewritten sections stay drafts until you press Send blueprint. Unchanged ones keep their status and notes."}
             </p>
 
             <div className={styles.pages}>

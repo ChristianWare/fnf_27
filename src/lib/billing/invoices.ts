@@ -112,6 +112,10 @@ async function describe(
   };
 }
 
+/** What an invoice was paid, on Stripe or recorded as paid elsewhere. */
+const paidAmount = (inv: Stripe.Invoice) =>
+  inv.amount_paid || inv.amount_paid_off_stripe || 0;
+
 /** The next free number for the year, under a lock so two never collide. */
 async function nextNumber(tx: Tx, at: Date) {
   await tx.execute(
@@ -152,7 +156,10 @@ async function upsertInvoice(
     client.cardBrand && client.cardLast4
       ? `${brandName(client.cardBrand)} ending ${client.cardLast4}`
       : null;
-  const amount = status === "PAID" ? inv.amount_paid : inv.amount_due;
+  // A receipt for a payment taken on our checkout page is marked paid
+  // outside Stripe's invoice, so its amount is counted there instead.
+  const amount =
+    status === "PAID" ? paidAmount(inv) : inv.amount_due;
 
   return db.transaction(async (tx) => {
     const [existing] = await tx
@@ -248,7 +255,7 @@ export async function emailInvoice(invoiceId: string, force = false) {
 export async function recordPaidInvoice(invoiceId: string) {
   const inv = await stripe().invoices.retrieve(invoiceId);
   // The free days before the first 1st come as a $0 invoice: nothing to say.
-  if (!inv.amount_paid) return;
+  if (!paidAmount(inv)) return;
   const client = await clientByCustomer(inv.customer);
   if (!client) {
     console.warn(

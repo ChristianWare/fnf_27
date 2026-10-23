@@ -1,0 +1,51 @@
+/* The bar above the blueprint: where it stands, and sending it as one. */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+  padding: 2.4rem;
+  border-radius: 2rem;
+  background-color: var(--white);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  max-width: 60rem;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1.2;
+  color: var(--black);
+  text-transform: none;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+@media screen and (max-width: 568px) {
+  .bar {
+    padding: 1.8rem 1.6rem;
+  }
+
+  .actions,
+  .actions > * {
+    width: 100%;
+  }
+}

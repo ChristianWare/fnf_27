@@ -100,7 +100,7 @@ export default function Overview({
                 <dt>Card</dt>
                 <dd>
                   {client.card
-                    ? `${client.card.brand} ${client.card.last4}`
+                    ? `${client.card.brand} •••• ${client.card.last4} · exp ${client.card.exp}`
                     : "None"}
                 </dd>
               </div>

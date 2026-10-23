@@ -1,8 +1,10 @@
 "use client";
 
-// Write a client's blueprint: pages, the sections on each, their copy and
-// status, and replies to the client's comments. Sending drafts for review
-// shows them to the client to approve, and emails them.
+// Write a client's blueprint: pages, the sections on each, their copy, and
+// replies to the client's notes. The blueprint goes to the client as one:
+// "Send blueprint" shows them every written page with one email, and they
+// approve the whole thing or ask for changes. "Mark as approved" is for
+// when they said yes by phone or email.
 
 import { useState } from "react";
 import Icon from "@/components/Dashboard/icons";
@@ -11,28 +13,29 @@ import { Pill, ui } from "@/components/Dashboard/ui/ui";
 import {
   addBlueprintPage,
   addBlueprintSection,
+  markBlueprintApproved,
   saveSectionCopy,
-  sendSectionsForReview,
-  setSectionStatus,
+  sendBlueprint,
   startBlueprint,
   studioComment,
 } from "@/app/admin/build-actions";
-import { blueprintCounts } from "@/lib/dashboard/helpers";
+import {
+  blueprintCounts,
+  blueprintStatus,
+  type PageStatus,
+} from "@/lib/dashboard/helpers";
 import { fmtShort } from "@/lib/dashboard/format";
-import type {
-  BlueprintPage,
-  BlueprintSection,
-  SectionStatus,
-} from "@/lib/dashboard/types";
+import type { BlueprintPage, BlueprintSection } from "@/lib/dashboard/types";
 import styles from "./Client.module.css";
+import bar from "./BlueprintEditor.module.css";
 import BlueprintFile from "./BlueprintFile";
 
-const statuses: { key: SectionStatus; label: string }[] = [
-  { key: "DRAFT", label: "Draft" },
-  { key: "CHANGES", label: "Changes asked" },
-  { key: "REVIEW", label: "With client" },
-  { key: "APPROVED", label: "Approved" },
-];
+const tone: Record<PageStatus, "lime" | "yellow" | "gray" | "red"> = {
+  DRAFT: "gray",
+  REVIEW: "yellow",
+  CHANGES: "red",
+  APPROVED: "lime",
+};
 
 // A starting set of pages for a black car site.
 const STARTER: {
@@ -161,10 +164,68 @@ export default function BlueprintEditor({
     );
   }
 
-  // Drafts with copy, and rewrites of pages the client asked to change.
-  const drafts = page.sections.filter(
-    (s) => (s.status === "DRAFT" || s.status === "CHANGES") && s.copy.length > 0,
+  const status = blueprintStatus(pages);
+  const written = pages.reduce(
+    (n, p) => n + p.sections.filter((x) => x.copy.length > 0).length,
+    0,
   );
+  const statusLabel = {
+    DRAFT: "Not sent yet",
+    REVIEW: `With ${firstName}`,
+    CHANGES: "Changes asked",
+    APPROVED: "Approved",
+  }[status];
+  const statusHelp = {
+    DRAFT: `Write every page, then send the whole blueprint to ${firstName}. They approve it as one, or ask for changes.`,
+    REVIEW: `${firstName} is reading it. They'll approve the whole blueprint or send notes. Edits you make now show on their page straight away.`,
+    CHANGES: `${firstName} asked for changes. Their notes are on the first section of the first page. Make the changes, then send the updated blueprint.`,
+    APPROVED: `${firstName} approved the blueprint. This is what you build from. Anything you add from here goes to them as a new draft.`,
+  }[status];
+  const sendLabel =
+    status === "CHANGES"
+      ? "Send updated blueprint"
+      : status === "REVIEW"
+        ? "Send again"
+        : `Send blueprint to ${firstName}`;
+
+  const setAll = (next: BlueprintSection["status"], onlyWritten: boolean) =>
+    setPages((list) =>
+      list.map((p) => ({
+        ...p,
+        sections: p.sections.map((x) =>
+          !onlyWritten || x.copy.length > 0 ? { ...x, status: next } : x,
+        ),
+      })),
+    );
+
+  const send = () =>
+    run(
+      () => sendBlueprint(clientId),
+      (data) => {
+        setAll("REVIEW", true);
+        return {
+          message:
+            status === "CHANGES"
+              ? `Updated blueprint sent to ${firstName}`
+              : `Blueprint sent to ${firstName}`,
+          detail: data?.empty
+            ? `${data.empty} empty section${data.empty === 1 ? " isn't" : "s aren't"} shown until you write ${data.empty === 1 ? "it" : "them"}.`
+            : "They'll get an email and approve it on their Blueprint page.",
+        };
+      },
+    );
+
+  const approve = () =>
+    run(
+      () => markBlueprintApproved(clientId),
+      () => {
+        setAll("APPROVED", false);
+        return {
+          message: "Blueprint approved",
+          detail: "The blueprint step on their Project status is done.",
+        };
+      },
+    );
 
   return (
     <>
@@ -180,27 +241,44 @@ export default function BlueprintEditor({
           setEditing(null);
         }}
       />
-      <section className={styles.bpSummary}>
-        {statuses.map((s) => (
-          <div
-            key={s.key}
-            className={`${styles.bpStat} ${styles[`bp_${s.key}`]}`}
-          >
-            <span className={ui.monoMuted}>{s.label}</span>
-            <span className={styles.bpValue}>
-              {s.key === "DRAFT"
-                ? counts.draft
-                : s.key === "CHANGES"
-                  ? counts.changes
-                  : s.key === "REVIEW"
-                    ? counts.review
-                    : counts.approved}
-            </span>
+      <section className={bar.bar}>
+        <div className={bar.text}>
+          <div className={bar.head}>
+            <h2 className={bar.title}>Blueprint</h2>
+            <Pill tone={tone[status]} dot>
+              {statusLabel}
+            </Pill>
           </div>
-        ))}
-        <div className={styles.bpStat}>
-          <span className={ui.monoMuted}>Pages</span>
-          <span className={styles.bpValue}>{pages.length}</span>
+          <p className={styles.help}>{statusHelp}</p>
+          <span className={ui.monoMuted}>
+            {pages.length} page{pages.length === 1 ? "" : "s"} ·{" "}
+            {counts.total} section{counts.total === 1 ? "" : "s"} ·{" "}
+            {written} written
+          </span>
+        </div>
+        <div className={bar.actions}>
+          {status !== "APPROVED" && (
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_light}`}
+              disabled={pending}
+              onClick={approve}
+            >
+              Mark as approved
+              <Icon name='check' className={ui.btnIcon} />
+            </button>
+          )}
+          {status !== "APPROVED" && (
+            <button
+              type='button'
+              className={`${ui.btn} ${ui.btn_black}`}
+              disabled={pending || written === 0}
+              onClick={send}
+            >
+              {sendLabel}
+              <Icon name='send' className={ui.btnIcon} />
+            </button>
+          )}
         </div>
       </section>
 
@@ -295,38 +373,6 @@ export default function BlueprintEditor({
                 </span>
               )}
             </div>
-            {drafts.length > 0 && (
-              <button
-                type='button'
-                className={`${ui.btn} ${ui.btn_black}`}
-                disabled={pending}
-                onClick={() =>
-                  run(
-                    () =>
-                      sendSectionsForReview(
-                        clientId,
-                        drafts.map((x) => x.id),
-                      ),
-                    () => {
-                      drafts.forEach((x) =>
-                        updateSection(x.id, (y) => ({
-                          ...y,
-                          status: "REVIEW",
-                        })),
-                      );
-                      return {
-                        message: `${drafts.length} section${drafts.length === 1 ? "" : "s"} sent to ${firstName}`,
-                        detail:
-                          "They'll see them on their Blueprint page to approve, and get an email.",
-                      };
-                    },
-                  )
-                }
-              >
-                Send {drafts.length} for review
-                <Icon name='send' className={ui.btnIcon} />
-              </button>
-            )}
           </div>
 
           <ol className={styles.bpSections}>
@@ -339,40 +385,9 @@ export default function BlueprintEditor({
                     </span>
                     {section.title}
                   </span>
-                  <div
-                    className={styles.segmented}
-                    role='radiogroup'
-                    aria-label={`${section.title} status`}
-                  >
-                    {statuses.map((s) => (
-                      <button
-                        key={s.key}
-                        type='button'
-                        role='radio'
-                        aria-checked={section.status === s.key}
-                        className={`${styles.segment} ${section.status === s.key ? styles[`seg_${s.key}`] : ""}`}
-                        onClick={() => {
-                          if (section.status === s.key) return;
-                          const next = s.key;
-                          run(
-                            () => setSectionStatus(clientId, section.id, next),
-                            () => {
-                              updateSection(section.id, (x) => ({
-                                ...x,
-                                status: next,
-                              }));
-                              return {
-                                message: `${section.title}: ${s.label.toLowerCase()}`,
-                                tone: "info",
-                              };
-                            },
-                          );
-                        }}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
+                  {section.copy.length === 0 && (
+                    <span className={ui.monoMuted}>Not written</span>
+                  )}
                 </div>
 
                 {editing === section.id ? (
@@ -571,15 +586,6 @@ export default function BlueprintEditor({
           </form>
         </section>
       </div>
-      {counts.review > 0 && (
-        <p className={styles.footnote}>
-          <Pill tone='yellow' dot>
-            {counts.review} with {firstName}
-          </Pill>{" "}
-          Sections marked “With client” are on {firstName}&apos;s Blueprint page
-          now, waiting for approval or comments.
-        </p>
-      )}
     </>
   );
 }

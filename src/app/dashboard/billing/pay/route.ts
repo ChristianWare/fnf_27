@@ -11,6 +11,13 @@ export async function GET(request: Request) {
   const back = (path: string) =>
     NextResponse.redirect(new URL(path, request.url), 303);
   if (viewingAs) return back("/dashboard/billing?error=view-as");
+  // Our own checkout page, once Stripe's publishable key is set; Stripe's
+  // hosted page otherwise, or when asked for (?hosted=1).
+  if (
+    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY &&
+    !new URL(request.url).searchParams.has("hosted")
+  )
+    return back("/dashboard/checkout?for=setup");
   try {
     const origin = new URL(request.url).origin;
     return NextResponse.redirect(

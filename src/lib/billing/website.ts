@@ -34,7 +34,7 @@ import {
 
 const { websites, clients } = schema;
 
-async function siteOf(clientId: string) {
+export async function siteOf(clientId: string) {
   const [row] = await db
     .select({ site: websites, client: clients })
     .from(websites)
@@ -231,20 +231,41 @@ export async function completeCardCheckout(sessionId: string) {
   const intent = session.setup_intent as Stripe.SetupIntent | null;
   const method = intent?.payment_method as Stripe.PaymentMethod | null;
   if (!method) return;
+  return applyCard(
+    clientId,
+    String(session.customer),
+    method,
+    session.metadata?.purpose,
+    session.id,
+  );
+}
 
+/**
+ * A card was saved (from Stripe's page or our checkout page): use it for
+ * everything, retry anything owed, and do what it was saved for: start the
+ * monthly plan when the setup fee is waived, or keep the Leads Tool.
+ * `key` makes a repeat (webhook and return page both) change nothing.
+ */
+export async function applyCard(
+  clientId: string,
+  customerId: string,
+  method: Stripe.PaymentMethod,
+  purpose: string | undefined,
+  key: string,
+): Promise<{ leads?: string; waived?: "ok" }> {
   const [client] = await db
     .select()
     .from(clients)
     .where(eq(clients.id, clientId))
     .limit(1);
-  if (!client) return;
+  if (!client) return {};
   // Already done (the webhook and the return page both get here).
   const already =
     client.cardLast4 === method.card?.last4 &&
     client.cardExpYear === method.card?.exp_year &&
     client.cardExpMonth === method.card?.exp_month;
 
-  await stripe().customers.update(String(session.customer), {
+  await stripe().customers.update(customerId, {
     invoice_settings: { default_payment_method: method.id },
   });
   const row = await siteOf(clientId);
@@ -262,7 +283,7 @@ export async function completeCardCheckout(sessionId: string) {
       });
   }
   await cacheCard(clientId, method);
-  if (!already && session.metadata?.purpose !== "waived") {
+  if (!already && purpose !== "waived") {
     await addActivity(
       clientId,
       "invoice",
@@ -275,7 +296,7 @@ export async function completeCardCheckout(sessionId: string) {
     await retryLeadsPayment(clientId).catch(() => undefined);
   // The setup fee was waived: the card is all they needed, so the setup
   // step is done and the monthly plan starts, first bill on the next 1st.
-  if (session.metadata?.purpose === "waived") {
+  if (purpose === "waived") {
     await setFact(clientId, "setupFeeWaivedAt", new Date().toISOString());
     const first = await setFact(
       clientId,
@@ -295,9 +316,9 @@ export async function completeCardCheckout(sessionId: string) {
   }
   // Added to keep the Leads Tool: its subscription starts now. A declined
   // card is the client's to fix, not a webhook to retry.
-  if (session.metadata?.purpose === "leads") {
+  if (purpose === "leads") {
     try {
-      await startLeadsSubscription(clientId, method.id, session.id);
+      await startLeadsSubscription(clientId, method.id, key);
       return { leads: "ok" as const };
     } catch (error) {
       console.error("[billing] Leads Tool subscription failed:", error);
