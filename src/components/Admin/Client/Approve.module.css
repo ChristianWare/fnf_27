@@ -1,0 +1,32 @@
+/* The agreement step inside the approval card. */
+.agreement {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  border-radius: 1.8rem;
+  background-color: var(--light);
+}
+
+.agreementHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.agreementText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  max-width: 52rem;
+}
+
+.agreementTitle {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}

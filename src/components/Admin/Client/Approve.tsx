@@ -1,8 +1,8 @@
 "use client";
 
-// A new sign-up: read what they asked for, set the plan and prices, and
-// approve. Approving emails them a welcome with the agreement and the
-// setup fee.
+// A new sign-up: read what they asked for, set the plan and prices, shape
+// the agreement they'll sign, and approve. Approving emails them a welcome
+// with the agreement and the setup fee.
 
 import { useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
@@ -13,7 +13,16 @@ import { approveClient, declineClient } from "@/app/admin/actions";
 import { fmtShort, money } from "@/lib/dashboard/format";
 import { PLANS } from "@/lib/dashboard/plans";
 import type { PlanId } from "@/lib/dashboard/types";
+import AgreementEditor from "@/components/Admin/Agreement/AgreementEditor";
+import {
+  BUILT_IN,
+  builtInDraft,
+  guessTemplate,
+  type AgreementDraft,
+  type AgreementTemplate,
+} from "@/lib/agreements/types";
 import styles from "./Client.module.css";
+import own from "./Approve.module.css";
 
 export default function Approve({
   clientId,
@@ -22,6 +31,7 @@ export default function Approve({
   email,
   request,
   nextFirst,
+  templates: savedTemplates,
 }: {
   clientId: string;
   business: string;
@@ -29,6 +39,8 @@ export default function Approve({
   email: string;
   request?: { plan?: PlanId | "LEADS"; message?: string };
   nextFirst: string;
+  /** Agreement templates saved in earlier approvals. */
+  templates: AgreementTemplate[];
 }) {
   const { run, pending } = useAction();
   const first = name.split(" ")[0];
@@ -45,10 +57,26 @@ export default function Approve({
   const [declining, setDeclining] = useState(false);
   const [reason, setReason] = useState("");
 
+  // The agreement they'll sign: Black car or General from their name and
+  // note, until the admin picks or edits.
+  const [templates, setTemplates] = useState(savedTemplates);
+  const [draft, setDraft] = useState<AgreementDraft>(() =>
+    builtInDraft(guessTemplate(business, request?.message), plan),
+  );
+  const [edited, setEdited] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const templateName =
+    BUILT_IN.find((t) => t.id === draft.template)?.name ??
+    templates.find((t) => t.id === draft.template)?.name ??
+    "Custom";
+
   const choose = (next: PlanId) => {
     setPlan(next);
     setMonthly(String(PLANS[next].monthly));
     setSetup(String(PLANS[next].setup));
+    // A built-in template, untouched: its words follow the plan.
+    if (!edited && BUILT_IN.some((t) => t.id === draft.template))
+      setDraft(builtInDraft(draft.template, next));
   };
 
   if (done === "approved") {
@@ -180,6 +208,46 @@ export default function Approve({
         {money(Number(monthly) || 0)} is charged on {fmtShort(nextFirst)}.
       </p>
 
+      <div className={own.agreement}>
+        <div className={own.agreementHead}>
+          <div className={own.agreementText}>
+            <span className={own.agreementTitle}>The agreement</span>
+            <span className={styles.help}>
+              {templateName} template{edited ? ", edited" : ""} ·{" "}
+              {draft.service} · {draft.terms.length} terms. {first} signs it
+              first thing after you approve.
+            </span>
+          </div>
+          <button
+            type='button'
+            className={`${ui.btn} ${editing ? ui.btn_black : ui.btn_light} ${ui.btnSmall}`}
+            onClick={() => setEditing((on) => !on)}
+            aria-expanded={editing}
+          >
+            {editing ? "Done" : "Review and edit"}
+            <Icon name={editing ? "check" : "pen"} className={ui.btnIcon} />
+          </button>
+        </div>
+        {editing && (
+          <AgreementEditor
+            value={draft}
+            onChange={(next) => {
+              setEdited(next.template === draft.template);
+              setDraft(next);
+            }}
+            plan={plan}
+            templates={templates}
+            onTemplates={setTemplates}
+            preview={{
+              clientId,
+              plan,
+              monthly: Number(monthly) || 0,
+              setup: setupDue,
+            }}
+          />
+        )}
+      </div>
+
       <label className={ui.field}>
         <span className={ui.label}>A note in the welcome email (optional)</span>
         <textarea
@@ -210,6 +278,7 @@ export default function Approve({
                   monthly: Number(monthly),
                   setup: setupDue,
                   note,
+                  agreement: draft,
                 }),
               () => {
                 setDone("approved");

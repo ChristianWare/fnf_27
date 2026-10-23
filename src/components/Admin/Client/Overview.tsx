@@ -13,6 +13,7 @@ import { fmtAgo, fmtDate, money } from "@/lib/dashboard/format";
 import { projectSteps, trialDaysLeft } from "@/lib/dashboard/helpers";
 import { LEADS } from "@/lib/dashboard/plans";
 import type { ActivityKind, Client } from "@/lib/dashboard/types";
+import type { AgreementTemplate } from "@/lib/agreements/types";
 
 const kindIcon: Record<ActivityKind, IconName> = {
   build: "status",
@@ -27,9 +28,12 @@ const kindIcon: Record<ActivityKind, IconName> = {
 export default function Overview({
   client,
   now,
+  templates,
 }: {
   client: Client;
   now: string;
+  /** Saved agreement templates, for approving a sign-up. */
+  templates: AgreementTemplate[];
 }) {
   const first = client.contact.name.split(" ")[0];
   const w = client.website;
@@ -47,6 +51,7 @@ export default function Overview({
             email={client.contact.email}
             request={client.request}
             nextFirst={nextFirst(now)}
+            templates={templates}
           />
         )}
 

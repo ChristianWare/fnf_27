@@ -365,8 +365,11 @@ export const documents = pgTable(
       .default("OTHER"),
     /** INFO: for their records, nothing to sign. */
     status: text("status", { enum: ["AWAITING", "SIGNED", "INFO"] }).notNull(),
-    /** The text, for documents written here. */
-    body: jsonb("body").$type<{ heading: string; text: string }[]>(),
+    /** The text, for documents written here: headed blocks, or for a
+     * service agreement the whole agreement (src/lib/agreements, v: 2). */
+    body: jsonb("body").$type<
+      { heading: string; text: string }[] | Record<string, unknown>
+    >(),
     /** The file, for documents uploaded as a PDF. */
     fileUrl: text("file_url"),
     fileName: text("file_name"),

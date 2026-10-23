@@ -29,7 +29,13 @@ import { emailClient, emailPerson } from "@/lib/server/notify";
 import { errorText } from "@/lib/billing/stripe";
 import { stopLeadsPlanForFullPlatform } from "@/lib/billing/leads";
 import { cancelEverythingNow, setWebsiteCancel } from "@/lib/billing/website";
-import { serviceAgreement } from "@/lib/dashboard/agreement";
+import {
+  buildAgreement,
+  builtInDraft,
+  cleanDraft,
+  guessTemplate,
+} from "@/lib/agreements/types";
+import { partiesOf } from "@/lib/agreements/server";
 import { nextFirst } from "@/lib/dashboard/billing";
 import { fmtDate, money } from "@/lib/dashboard/format";
 import { todos } from "@/lib/dashboard/helpers";
@@ -201,7 +207,14 @@ export async function removeAdmin(userId: string): Promise<ActionResult> {
 
 export async function approveClient(
   clientId: string,
-  input: { plan: PlanId; monthly: number; setup: number; note?: string },
+  input: {
+    plan: PlanId;
+    monthly: number;
+    setup: number;
+    note?: string;
+    /** The agreement as the admin shaped it. The template, if not given. */
+    agreement?: unknown;
+  },
 ): Promise<ActionResult> {
   const a = await admin();
   if (!a.ok) return fail(a.error);
@@ -214,6 +227,18 @@ export async function approveClient(
   const client = await loadClient(clientId);
   if (!client) return fail("We couldn't find that client.");
   if (client.website) return fail(`${client.business} already has a plan.`);
+
+  let draft;
+  try {
+    draft = input.agreement
+      ? cleanDraft(input.agreement)
+      : builtInDraft(
+          guessTemplate(client.business, client.request?.message),
+          input.plan,
+        );
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : "Check the agreement.");
+  }
 
   // Their current site's domain, if they told us one.
   const [row] = await db
@@ -251,7 +276,13 @@ export async function approveClient(
       summary: "Your plan, the fees and what we build.",
       kind: "AGREEMENT",
       status: "AWAITING",
-      body: serviceAgreement(client.business, input.plan, { monthly, setup }),
+      body: buildAgreement(draft, {
+        parties: partiesOf(client),
+        plan: input.plan,
+        monthly,
+        setup,
+        date: now,
+      }),
       sentAt: now,
     });
     await addActivity(

@@ -3,6 +3,7 @@
 // money is in dollars.
 
 import type { CustomQuestions } from "./customQuestions";
+import type { AgreementBody } from "@/lib/agreements/types";
 
 export type PlanId = "FULL_PLATFORM" | "WEBSITE_ONLY";
 
@@ -63,7 +64,11 @@ export type Doc = {
   sentAt: string;
   signedAt?: string;
   signedBy?: string;
+  /** The address it was signed from, for the e-signature record. */
+  signedIp?: string;
   body: DocBlock[];
+  /** A service agreement in the proposal's layout (newer agreements). */
+  agreement?: AgreementBody;
   /** A PDF, for documents sent as a file. */
   fileUrl?: string;
   fileName?: string;

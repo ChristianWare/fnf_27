@@ -1,0 +1,7 @@
+/* The agreement's Edit and PDF buttons, beside its status. */
+.docTools {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.6rem;
+}

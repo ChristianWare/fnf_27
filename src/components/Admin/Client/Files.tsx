@@ -2,8 +2,9 @@
 
 // A client's files: their questionnaire answers, brand assets, design
 // options and documents. You can copy the answers, download assets,
-// upload design options and send documents to sign. Uploads go straight to
-// Cloudinary; sending emails the client.
+// upload design options, send documents to sign, and change the service
+// agreement until it's signed. Uploads go straight to Cloudinary; sending
+// emails the client.
 
 import Image from "next/image";
 import { useRef, useState } from "react";
@@ -24,10 +25,23 @@ import {
   isAnswered,
   type QuestionSection,
 } from "@/lib/dashboard/questionnaire";
-import type { Answers, Asset, Designs, Doc } from "@/lib/dashboard/types";
+import type {
+  Answers,
+  Asset,
+  Designs,
+  Doc,
+  PlanId,
+} from "@/lib/dashboard/types";
 import type { CustomQuestions as Custom } from "@/lib/dashboard/customQuestions";
 import CustomQuestions from "./CustomQuestions";
+import AgreementEditor from "@/components/Admin/Agreement/AgreementEditor";
+import { updateAgreement } from "@/app/admin/agreement-actions";
+import type {
+  AgreementDraft,
+  AgreementTemplate,
+} from "@/lib/agreements/types";
 import styles from "./Client.module.css";
+import own from "./Files.module.css";
 
 const show = (value: Answers[string] | undefined) =>
   Array.isArray(value) ? value.join(", ") : value || "";
@@ -43,6 +57,10 @@ export default function Files({
   assets,
   designs,
   documents,
+  plan,
+  monthly,
+  setup,
+  templates: savedTemplates,
 }: {
   clientId: string;
   firstName: string;
@@ -55,6 +73,11 @@ export default function Files({
   assets: Asset[];
   designs: Designs;
   documents: Doc[];
+  /** Their plan and rates, for the agreement preview. */
+  plan: PlanId;
+  monthly: number;
+  setup: number;
+  templates: AgreementTemplate[];
 }) {
   const toast = useToast();
   const { run, pending } = useAction();
@@ -72,6 +95,48 @@ export default function Files({
   const [docTitle, setDocTitle] = useState("");
   const [docFile, setDocFile] = useState<File | null>(null);
   const [needsSignature, setNeedsSignature] = useState(true);
+
+  // Changing the agreement before it's signed.
+  const [templates, setTemplates] = useState(savedTemplates);
+  const [editingDoc, setEditingDoc] = useState<string | null>(null);
+  const [draft, setDraft] = useState<AgreementDraft | null>(null);
+  const editDoc = (doc: Doc) => {
+    if (!doc.agreement) return;
+    const { template, service, summary, included, timeline, terms } =
+      doc.agreement;
+    setDraft({ template, service, summary, included, timeline, terms });
+    setEditingDoc(doc.id);
+  };
+  const saveAgreement = () => {
+    const docId = editingDoc;
+    const next = draft;
+    if (!docId || !next || pending) return;
+    run(
+      () => updateAgreement(clientId, docId, next),
+      () => {
+        setDocs((list) =>
+          list.map((d) =>
+            d.id === docId && d.agreement
+              ? {
+                  ...d,
+                  agreement: {
+                    ...d.agreement,
+                    ...next,
+                    included: next.included.map((x) => x.trim()).filter(Boolean),
+                    date: new Date().toISOString(),
+                  },
+                }
+              : d,
+          ),
+        );
+        setEditingDoc(null);
+        return {
+          message: "Agreement updated",
+          detail: `${firstName} sees the new version on their Documents page.`,
+        };
+      },
+    );
+  };
 
   const uploadTo = async (kind: "designs" | "documents", files: File[]) => {
     const ticket = await adminUploadTicket(clientId, kind);
@@ -295,6 +360,27 @@ export default function Files({
                         : ""}
                     </span>
                   </span>
+                  {doc.agreement && (
+                    <span className={own.docTools}>
+                      {doc.status === "AWAITING" && (
+                        <button
+                          type='button'
+                          className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
+                          onClick={() => editDoc(doc)}
+                        >
+                          Edit
+                          <Icon name='pen' className={ui.btnIcon} />
+                        </button>
+                      )}
+                      <a
+                        href={`/admin/clients/${clientId}/documents/${doc.id}`}
+                        className={styles.download}
+                        aria-label={`Download ${doc.title} as a PDF`}
+                      >
+                        <Icon name='download' />
+                      </a>
+                    </span>
+                  )}
                   {doc.status === "SIGNED" ? (
                     <Pill tone='lime' dot>
                       Signed
@@ -499,6 +585,45 @@ export default function Files({
           )}
         </section>
       </div>
+
+      <Modal isOpen={Boolean(editingDoc)} onClose={() => setEditingDoc(null)}>
+        {draft && (
+          <div className={ui.modalBody}>
+            <span className={ui.monoMuted}>Service agreement</span>
+            <h2 className={ui.modalTitle}>Edit {firstName}&apos;s agreement</h2>
+            <p className={styles.help}>
+              They haven&apos;t signed it yet, so they&apos;ll see this version
+              as soon as you save.
+            </p>
+            <AgreementEditor
+              value={draft}
+              onChange={setDraft}
+              plan={plan}
+              templates={templates}
+              onTemplates={setTemplates}
+              preview={{ clientId, plan, monthly, setup }}
+            />
+            <div className={ui.modalActions}>
+              <button
+                type='button'
+                className={`${ui.btn} ${ui.btn_light}`}
+                onClick={() => setEditingDoc(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type='button'
+                className={`${ui.btn} ${ui.btn_black}`}
+                disabled={pending}
+                onClick={saveAgreement}
+              >
+                Save changes
+                <Icon name='check' className={ui.btnIcon} />
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <Modal isOpen={sending} onClose={() => setSending(false)}>
         <form

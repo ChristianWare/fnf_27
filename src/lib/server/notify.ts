@@ -37,6 +37,8 @@ export async function alertAdmins(
   subject: string,
   content: EmailContent,
   sms?: string,
+  /** Files to attach, such as a signed agreement. */
+  attachments?: { filename: string; content: Uint8Array }[],
 ) {
   try {
     const team = await admins();
@@ -48,7 +50,9 @@ export async function alertAdmins(
     await Promise.all(
       team
         .filter((a) => a.passwordHash && wants({ notify: a.notify }, kind))
-        .map((a) => sendEmail({ to: a.email, subject, html, text })),
+        .map((a) =>
+          sendEmail({ to: a.email, subject, html, text, attachments }),
+        ),
     );
     const gateway = process.env.ADMIN_SMS_GATEWAY;
     if (sms && gateway) {

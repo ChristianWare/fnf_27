@@ -44,6 +44,8 @@ import { setWebsiteCancel } from "@/lib/billing/website";
 import { setLeadsCancel, startLeadsSubscription } from "@/lib/billing/leads";
 import { assetsComplete, isLive, leadsAccess } from "@/lib/dashboard/helpers";
 import { fmtDate } from "@/lib/dashboard/format";
+import { renderAgreement } from "@/lib/agreements/AgreementPdf";
+import { agreementFileName, isAgreementBody } from "@/lib/agreements/types";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
 import type { Answers, Asset, AssetLabel } from "@/lib/dashboard/types";
 import { ensureSettings } from "@/lib/leads/workspace";
@@ -112,6 +114,46 @@ export async function signDocument(
   if (doc.kind === "AGREEMENT") {
     await setFact(a.clientId, "agreementSignedAt", now.toISOString());
   }
+
+  // The new agreement: note who signed it, and send both sides the PDF.
+  let signedPdf: { filename: string; content: Uint8Array } | undefined;
+  if (isAgreementBody(doc.body)) {
+    const body = { ...doc.body, signerEmail: a.user.email };
+    await db
+      .update(s.documents)
+      .set({ body })
+      .where(eq(s.documents.id, doc.id));
+    try {
+      const pdf = await renderAgreement(body, {
+        id: doc.id,
+        signedAt: now.toISOString(),
+        signedBy: signer,
+        signedIp: ip ?? undefined,
+      });
+      signedPdf = {
+        filename: agreementFileName(body.parties.business),
+        content: new Uint8Array(pdf),
+      };
+      await emailClient(
+        a.clientId,
+        "Your signed agreement",
+        {
+          eyebrow: "Signed",
+          heading: "Your agreement, signed",
+          paragraphs: [
+            `Thanks, ${firstName(signer)}. Your signed copy is attached, and it's always on your Documents page.`,
+          ],
+          button: {
+            label: "Open your dashboard",
+            href: url("/dashboard"),
+          },
+        },
+        { attachments: [signedPdf] },
+      );
+    } catch (error) {
+      console.error(`[documents] signed PDF for ${doc.id} failed:`, error);
+    }
+  }
   await addActivity(
     a.clientId,
     "document",
@@ -127,12 +169,13 @@ export async function signDocument(
     paragraphs: [
       `Signed by ${signer} on ${fmtDate(now)}.`,
       ...(doc.kind === "AGREEMENT" ? ["Next for them: the setup fee, or adding their card if it's waived."] : []),
+      ...(signedPdf ? ["The signed PDF is attached."] : []),
     ],
     button: {
       label: "Open their files",
       href: url(`/admin/clients/${a.clientId}?tab=files`),
     },
-  });
+  }, undefined, signedPdf ? [signedPdf] : undefined);
   refresh();
   return done({ signedAt: now.toISOString() });
 }

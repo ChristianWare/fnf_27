@@ -4,6 +4,7 @@
 // failed payment, cancelling, matching Stripe, and the Leads Tool trial.
 
 import { revalidatePath } from "next/cache";
+import { refreshAgreementFees } from "@/lib/agreements/server";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { getSessionUser } from "@/lib/auth/dal";
@@ -76,6 +77,9 @@ export async function saveRates(
   } catch (error) {
     return fail(errorText(error));
   }
+
+  // An agreement they haven't signed yet shows the new fees.
+  await refreshAgreementFees(clientId);
 
   if (w.plan !== input.plan || w.monthly !== monthly) {
     const from = fmtDate(w.nextBillingAt ?? nextFirst(new Date()));

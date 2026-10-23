@@ -1,0 +1,358 @@
+/* The agreement as a page of paper, in the proposal's layout. */
+.doc {
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
+  padding: 4rem;
+  border: 1px solid var(--light2);
+  border-radius: 1.8rem;
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.mono {
+  font-family: var(--IBMPlex);
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.muted {
+  color: var(--text);
+}
+
+.letterhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 17px;
+}
+
+.logo {
+  width: 3.4rem;
+  height: auto;
+}
+
+.from {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  text-align: right;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.2rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 2.6rem;
+  padding: 0 1.2rem;
+  border-radius: 1.3rem;
+  background-color: var(--accent2);
+  font-family: var(--IBMPlex);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.title {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 4rem;
+  line-height: 1.05;
+  letter-spacing: -1.2px;
+  color: var(--black);
+  text-transform: none;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 2.4rem;
+  padding: 2.4rem 0;
+  border-top: 1px solid var(--light2);
+  border-bottom: 1px solid var(--light2);
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.fact dd {
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.section p {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.h2 {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.6rem;
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+  color: var(--black);
+  text-transform: none;
+}
+
+.section .body {
+  color: var(--text);
+}
+
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+  padding-left: 2rem;
+  list-style: disc;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.thead,
+.trow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+}
+
+.thead {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--black);
+}
+
+.thead span:last-child {
+  text-align: right;
+}
+
+.trow {
+  padding: 1.6rem 0;
+  border-bottom: 1px solid var(--light2);
+}
+
+.trow > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lineTitle {
+  font-size: 16px;
+}
+
+.lineDetail {
+  max-width: 52rem;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.struck {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.waived {
+  padding: 0.2rem 0.8rem;
+  border-radius: 1rem;
+  background-color: var(--accent3);
+  font-family: var(--IBMPlex);
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.8rem;
+}
+
+.grand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  width: min(34rem, 100%);
+  padding: 1.4rem 1.8rem;
+  border-radius: 1.2rem;
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.grandLabel {
+  font-family: var(--IBMPlex);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.grandValue {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.section .then {
+  font-size: 13px;
+  color: var(--text);
+  text-align: right;
+}
+
+.terms {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+  list-style: none;
+}
+
+.term {
+  display: flex;
+  gap: 1.4rem;
+}
+
+.num {
+  flex: none;
+  width: 2.4rem;
+  padding-top: 0.2rem;
+  font-family: var(--IBMPlex);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.termBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.termHead {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.termBody p {
+  color: var(--text);
+}
+
+.signs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3.2rem;
+}
+
+.sign {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.signName {
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--black);
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.6rem;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+}
+
+.unsigned {
+  color: var(--light2);
+}
+
+.signMeta {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.record {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.6rem 1.8rem;
+  border-radius: 1.2rem;
+  background-color: var(--light);
+}
+
+.section .record {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media screen and (max-width: 768px) {
+  .doc {
+    gap: 2.4rem;
+    padding: 2.4rem 1.8rem;
+  }
+
+  .letterhead {
+    flex-direction: column;
+  }
+
+  .from {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .title {
+    font-size: 3rem;
+  }
+
+  .facts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .facts .fact:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .signs {
+    grid-template-columns: 1fr;
+    gap: 2.4rem;
+  }
+}

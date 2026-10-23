@@ -10,6 +10,7 @@ import { signDocument } from "@/app/dashboard/actions";
 import { fmtDate } from "@/lib/dashboard/format";
 import type { Doc } from "@/lib/dashboard/types";
 import NextStep, { type NextStepInfo } from "../NextStep/NextStep";
+import AgreementDoc from "../Agreement/AgreementDoc";
 
 export default function Documents({
   documents,
@@ -77,21 +78,21 @@ export default function Documents({
       <span
         className={`${styles.icon} ${doc.status === "AWAITING" ? styles.iconWaiting : ""}`}
       >
-        <Icon name='file' />
+        <Icon name="file" />
       </span>
       <div className={styles.text}>
         <div className={styles.titleRow}>
           <h3 className={styles.title}>{doc.title}</h3>
           {doc.status === "AWAITING" ? (
-            <Pill tone='yellow' dot>
+            <Pill tone="yellow" dot>
               Waiting for you
             </Pill>
           ) : doc.status === "SIGNED" ? (
-            <Pill tone='lime' dot>
+            <Pill tone="lime" dot>
               Signed {doc.signedAt ? fmtDate(doc.signedAt) : ""}
             </Pill>
           ) : (
-            <Pill tone='gray' dot>
+            <Pill tone="gray" dot>
               Sent {fmtDate(doc.sentAt)}
             </Pill>
           )}
@@ -99,7 +100,7 @@ export default function Documents({
         <p>{doc.summary}</p>
       </div>
       <button
-        type='button'
+        type="button"
         className={
           ui.btn +
           " " +
@@ -169,16 +170,37 @@ export default function Documents({
             {open.fileUrl && (
               <a
                 href={open.fileUrl}
-                target='_blank'
-                rel='noopener noreferrer'
+                target="_blank"
+                rel="noopener noreferrer"
                 className={`${ui.btn} ${ui.btn_light} ${styles.fileLink}`}
               >
                 Open {open.fileName ?? "the document"}
-                <Icon name='arrowUpRight' className={ui.btnIcon} />
+                <Icon name="arrowUpRight" className={ui.btnIcon} />
               </a>
             )}
 
-            {open.body.length > 0 && (
+            {open.agreement && (
+              <>
+                <AgreementDoc
+                  a={open.agreement}
+                  id={open.id}
+                  signedAt={open.signedAt}
+                  signedBy={open.signedBy}
+                  signedIp={open.signedIp}
+                />
+                <a
+                  href={`/dashboard/documents/${open.id}/pdf`}
+                  className={`${ui.btn} ${ui.btn_light} ${styles.fileLink}`}
+                >
+                  {open.status === "SIGNED"
+                    ? "Download your signed copy"
+                    : "Download as PDF"}
+                  <Icon name="download" className={ui.btnIcon} />
+                </a>
+              </>
+            )}
+
+            {!open.agreement && open.body.length > 0 && (
               <div className={styles.doc}>
                 {open.body.map((block, index) => (
                   <section key={block.heading} className={styles.clause}>
@@ -195,11 +217,13 @@ export default function Documents({
             )}
 
             {open.status === "INFO" ? null : open.status === "SIGNED" ? (
-              <div className={styles.signature}>
-                <span className={ui.monoMuted}>Signed by</span>
-                <span className={styles.signedName}>{open.signedBy}</span>
-                <p>{open.signedAt ? fmtDate(open.signedAt) : ""}</p>
-              </div>
+              open.agreement ? null : (
+                <div className={styles.signature}>
+                  <span className={ui.monoMuted}>Signed by</span>
+                  <span className={styles.signedName}>{open.signedBy}</span>
+                  <p>{open.signedAt ? fmtDate(open.signedAt) : ""}</p>
+                </div>
+              )
             ) : (
               <form
                 className={styles.signForm}
@@ -215,12 +239,12 @@ export default function Documents({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={signer}
-                    autoComplete='name'
+                    autoComplete="name"
                   />
                 </label>
                 <label className={styles.agree}>
                   <input
-                    type='checkbox'
+                    type="checkbox"
                     checked={agree}
                     onChange={(e) => setAgree(e.target.checked)}
                   />
@@ -231,19 +255,19 @@ export default function Documents({
                 </label>
                 <div className={ui.modalActions}>
                   <button
-                    type='button'
+                    type="button"
                     className={`${ui.btn} ${ui.btn_light}`}
                     onClick={() => setOpenId(null)}
                   >
                     Not now
                   </button>
                   <button
-                    type='submit'
+                    type="submit"
                     className={`${ui.btn} ${ui.btn_black}`}
                     disabled={!canSign || pending}
                   >
                     {pending ? "Signing…" : "Sign document"}
-                    <Icon name='pen' className={ui.btnIcon} />
+                    <Icon name="pen" className={ui.btnIcon} />
                   </button>
                 </div>
               </form>

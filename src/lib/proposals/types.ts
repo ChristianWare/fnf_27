@@ -54,22 +54,23 @@ export const PLAN_LABELS: Record<ProposalPlan, string> = {
   CUSTOM: "Custom",
 };
 
-// The terms from the Web Services Agreement, in plain words. Edit them per
-// proposal; the signed agreement is still what governs.
+// The key terms, in the same words as the service agreement
+// (src/lib/agreements/types.ts). Edit them per proposal; the signed
+// agreement is still what governs.
 const LIMO_TERMS = [
-  "Month to month. Cancel anytime with 30 days' notice in writing.",
-  "The monthly plan is charged automatically to the card on file on the 1st of every month, starting the 1st after your account is activated.",
+  "Month to month, no long-term contract. Cancel anytime, no questions asked.",
+  "The monthly plan is charged automatically to your card on the 1st of every month, starting the 1st after your setup fee is paid.",
   "Payments are non-refundable once work on the current billing cycle has started.",
   "You'll provide your logo, photos and details, and review each stage within 5 business days. The timeline moves with them.",
-  "One round of revisions after the design review is included. Changes after approval are quoted separately.",
+  "Small changes are unlimited while your plan is active. New pages or features are quoted first.",
   "Your domain, your phone number and your customer list stay yours.",
 ].join("\n");
 
 const CUSTOM_TERMS = [
   "Payments are non-refundable once work on the current billing cycle has started.",
   "You'll provide your logo, photos and details, and review each stage within 5 business days. The timeline moves with them.",
-  "One round of revisions after the design review is included. Changes after approval are quoted separately.",
-  "You own the custom design and content once paid in full.",
+  "One round of revisions to the chosen design is included. New pages or features are quoted first.",
+  "You can cancel at any time, no questions asked. No long-term contract.",
 ].join("\n");
 
 const NEXT_STEPS =

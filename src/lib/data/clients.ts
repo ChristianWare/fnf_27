@@ -19,6 +19,7 @@ import {
 import type { PgColumn } from "drizzle-orm/pg-core";
 import { db, schema } from "@/db";
 import { STUDIO_ID } from "@/lib/leads/kinds";
+import { isAgreementBody } from "@/lib/agreements/types";
 import type {
   Activity,
   Asset,
@@ -268,7 +269,9 @@ export async function loadClients(scope: ClientScope): Promise<Client[]> {
         sentAt: d.sentAt.toISOString(),
         signedAt: iso(d.signedAt),
         signedBy: d.signedBy ?? undefined,
-        body: d.body ?? [],
+        signedIp: d.signedIp ?? undefined,
+        body: Array.isArray(d.body) ? d.body : [],
+        agreement: isAgreementBody(d.body) ? d.body : undefined,
         fileUrl: d.fileUrl ?? undefined,
         fileName: d.fileName ?? undefined,
       }));

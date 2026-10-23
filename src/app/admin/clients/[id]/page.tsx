@@ -16,6 +16,7 @@ import { questionsFor } from "@/lib/dashboard/customQuestions";
 import { url } from "@/lib/server/config";
 import { loadGrowthAdmin } from "@/lib/growth/load";
 import { domainOf } from "@/lib/growth/searchConsole";
+import { agreementTemplates } from "@/lib/agreements/server";
 
 // "Pull now" on the Growth tab reads up to 16 months from Google.
 export const maxDuration = 120;
@@ -74,6 +75,10 @@ export default async function ClientPage({
     { key: "billing", label: "Billing", icon: "card" },
   ];
   const active: TabKey = tabs.find((t) => t.key === tab)?.key ?? "overview";
+  const templates =
+    active === "overview" || active === "files"
+      ? await agreementTemplates()
+      : [];
   const growthAdmin =
     active === "growth" && w
       ? await loadGrowthAdmin(client.id, now)
@@ -92,7 +97,9 @@ export default async function ClientPage({
       <Header client={client} />
       <Tabs clientId={client.id} tabs={tabs} active={active} />
 
-      {active === "overview" && <Overview client={client} now={now} />}
+      {active === "overview" && (
+        <Overview client={client} now={now} templates={templates} />
+      )}
 
       {active === "blueprint" && w && (
         <BlueprintEditor
@@ -115,6 +122,10 @@ export default async function ClientPage({
           assets={client.assets}
           designs={client.designs}
           documents={client.documents}
+          plan={w.plan}
+          monthly={w.monthly}
+          setup={w.setupFee}
+          templates={templates}
         />
       )}
 
