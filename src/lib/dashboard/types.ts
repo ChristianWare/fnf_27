@@ -94,7 +94,8 @@ export type Comment = {
   text: string;
 };
 
-export type SectionStatus = "DRAFT" | "REVIEW" | "APPROVED";
+/** CHANGES: the client asked for changes; we rewrite, then send it back. */
+export type SectionStatus = "DRAFT" | "REVIEW" | "APPROVED" | "CHANGES";
 
 export type BlueprintSection = {
   id: string;

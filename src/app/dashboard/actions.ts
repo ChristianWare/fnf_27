@@ -7,7 +7,7 @@
 
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { getSessionUser } from "@/lib/auth/dal";
 import type { User } from "@/lib/auth/users";
@@ -365,6 +365,49 @@ async function ownSections(clientId: string, ids: string[]) {
     );
 }
 
+
+/** Every section on every page approved: the blueprint is done. */
+async function blueprintDoneCheck(clientId: string) {
+  const [left] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(s.blueprintSections)
+    .innerJoin(
+      s.blueprintPages,
+      eq(s.blueprintPages.id, s.blueprintSections.pageId),
+    )
+    .where(
+      and(
+        eq(s.blueprintPages.clientId, clientId),
+        sql`${s.blueprintSections.status} <> 'APPROVED'`,
+      ),
+    );
+  if (left?.n === 0) {
+    const first = await setFact(
+      clientId,
+      "blueprintApprovedAt",
+      new Date().toISOString(),
+    );
+    if (first) {
+      await addActivity(
+        clientId,
+        "build",
+        "You approved your blueprint",
+        "/dashboard/website/blueprint",
+      );
+      const business = await businessName(clientId);
+      await alertAdmins("blueprint", `${business} approved their blueprint`, {
+        eyebrow: "Blueprint",
+        heading: `${business} approved every section`,
+        paragraphs: ["The blueprint is signed off. On to the build."],
+        button: {
+          label: "Open their blueprint",
+          href: url(`/admin/clients/${clientId}?tab=blueprint`),
+        },
+      });
+    }
+  }
+}
+
 export async function approveSections(ids: string[]): Promise<ActionResult> {
   const a = await actor();
   if (!a.ok) return fail(a.error);
@@ -382,45 +425,7 @@ export async function approveSections(ids: string[]): Promise<ActionResult> {
       ),
     );
 
-  // Every section on every page approved: the blueprint is done.
-  const [left] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(s.blueprintSections)
-    .innerJoin(
-      s.blueprintPages,
-      eq(s.blueprintPages.id, s.blueprintSections.pageId),
-    )
-    .where(
-      and(
-        eq(s.blueprintPages.clientId, a.clientId),
-        sql`${s.blueprintSections.status} <> 'APPROVED'`,
-      ),
-    );
-  if (left?.n === 0) {
-    const first = await setFact(
-      a.clientId,
-      "blueprintApprovedAt",
-      new Date().toISOString(),
-    );
-    if (first) {
-      await addActivity(
-        a.clientId,
-        "build",
-        "You approved your blueprint",
-        "/dashboard/website/blueprint",
-      );
-      const business = await businessName(a.clientId);
-      await alertAdmins("blueprint", `${business} approved their blueprint`, {
-        eyebrow: "Blueprint",
-        heading: `${business} approved every section`,
-        paragraphs: ["The blueprint is signed off. On to the build."],
-        button: {
-          label: "Open their blueprint",
-          href: url(`/admin/clients/${a.clientId}?tab=blueprint`),
-        },
-      });
-    }
-  }
+  await blueprintDoneCheck(a.clientId);
   refresh();
   return done();
 }
@@ -1091,6 +1096,120 @@ export async function requestUpgrade(): Promise<ActionResult> {
     text,
     id,
   );
+  refresh();
+  return done();
+}
+
+/* ── The blueprint, a page at a time ── */
+
+/** A page's sections, if it's this client's. */
+async function ownPage(clientId: string, pageId: string) {
+  const [page] = await db
+    .select()
+    .from(s.blueprintPages)
+    .where(
+      and(
+        eq(s.blueprintPages.id, pageId),
+        eq(s.blueprintPages.clientId, clientId),
+      ),
+    )
+    .limit(1);
+  if (!page) return undefined;
+  const sections = await db
+    .select()
+    .from(s.blueprintSections)
+    .where(eq(s.blueprintSections.pageId, pageId))
+    .orderBy(asc(s.blueprintSections.position));
+  return { page, sections };
+}
+
+/**
+ * The client's decision on one page: approve it (a note is optional) or
+ * ask for changes (a note is required). The note is kept with the page's
+ * first section, where the studio sees it beside the copy.
+ */
+export async function decidePage(
+  pageId: string,
+  decision: "APPROVE" | "CHANGES",
+  note: string,
+): Promise<ActionResult> {
+  const a = await actor();
+  if (!a.ok) return fail(a.error);
+  const body = clean(note ?? "", 4000);
+  if (decision === "CHANGES" && !body)
+    return fail("Tell us what to change, so we can get it right.");
+  const own = await ownPage(a.clientId, pageId);
+  if (!own) return fail("We couldn't find that page.");
+  const waiting = own.sections.filter((x) => x.status === "REVIEW");
+  if (!waiting.length) return fail("This page isn't waiting for you.");
+
+  await db
+    .update(s.blueprintSections)
+    .set({
+      status: decision === "APPROVE" ? "APPROVED" : "CHANGES",
+      updatedAt: new Date(),
+    })
+    .where(
+      inArray(
+        s.blueprintSections.id,
+        waiting.map((x) => x.id),
+      ),
+    );
+  if (body) {
+    await db.insert(s.blueprintComments).values({
+      id: createId(),
+      sectionId: own.sections[0].id,
+      author: "CLIENT",
+      name: a.user.name,
+      text: `${decision === "APPROVE" ? "Approved" : "Changes requested"}: ${body}`,
+    });
+  }
+
+  const business = await businessName(a.clientId);
+  if (decision === "CHANGES") {
+    await addActivity(
+      a.clientId,
+      "build",
+      `You asked for changes to ${own.page.name}`,
+      "/dashboard/website/blueprint",
+    );
+    await alertAdmins(
+      "blueprint",
+      `${business} asked for changes to ${own.page.name}`,
+      {
+        eyebrow: "Blueprint",
+        heading: `${firstName(a.user.name)} wants changes to ${own.page.name}`,
+        paragraphs: [
+          "Rewrite it, then send it back for review, or upload the updated .md file.",
+        ],
+        quote: { text: body, by: `${a.user.name}, ${business}` },
+        button: {
+          label: "Open their blueprint",
+          href: url(`/admin/clients/${a.clientId}?tab=blueprint`),
+        },
+      },
+    );
+  } else {
+    await addActivity(
+      a.clientId,
+      "build",
+      `You approved ${own.page.name}`,
+      "/dashboard/website/blueprint",
+    );
+    if (body) {
+      await alertAdmins("message", `${business} approved ${own.page.name}`, {
+        eyebrow: "Blueprint",
+        heading: `${firstName(a.user.name)} approved ${own.page.name}, with a note`,
+        paragraphs: [],
+        quote: { text: body, by: `${a.user.name}, ${business}` },
+        button: {
+          label: "Open their blueprint",
+          href: url(`/admin/clients/${a.clientId}?tab=blueprint`),
+        },
+      });
+    }
+    await blueprintDoneCheck(a.clientId);
+  }
   refresh();
   return done();
 }

@@ -1,25 +1,44 @@
 "use client";
 
+// The client's blueprint: every page of their site, section by section.
+// They read a whole page, then approve it (a note is optional) or ask for
+// changes (a note tells us what). A page we've rewritten comes back here
+// to read again.
+
 import { useState } from "react";
 import Icon from "../icons";
 import { Pill, Progress, ui } from "../ui/ui";
 import { useAction } from "../useAction";
 import styles from "./Blueprint.module.css";
-import { approveSections, commentOnSection } from "@/app/dashboard/actions";
-import { blueprintCounts } from "@/lib/dashboard/helpers";
+import { decidePage } from "@/app/dashboard/actions";
+import {
+  blueprintCounts,
+  pageStatus,
+  type PageStatus,
+} from "@/lib/dashboard/helpers";
 import { fmtShort } from "@/lib/dashboard/format";
 import type {
   BlueprintPage,
-  BlueprintSection,
   SectionStatus,
 } from "@/lib/dashboard/types";
 
 const statusPill: Record<
   SectionStatus,
-  { text: string; tone: "lime" | "yellow" | "gray" }
+  { text: string; tone: "lime" | "yellow" | "gray" | "red" }
 > = {
   APPROVED: { text: "Approved", tone: "lime" },
   REVIEW: { text: "Ready for you", tone: "yellow" },
+  CHANGES: { text: "Changes requested", tone: "red" },
+  DRAFT: { text: "We're writing", tone: "gray" },
+};
+
+const pagePill: Record<
+  PageStatus,
+  { text: string; tone: "lime" | "yellow" | "gray" | "red" }
+> = {
+  APPROVED: { text: "Page approved", tone: "lime" },
+  REVIEW: { text: "Ready for you", tone: "yellow" },
+  CHANGES: { text: "We're making your changes", tone: "red" },
   DRAFT: { text: "We're writing", tone: "gray" },
 };
 
@@ -34,11 +53,13 @@ export default function Blueprint({
   const [pages, setPages] = useState(initial);
   const [activeId, setActiveId] = useState(
     () =>
-      initial.find((p) => p.sections.some((s) => s.status === "REVIEW"))?.id ??
-      initial[0]?.id,
+      initial.find((p) => pageStatus(p) === "REVIEW")?.id ?? initial[0]?.id,
   );
-  const [commenting, setCommenting] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
+  // Which decision they're writing a note for.
+  const [deciding, setDeciding] = useState<"APPROVE" | "CHANGES" | null>(
+    null,
+  );
+  const [note, setNote] = useState("");
 
   const counts = blueprintCounts(pages);
   const page = pages.find((p) => p.id === activeId) ?? pages[0];
@@ -58,74 +79,76 @@ export default function Blueprint({
     );
   }
 
-  const update = (
-    sectionId: string,
-    change: (section: BlueprintSection) => BlueprintSection,
-  ) =>
-    setPages((list) =>
-      list.map((p) => ({
-        ...p,
-        sections: p.sections.map((s) => (s.id === sectionId ? change(s) : s)),
-      })),
-    );
+  const status = pageStatus(page);
+  const pill = pagePill[status];
+  const pagesWaiting = pages.filter((p) => pageStatus(p) === "REVIEW");
+  const pagesApproved = pages.filter((p) => pageStatus(p) === "APPROVED");
 
-  const markApproved = (sectionId: string) =>
-    update(sectionId, (s) => ({ ...s, status: "APPROVED" }));
+  const open = (id: string) => {
+    setActiveId(id);
+    setDeciding(null);
+    setNote("");
+  };
 
-  const approve = (section: BlueprintSection) =>
+  const decide = () => {
+    if (!deciding || pending) return;
+    const text = note.trim();
+    if (deciding === "CHANGES" && !text) return;
+    const choice = deciding;
     run(
-      () => approveSections([section.id]),
+      () => decidePage(page.id, choice, text),
       () => {
-        markApproved(section.id);
-        return { message: `Approved: ${section.title}` };
-      },
-    );
-
-  const approveAll = () => {
-    const waiting = page.sections.filter((s) => s.status === "REVIEW");
-    run(
-      () => approveSections(waiting.map((s) => s.id)),
-      () => {
-        waiting.forEach((s) => markApproved(s.id));
-        return {
-          message: `${waiting.length} section${waiting.length === 1 ? "" : "s"} approved`,
-          detail: `${page.name} is ready to build.`,
-        };
+        const next: SectionStatus = choice === "APPROVE" ? "APPROVED" : "CHANGES";
+        setPages((list) =>
+          list.map((p) =>
+            p.id !== page.id
+              ? p
+              : {
+                  ...p,
+                  sections: p.sections.map((sec, i) => ({
+                    ...sec,
+                    status: sec.status === "REVIEW" ? next : sec.status,
+                    comments:
+                      i === 0 && text
+                        ? [
+                            ...sec.comments,
+                            {
+                              id: `c-${Date.now()}`,
+                              from: "you",
+                              name: you,
+                              at: new Date().toISOString(),
+                              text: `${choice === "APPROVE" ? "Approved" : "Changes requested"}: ${text}`,
+                            },
+                          ]
+                        : sec.comments,
+                  })),
+                },
+          ),
+        );
+        setDeciding(null);
+        setNote("");
+        // On to the next page waiting for them.
+        const nextPage = pagesWaiting.find((p) => p.id !== page.id);
+        if (nextPage) setActiveId(nextPage.id);
+        return choice === "APPROVE"
+          ? {
+              message: `Approved: ${page.name}`,
+              detail: nextPage
+                ? `Next up: ${nextPage.name}.`
+                : "Thank you. That's every page that was waiting.",
+            }
+          : {
+              message: `Sent to Chris: ${page.name}`,
+              detail: "He'll make your changes and send the page back to you.",
+            };
       },
     );
   };
 
-  const sendChange = (sectionId: string) => {
-    const text = draft.trim();
-    if (!text || pending) return;
-    run(
-      () => commentOnSection(sectionId, text),
-      () => {
-        update(sectionId, (s) => ({
-          ...s,
-          status: "DRAFT",
-          comments: [
-            ...s.comments,
-            {
-              id: `c-${Date.now()}`,
-              from: "you",
-              name: you,
-              at: new Date().toISOString(),
-              text,
-            },
-          ],
-        }));
-        setDraft("");
-        setCommenting(null);
-        return {
-          message: "Sent to Chris",
-          detail: "He'll rewrite the section and send it back for approval.",
-        };
-      },
-    );
-  };
-
-  const inReview = page.sections.filter((s) => s.status === "REVIEW").length;
+  // Every note on this page, oldest first.
+  const notes = page.sections
+    .flatMap((sec) => sec.comments)
+    .sort((a, b) => (a.at < b.at ? -1 : 1));
 
   return (
     <>
@@ -138,19 +161,26 @@ export default function Blueprint({
           <div className={styles.tile}>
             <dt className={ui.monoMuted}>Approved</dt>
             <dd className={styles.tileValue}>
-              {counts.approved}
-              <span className={styles.tileOf}>/{counts.total}</span>
+              {pagesApproved.length}
+              <span className={styles.tileOf}>/{pages.length}</span>
             </dd>
           </div>
           <div
-            className={`${styles.tile} ${counts.review ? styles.tileYou : ""}`}
+            className={`${styles.tile} ${pagesWaiting.length ? styles.tileYou : ""}`}
           >
             <dt className={ui.monoMuted}>Ready for you</dt>
-            <dd className={styles.tileValue}>{counts.review}</dd>
+            <dd className={styles.tileValue}>{pagesWaiting.length}</dd>
           </div>
           <div className={styles.tile}>
             <dt className={ui.monoMuted}>We&apos;re writing</dt>
-            <dd className={styles.tileValue}>{counts.draft}</dd>
+            <dd className={styles.tileValue}>
+              {
+                pages.filter((p) => {
+                  const st = pageStatus(p);
+                  return st === "DRAFT" || st === "CHANGES";
+                }).length
+              }
+            </dd>
           </div>
         </dl>
         <Progress
@@ -168,32 +198,33 @@ export default function Blueprint({
           </span>
           <ul className={styles.pageList}>
             {pages.map((p) => {
-              const review = p.sections.filter(
-                (s) => s.status === "REVIEW",
-              ).length;
-              const allApproved = p.sections.every(
-                (s) => s.status === "APPROVED",
-              );
+              const st = pageStatus(p);
               return (
                 <li key={p.id}>
                   <button
                     type='button'
                     className={`${styles.pageBtn} ${p.id === page.id ? styles.pageActive : ""}`}
                     aria-current={p.id === page.id ? "page" : undefined}
-                    onClick={() => {
-                      setActiveId(p.id);
-                      setCommenting(null);
-                    }}
+                    onClick={() => open(p.id)}
                   >
                     <span className={styles.pageText}>
                       <span className={styles.pageName}>{p.name}</span>
                       <span className={styles.pagePath}>{p.path}</span>
                     </span>
-                    {review > 0 ? (
-                      <span className={styles.count}>{review}</span>
-                    ) : allApproved ? (
-                      <span className={styles.done}>
+                    {st === "REVIEW" ? (
+                      <span className={styles.count} aria-label='Ready for you'>
+                        <Icon name='eye' />
+                      </span>
+                    ) : st === "APPROVED" ? (
+                      <span className={styles.done} aria-label='Approved'>
                         <Icon name='check' />
+                      </span>
+                    ) : st === "CHANGES" ? (
+                      <span
+                        className={styles.changes}
+                        aria-label='Changes requested'
+                      >
+                        <Icon name='pen' />
                       </span>
                     ) : null}
                   </button>
@@ -208,7 +239,7 @@ export default function Blueprint({
             <div className={styles.pageHeadText}>
               <span className={ui.monoMuted}>{page.path}</span>
               <h2 className={styles.pageTitle}>{page.name}</h2>
-              <p className={styles.copy}>{page.purpose}</p>
+              {page.purpose && <p className={styles.copy}>{page.purpose}</p>}
               {page.keyword && (
                 <span className={styles.keyword}>
                   <Icon name='search' />
@@ -216,21 +247,14 @@ export default function Blueprint({
                 </span>
               )}
             </div>
-            {inReview > 1 && (
-              <button
-                type='button'
-                className={`${ui.btn} ${ui.btn_black}`}
-                onClick={approveAll}
-              >
-                Approve all {inReview}
-                <Icon name='check' className={ui.btnIcon} />
-              </button>
-            )}
+            <Pill tone={pill.tone} dot>
+              {pill.text}
+            </Pill>
           </div>
 
           <ol className={styles.sections}>
             {page.sections.map((section, index) => {
-              const pill = statusPill[section.status];
+              const sp = statusPill[section.status];
               return (
                 <li
                   key={section.id}
@@ -243,94 +267,131 @@ export default function Blueprint({
                       </span>
                       {section.title}
                     </span>
-                    <Pill tone={pill.tone} dot>
-                      {pill.text}
-                    </Pill>
+                    {section.status !== status && (
+                      <Pill tone={sp.tone} dot>
+                        {sp.text}
+                      </Pill>
+                    )}
                   </div>
 
-                  <div className={styles.copyBlock}>
-                    {section.copy.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                  </div>
-
-                  {section.comments.length > 0 && (
-                    <ul className={styles.comments}>
-                      {section.comments.map((comment) => (
-                        <li
-                          key={comment.id}
-                          className={`${styles.comment} ${comment.from === "you" ? styles.commentYou : ""}`}
-                        >
-                          <span className={ui.monoMuted}>
-                            {comment.name} · {fmtShort(comment.at)}
-                          </span>
-                          <p>{comment.text}</p>
-                        </li>
+                  {section.copy.length > 0 ? (
+                    <div className={styles.copyBlock}>
+                      {section.copy.map((line, i) => (
+                        <p key={i}>{line}</p>
                       ))}
-                    </ul>
+                    </div>
+                  ) : (
+                    <p className={styles.copy}>We&apos;re still writing this one.</p>
                   )}
-
-                  {section.status === "REVIEW" &&
-                    (commenting === section.id ? (
-                      <div className={styles.changeForm}>
-                        <label className={ui.field}>
-                          <span className={ui.label}>What should change?</span>
-                          <textarea
-                            className={ui.textarea}
-                            value={draft}
-                            onChange={(e) => setDraft(e.target.value)}
-                            placeholder='e.g. Say “since 2012” instead, and mention the Sprinter.'
-                            autoFocus
-                          />
-                        </label>
-                        <div className={styles.actions}>
-                          <button
-                            type='button'
-                            className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
-                            onClick={() => {
-                              setCommenting(null);
-                              setDraft("");
-                            }}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type='button'
-                            className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-                            disabled={!draft.trim()}
-                            onClick={() => sendChange(section.id)}
-                          >
-                            Send to Chris
-                            <Icon name='send' className={ui.btnIcon} />
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className={styles.actions}>
-                        <button
-                          type='button'
-                          className={`${ui.btn} ${ui.btn_light} ${ui.btnSmall}`}
-                          onClick={() => {
-                            setCommenting(section.id);
-                            setDraft("");
-                          }}
-                        >
-                          Ask for a change
-                        </button>
-                        <button
-                          type='button'
-                          className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-                          onClick={() => approve(section)}
-                        >
-                          Approve
-                          <Icon name='check' className={ui.btnIcon} />
-                        </button>
-                      </div>
-                    ))}
                 </li>
               );
             })}
           </ol>
+
+          {notes.length > 0 && (
+            <div className={styles.notes}>
+              <span className={ui.monoMuted}>Notes on this page</span>
+              <ul className={styles.comments}>
+                {notes.map((comment) => (
+                  <li
+                    key={comment.id}
+                    className={`${styles.comment} ${comment.from === "you" ? styles.commentYou : ""}`}
+                  >
+                    <span className={ui.monoMuted}>
+                      {comment.name} · {fmtShort(comment.at)}
+                    </span>
+                    <p>{comment.text}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* The decision, for a page that's waiting for them. */}
+          {status === "REVIEW" && (
+            <div className={styles.decision}>
+              {deciding ? (
+                <div className={styles.changeForm}>
+                  <label className={ui.field}>
+                    <span className={ui.label}>
+                      {deciding === "APPROVE"
+                        ? "Anything to add? (optional)"
+                        : "What should change?"}
+                    </span>
+                    <textarea
+                      className={ui.textarea}
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder={
+                        deciding === "APPROVE"
+                          ? "e.g. Love it. Could we mention Mesa in the hero too?"
+                          : "e.g. Say “since 2012” in the hero, and add the Sprinter to the fleet section."
+                      }
+                      autoFocus
+                    />
+                  </label>
+                  <div className={styles.actions}>
+                    <button
+                      type='button'
+                      className={`${ui.btn} ${ui.btn_light}`}
+                      onClick={() => {
+                        setDeciding(null);
+                        setNote("");
+                      }}
+                    >
+                      Back
+                    </button>
+                    <button
+                      type='button'
+                      className={`${ui.btn} ${ui.btn_black}`}
+                      disabled={
+                        pending || (deciding === "CHANGES" && !note.trim())
+                      }
+                      onClick={decide}
+                    >
+                      {deciding === "APPROVE"
+                        ? `Approve ${page.name}`
+                        : "Send my changes"}
+                      <Icon
+                        name={deciding === "APPROVE" ? "check" : "send"}
+                        className={ui.btnIcon}
+                      />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.decisionText}>
+                    <span className={styles.decisionTitle}>
+                      Happy with this page?
+                    </span>
+                    <p className={styles.copy}>
+                      Approve it, or tell us what to change and we&apos;ll
+                      rewrite it and send it back.
+                    </p>
+                  </div>
+                  <div className={styles.actions}>
+                    <button
+                      type='button'
+                      className={`${ui.btn} ${ui.btn_light}`}
+                      onClick={() => setDeciding("CHANGES")}
+                    >
+                      Request changes
+                      <Icon name='pen' className={ui.btnIcon} />
+                    </button>
+                    <button
+                      type='button'
+                      className={`${ui.btn} ${ui.btn_black}`}
+                      onClick={() => setDeciding("APPROVE")}
+                    >
+                      Approve page
+                      <Icon name='check' className={ui.btnIcon} />
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </section>
       </div>
     </>

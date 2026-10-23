@@ -20,6 +20,7 @@ import {
   uploadsReady,
 } from "@/lib/server/cloudinary";
 import { firstOfMonth } from "@/lib/dashboard/billing";
+import { parseBlueprint } from "@/lib/dashboard/blueprintMarkdown";
 import {
   parseQuestions,
   type CustomQuestions,
@@ -326,7 +327,7 @@ export async function setSectionStatus(
 ): Promise<ActionResult> {
   const a = await admin();
   if (!a.ok) return fail(a.error);
-  if (!["DRAFT", "REVIEW", "APPROVED"].includes(status))
+  if (!["DRAFT", "REVIEW", "APPROVED", "CHANGES"].includes(status))
     return fail("That isn't a status.");
   const [own] = await ownSections(clientId, [sectionId]);
   if (!own) return fail("We couldn't find that section.");
@@ -882,4 +883,160 @@ export async function removeCustomQuestions(
     .where(eq(s.questionnaires.clientId, clientId));
   refresh();
   return done();
+}
+
+/* ── The blueprint from a .md file ── */
+
+/**
+ * Sets a client's whole blueprint from a .md file (format in
+ * lib/dashboard/blueprintMarkdown.ts). Pages and sections are matched by
+ * name: one whose wording didn't change keeps its status and comments;
+ * new or rewritten ones go to the client (`send`) or stay drafts; any not
+ * in the file are removed.
+ */
+export async function importBlueprint(
+  clientId: string,
+  input: { markdown: string; send: boolean },
+): Promise<ActionResult<{ pages: BlueprintPage[]; sent: number }>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const parsed = parseBlueprint(String(input.markdown ?? "").slice(0, 300_000));
+  if (parsed.errors.length) return fail(parsed.errors[0]);
+  const fresh: SectionStatus = input.send ? "REVIEW" : "DRAFT";
+
+  const oldPages = await db
+    .select()
+    .from(s.blueprintPages)
+    .where(eq(s.blueprintPages.clientId, clientId));
+  const oldSections = oldPages.length
+    ? await db
+        .select()
+        .from(s.blueprintSections)
+        .where(
+          inArray(
+            s.blueprintSections.pageId,
+            oldPages.map((p) => p.id),
+          ),
+        )
+    : [];
+  const key = (text: string) => text.trim().toLowerCase();
+  const same = (x: string[], y: string[]) =>
+    x.length === y.length && x.every((line, i) => line === y[i]);
+
+  let sent = 0;
+  await db.transaction(async (tx) => {
+    const keptPages = new Set<string>();
+    const keptSections = new Set<string>();
+
+    for (const [i, draft] of parsed.pages.entries()) {
+      const match =
+        oldPages.find((p) => key(p.name) === key(draft.name)) ??
+        oldPages.find((p) => p.path === draft.path && !keptPages.has(p.id));
+      const pageId = match?.id ?? createId();
+      const page = {
+        name: clean(draft.name, 80),
+        path: clean(draft.path, 120) || "/",
+        purpose: clean(draft.purpose, 300),
+        keyword: draft.keyword ? clean(draft.keyword, 120) : null,
+        position: i,
+      };
+      if (match) {
+        await tx
+          .update(s.blueprintPages)
+          .set(page)
+          .where(eq(s.blueprintPages.id, pageId));
+      } else {
+        await tx
+          .insert(s.blueprintPages)
+          .values({ id: pageId, clientId, ...page });
+      }
+      keptPages.add(pageId);
+
+      for (const [j, sec] of draft.sections.entries()) {
+        const copy = sec.copy
+          .map((line) => clean(line, 4000))
+          .filter(Boolean)
+          .slice(0, 60);
+        const old = match
+          ? oldSections.find(
+              (x) => x.pageId === pageId && key(x.title) === key(sec.title),
+            )
+          : undefined;
+        // An empty section stays a draft: there's nothing to read yet.
+        const status: SectionStatus = copy.length ? fresh : "DRAFT";
+        if (old && same(old.copy, copy)) {
+          await tx
+            .update(s.blueprintSections)
+            .set({ title: clean(sec.title, 120), position: j })
+            .where(eq(s.blueprintSections.id, old.id));
+          keptSections.add(old.id);
+          continue;
+        }
+        if (status === "REVIEW") sent++;
+        if (old) {
+          await tx
+            .update(s.blueprintSections)
+            .set({
+              title: clean(sec.title, 120),
+              copy,
+              status,
+              position: j,
+              updatedAt: new Date(),
+            })
+            .where(eq(s.blueprintSections.id, old.id));
+          keptSections.add(old.id);
+        } else {
+          const id = createId();
+          await tx.insert(s.blueprintSections).values({
+            id,
+            pageId,
+            title: clean(sec.title, 120),
+            copy,
+            status,
+            position: j,
+          });
+          keptSections.add(id);
+        }
+      }
+    }
+
+    // Whatever isn't in the file goes, with its comments.
+    const goneSections = oldSections
+      .filter((x) => keptPages.has(x.pageId) && !keptSections.has(x.id))
+      .map((x) => x.id);
+    if (goneSections.length)
+      await tx
+        .delete(s.blueprintSections)
+        .where(inArray(s.blueprintSections.id, goneSections));
+    const gonePages = oldPages
+      .filter((p) => !keptPages.has(p.id))
+      .map((p) => p.id);
+    if (gonePages.length)
+      await tx
+        .delete(s.blueprintPages)
+        .where(inArray(s.blueprintPages.id, gonePages));
+  });
+
+  if (sent > 0) {
+    await addActivity(
+      clientId,
+      "build",
+      `${sent} blueprint section${sent === 1 ? " is" : "s are"} ready for you`,
+      "/dashboard/website/blueprint",
+    );
+    await emailClient(clientId, "Your blueprint is ready for you", {
+      eyebrow: "Blueprint",
+      heading: "Your blueprint is ready to read",
+      paragraphs: [
+        "Read each page through, then approve it, or tell us what to change and we'll rewrite it.",
+      ],
+      button: {
+        label: "Review your blueprint",
+        href: url("/dashboard/website/blueprint"),
+      },
+    });
+  }
+  refresh();
+  const client = await loadClient(clientId);
+  return done({ pages: client?.blueprint ?? [], sent });
 }

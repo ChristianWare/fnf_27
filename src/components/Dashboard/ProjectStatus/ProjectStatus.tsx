@@ -54,11 +54,26 @@ function Steps({ steps, compact }: { steps: Step[]; compact?: boolean }) {
               {step.doneAt && ` · Done ${fmtDate(step.doneAt)}`}
             </span>
           </div>
-          {!compact && step.state === "you" && step.href && (
+          {/* Every step links to its page: the main button when it's
+              their turn, a lighter "View" link once it's done, or a note
+              when its page isn't open yet. */}
+          {!compact && step.link && (
             <div className={styles.stepAction}>
-              <ButtonLink href={step.href} small icon='arrow'>
-                {step.cta ?? "Open"}
-              </ButtonLink>
+              {"locked" in step.link ? (
+                <span className={styles.locked}>
+                  <Icon name='lock' />
+                  {step.link.locked}
+                </span>
+              ) : (
+                <ButtonLink
+                  href={step.link.href}
+                  small
+                  variant={step.state === "you" ? "black" : "light"}
+                  icon={step.link.external ? "arrowUpRight" : "arrow"}
+                >
+                  {step.link.label}
+                </ButtonLink>
+              )}
             </div>
           )}
         </li>

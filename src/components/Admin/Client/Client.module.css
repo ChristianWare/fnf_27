@@ -788,7 +788,7 @@
 
 .bpSummary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
@@ -811,6 +811,10 @@
 
 .bp_APPROVED {
   box-shadow: inset 0 -0.5rem 0 var(--accent3);
+}
+
+.bp_CHANGES {
+  box-shadow: inset 0 -0.5rem 0 #a2301c;
 }
 
 .bpValue {
@@ -927,6 +931,10 @@
 
 .dot_APPROVED {
   background-color: var(--accent3);
+}
+
+.dot_CHANGES {
+  background-color: #a2301c;
 }
 
 .inlineAdd {
@@ -1050,6 +1058,11 @@
 .seg_APPROVED {
   background-color: var(--accent3);
   color: var(--black);
+}
+
+.seg_CHANGES {
+  background-color: #ffe4de;
+  color: #a2301c;
 }
 
 .bpEdit {

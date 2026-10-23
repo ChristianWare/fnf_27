@@ -25,9 +25,11 @@ import type {
   SectionStatus,
 } from "@/lib/dashboard/types";
 import styles from "./Client.module.css";
+import BlueprintFile from "./BlueprintFile";
 
 const statuses: { key: SectionStatus; label: string }[] = [
   { key: "DRAFT", label: "Draft" },
+  { key: "CHANGES", label: "Changes asked" },
   { key: "REVIEW", label: "With client" },
   { key: "APPROVED", label: "Approved" },
 ];
@@ -146,16 +148,38 @@ export default function BlueprintEditor({
           Start with the standard pages
           <Icon name='plus' className={ui.btnIcon} />
         </button>
+        <BlueprintFile
+          clientId={clientId}
+          firstName={firstName}
+          pages={pages}
+          onImported={(next) => {
+            setPages(next);
+            setActiveId(next[0]?.id);
+          }}
+        />
       </section>
     );
   }
 
+  // Drafts with copy, and rewrites of pages the client asked to change.
   const drafts = page.sections.filter(
-    (s) => s.status === "DRAFT" && s.copy.length > 0,
+    (s) => (s.status === "DRAFT" || s.status === "CHANGES") && s.copy.length > 0,
   );
 
   return (
     <>
+      <BlueprintFile
+        clientId={clientId}
+        firstName={firstName}
+        pages={pages}
+        onImported={(next) => {
+          setPages(next);
+          setActiveId(
+            (id) => next.find((p) => p.id === id)?.id ?? next[0]?.id,
+          );
+          setEditing(null);
+        }}
+      />
       <section className={styles.bpSummary}>
         {statuses.map((s) => (
           <div
@@ -166,9 +190,11 @@ export default function BlueprintEditor({
             <span className={styles.bpValue}>
               {s.key === "DRAFT"
                 ? counts.draft
-                : s.key === "REVIEW"
-                  ? counts.review
-                  : counts.approved}
+                : s.key === "CHANGES"
+                  ? counts.changes
+                  : s.key === "REVIEW"
+                    ? counts.review
+                    : counts.approved}
             </span>
           </div>
         ))}

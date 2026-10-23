@@ -485,3 +485,21 @@
     gap: 1.4rem;
   }
 }
+
+/* A step whose page opens after billing. */
+.locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--IBMPlex);
+  font-size: 13px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.locked svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}

@@ -441,7 +441,10 @@ export const blueprintSections = pgTable(
       .notNull()
       .references(() => blueprintPages.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
-    status: text("status", { enum: ["DRAFT", "REVIEW", "APPROVED"] })
+    // A plain text column: CHANGES needed no database change.
+    status: text("status", {
+      enum: ["DRAFT", "REVIEW", "APPROVED", "CHANGES"],
+    })
       .notNull()
       .default("DRAFT"),
     /** Paragraphs. */

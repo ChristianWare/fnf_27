@@ -83,7 +83,22 @@ export function blueprintCounts(pages: BlueprintPage[]) {
     review: sections.filter((s) => s.status === "REVIEW").length,
     approved: sections.filter((s) => s.status === "APPROVED").length,
     draft: sections.filter((s) => s.status === "DRAFT").length,
+    changes: sections.filter((s) => s.status === "CHANGES").length,
   };
+}
+
+export type PageStatus = "APPROVED" | "CHANGES" | "REVIEW" | "DRAFT";
+
+/**
+ * Where a blueprint page stands, from its sections. Clients approve, or ask
+ * for changes to, a whole page at a time.
+ */
+export function pageStatus(page: BlueprintPage): PageStatus {
+  const all = page.sections;
+  if (all.length && all.every((s) => s.status === "APPROVED")) return "APPROVED";
+  if (all.some((s) => s.status === "CHANGES")) return "CHANGES";
+  if (all.some((s) => s.status === "REVIEW")) return "REVIEW";
+  return "DRAFT";
 }
 
 export type LeadsAccess = "INCLUDED" | "TRIAL" | "ACTIVE" | "NONE";
@@ -149,6 +164,14 @@ export type Step = {
   doneAt?: string;
   href?: string;
   cta?: string;
+  /**
+   * The link on Project status, whatever the step's state: the step's own
+   * page ("Fill in the questionnaire", "View your answers"…), or a note
+   * when its page isn't open yet.
+   */
+  link?:
+    | { href: string; label: string; external?: boolean }
+    | { locked: string };
 };
 
 type StepDef = Omit<Step, "state"> & {
@@ -227,10 +250,14 @@ export function projectSteps(client: Client): Step[] {
     {
       id: "blueprint",
       title: "Approve your blueprint",
-      text:
-        counts.review > 0
-          ? `${counts.review} section${counts.review === 1 ? " is" : "s are"} waiting for you.`
-          : "Every page and section, written for the searches riders make.",
+      text: (() => {
+        const waiting = client.blueprint.filter(
+          (page) => pageStatus(page) === "REVIEW",
+        ).length;
+        return waiting > 0
+          ? `${waiting} page${waiting === 1 ? " is" : "s are"} waiting for you to approve.`
+          : "Every page and section, written for the searches riders make.";
+      })(),
       waitText:
         counts.total > 0
           ? "We're working through your notes."
@@ -338,7 +365,7 @@ export function projectSteps(client: Client): Step[] {
 
   const done = new Set(defs.filter((d) => d.doneAt).map((d) => d.id));
 
-  return defs.map(({ after, ready, waitText, ...step }) => {
+  const states = defs.map(({ after, ready, waitText, ...step }) => {
     if (step.doneAt) return { ...step, state: "done" as const };
     if (!after.every((id) => done.has(id))) {
       return { ...step, state: "upcoming" as const };
@@ -348,6 +375,60 @@ export function projectSteps(client: Client): Step[] {
     }
     return { ...step, text: waitText ?? step.text, state: "us" as const };
   });
+  return states.map((step) => ({ ...step, link: stepLink(client, step) }));
+}
+
+// The build pages that open once they've signed and set up billing.
+const BUILD_PAGES = [
+  "/dashboard/website/questionnaire",
+  "/dashboard/website/assets",
+  "/dashboard/website/blueprint",
+  "/dashboard/website/design",
+];
+
+// What a finished step's link says.
+const VIEW: Record<string, string> = {
+  agreement: "View agreement",
+  setup: "View billing",
+  questionnaire: "View your answers",
+  assets: "View your assets",
+  blueprint: "View blueprint",
+  design: "View your design",
+  booking: "View your answers",
+};
+
+/** The link a step shows on Project status, for any state. */
+function stepLink(client: Client, step: Step): Step["link"] {
+  const website = client.website;
+  const page = step.href?.split("?")[0];
+  // Preview and launch: the sites themselves, once they exist.
+  if (step.id === "build" || step.id === "preview") {
+    return website?.previewUrl
+      ? { href: website.previewUrl, label: "Open preview", external: true }
+      : undefined;
+  }
+  if (step.id === "launch") {
+    return website?.liveUrl && step.state === "done"
+      ? { href: website.liveUrl, label: "Visit your site", external: true }
+      : undefined;
+  }
+  if (!step.href || !page) return undefined;
+  if (BUILD_PAGES.includes(page) && !buildUnlocked(client)) {
+    return { locked: "Opens after billing" };
+  }
+  if (step.state === "you")
+    return { href: step.href, label: step.cta ?? "Open" };
+  if (step.state === "done")
+    return VIEW[step.id] ? { href: step.href, label: VIEW[step.id] } : undefined;
+  // Waiting on us: somewhere to look while we work, where there's
+  // something to see.
+  if (step.id === "blueprint" && client.blueprint.length > 0)
+    return { href: step.href, label: "View blueprint" };
+  if (step.id === "questionnaire" || step.id === "assets")
+    return { href: step.href, label: "Open" };
+  if (step.state === "upcoming" && step.id === "booking")
+    return { href: step.href, label: "Open the questionnaire" };
+  return undefined;
 }
 
 /* ── What needs the client next ── */

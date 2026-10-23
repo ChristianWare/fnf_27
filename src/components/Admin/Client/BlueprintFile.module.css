@@ -1,0 +1,160 @@
+/* The strip above the blueprint: upload or download the .md file. */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+  padding: 2rem 2.4rem;
+  border-radius: 2rem;
+  background-color: var(--white);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  max-width: 56rem;
+}
+
+.title {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.help {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+/* The preview. */
+.errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.6rem 1.8rem;
+  border-radius: 1.4rem;
+  background-color: #ffe4de;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #a2301c;
+}
+
+.errorsTitle {
+  font-family: var(--IBMPlex);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.errors ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-left: 1.8rem;
+  list-style: disc;
+}
+
+.diff {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.diffItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.2rem 1.4rem;
+  border-radius: 1.2rem;
+  background-color: var(--light);
+}
+
+.diffItem dd {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+.pages {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.8rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+}
+
+.pageHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pageName {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2rem;
+  line-height: 1.2;
+  color: var(--black);
+  text-transform: none;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  background-color: var(--white);
+}
+
+.sectionTitle {
+  font-size: 15px;
+  color: var(--black);
+}
+
+.excerpt {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media screen and (max-width: 568px) {
+  .bar {
+    padding: 1.8rem 1.6rem;
+  }
+
+  .diff {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
