@@ -12,6 +12,13 @@
   background-color: var(--black);
 }
 
+/* The video (or the still, on phones) fills the card. */
+.media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 /* The video fills the card like background-size: cover. */
 .video {
   position: absolute;

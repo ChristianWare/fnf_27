@@ -1,0 +1,21 @@
+/* The still: only on phones, where it replaces the video. */
+.still {
+  object-fit: cover;
+  display: none;
+}
+
+/* Element + class, so these win over the section's own .video / .toggle. */
+video.video {
+  object-fit: cover;
+}
+
+@media screen and (max-width: 768px) {
+  img.still {
+    display: block;
+  }
+
+  video.video,
+  button.toggle {
+    display: none;
+  }
+}
