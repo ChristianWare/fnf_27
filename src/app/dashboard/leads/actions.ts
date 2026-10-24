@@ -24,6 +24,7 @@ import { leadsAccount } from "@/lib/leads/access";
 import { findContact } from "@/lib/leads/research";
 import { scriptsFor } from "@/lib/leads/scripts";
 import { flushUsage } from "@/lib/leads/usage";
+import { kickMarket } from "@/lib/leads/kick";
 import {
   ensureStudio,
   findTarget,
@@ -31,6 +32,7 @@ import {
   marketFor,
   researchTarget,
   savedLeads,
+  hasSettings,
   settingsFor,
   toSettings,
   type SettingsRow,
@@ -628,4 +630,53 @@ export async function saveLeadSettings(
     },
     moved: base.city !== current.baseCity || marketId !== current.marketId,
   });
+}
+
+/* ── Setting up: where they work ── */
+
+const SETUP_RADII = [10, 25, 50, 75];
+
+/**
+ * The first time a client opens the Leads Tool: their city (picked from
+ * Google's suggestions) and how far they'll drive. Makes their settings
+ * and starts their market's first load.
+ */
+export async function setUpLeads(input: {
+  city: string;
+  radius: number;
+}): Promise<ActionResult> {
+  const a = await actor("client");
+  if (!a.ok) return fail(a.error);
+  if (await hasSettings(a.clientId)) return done();
+  const city = clean(input?.city, 100);
+  if (city.length < 2) return fail("Pick your city from the list.");
+  if (!SETUP_RADII.includes(input?.radius))
+    return fail("Pick how far you'll drive.");
+  const found = await locateCity(city, { clientId: a.clientId }).catch(
+    () => undefined,
+  );
+  await flushUsage();
+  if (!found) return fail(`We couldn't find ${city}. Pick it from the list.`);
+  const [client] = await db
+    .select()
+    .from(s.clients)
+    .where(eq(s.clients.id, a.clientId))
+    .limit(1);
+  const row = await settingsFor(a.clientId, {
+    base: found,
+    radius: input.radius,
+    company: client?.business ?? "",
+    name: a.user.name,
+    phone: a.user.phone ?? client?.phone ?? "",
+    website: client?.websiteUrl ?? undefined,
+  });
+  // Their city on the account too, where it was missing.
+  if (client && !client.city)
+    await db
+      .update(s.clients)
+      .set({ city: found.city, state: found.state || null, updatedAt: new Date() })
+      .where(eq(s.clients.id, a.clientId));
+  // A market nobody's had before starts loading now.
+  await kickMarket(row?.marketId).catch(() => undefined);
+  return done();
 }

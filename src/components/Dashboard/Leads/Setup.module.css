@@ -1,0 +1,41 @@
+/* The first visit: one question before the first leads load. */
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2.4rem 0;
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.title {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 2.6rem;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  color: var(--black);
+}
+
+.text {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.4rem;
+}
+
+.note {
+  font-size: 14px;
+  color: var(--text);
+}

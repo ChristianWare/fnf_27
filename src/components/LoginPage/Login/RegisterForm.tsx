@@ -7,6 +7,7 @@ import Turnstile from "@/components/shared/Turnstile/Turnstile";
 import { STAMP_FIELD, TRAP_FIELD } from "@/lib/forms/fields";
 import { register, type RegisterState } from "@/app/login/actions";
 import { Field, PasswordField, PhoneField } from "./Fields";
+import CityPicker from "@/components/shared/CityPicker/CityPicker";
 
 export type PlanCard = {
   id: "FULL_PLATFORM" | "WEBSITE_ONLY" | "LEADS";
@@ -112,14 +113,24 @@ export default function RegisterForm({
         />
       </div>
       <div className={styles.row2}>
-        <Field
-          label='City'
-          name='city'
-          autoComplete='address-level2'
-          placeholder='e.g. Scottsdale, AZ'
-          defaultValue={v.city}
-          required
-        />
+        {/* The Leads Tool asks where they work once they're in, with the
+            radius, before their first leads load. */}
+        {plan !== "LEADS" && (
+          <div className={styles.field}>
+            <span className={styles.labelRow}>
+              <label className={styles.label} htmlFor='register-city'>
+                City
+              </label>
+            </span>
+            <CityPicker
+              id='register-city'
+              name='city'
+              defaultText={v.city}
+              inputClassName={styles.input}
+              placeholder='Optional, e.g. Scottsdale'
+            />
+          </div>
+        )}
         <Field
           label='Your website'
           name='website'

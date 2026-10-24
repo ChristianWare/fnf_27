@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import LeadsTool from "@/components/Dashboard/LeadsTool/LeadsTool";
 import Today from "@/components/Dashboard/Leads/Today";
 import NotReady from "@/components/Dashboard/Leads/NotReady";
+import Setup from "@/components/Dashboard/Leads/Setup";
 import { LEADS } from "@/lib/dashboard/plans";
 import { getLeads } from "@/lib/leads/server";
 
@@ -43,6 +44,10 @@ export default async function LeadsPage() {
       />
     );
   }
+  // First visit: where they work, before anything loads.
+  if (page.state === "SETUP") {
+    return <Setup trialEndsAt={trialEndsAt} readOnly={viewingAs} />;
+  }
   if (!page.workspace.market.ready) {
     return (
       <NotReady
@@ -51,6 +56,7 @@ export default async function LeadsPage() {
         progress={page.workspace.market.loading}
         trialEndsAt={trialEndsAt}
         action={{ href: "/dashboard/leads/settings", label: "Lead settings" }}
+        soFarHref='/dashboard/leads/find'
       />
     );
   }

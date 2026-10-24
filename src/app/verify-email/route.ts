@@ -11,7 +11,6 @@ import { hashToken } from "@/lib/server/ids";
 import { url } from "@/lib/server/config";
 import { alertAdmins } from "@/lib/server/notify";
 import { addActivity } from "@/lib/data/write";
-import { ensureSettings } from "@/lib/leads/workspace";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
 
 const { authTokens, users, clients } = schema;
@@ -101,8 +100,8 @@ async function welcomeNewSignUp(clientId: string, name: string, email: string) {
       `Your ${LEADS.trialDays}-day Leads Tool trial started`,
       "/dashboard/leads",
     );
-    // Their base and market, so tonight's run includes them.
-    await ensureSettings(clientId).catch(() => undefined);
+    // Where they work comes next: the Leads Tool asks the first time they
+    // open it, and their first leads start loading from there.
   }
 
   const plan =

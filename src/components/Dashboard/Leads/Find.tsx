@@ -150,7 +150,7 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
         text={
           market.ready
             ? `Everything within ${radius} miles of ${settings.base.city}. Open any of them for free; saving one finds the decision-maker and writes your scripts.`
-            : `Still loading the area around ${settings.base.city}: here's what's in so far, and the rest is here by tomorrow morning.`
+            : `Still loading the area around ${settings.base.city}: here's what's in so far. Events and the rest arrive over the next half hour.`
         }
       />
 

@@ -12,7 +12,7 @@ import { useLeads } from "./Store";
 import styles from "./Leads.module.css";
 import { locate, rank, writeScripts } from "@/lib/leads/advice";
 import { CATEGORIES, EVENT_TYPES, SOURCES } from "@/lib/leads/catalog";
-import { CITIES } from "@/lib/leads/market";
+import CityPicker from "@/components/shared/CityPicker/CityPicker";
 import type {
   AccountCategory,
   EventType,
@@ -30,18 +30,11 @@ export default function Settings() {
   const toast = useToast();
   const [draft, setDraft] = useState<LeadsSettings>(leads.settings);
   const [saving, setSaving] = useState(false);
-  const known = Object.keys(CITIES);
-  const [elsewhere, setElsewhere] = useState(
-    !known.includes(leads.settings.base.city),
-  );
-  const [typed, setTyped] = useState(
-    known.includes(leads.settings.base.city) ? "" : leads.settings.base.city,
-  );
+  // The city field starts over (showing the saved city) after undo or save.
+  const [pickerKey, setPickerKey] = useState(0);
   const changed = JSON.stringify(draft) !== JSON.stringify(leads.settings);
-  // A city typed in is found when it's saved; until then, no counts.
-  const located =
-    known.includes(draft.base.city) ||
-    draft.base.city === leads.settings.base.city;
+  // Cleared while they type a new one: no counts until it's picked.
+  const located = Boolean(draft.base.city.trim());
 
   const set = (patch: Partial<LeadsSettings>) =>
     setDraft((d) => ({ ...d, ...patch }));
@@ -96,12 +89,7 @@ export default function Settings() {
               className={`${ui.btn} ${ui.btn_light}`}
               onClick={() => {
                 setDraft(leads.settings);
-                setElsewhere(!known.includes(leads.settings.base.city));
-                setTyped(
-                  known.includes(leads.settings.base.city)
-                    ? ""
-                    : leads.settings.base.city,
-                );
+                setPickerKey((k) => k + 1);
               }}
             >
               Undo
@@ -121,10 +109,7 @@ export default function Settings() {
                 setSaving(false);
                 if (!saved) return;
                 setDraft(saved);
-                setElsewhere(!known.includes(saved.base.city));
-                setTyped(
-                  known.includes(saved.base.city) ? "" : saved.base.city,
-                );
+                setPickerKey((k) => k + 1);
                 toast("Settings saved", {
                   detail:
                     saved.base.city !== leads.settings.base.city
@@ -155,7 +140,7 @@ export default function Settings() {
               <span className={styles.rangeTag}>
                 {located
                   ? `${inRange.accounts.length} accounts · ${inRange.events.length} events`
-                  : "Found when you save"}
+                  : "Pick your city"}
               </span>
             </div>
             <div className={styles.formRow}>
@@ -163,42 +148,21 @@ export default function Settings() {
                 <label className={ui.label} htmlFor='lead-base'>
                   Your base
                 </label>
-                <select
+                <CityPicker
+                  key={pickerKey}
                   id='lead-base'
-                  className={ui.select}
-                  value={elsewhere ? "" : draft.base.city}
-                  onChange={(e) => {
-                    if (!e.target.value) {
-                      setElsewhere(true);
-                      set({ base: { ...draft.base, city: typed } });
-                      return;
-                    }
-                    setElsewhere(false);
+                  defaultText={leads.settings.base.city}
+                  inputClassName={ui.input}
+                  placeholder='Start typing your city'
+                  disabled={readOnly}
+                  onPick={(city) =>
                     set({
-                      base: { city: e.target.value, ...CITIES[e.target.value] },
-                    });
-                  }}
-                >
-                  {known.map((city) => (
-                    <option key={city} value={city}>
-                      {city}, AZ
-                    </option>
-                  ))}
-                  <option value=''>Somewhere else…</option>
-                </select>
-                {elsewhere && (
-                  <input
-                    className={ui.input}
-                    value={typed}
-                    onChange={(e) => {
-                      setTyped(e.target.value);
-                      set({ base: { ...draft.base, city: e.target.value } });
-                    }}
-                    placeholder='City, State'
-                    aria-label='Your city'
-                    autoFocus
-                  />
-                )}
+                      base: city
+                        ? { city: city.text, lat: city.lat, lng: city.lng }
+                        : { ...draft.base, city: "" },
+                    })
+                  }
+                />
               </div>
               <div className={ui.field}>
                 <span className={ui.label}>How far you&apos;ll drive</span>

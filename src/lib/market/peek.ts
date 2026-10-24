@@ -115,7 +115,7 @@ type Place = {
 };
 
 /** Where a city is, and its state, from its place ID. Ends the session. */
-async function cityDetails(placeId: string, session?: string) {
+export async function cityDetails(placeId: string, session?: string) {
   const query = session ? `?sessionToken=${encodeURIComponent(session)}` : "";
   const p = await callJson<Place>(
     "Google details",

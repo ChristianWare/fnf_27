@@ -8,10 +8,20 @@ import { requireAdmin } from "@/lib/auth/dal";
 import { wants } from "@/lib/auth/users";
 import { clientPeople } from "@/lib/data/write";
 import { STUDIO_ID } from "./kinds";
-import { ensureStudio, loadWorkspace, type Loaded } from "./workspace";
+import {
+  ensureStudio,
+  hasSettings,
+  loadWorkspace,
+  type Loaded,
+} from "./workspace";
 import type { Account, EventLead } from "./types";
 
-export type LeadsState = { state: "NONE" } | { state: "OFF" } | Loaded;
+export type LeadsState =
+  | { state: "NONE" }
+  | { state: "OFF" }
+  /** On, but they haven't said where they work yet. */
+  | { state: "SETUP" }
+  | Loaded;
 
 /** A client's Leads Tool, as they (or an admin viewing as them) see it. */
 export const getLeads = cache(async () => {
@@ -20,6 +30,7 @@ export const getLeads = cache(async () => {
   let page: LeadsState;
   if (access === "NONE") page = { state: "NONE" };
   else if (!client.leads.enabled) page = { state: "OFF" };
+  else if (!(await hasSettings(client.id))) page = { state: "SETUP" };
   else {
     // The morning email is each person's own; an admin sees the owner's.
     const person = viewingAs ? (await clientPeople(client.id))[0] : undefined;

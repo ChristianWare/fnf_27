@@ -229,8 +229,6 @@ export async function register(
   if (values.business.length < 2) return back("Add your business name.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email))
     return back("That email doesn't look right.");
-  if (values.city.length < 2)
-    return back("Add the city you work from, e.g. Scottsdale, AZ.");
   if (!PLAN_CHOICES.includes(values.plan as PlanChoice))
     return back("Choose what you'd like to start with.");
   const weak = passwordProblem(password);
@@ -282,7 +280,10 @@ export async function register(
     );
   }
 
-  const [cityName, state] = values.city.split(",").map((part) => part.trim());
+  // The city is optional, and picked from Google's suggestions ("Phoenix,
+  // AZ"). Leads Tool sign-ups give theirs when they first open the tool.
+  const [cityName, state] =
+    plan === "LEADS" ? [] : values.city.split(",").map((part) => part.trim());
   const clientId = createId();
   const userId = createId();
   const passwordHash = await hashPassword(password);
@@ -296,7 +297,7 @@ export async function register(
     await tx.insert(schema.clients).values({
       id: clientId,
       business: values.business,
-      city: cityName || values.city,
+      city: cityName || null,
       state: state || null,
       phone: values.phone || null,
       websiteUrl: site,

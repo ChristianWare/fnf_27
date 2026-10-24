@@ -149,6 +149,9 @@ export async function settingsFor(
     website?: string;
     city?: string | null;
     state?: string | null;
+    /** Where they work, already found: skips looking the city up. */
+    base?: { city: string; state: string; lat: number; lng: number };
+    radius?: number;
   },
 ): Promise<SettingsRow> {
   const [row] = await db
@@ -159,9 +162,10 @@ export async function settingsFor(
   if (row) return row;
 
   const cityText = [defaults.city, defaults.state].filter(Boolean).join(", ");
-  const base = (cityText
-    ? await locateCity(cityText, { clientId }).catch(() => undefined)
-    : undefined) ?? { city: "Phoenix", state: "AZ", ...CITIES.Phoenix };
+  const base = defaults.base ??
+    (cityText
+      ? await locateCity(cityText, { clientId }).catch(() => undefined)
+      : undefined) ?? { city: "Phoenix", state: "AZ", ...CITIES.Phoenix };
   const marketId = await marketFor(base);
   const operator: Operator = {
     company: defaults.company,
@@ -178,7 +182,7 @@ export async function settingsFor(
       baseCity: base.city,
       baseLat: base.lat,
       baseLng: base.lng,
-      radius: 50,
+      radius: defaults.radius ?? 50,
       categories: [...ACCOUNT_CATEGORIES],
       eventTypes: [...EVENT_KINDS],
       operator,
@@ -195,7 +199,22 @@ export async function settingsFor(
   return again;
 }
 
-/** Settings for a client from their account, made if they're missing. */
+/** Whether a client has told the Leads Tool where they work yet. */
+export async function hasSettings(clientId: string) {
+  const [row] = await db
+    .select({ id: s.leadsSettings.clientId })
+    .from(s.leadsSettings)
+    .where(eq(s.leadsSettings.clientId, clientId))
+    .limit(1);
+  return Boolean(row);
+}
+
+/**
+ * Settings for a client from their account, made if they're missing. Only
+ * from a city that's really found: without one (a Leads Tool sign-up, or
+ * a city Google can't place), the tool asks them where they work the
+ * first time they open it, rather than guessing Phoenix.
+ */
 export async function ensureSettings(clientId: string) {
   const [client] = await db
     .select()
@@ -214,13 +233,28 @@ export async function ensureSettings(clientId: string) {
     .from(s.websites)
     .where(eq(s.websites.clientId, clientId))
     .limit(1);
-  const row = await settingsFor(clientId, {
-    company: client.business,
-    name: person?.name ?? "",
-    phone: person?.phone ?? client.phone ?? "",
-    website: site?.domain ?? client.websiteUrl ?? undefined,
-    city: [client.city, client.state].filter(Boolean).join(", "),
-  });
+  const [existing] = await db
+    .select()
+    .from(s.leadsSettings)
+    .where(eq(s.leadsSettings.clientId, clientId))
+    .limit(1);
+  const cityText = [client.city, client.state].filter(Boolean).join(", ");
+  const base = existing
+    ? undefined
+    : cityText
+      ? await locateCity(cityText, { clientId }).catch(() => undefined)
+      : undefined;
+  if (!existing && !base) return undefined;
+  const row =
+    existing ??
+    (await settingsFor(clientId, {
+      base,
+      company: client.business,
+      name: person?.name ?? "",
+      phone: person?.phone ?? client.phone ?? "",
+      website: site?.domain ?? client.websiteUrl ?? undefined,
+      city: [client.city, client.state].filter(Boolean).join(", "),
+    }));
   // A market nobody's had before starts loading now, not tonight.
   await kickMarket(row?.marketId).catch(() => undefined);
   return row;
