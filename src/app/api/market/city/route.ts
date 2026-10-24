@@ -9,6 +9,8 @@ import {
   isPlaceId,
   isSessionToken,
 } from "@/lib/market/peek";
+import { milesBetween } from "@/lib/leads/advice";
+import { AREA_MILES, openAreas } from "@/lib/leads/workspace";
 import { flushUsage } from "@/lib/leads/usage";
 
 const answer = (status: number, body: object) =>
@@ -31,6 +33,17 @@ export async function GET(request: Request) {
     );
     if (!found?.name)
       return answer(404, { error: "We couldn't find that city. Pick another." });
+    // A Leads Tool field: the city has to be in that area.
+    const areaId = params.get("area");
+    if (areaId) {
+      const area = (await openAreas()).find((a) => a.id === areaId);
+      if (!area || milesBetween(area, found) > AREA_MILES)
+        return answer(422, {
+          error: area
+            ? `${found.name} is outside the ${area.name}. Pick a city closer in.`
+            : "Pick one of our areas first.",
+        });
+    }
     return answer(200, {
       city: {
         name: found.name,

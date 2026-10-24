@@ -44,6 +44,7 @@ import type {
   LeadActivity,
   LeadExtras,
   LeadPhoto,
+  LeadsArea,
   LeadsSettings,
   LeadsWorkspace,
   Operator,
@@ -78,21 +79,64 @@ export async function ensureStudio() {
 /* ── Markets ── */
 
 /**
+ * How far from an area's center a client's base can be. Clients pick one
+ * of the areas you've opened; only an admin opens a new one, because a new
+ * market's first load is a few thousand paid Google lookups, and the same
+ * again every month to keep it fresh.
+ */
+export const AREA_MILES = 45;
+
+export const NOT_COVERED =
+  "We don't cover that area yet. Pick one of our areas, or ask us about yours.";
+
+/** The markets clients can pick: every one that isn't paused. */
+export async function openAreas(): Promise<LeadsArea[]> {
+  const rows = await db
+    .select()
+    .from(s.leadsMarkets)
+    .where(eq(s.leadsMarkets.paused, false))
+    .orderBy(asc(s.leadsMarkets.name));
+  return rows.map((m) => ({
+    id: m.id,
+    name: m.name,
+    city: m.city,
+    state: m.state ?? "",
+    lat: m.lat,
+    lng: m.lng,
+    ready: Boolean(m.firstLoadedAt),
+  }));
+}
+
+/** The open area a place is in: the nearest within AREA_MILES. */
+export async function areaFor(at: { lat: number; lng: number }) {
+  const areas = await openAreas();
+  return areas
+    .map((a) => ({ a, miles: milesBetween(a, at) }))
+    .filter((x) => x.miles <= AREA_MILES)
+    .sort((x, y) => x.miles - y.miles)[0]?.a;
+}
+
+/**
  * The market a base belongs to: the nearest one within 30 miles, or a new
  * one centered on it (the admins hear about it).
  */
-export async function marketFor(base: {
-  city: string;
-  state: string;
-  lat: number;
-  lng: number;
-}) {
+export async function marketFor(
+  base: {
+    city: string;
+    state: string;
+    lat: number;
+    lng: number;
+  },
+  /** An admin adding a market on purpose. Nobody else starts one. */
+  options: { admin?: boolean } = {},
+) {
   const markets = await db.select().from(s.leadsMarkets);
   const near = markets
     .map((m) => ({ m, miles: milesBetween(m, base) }))
     .filter((x) => x.miles <= 30)
     .sort((a, b) => a.miles - b.miles)[0];
   if (near) return near.m.id;
+  if (!options.admin) throw new Error(NOT_COVERED);
   const id = createId();
   const name = `${base.city} area`;
   await db.insert(s.leadsMarkets).values({
@@ -151,6 +195,8 @@ export async function settingsFor(
     state?: string | null;
     /** Where they work, already found: skips looking the city up. */
     base?: { city: string; state: string; lat: number; lng: number };
+    /** The area it's in, already found. */
+    marketId?: string;
     radius?: number;
   },
 ): Promise<SettingsRow> {
@@ -166,7 +212,11 @@ export async function settingsFor(
     (cityText
       ? await locateCity(cityText, { clientId }).catch(() => undefined)
       : undefined) ?? { city: "Phoenix", state: "AZ", ...CITIES.Phoenix };
-  const marketId = await marketFor(base);
+  // The area it's in; the studio may be anywhere, and gets a market made.
+  const marketId =
+    defaults.marketId ??
+    (await areaFor(base))?.id ??
+    (await marketFor(base, { admin: clientId === STUDIO_ID }));
   const operator: Operator = {
     company: defaults.company,
     name: defaults.name,
@@ -244,11 +294,15 @@ export async function ensureSettings(clientId: string) {
     : cityText
       ? await locateCity(cityText, { clientId }).catch(() => undefined)
       : undefined;
-  if (!existing && !base) return undefined;
+  // Only a city in one of the open areas: anywhere else, the setup step
+  // asks them to pick an area.
+  const area = base ? await areaFor(base) : undefined;
+  if (!existing && (!base || !area)) return undefined;
   const row =
     existing ??
     (await settingsFor(clientId, {
       base,
+      marketId: area?.id,
       company: client.business,
       name: person?.name ?? "",
       phone: person?.phone ?? client.phone ?? "",
@@ -651,6 +705,7 @@ export async function loadWorkspace(owner: Owner): Promise<Loaded> {
         lastRunAt: market?.lastRunAt?.toISOString(),
         loading: !ready && market ? await loadProgress(market.id) : undefined,
       },
+      areas: await openAreas(),
       newSince: ready
         ? newSince(now, market!.firstLoadedAt!.toISOString())
         : nowIso,

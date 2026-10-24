@@ -12,15 +12,16 @@ import {
   ensureStudio,
   hasSettings,
   loadWorkspace,
+  openAreas,
   type Loaded,
 } from "./workspace";
-import type { Account, EventLead } from "./types";
+import type { Account, EventLead, LeadsArea } from "./types";
 
 export type LeadsState =
   | { state: "NONE" }
   | { state: "OFF" }
-  /** On, but they haven't said where they work yet. */
-  | { state: "SETUP" }
+  /** On, but they haven't picked their area yet. */
+  | { state: "SETUP"; areas: LeadsArea[] }
   | Loaded;
 
 /** A client's Leads Tool, as they (or an admin viewing as them) see it. */
@@ -30,7 +31,8 @@ export const getLeads = cache(async () => {
   let page: LeadsState;
   if (access === "NONE") page = { state: "NONE" };
   else if (!client.leads.enabled) page = { state: "OFF" };
-  else if (!(await hasSettings(client.id))) page = { state: "SETUP" };
+  else if (!(await hasSettings(client.id)))
+    page = { state: "SETUP", areas: await openAreas() };
   else {
     // The morning email is each person's own; an admin sees the owner's.
     const person = viewingAs ? (await clientPeople(client.id))[0] : undefined;

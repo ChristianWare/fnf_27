@@ -2562,3 +2562,11 @@
     padding: 2rem 1.8rem;
   }
 }
+
+/* Lead settings: the area, then the base inside it. */
+.placeFields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  min-width: 0;
+}

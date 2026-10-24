@@ -34,116 +34,6 @@
   gap: 1rem;
 }
 
-/* The bar across the top, with the field and the button. */
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  padding: 1rem 1rem 1rem 2rem;
-  border-radius: 1.2rem;
-  background-color: var(--light);
-}
-
-.field {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 1.6rem;
-  min-width: 0;
-  cursor: text;
-}
-
-.label {
-  flex: none;
-  font-family: var(--IBMPlex);
-  font-size: 14px;
-  line-height: 1;
-  letter-spacing: -0.5px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-/* The field, with the list of matching cities under it. */
-.combo {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-}
-
-.input {
-  width: 100%;
-  min-width: 0;
-  padding: 1rem 0;
-  border: none;
-  background: transparent;
-  font-size: 1.8rem;
-  line-height: 1;
-  color: var(--black);
-}
-
-.list {
-  position: absolute;
-  top: calc(100% + 1.2rem);
-  left: -1rem;
-  right: -1rem;
-  z-index: 5;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  padding: 0.6rem;
-  border-radius: 1.2rem;
-  background-color: var(--white);
-  box-shadow:
-    0 0 0 1px var(--light2),
-    0 1.2rem 3rem rgb(13 13 14 / 12%);
-}
-
-.list[hidden] {
-  display: none;
-}
-
-.option {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1.6rem;
-  padding: 1.2rem 1.4rem;
-  border-radius: 0.8rem;
-  cursor: pointer;
-}
-
-.optionOn {
-  background-color: var(--light);
-}
-
-.optionName {
-  font-size: 16px;
-  line-height: 1.2;
-  color: var(--black);
-}
-
-.optionRegion {
-  flex: none;
-  font-family: var(--IBMPlex);
-  font-size: 14px;
-  line-height: 1;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.input::placeholder {
-  color: var(--textDark);
-}
-
-.input:focus {
-  outline: none;
-}
-
-.field:has(.input:focus) {
-  box-shadow: none;
-}
-
 .error {
   padding: 0 0.4rem;
   font-size: 16px;
@@ -270,31 +160,6 @@
     padding: 7rem 0rem;
   }
 
-  .bar {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 1.6rem;
-  }
-
-  .bar > * {
-    justify-content: center;
-  }
-
-  .field {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.6rem;
-  }
-
-  .combo {
-    width: 100%;
-  }
-
-  .list {
-    left: -0.6rem;
-    right: -0.6rem;
-  }
-
   .unlock {
     flex-direction: column;
     align-items: flex-start;
@@ -314,5 +179,41 @@
   .swatch {
     min-height: 10rem;
     font-size: 4.4rem;
+  }
+}
+
+
+/* The areas we cover, as chips across the top. */
+.areas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-radius: 1.2rem;
+  background-color: var(--light);
+}
+
+.area {
+  padding: 1.2rem 2rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background-color: var(--white);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--black);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.areaOn {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+@media (hover: hover) {
+  .area:not(.areaOn):hover {
+    border-color: var(--black);
   }
 }

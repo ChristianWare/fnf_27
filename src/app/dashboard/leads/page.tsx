@@ -46,7 +46,13 @@ export default async function LeadsPage() {
   }
   // First visit: where they work, before anything loads.
   if (page.state === "SETUP") {
-    return <Setup trialEndsAt={trialEndsAt} readOnly={viewingAs} />;
+    return (
+      <Setup
+        areas={page.areas}
+        trialEndsAt={trialEndsAt}
+        readOnly={viewingAs}
+      />
+    );
   }
   if (!page.workspace.market.ready) {
     return (

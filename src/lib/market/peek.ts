@@ -69,6 +69,8 @@ const regionOf = (secondary: string) =>
 export async function suggestCities(
   input: string,
   session?: string,
+  /** Only cities inside this box: one of the Leads Tool's areas. */
+  within?: Box,
 ): Promise<CitySuggestion[]> {
   if (!apiKey())
     throw new ApiError("Google", 0, "GOOGLE_MAPS_SERVER_KEY isn't set.");
@@ -86,6 +88,16 @@ export async function suggestCities(
         // Cities only, the way Google's own "(cities)" filter works.
         includedPrimaryTypes: ["locality", "administrative_area_level_3"],
         includedRegionCodes: ["us"],
+        ...(within
+          ? {
+              locationRestriction: {
+                rectangle: {
+                  low: { latitude: within.south, longitude: within.west },
+                  high: { latitude: within.north, longitude: within.east },
+                },
+              },
+            }
+          : {}),
         languageCode: "en-US",
         ...(session ? { sessionToken: session } : {}),
       }),
@@ -204,7 +216,7 @@ const OTHER: AccountCategory[] = ACCOUNT_CATEGORIES.filter(
 );
 
 /** What the tool has in a market right now. */
-async function countsFromTool(marketId: string) {
+export async function countsFromTool(marketId: string) {
   const since = new Date(Date.now() - SEEN_DAYS * 24 * 60 * 60 * 1000);
   const places = await db
     .select({

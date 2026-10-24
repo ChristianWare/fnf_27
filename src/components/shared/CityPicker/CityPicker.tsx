@@ -43,6 +43,7 @@ export default function CityPicker({
   disabled,
   invalid,
   label,
+  area,
 }: {
   id?: string;
   /** Posts the picked city ("Phoenix, AZ") with a form, under this name. */
@@ -58,7 +59,10 @@ export default function CityPicker({
   invalid?: boolean;
   /** For screen readers, when there's no visible label. */
   label?: string;
+  /** A Leads Tool area's id: only cities in it are suggested. */
+  area?: string;
 }) {
+  const scoped = area ? `&area=${encodeURIComponent(area)}` : "";
   const listId = useId();
   const [text, setText] = useState(defaultText);
   const [picked, setPicked] = useState<string>(defaultText);
@@ -78,7 +82,7 @@ export default function CityPicker({
     const timer = setTimeout(() => {
       asked.current = q;
       fetch(
-        `/api/market/cities?q=${encodeURIComponent(q)}&session=${session.current}`,
+        `/api/market/cities?q=${encodeURIComponent(q)}&session=${session.current}${scoped}`,
         { signal: controller.signal, cache: "no-store" },
       )
         .then(async (res) => {
@@ -98,7 +102,7 @@ export default function CityPicker({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [text, picked]);
+  }, [text, picked, scoped]);
 
   const choose = async (city: CitySuggestion) => {
     setText(city.text);
@@ -109,7 +113,7 @@ export default function CityPicker({
     setError("");
     try {
       const res = await fetch(
-        `/api/market/city?place=${encodeURIComponent(city.id)}&session=${session.current}`,
+        `/api/market/city?place=${encodeURIComponent(city.id)}&session=${session.current}${scoped}`,
         { cache: "no-store" },
       );
       const body = (await res.json().catch(() => ({}))) as {

@@ -151,6 +151,20 @@ export type Script = {
 };
 
 /** Everything one client's (or the studio's) Leads Tool shows. */
+/** A market clients can pick: one you've opened and not paused. */
+export type LeadsArea = {
+  id: string;
+  /** "Las Vegas area" */
+  name: string;
+  /** Its center: "Las Vegas", "NV". */
+  city: string;
+  state: string;
+  lat: number;
+  lng: number;
+  /** Its first load is in. */
+  ready: boolean;
+};
+
 export type LeadsWorkspace = {
   now: string;
   access: "INCLUDED" | "TRIAL" | "ACTIVE" | "STUDIO";
@@ -177,6 +191,8 @@ export type LeadsWorkspace = {
       working: boolean;
     };
   };
+  /** The areas the tool covers (the markets you've opened), to pick from. */
+  areas: LeadsArea[];
   /** Found after this counts as new this morning. */
   newSince: string;
   accounts: Account[];

@@ -12,7 +12,7 @@ import type { User } from "@/lib/auth/users";
 import { done, fail, VIEW_ONLY, type ActionResult } from "@/lib/actions";
 import { createId } from "@/lib/server/ids";
 import { dayKey, money } from "@/lib/dashboard/format";
-import { followUpAfter } from "@/lib/leads/advice";
+import { followUpAfter, milesBetween } from "@/lib/leads/advice";
 import { stageOf } from "@/lib/leads/catalog";
 import {
   ACCOUNT_CATEGORIES,
@@ -32,7 +32,11 @@ import {
   marketFor,
   researchTarget,
   savedLeads,
+  AREA_MILES,
+  areaFor,
   hasSettings,
+  NOT_COVERED,
+  openAreas,
   settingsFor,
   toSettings,
   type SettingsRow,
@@ -590,8 +594,11 @@ export async function saveLeadSettings(
     );
     await flushUsage();
     if (!found) return fail(`We couldn't find ${city}. Try "City, State".`);
+    // One of the areas you've opened; the studio may look anywhere.
+    const area = await areaFor(found);
+    if (!area && !a.studio) return fail(NOT_COVERED);
     base = { city: found.city, lat: found.lat, lng: found.lng };
-    marketId = await marketFor(found);
+    marketId = area?.id ?? (await marketFor(found, { admin: true }));
   }
 
   await db
@@ -637,33 +644,45 @@ export async function saveLeadSettings(
 const SETUP_RADII = [10, 25, 50, 75];
 
 /**
- * The first time a client opens the Leads Tool: their city (picked from
- * Google's suggestions) and how far they'll drive. Makes their settings
- * and starts their market's first load.
+ * The first time a client opens the Leads Tool: which of your areas they
+ * work in, where in it (optional: the area's center otherwise), and how
+ * far they'll drive. Makes their settings and starts the area's first
+ * load if it hasn't had one.
  */
 export async function setUpLeads(input: {
-  city: string;
+  areaId: string;
+  city?: string;
   radius: number;
 }): Promise<ActionResult> {
   const a = await actor("client");
   if (!a.ok) return fail(a.error);
   if (await hasSettings(a.clientId)) return done();
-  const city = clean(input?.city, 100);
-  if (city.length < 2) return fail("Pick your city from the list.");
   if (!SETUP_RADII.includes(input?.radius))
     return fail("Pick how far you'll drive.");
-  const found = await locateCity(city, { clientId: a.clientId }).catch(
-    () => undefined,
-  );
-  await flushUsage();
-  if (!found) return fail(`We couldn't find ${city}. Pick it from the list.`);
+  const area = (await openAreas()).find((x) => x.id === input?.areaId);
+  if (!area) return fail("Pick one of our areas.");
+
+  let base = { city: area.city, state: area.state, lat: area.lat, lng: area.lng };
+  const city = clean(input?.city, 100);
+  if (city) {
+    const found = await locateCity(city, { clientId: a.clientId }).catch(
+      () => undefined,
+    );
+    await flushUsage();
+    if (!found) return fail(`We couldn't find ${city}. Pick it from the list.`);
+    if (milesBetween(area, found) > AREA_MILES)
+      return fail(`${found.city} is outside the ${area.name}. Pick a city closer in.`);
+    base = found;
+  }
+
   const [client] = await db
     .select()
     .from(s.clients)
     .where(eq(s.clients.id, a.clientId))
     .limit(1);
-  const row = await settingsFor(a.clientId, {
-    base: found,
+  await settingsFor(a.clientId, {
+    base,
+    marketId: area.id,
     radius: input.radius,
     company: client?.business ?? "",
     name: a.user.name,
@@ -674,9 +693,13 @@ export async function setUpLeads(input: {
   if (client && !client.city)
     await db
       .update(s.clients)
-      .set({ city: found.city, state: found.state || null, updatedAt: new Date() })
+      .set({
+        city: base.city,
+        state: base.state || null,
+        updatedAt: new Date(),
+      })
       .where(eq(s.clients.id, a.clientId));
-  // A market nobody's had before starts loading now.
-  await kickMarket(row?.marketId).catch(() => undefined);
+  // An area that's never been loaded starts now.
+  await kickMarket(area.id).catch(() => undefined);
   return done();
 }

@@ -94,7 +94,7 @@ export async function addMarket(
   const found = await locateCity(text, {}).catch(() => undefined);
   await flushUsage();
   if (!found) return fail(`We couldn't find ${text}. Try "City, State".`);
-  const id = await marketFor(found);
+  const id = await marketFor(found, { admin: true });
   refresh();
   return done({ id });
 }
