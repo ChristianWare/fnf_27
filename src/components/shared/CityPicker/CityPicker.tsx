@@ -24,6 +24,8 @@ export type PickedCity = {
   text: string;
   lat: number;
   lng: number;
+  /** A Leads Tool field: the nearest of our areas in the state. */
+  area?: { id: string; name: string; miles: number; covered: boolean };
 };
 
 /** One token per spell of typing, so Google bills it as one session. */
@@ -43,7 +45,7 @@ export default function CityPicker({
   disabled,
   invalid,
   label,
-  area,
+  state,
 }: {
   id?: string;
   /** Posts the picked city ("Phoenix, AZ") with a form, under this name. */
@@ -59,10 +61,10 @@ export default function CityPicker({
   invalid?: boolean;
   /** For screen readers, when there's no visible label. */
   label?: string;
-  /** A Leads Tool area's id: only cities in it are suggested. */
-  area?: string;
+  /** A Leads Tool field: only this state's cities ("AZ"), with the area. */
+  state?: string;
 }) {
-  const scoped = area ? `&area=${encodeURIComponent(area)}` : "";
+  const scoped = state ? `&state=${encodeURIComponent(state)}` : "";
   const listId = useId();
   const [text, setText] = useState(defaultText);
   const [picked, setPicked] = useState<string>(defaultText);

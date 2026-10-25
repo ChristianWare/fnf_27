@@ -18,6 +18,7 @@ import {
   Tile,
 } from "./bits";
 import styles from "./Leads.module.css";
+import { reachText } from "@/lib/leads/areas";
 import {
   fits,
   rank,
@@ -47,6 +48,7 @@ export default function Today({ firstName }: { firstName: string }) {
     newSince,
     href,
     readOnly,
+    market,
   } = useLeads();
 
   const moves = todaysMoves(saved, target, now);
@@ -95,7 +97,7 @@ export default function Today({ firstName }: { firstName: string }) {
       <PageHead
         crumb={`Leads · ${fmtWeekday(now)}`}
         title={`Today, ${firstName}`}
-        text={`${summary}. New leads land every morning at 6, within ${settings.radius} miles of ${settings.base.city}.`}
+        text={`${summary}. New leads land every morning at 6, ${reachText(settings.radius, settings.base.city, market.state)}.`}
       >
         <ButtonLink href={href("find")} icon='search'>
           Find leads
@@ -203,8 +205,8 @@ export default function Today({ firstName }: { firstName: string }) {
                 </h2>
                 <p>
                   {starters.length
-                    ? `The best within ${settings.radius} miles of ${settings.base.city} right now. From tomorrow, what's new each morning shows here.`
-                    : `Found overnight within ${settings.radius} miles of ${settings.base.city}, best first.`}
+                    ? `The best ${reachText(settings.radius, settings.base.city, market.state)} right now. From tomorrow, what's new each morning shows here.`
+                    : `Found overnight ${reachText(settings.radius, settings.base.city, market.state)}, best first.`}
                 </p>
               </div>
               <ButtonLink

@@ -22,8 +22,18 @@ export default function RegisterForm({
   initialPlan,
   siteKey,
   stamp,
+  invite,
 }: {
   plans: PlanCard[];
+  /** From an invite link: their details, and the link's token. */
+  invite?: {
+    token: string;
+    name: string;
+    business: string;
+    email: string;
+    phone: string;
+    website: string;
+  };
   initialPlan?: PlanCard["id"];
   siteKey?: string;
   /** When the form was drawn, signed: a bot posts in under a second. */
@@ -34,7 +44,7 @@ export default function RegisterForm({
     {},
   );
   const [attempts, setAttempts] = useState(0);
-  const v = state.values ?? {};
+  const v: Record<string, string> = state.values ?? invite ?? {};
   const [plan, setPlan] = useState<PlanCard["id"]>(
     (v.plan as PlanCard["id"]) || initialPlan || "FULL_PLATFORM",
   );
@@ -173,6 +183,7 @@ export default function RegisterForm({
         </label>
       </div>
       <input type='hidden' name={STAMP_FIELD} value={stamp} />
+      {invite && <input type='hidden' name='prospect' value={invite.token} />}
 
       <Turnstile
         siteKey={siteKey}

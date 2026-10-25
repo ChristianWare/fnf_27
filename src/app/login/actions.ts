@@ -37,6 +37,7 @@ import { emailPerson } from "@/lib/server/notify";
 import { humanCheck } from "@/lib/server/turnstile";
 import { botReason, botText, STAMP_FIELD, TRAP_FIELD } from "@/lib/server/spam";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
+import { linkSignup } from "@/lib/prospects/store";
 
 const SUPPORT = "hello@fontsandfooters.com";
 
@@ -320,6 +321,17 @@ export async function register(
       undefined,
       tx,
     );
+  });
+
+  // A prospect you called: linked to the account, and moved along.
+  await linkSignup({
+    token: get("prospect") || undefined,
+    clientId,
+    email: values.email,
+    phone: values.phone,
+    website: site,
+    plan,
+    planName: planLabel(plan),
   });
 
   await sendVerification(userId, values.email, values.name);

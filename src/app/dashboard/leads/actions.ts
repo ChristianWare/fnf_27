@@ -26,6 +26,14 @@ import { scriptsFor } from "@/lib/leads/scripts";
 import { flushUsage } from "@/lib/leads/usage";
 import { kickMarket } from "@/lib/leads/kick";
 import {
+  RADII,
+  radiiFor,
+  STATEWIDE_MILES,
+  statewide,
+} from "@/lib/leads/areas";
+import { alertAdmins } from "@/lib/server/notify";
+import { url } from "@/lib/server/config";
+import {
   ensureStudio,
   findTarget,
   locateCity,
@@ -548,8 +556,6 @@ export async function rewriteScripts(
 
 /* ── Settings ── */
 
-const RADII = [10, 25, 50, 75];
-
 export async function saveLeadSettings(
   where: LeadsWhere,
   next: LeadsSettings,
@@ -566,7 +572,9 @@ export async function saveLeadSettings(
   );
   if (!categories.length && !eventTypes.length)
     return fail("Turn on at least one kind of account or event.");
-  if (!RADII.includes(next.radius)) return fail("Pick how far you'll drive.");
+  // The distance is checked once we know which state they're in, below.
+  if (!RADII.includes(next.radius) && next.radius !== STATEWIDE_MILES)
+    return fail("Pick how far you'll drive.");
 
   const op = next.operator ?? ({} as LeadsSettings["operator"]);
   const operator = {
@@ -599,6 +607,17 @@ export async function saveLeadSettings(
     if (!area && !a.studio) return fail(NOT_COVERED);
     base = { city: found.city, lat: found.lat, lng: found.lng };
     marketId = area?.id ?? (await marketFor(found, { admin: true }));
+  }
+  // "All of Arizona" only where the state offers it.
+  if (next.radius === STATEWIDE_MILES) {
+    const [home] = marketId
+      ? await db
+          .select({ state: s.leadsMarkets.state })
+          .from(s.leadsMarkets)
+          .where(eq(s.leadsMarkets.id, marketId))
+          .limit(1)
+      : [];
+    if (!statewide(home?.state)) return fail("Pick how far you'll drive.");
   }
 
   await db
@@ -641,13 +660,12 @@ export async function saveLeadSettings(
 
 /* ── Setting up: where they work ── */
 
-const SETUP_RADII = [10, 25, 50, 75];
-
 /**
- * The first time a client opens the Leads Tool: which of your areas they
- * work in, where in it (optional: the area's center otherwise), and how
- * far they'll drive. Makes their settings and starts the area's first
- * load if it hasn't had one.
+ * The first time a client opens the Leads Tool: their state, their city in
+ * it (matched to the nearest of your areas there), and how far they'll
+ * drive, "All of Arizona" included. A city outside your areas can use the
+ * nearest area's center instead ("use it anyway": no city sent). Makes
+ * their settings and starts the area's first load if it hasn't had one.
  */
 export async function setUpLeads(input: {
   areaId: string;
@@ -657,12 +675,17 @@ export async function setUpLeads(input: {
   const a = await actor("client");
   if (!a.ok) return fail(a.error);
   if (await hasSettings(a.clientId)) return done();
-  if (!SETUP_RADII.includes(input?.radius))
-    return fail("Pick how far you'll drive.");
   const area = (await openAreas()).find((x) => x.id === input?.areaId);
   if (!area) return fail("Pick one of our areas.");
+  if (!radiiFor(area.state).includes(input?.radius))
+    return fail("Pick how far you'll drive.");
 
-  let base = { city: area.city, state: area.state, lat: area.lat, lng: area.lng };
+  let base = {
+    city: area.city,
+    state: area.state,
+    lat: area.lat,
+    lng: area.lng,
+  };
   const city = clean(input?.city, 100);
   if (city) {
     const found = await locateCity(city, { clientId: a.clientId }).catch(
@@ -671,7 +694,7 @@ export async function setUpLeads(input: {
     await flushUsage();
     if (!found) return fail(`We couldn't find ${city}. Pick it from the list.`);
     if (milesBetween(area, found) > AREA_MILES)
-      return fail(`${found.city} is outside the ${area.name}. Pick a city closer in.`);
+      return fail(`${found.city} is outside the ${area.name}.`);
     base = found;
   }
 
@@ -701,5 +724,36 @@ export async function setUpLeads(input: {
       .where(eq(s.clients.id, a.clientId));
   // An area that's never been loaded starts now.
   await kickMarket(area.id).catch(() => undefined);
+  return done();
+}
+
+/**
+ * "Let me know when you open my area": a city we don't cover yet. The
+ * admins hear about it, so they can see where the demand is.
+ */
+export async function askForArea(input: {
+  city: string;
+}): Promise<ActionResult> {
+  const user = await getSessionUser();
+  if (!user?.clientId) return fail("Your session ended. Sign in again.");
+  const city = clean(input?.city, 100);
+  if (!city) return fail("Pick your city first.");
+  const [client] = await db
+    .select({ business: s.clients.business })
+    .from(s.clients)
+    .where(eq(s.clients.id, user.clientId))
+    .limit(1);
+  const business = client?.business ?? "A client";
+  await alertAdmins("signup", `Leads Tool request: ${city}`, {
+    eyebrow: "Leads Tool",
+    heading: `${business} wants leads in ${city}`,
+    paragraphs: [
+      `${user.name} (${user.email}) works around ${city}, which isn't in any of your areas yet. Open a market there from the Leads Tool admin when it's worth it.`,
+    ],
+    button: {
+      label: "Open the Leads Tool admin",
+      href: url("/admin/leads-tool"),
+    },
+  });
   return done();
 }

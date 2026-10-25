@@ -13,6 +13,7 @@ import type { AuditView, CheckResult, Part } from "@/lib/audit/types";
 import Progress from "./Progress";
 import FullReportForm from "./FullReportForm";
 import CopyLink from "./CopyLink";
+import SemrushDeepDive from "../SemrushDeepDive/SemrushDeepDive";
 import styles from "./AuditReport.module.css";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
@@ -460,6 +461,8 @@ function Details({ view }: { view: AuditView }) {
           </div>
         </div>
       )}
+
+      {view.semrush && <SemrushDeepDive data={view.semrush} />}
 
       {view.phoneShot && (
         <div className={styles.shotCard}>

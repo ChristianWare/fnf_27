@@ -11,6 +11,7 @@ export const ACCOUNT_CATEGORIES = [
   "CASINO",
   "SENIOR",
   "TOURS",
+  "AIRPORT",
 ] as const;
 
 export const EVENT_KINDS = [

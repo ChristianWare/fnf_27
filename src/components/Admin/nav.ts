@@ -10,6 +10,8 @@ export function adminNav(
   leadsDue = 0,
   /** Audits from the public page that nobody has followed up yet. */
   auditsNew = 0,
+  /** Prospects to call back or follow up with today. */
+  prospectsDue = 0,
 ): NavGroup[] {
   return [
     {
@@ -43,6 +45,12 @@ export function adminNav(
           label: "Messages",
           icon: "inbox",
           badge: stats.unread || undefined,
+        },
+        {
+          href: "/admin/prospects",
+          label: "Prospects",
+          icon: "phone",
+          badge: prospectsDue || undefined,
         },
         { href: "/admin/proposals", label: "Proposals", icon: "file" },
         {

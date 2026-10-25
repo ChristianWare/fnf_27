@@ -3,6 +3,7 @@
 // Safe anywhere.
 
 import type { AuditSource, AuditStatus, CheckId, FollowUp } from "./kinds";
+import type { SemrushData } from "./semrush/types";
 
 export type { AuditSource, AuditStatus, CheckId, FollowUp };
 
@@ -176,4 +177,6 @@ export type AuditView = {
   error?: string;
   /** The anonymized sample on /audit/sample. */
   sample?: boolean;
+  /** Semrush exports the admin added: the "Search deep-dive". */
+  semrush?: SemrushData;
 };

@@ -19,6 +19,15 @@ import {
 import { fmtDate } from "@/lib/dashboard/format";
 import { CALL_BELOW, CHECKS } from "./kinds";
 import type { AuditView, Part } from "./types";
+import type { SemrushData } from "./semrush/types";
+import {
+  monthName,
+  monthShort,
+  pagePath,
+  placeOf,
+  semrushInsights,
+  usd,
+} from "./semrush/insights";
 
 const publicDir = path.join(process.cwd(), "public");
 const font = (file: string) => path.join(publicDir, "fonts", file);
@@ -527,6 +536,8 @@ function AuditPdf({
           </View>
         )}
 
+        {view.semrush && <DeepDive d={view.semrush} />}
+
         {shot && (
           <View wrap={false}>
             <Text style={s.h2}>What a rider sees on a phone</Text>
@@ -573,6 +584,228 @@ function AuditPdf({
         <Footer view={view} />
       </Page>
     </Document>
+  );
+}
+
+const num = (v: number) => Math.round(v).toLocaleString("en-US");
+
+/** A small table: the first column takes the room, the rest are numbers. */
+function PdfTable({
+  head,
+  rows,
+  widths,
+}: {
+  head: string[];
+  rows: (string | number)[][];
+  widths: number[];
+}) {
+  return (
+    <View style={s.table}>
+      <View style={s.th}>
+        {head.map((h, i) => (
+          <Text
+            key={h}
+            style={[s.mono, i ? { width: widths[i - 1], textAlign: "right" } : { flex: 1 }]}
+          >
+            {h}
+          </Text>
+        ))}
+      </View>
+      {rows.map((r, j) => (
+        <View key={j} style={s.tr} wrap={false}>
+          {r.map((c, i) => (
+            <Text
+              key={i}
+              style={[s.small, i ? { width: widths[i - 1], textAlign: "right" } : { flex: 1 }]}
+            >
+              {String(c)}
+            </Text>
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** The Search deep-dive, from the Semrush exports. */
+function DeepDive({ d }: { d: SemrushData }) {
+  const p = d.positions;
+  const t = d.trend;
+  const db = p?.database ?? t?.database;
+  const asOf = d.files.map((f) => f.uploadedAt).sort().at(-1);
+  const max = Math.max(1, ...(t?.months ?? []).map((m) => m.traffic));
+  const pages = d.pages?.length ? d.pages : (p?.pages ?? []);
+  return (
+    <View break>
+      <View style={[s.next, { marginTop: 0 }]} wrap={false}>
+        <Text style={[s.mono, { color: LIME }]}>Search deep-dive</Text>
+        <Text style={[s.nextText, { fontSize: 17, marginTop: 8 }]}>
+          Where your Google traffic comes from, and where it could
+        </Text>
+        <Text style={[s.small, { color: "#c9cdd2", marginTop: 6 }]}>
+          From Semrush{db ? `'s ${db} database` : ""}
+          {asOf ? `, ${monthName(asOf.slice(0, 7))}` : ""}. These are
+          estimates: useful for comparing and spotting trends, not an exact
+          count of visits.
+        </Text>
+      </View>
+
+      {p && (
+        <View style={[s.scoreRow, { marginTop: 10 }]} wrap={false}>
+          {(
+            [
+              ["Visits a month", num(p.traffic)],
+              ["Searches you show up for", num(p.keywords)],
+              ["On page one", num(p.top10)],
+              ["Worth a month in ads", usd(p.value)],
+            ] as const
+          ).map(([label, value], i) => (
+            <View
+              key={label}
+              style={[s.summaryCard, { padding: 12, backgroundColor: i === 3 ? MINT : LIGHT }]}
+            >
+              <Text style={[s.scoreNumber, { fontSize: 24, color: BLACK, letterSpacing: -0.5 }]}>
+                {value}
+              </Text>
+              <Text style={[s.mono, { marginTop: 6 }]}>{label}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {semrushInsights(d).map((i) => (
+        <View key={i.title} style={[s.check, { marginTop: 8, padding: 12 }]} wrap={false}>
+          <Text style={s.mono}>{i.title}</Text>
+          <Text style={[s.small, { marginTop: 4, fontSize: 9.5 }]}>{i.text}</Text>
+        </View>
+      ))}
+
+      {p && p.close.length > 0 && (
+        <View wrap={false}>
+          <Text style={s.h2}>Ride searches closest to the top</Text>
+          <PdfTable
+            head={["Search", "You", "A month", "Ad price"]}
+            widths={[70, 60, 60]}
+            rows={p.close.map((k) => [
+              k.keyword,
+              placeOf(k),
+              num(k.volume),
+              k.cpc ? `$${k.cpc.toFixed(2)}` : "–",
+            ])}
+          />
+        </View>
+      )}
+
+      {t && t.months.length > 1 && (
+        <View wrap={false}>
+          <Text style={s.h2}>Visits from Google, the last {t.months.length} months</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-end",
+              gap: 2,
+              height: 90,
+              borderBottomWidth: 1,
+              borderBottomColor: LIGHT2,
+            }}
+          >
+            {t.months.map((m) => (
+              <View
+                key={m.month}
+                style={{
+                  flex: 1,
+                  height: Math.max(1.5, (m.traffic / max) * 88),
+                  backgroundColor: BLACK,
+                  borderTopLeftRadius: 2,
+                  borderTopRightRadius: 2,
+                }}
+              />
+            ))}
+          </View>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>
+            <Text style={s.mono}>
+              {monthShort(t.months[0].month)} {t.months[0].month.slice(0, 4)}
+            </Text>
+            <Text style={s.mono}>
+              {t.peak ? `Best: ${monthName(t.peak.month)}, ${num(t.peak.traffic)}` : ""}
+            </Text>
+            <Text style={s.mono}>
+              {monthShort(t.months.at(-1)!.month)} {t.months.at(-1)!.month.slice(0, 4)}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {p && p.top.length > 0 && (
+        <View wrap={false}>
+          <Text style={s.h2}>The searches that send you the most</Text>
+          <PdfTable
+            head={["Search", "You", "A month", "Visits"]}
+            widths={[50, 60, 50]}
+            rows={p.top.map((k) => [k.keyword, `#${k.position}`, num(k.volume), num(k.traffic)])}
+          />
+        </View>
+      )}
+
+      {pages.length > 0 && (
+        <View wrap={false}>
+          <Text style={s.h2}>Your pages Google sends people to</Text>
+          <PdfTable
+            head={["Page", "Searches", "Visits"]}
+            widths={[60, 50]}
+            rows={pages.slice(0, 8).map((pg) => [pagePath(pg.url), num(pg.keywords), num(pg.traffic)])}
+          />
+        </View>
+      )}
+
+      {d.competitors && d.competitors.length > 0 && (
+        <View wrap={false}>
+          <Text style={s.h2}>Who you&apos;re up against on Google</Text>
+          <PdfTable
+            head={["Site", "Shared", "Searches", "Visits", "Worth"]}
+            widths={[50, 55, 50, 55]}
+            rows={[
+              ...(p ? [["You", "–", num(p.keywords), num(p.traffic), usd(p.value)]] : []),
+              ...d.competitors
+                .slice(0, 8)
+                .map((c) => [c.domain, num(c.common), num(c.keywords), num(c.traffic), usd(c.value)]),
+            ]}
+          />
+        </View>
+      )}
+
+      {d.gap && d.gap.missing.length > 0 && (
+        <View wrap={false}>
+          <Text style={s.h2}>Searches they rank for and you don&apos;t</Text>
+          <PdfTable
+            head={["Search", "A month", "Who's there"]}
+            widths={[55, 150]}
+            rows={d.gap.missing.map((k) => [k.keyword, num(k.volume), `${k.domain} (#${k.position})`])}
+          />
+        </View>
+      )}
+
+      {d.links && (
+        <View wrap={false}>
+          <Text style={s.h2}>Sites that link to you</Text>
+          <Text style={s.small}>
+            {num(d.links.domains)} linking sites
+            {d.links.follow !== undefined ? `, ${d.links.follow}% count toward rankings` : ""}
+            , {num(d.links.spamCount)} look like spam.
+            {d.links.top.length
+              ? ` The strongest: ${d.links.top.slice(0, 5).map((x) => x.domain).join(", ")}.`
+              : ""}
+          </Text>
+          {d.links.spam.length > 0 && (
+            <PdfTable
+              head={["Looks like spam", "Why"]}
+              widths={[220]}
+              rows={d.links.spam.slice(0, 6).map((x) => [x.domain, x.why])}
+            />
+          )}
+        </View>
+      )}
+    </View>
   );
 }
 

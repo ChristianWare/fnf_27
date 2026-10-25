@@ -185,6 +185,28 @@ export const CATEGORIES: Record<AccountCategory, Angle> = {
     hook: "your guests need a driver for the day so they can enjoy the tastings",
     subject: "A driver for your tasting groups",
   },
+  AIRPORT: {
+    audience: "airports and private jet terminals",
+    label: "Airports and private aviation",
+    short: "Airport",
+    icon: "send",
+    who: "the FBO General Manager or Customer Service Manager, or the airport's ground transportation office",
+    titles: [
+      "General Manager",
+      "Customer Service Manager",
+      "Customer Service Supervisor",
+      "Ground Transportation Manager",
+      "Airport Manager",
+      "Operations Manager",
+    ],
+    why: "Private jet terminals (FBOs) book cars for their passengers every day and keep a short list of services they trust. Smaller airports list local car services on their websites, which is a lead and a link to your site. Big commercial airports usually need a ground transportation permit before they'll list you or let you pick up, so ask what it takes.",
+    season:
+      "All year, busiest January to April and around big weekends like the Phoenix Open, Spring Training and the Barrett-Jackson auction.",
+    offer:
+      "a car on call for their passengers, timed to each arrival, and a spot on their list of ground transportation",
+    hook: "your passengers land expecting a car waiting for them, often at short notice",
+    subject: "A car waiting for your passengers",
+  },
 };
 
 export const EVENT_TYPES: Record<EventType, Angle> = {
@@ -423,6 +445,10 @@ export const SEARCHES: Record<
   TOURS: [
     { text: "tour company", type: "tour_agency", pages: 1, depth: 2 },
     { text: "winery", type: "winery", pages: 1, depth: 2 },
+  ],
+  AIRPORT: [
+    { text: "airport", type: "airport", pages: 1, depth: 2 },
+    { text: "FBO private jet terminal", pages: 1, depth: 2 },
   ],
 };
 

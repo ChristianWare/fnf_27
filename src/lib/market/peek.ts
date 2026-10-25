@@ -69,9 +69,10 @@ const regionOf = (secondary: string) =>
 export async function suggestCities(
   input: string,
   session?: string,
-  /** Only cities inside this box: one of the Leads Tool's areas. */
-  within?: Box,
+  /** Lean toward this box, and only this state's cities ("AZ"). */
+  scope?: { near?: Box; state?: string },
 ): Promise<CitySuggestion[]> {
+  const near = scope?.near;
   if (!apiKey())
     throw new ApiError("Google", 0, "GOOGLE_MAPS_SERVER_KEY isn't set.");
   const res = await callJson<{ suggestions?: Prediction[] }>(
@@ -88,12 +89,12 @@ export async function suggestCities(
         // Cities only, the way Google's own "(cities)" filter works.
         includedPrimaryTypes: ["locality", "administrative_area_level_3"],
         includedRegionCodes: ["us"],
-        ...(within
+        ...(near
           ? {
-              locationRestriction: {
+              locationBias: {
                 rectangle: {
-                  low: { latitude: within.south, longitude: within.west },
-                  high: { latitude: within.north, longitude: within.east },
+                  low: { latitude: near.south, longitude: near.west },
+                  high: { latitude: near.north, longitude: near.east },
                 },
               },
             }
@@ -112,6 +113,7 @@ export async function suggestCities(
     const name = p?.structuredFormat?.mainText?.text?.trim();
     if (!id || !name) continue;
     const region = regionOf(p?.structuredFormat?.secondaryText?.text ?? "");
+    if (scope?.state && region.toUpperCase() !== scope.state) continue;
     out.push({ id, name, region, text: region ? `${name}, ${region}` : name });
   }
   return out.slice(0, 6);

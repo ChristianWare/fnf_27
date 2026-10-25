@@ -11,6 +11,12 @@ import { done, fail, type ActionResult } from "@/lib/actions";
 import { FOLLOW_UPS, type FollowUp } from "@/lib/audit/kinds";
 import { runAudit, runLater } from "@/lib/audit/run";
 import { sampleId, setSampleId } from "@/lib/audit/sample";
+import { mergeSemrush, type Parsed } from "@/lib/audit/semrush/parse";
+import {
+  SEMRUSH_KINDS,
+  type SemrushData,
+  type SemrushKind,
+} from "@/lib/audit/semrush/types";
 import { beginAudit, pickListing, type Candidate } from "@/lib/audit/start";
 import {
   createAudit,
@@ -196,5 +202,90 @@ export async function removeAudit(id: string): Promise<ActionResult> {
   if ((await sampleId()) === id) await setSampleId(null);
   await deleteAudit(String(id));
   refresh();
+  return done();
+}
+
+/* ── Semrush exports ── */
+
+/**
+ * Adds one Semrush export to an audit, read in the browser (the files can
+ * be megabytes) and checked again here. One of each kind; newest wins.
+ */
+export async function addSemrush(
+  id: string,
+  parsed: unknown,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const row = await getAudit(String(id));
+  if (!row) return fail("That audit isn't there anymore.");
+  const p = parsed as Extract<Parsed, { ok: true }>;
+  if (
+    !p ||
+    typeof p !== "object" ||
+    !SEMRUSH_KINDS.includes(p.kind) ||
+    !p.file ||
+    p.file.kind !== p.kind ||
+    typeof p.patch !== "object"
+  )
+    return fail("That export didn't read right. Try the file again.");
+  if (JSON.stringify(p).length > 400_000)
+    return fail("That export is too big to keep. Export fewer rows.");
+  // Only the part for this kind of export is kept.
+  const key = {
+    POSITIONS: "positions",
+    TREND: "trend",
+    COMPETITORS: "competitors",
+    GAP: "gap",
+    BACKLINKS: "links",
+    REFDOMAINS: "links",
+    PAGES: "pages",
+  }[p.kind] as keyof SemrushData;
+  const merged = mergeSemrush(row.semrush, {
+    ok: true,
+    kind: p.kind,
+    file: {
+      kind: p.kind,
+      name: String(p.file.name ?? "").slice(0, 160),
+      rows: Number(p.file.rows) || 0,
+      database: p.file.database ? String(p.file.database).slice(0, 20) : undefined,
+      uploadedAt: new Date().toISOString(),
+    },
+    patch: { [key]: (p.patch as Record<string, unknown>)[key] } as Partial<SemrushData>,
+  });
+  await updateAudit(row.id, { semrush: merged });
+  refresh(row.id);
+  revalidatePath(`/audit/report/${row.id}`);
+  return done();
+}
+
+/** Takes one export back out, or all of them. */
+export async function removeSemrush(
+  id: string,
+  kind?: SemrushKind,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const row = await getAudit(String(id));
+  if (!row) return fail("That audit isn't there anymore.");
+  let next: SemrushData | null = null;
+  if (kind && row.semrush) {
+    const key = {
+      POSITIONS: "positions",
+      TREND: "trend",
+      COMPETITORS: "competitors",
+      GAP: "gap",
+      BACKLINKS: "links",
+      REFDOMAINS: "links",
+      PAGES: "pages",
+    }[kind] as keyof SemrushData;
+    const { [key]: _gone, ...rest } = row.semrush;
+    void _gone;
+    next = { ...rest, v: 1, files: row.semrush.files.filter((f) => f.kind !== kind) } as SemrushData;
+    if (!next.files.length) next = null;
+  }
+  await updateAudit(row.id, { semrush: next });
+  refresh(row.id);
+  revalidatePath(`/audit/report/${row.id}`);
   return done();
 }

@@ -181,6 +181,8 @@ export type LeadsWorkspace = {
   market: {
     id?: string;
     name: string;
+    /** Its state, "AZ": what "All of Arizona" means for them. */
+    state?: string;
     ready: boolean;
     lastRunAt?: string;
     /** Before the first load is in: how far it's got. */

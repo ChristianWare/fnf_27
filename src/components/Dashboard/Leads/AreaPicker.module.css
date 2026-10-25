@@ -1,0 +1,86 @@
+/* The state, then the city in it. */
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 2.2rem;
+}
+
+.states {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 0.8rem;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 1.6rem 1.8rem;
+  border: 1px solid transparent;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.stateOn {
+  border-color: var(--black);
+  background-color: var(--white);
+}
+
+.stateName {
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.stateNote {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 14px;
+  color: var(--black);
+}
+
+.ok svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.outside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.6rem 1.8rem;
+  border-radius: 1.4rem;
+  background-color: var(--accent4Light);
+}
+
+.outside p {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--black);
+}
+
+.outsideActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+@media (hover: hover) {
+  .state:not(.stateOn):not(:disabled):hover {
+    border-color: var(--light2);
+  }
+}

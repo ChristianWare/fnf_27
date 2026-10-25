@@ -31,6 +31,7 @@ import { CATEGORIES, EVENT_TYPES, SOURCES } from "./catalog";
 import { milesBetween, rank } from "./advice";
 import { ACCOUNT_CATEGORIES, EVENT_KINDS, STUDIO_ID } from "./kinds";
 import { CITIES, newSince } from "./market";
+import { AREA_MILES, STATEWIDE_MILES } from "./areas";
 import { priceText } from "./media";
 import { photoUrl } from "./photos";
 import { organizerDomain } from "./research";
@@ -79,12 +80,12 @@ export async function ensureStudio() {
 /* ── Markets ── */
 
 /**
- * How far from an area's center a client's base can be. Clients pick one
- * of the areas you've opened; only an admin opens a new one, because a new
- * market's first load is a few thousand paid Google lookups, and the same
- * again every month to keep it fresh.
+ * How far from an area's center a client's base can be (see areas.ts).
+ * Clients pick one of the areas you've opened; only an admin opens a new
+ * one, because a new market's first load is a few thousand paid Google
+ * lookups, and the same again every month to keep it fresh.
  */
-export const AREA_MILES = 45;
+export { AREA_MILES } from "./areas";
 
 export const NOT_COVERED =
   "We don't cover that area yet. Pick one of our areas, or ask us about yours.";
@@ -604,6 +605,16 @@ export async function loadWorkspace(owner: Owner): Promise<Loaded> {
   const saved = await savedLeads(owner.clientId);
   const savedIds = new Set(saved.map((l) => l.targetId));
 
+  // "All of Arizona": every market in their state, not a box around them.
+  const stateMarkets =
+    settings.radius >= STATEWIDE_MILES && market?.state
+      ? (
+          await db
+            .select({ id: s.leadsMarkets.id })
+            .from(s.leadsMarkets)
+            .where(eq(s.leadsMarkets.state, market.state))
+        ).map((m) => m.id)
+      : undefined;
   const [placeRows, eventRows] = await Promise.all([
     db
       .select()
@@ -612,10 +623,14 @@ export async function loadWorkspace(owner: Owner): Promise<Loaded> {
         and(
           eq(s.leadsPlaces.closed, false),
           isNotNull(s.leadsPlaces.name),
-          gte(s.leadsPlaces.lat, box.south),
-          lte(s.leadsPlaces.lat, box.north),
-          gte(s.leadsPlaces.lng, box.west),
-          lte(s.leadsPlaces.lng, box.east),
+          ...(stateMarkets
+            ? [inArray(s.leadsPlaces.marketId, stateMarkets)]
+            : [
+                gte(s.leadsPlaces.lat, box.south),
+                lte(s.leadsPlaces.lat, box.north),
+                gte(s.leadsPlaces.lng, box.west),
+                lte(s.leadsPlaces.lng, box.east),
+              ]),
         ),
       ),
     db
@@ -623,10 +638,14 @@ export async function loadWorkspace(owner: Owner): Promise<Loaded> {
       .from(s.leadsEvents)
       .where(
         and(
-          gte(s.leadsEvents.lat, box.south),
-          lte(s.leadsEvents.lat, box.north),
-          gte(s.leadsEvents.lng, box.west),
-          lte(s.leadsEvents.lng, box.east),
+          ...(stateMarkets
+            ? [inArray(s.leadsEvents.marketId, stateMarkets)]
+            : [
+                gte(s.leadsEvents.lat, box.south),
+                lte(s.leadsEvents.lat, box.north),
+                gte(s.leadsEvents.lng, box.west),
+                lte(s.leadsEvents.lng, box.east),
+              ]),
           sql`coalesce(${s.leadsEvents.endsAt}, ${s.leadsEvents.startsAt}) >= ${new Date(now.getTime() - DAY)}`,
         ),
       )
@@ -672,7 +691,12 @@ export async function loadWorkspace(owner: Owner): Promise<Loaded> {
   const accounts = places
     .map((p) => toAccount(p, research.get(p.id), savedIds.has(p.id)))
     .map((a) => ({ a, miles: milesBetween(base, a) }))
-    .filter((x) => x.miles <= REACH_MILES || savedIds.has(x.a.id))
+    .filter(
+      (x) =>
+        Boolean(stateMarkets) ||
+        x.miles <= REACH_MILES ||
+        savedIds.has(x.a.id),
+    )
     .map((x) => ({ ...x, score: rank({ ...x.a, miles: x.miles }, nowIso) }))
     .sort((x, y) => y.score - x.score)
     .filter((x, i) => i < MAX_ACCOUNTS || savedIds.has(x.a.id))
@@ -687,7 +711,12 @@ export async function loadWorkspace(owner: Owner): Promise<Loaded> {
         savedIds.has(e.id),
       );
     })
-    .filter((e) => savedIds.has(e.id) || milesBetween(base, e) <= REACH_MILES);
+    .filter(
+      (e) =>
+        Boolean(stateMarkets) ||
+        savedIds.has(e.id) ||
+        milesBetween(base, e) <= REACH_MILES,
+    );
 
   return {
     state: "READY",
@@ -701,6 +730,7 @@ export async function loadWorkspace(owner: Owner): Promise<Loaded> {
       market: {
         id: market?.id,
         name: market?.name ?? `${row.baseCity} area`,
+        state: market?.state ?? undefined,
         ready,
         lastRunAt: market?.lastRunAt?.toISOString(),
         loading: !ready && market ? await loadProgress(market.id) : undefined,

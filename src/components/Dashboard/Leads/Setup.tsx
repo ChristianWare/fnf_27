@@ -1,23 +1,21 @@
 "use client";
 
-// The first time someone opens the Leads Tool: which of our areas they
-// work in, where in it (optional), and how far they'll drive. Only the
-// areas we've opened are on offer, so nobody can start a new market.
+// The first time someone opens the Leads Tool: their state (only states
+// where we have an area), their city in it, and how far they'll drive,
+// with "All of Arizona" where we cover the whole state. A city outside our
+// areas can use the nearest one, or ask us to open theirs.
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "../icons";
 import { Empty, PageHead, Panel, ui } from "../ui/ui";
 import { useAction } from "../useAction";
-import CityPicker, {
-  type PickedCity,
-} from "@/components/shared/CityPicker/CityPicker";
+import AreaPicker, { type AreaChoice } from "./AreaPicker";
 import { setUpLeads } from "@/app/dashboard/leads/actions";
 import { fmtDate } from "@/lib/dashboard/format";
+import { radiiFor, radiusLabel, STATEWIDE_MILES } from "@/lib/leads/areas";
 import type { LeadsArea } from "@/lib/leads/types";
 import styles from "./Setup.module.css";
-
-const RADII = [10, 25, 50, 75];
 
 export default function Setup({
   areas,
@@ -31,20 +29,30 @@ export default function Setup({
 }) {
   const router = useRouter();
   const { run, pending } = useAction();
-  const [areaId, setAreaId] = useState(areas.length === 1 ? areas[0].id : "");
-  const [city, setCity] = useState<PickedCity | null>(null);
+  const [choice, setChoice] = useState<AreaChoice | null>(null);
   const [radius, setRadius] = useState(50);
-  const area = areas.find((a) => a.id === areaId);
+  // The state on its own is enough to offer "All of Arizona".
+  const [state, setState] = useState(
+    new Set(areas.map((a) => a.state)).size === 1 ? areas[0].state : "",
+  );
+  const radii = radiiFor(choice?.state ?? state);
+  // "All of Arizona" picked, then a state without it: back to 50.
+  const reach = radii.includes(radius) ? radius : 50;
 
   const start = () => {
-    if (!area || pending || readOnly) return;
+    if (!choice || pending || readOnly) return;
     run(
-      () => setUpLeads({ areaId: area.id, city: city?.text, radius }),
+      () =>
+        setUpLeads({
+          areaId: choice.area.id,
+          city: choice.city?.text,
+          radius: reach,
+        }),
       () => {
         router.refresh();
         return {
-          message: `Your leads around ${city?.name ?? area.city}`,
-          detail: area.ready
+          message: `Your leads around ${choice.city?.name ?? choice.area.city}`,
+          detail: choice.area.ready
             ? "They're ready now."
             : "This area's first load takes about half an hour.",
         };
@@ -88,78 +96,49 @@ export default function Setup({
         >
           <div className={styles.titles}>
             <span className={ui.monoMuted}>Before your first leads</span>
-            <h2 className={styles.title}>Which area do you work in?</h2>
+            <h2 className={styles.title}>Where do you work?</h2>
             <p className={styles.text}>
-              These are the areas the Leads Tool covers right now. You can
-              change it anytime in Lead settings.
+              Your leads are the businesses and events around your city. You
+              can change this anytime in Lead settings.
             </p>
           </div>
 
-          <div className={styles.areas} role='radiogroup' aria-label='Area'>
-            {areas.map((a) => (
-              <button
-                key={a.id}
-                type='button'
-                role='radio'
-                aria-checked={a.id === areaId}
-                className={`${styles.area} ${a.id === areaId ? styles.areaOn : ""}`}
-                onClick={() => {
-                  setAreaId(a.id);
-                  setCity(null);
-                }}
-              >
-                <span className={styles.areaName}>{a.name}</span>
-                <span className={styles.areaNote}>
-                  {a.ready ? "Leads ready now" : "First load in progress"}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {area && (
-            <div className={ui.field}>
-              <label className={ui.label} htmlFor='leads-setup-city'>
-                Where are you based in it? (optional)
-              </label>
-              <CityPicker
-                key={area.id}
-                id='leads-setup-city'
-                area={area.id}
-                inputClassName={ui.input}
-                placeholder={`e.g. ${area.city}, or a city nearby`}
-                onPick={setCity}
-                disabled={readOnly}
-              />
-              <span className={styles.note}>
-                Leads are sorted by distance from here. Skip it and we use the
-                center of the {area.name}.
-              </span>
-            </div>
-          )}
+          <AreaPicker
+            areas={areas}
+            onChange={setChoice}
+            onState={setState}
+            disabled={readOnly}
+            idPrefix='leads-setup'
+          />
 
           <div className={ui.field}>
             <span className={ui.label}>How far you&apos;ll drive</span>
             <div className={ui.chips} role='radiogroup' aria-label='Radius'>
-              {RADII.map((r) => (
+              {radii.map((r) => (
                 <button
                   key={r}
                   type='button'
                   role='radio'
-                  aria-checked={radius === r}
+                  aria-checked={reach === r}
                   className={ui.chip}
                   onClick={() => setRadius(r)}
                 >
-                  {r} mi
+                  {radiusLabel(r, choice?.state ?? state)}
                 </button>
               ))}
             </div>
+            {reach === STATEWIDE_MILES && (
+              <span className={styles.note}>
+                Every lead in the state, closest to you first.
+              </span>
+            )}
           </div>
 
           <div className={styles.actions}>
             <button
               type='submit'
               className={`${ui.btn} ${ui.btn_black}`}
-              disabled={!area || pending || readOnly}
+              disabled={!choice || pending || readOnly}
             >
               {pending ? "Starting…" : "Find my leads"}
               <Icon name='arrow' className={ui.btnIcon} />

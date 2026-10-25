@@ -32,6 +32,7 @@ const ACCOUNT_RIDES: Record<Account["category"], [number, string]> = {
   FUNERAL: [9, "Funeral homes need family cars for services."],
   SENIOR: [8, "Residents need rides to appointments and outings."],
   TOURS: [8, "Tour companies need extra vehicles in season."],
+  AIRPORT: [14, "Private jet terminals book cars for arriving passengers every day."],
 };
 
 function accountScore(a: Located<Account>, newSince?: string): ScoreFactor[] {

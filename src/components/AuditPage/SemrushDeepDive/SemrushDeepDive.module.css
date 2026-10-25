@@ -1,0 +1,351 @@
+/* The report's Search deep-dive. */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  margin-top: 2.4rem;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 3rem;
+  border-radius: 2rem;
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.label {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.head .label {
+  color: var(--accent3);
+}
+
+.title {
+  color: var(--white);
+}
+
+.note {
+  max-width: 760px;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.45;
+  color: rgb(255 255 255 / 72%);
+}
+
+/* ── The four numbers ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 2.4rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.stat dt {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.stat dd {
+  font-size: 4rem;
+  line-height: 1;
+  letter-spacing: -0.8px;
+  color: var(--black);
+}
+
+.statDark {
+  background-color: var(--accent3);
+}
+
+.statDark dt {
+  color: var(--black);
+}
+
+.per {
+  font-size: 1.8rem;
+  letter-spacing: 0;
+}
+
+/* ── What it means ── */
+.insights {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.insight {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2.4rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.insight p {
+  font-size: 1.8rem;
+  line-height: 1.4;
+  color: var(--black);
+}
+
+/* ── Cards ── */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 3rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.cardTitle {
+  font-size: 2.2rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.cardText {
+  max-width: 760px;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+/* Who the visitors are: one bar, three parts. */
+.mixBar {
+  display: flex;
+  gap: 2px;
+  height: 2.4rem;
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.mixPart {
+  flex-basis: 0;
+  min-width: 4px;
+}
+
+.mixRide {
+  background-color: var(--black);
+}
+
+.mixName {
+  background-color: var(--accent3);
+}
+
+.mixOther {
+  background-color: var(--light2);
+}
+
+.legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 2.4rem;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--black);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.swatch {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 0.3rem;
+}
+
+.legendValue {
+  color: var(--text);
+}
+
+/* Traffic over time. */
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16rem;
+  border-bottom: 1px solid var(--light2);
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background-color: var(--black);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .col:hover .bar {
+    background-color: var(--text);
+  }
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* Tables. */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 52rem;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 0 1.2rem 1.2rem 0;
+  border-bottom: 1px solid var(--black);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.table td {
+  padding: 1.4rem 1.2rem 1.4rem 0;
+  border-bottom: 1px solid var(--light2);
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--black);
+}
+
+.table th:not(:first-child),
+.table td:not(:first-child) {
+  text-align: right;
+}
+
+.table td.path {
+  max-width: 28rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+}
+
+.you td {
+  font-family:
+    var(--CreatoDisplayMedium, "Creato Display"), system-ui, sans-serif;
+}
+
+/* Links. */
+.linkStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.6rem 4rem;
+}
+
+.linkStats div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.6rem;
+}
+
+.linkStats dt {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.linkStats dd {
+  font-size: 3.2rem;
+  line-height: 1;
+  color: var(--black);
+}
+
+.spam {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.spam li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.4rem 1.6rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--light2);
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--black);
+}
+
+.spamWhy {
+  color: var(--text);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media screen and (max-width: 1100px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .head,
+  .card {
+    padding: 2.4rem 2rem;
+  }
+
+  .insights {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .stat dd {
+    font-size: 3.2rem;
+  }
+}

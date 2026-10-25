@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ButtonLink, PageHead, Panel } from "@/components/Dashboard/ui/ui";
 import AuditAdmin from "@/components/Admin/Audits/AuditAdmin";
 import AuditReport from "@/components/AuditPage/AuditReport/AuditReport";
+import SemrushUpload from "@/components/Admin/Audits/SemrushUpload";
+import { semrushWarnings } from "@/lib/audit/semrush/types";
 import styles from "@/components/Admin/Audits/Audits.module.css";
 import { getAdmin } from "@/lib/admin";
 import { fmtDate, fmtTime } from "@/lib/dashboard/format";
@@ -182,6 +184,13 @@ export default async function AuditAdminPage({
         sample={sample}
         done={row.status === "DONE"}
         reportPath={`/audit/report/${row.id}`}
+      />
+
+      <SemrushUpload
+        id={row.id}
+        domain={row.domain ?? ""}
+        files={row.semrush?.files ?? []}
+        warnings={row.semrush ? semrushWarnings(row.semrush) : []}
       />
 
       <div className={styles.detailGrid}>

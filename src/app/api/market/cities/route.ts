@@ -10,7 +10,7 @@ import {
   suggestCities,
 } from "@/lib/market/peek";
 import { flushUsage } from "@/lib/leads/usage";
-import { AREA_MILES, boxAround, openAreas } from "@/lib/leads/workspace";
+import { boxAround, openAreas } from "@/lib/leads/workspace";
 
 const answer = (status: number, body: object) =>
   Response.json(body, {
@@ -22,20 +22,30 @@ export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const q = (params.get("q") ?? "").trim().replace(/\s+/g, " ").slice(0, 60);
   const session = params.get("session");
-  // The Leads Tool's city fields: only cities in that area.
-  const areaId = params.get("area");
+  // The Leads Tool's city fields: only cities in that state ("AZ").
+  const state = (params.get("state") ?? "").toUpperCase().slice(0, 2);
   if (q.length < 2) return answer(200, { cities: [] });
   if (!allow(`cities:${addressOf(request)}`, 40))
     return answer(429, { error: "Slow down a little and try again." });
   try {
-    const area = areaId
-      ? (await openAreas()).find((a) => a.id === areaId)
+    // Lean toward the areas we have there, so their cities come first.
+    const areas = state
+      ? (await openAreas()).filter((a) => a.state === state)
+      : [];
+    const near = areas.length
+      ? areas
+          .map((a) => boxAround(a, 250))
+          .reduce((x, y) => ({
+            south: Math.min(x.south, y.south),
+            west: Math.min(x.west, y.west),
+            north: Math.max(x.north, y.north),
+            east: Math.max(x.east, y.east),
+          }))
       : undefined;
-    if (areaId && !area) return answer(200, { cities: [] });
     const cities = await suggestCities(
       q,
       isSessionToken(session) ? session! : undefined,
-      area ? boxAround(area, AREA_MILES) : undefined,
+      state ? { near, state } : undefined,
     );
     return answer(200, { cities });
   } catch (error) {

@@ -1,0 +1,120 @@
+/* Importing prospects, and adding one by hand. */
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
+}
+
+.block,
+.preview,
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.block :global(label) {
+  margin: 0;
+}
+
+.block + .block {
+  padding-top: 3.2rem;
+  border-top: 1px solid var(--light2);
+}
+
+.title {
+  font-size: 2.2rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.help,
+.file {
+  max-width: 720px;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.paste {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+}
+
+.found {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--black);
+}
+
+.folders {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.folder {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 1.4rem;
+  border-radius: 1.2rem;
+  background-color: var(--light);
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--black);
+  cursor: pointer;
+}
+
+.folder input {
+  width: 1.8rem;
+  height: 1.8rem;
+  accent-color: var(--black);
+}
+
+.folderCount {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+
+@media screen and (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+.problem {
+  padding: 1.4rem 1.6rem;
+  border-radius: 1.6rem;
+  background-color: #ffe9e4;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: #a2301c;
+}

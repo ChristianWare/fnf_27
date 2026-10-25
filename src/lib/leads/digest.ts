@@ -37,6 +37,7 @@ import { CATEGORIES, EVENT_TYPES } from "./catalog";
 import { STUDIO_ID } from "./kinds";
 import { photoUrl } from "./photos";
 import { loadWorkspace } from "./workspace";
+import { reachText } from "./areas";
 import type { Located, Target } from "./types";
 
 const s = schema;
@@ -272,7 +273,7 @@ async function morningFor(
       eyebrow: `Leads · ${fmtDay(now)}`,
       heading: `Good morning, ${first}`,
       paragraphs: [
-        `${summary.join(", ")}, within ${w.settings.radius} miles of ${w.settings.base.city}.`,
+        `${summary.join(", ")}, ${reachText(w.settings.radius, w.settings.base.city, w.market.state)}.`,
       ],
       blocks: {
         html:

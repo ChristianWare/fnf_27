@@ -10,9 +10,10 @@ import { PageHead, ui } from "../ui/ui";
 import { useToast } from "../Toast/Toast";
 import { useLeads } from "./Store";
 import styles from "./Leads.module.css";
-import { locate, milesBetween, rank, writeScripts } from "@/lib/leads/advice";
+import { locate, rank, writeScripts } from "@/lib/leads/advice";
 import { CATEGORIES, EVENT_TYPES, SOURCES } from "@/lib/leads/catalog";
-import CityPicker from "@/components/shared/CityPicker/CityPicker";
+import AreaPicker from "./AreaPicker";
+import { radiiFor, radiusLabel } from "@/lib/leads/areas";
 import type {
   AccountCategory,
   EventType,
@@ -22,7 +23,6 @@ import type {
 import { prorate } from "@/lib/dashboard/billing";
 import { fmtDate, money } from "@/lib/dashboard/format";
 
-const RADII = [10, 25, 50, 75];
 
 export default function Settings() {
   const leads = useLeads();
@@ -30,22 +30,15 @@ export default function Settings() {
   const toast = useToast();
   const [draft, setDraft] = useState<LeadsSettings>(leads.settings);
   const [saving, setSaving] = useState(false);
-  // The area their base is in: the nearest of the ones we cover.
+  // Their state and city: the picker starts over after undo or save.
   const areas = leads.areas;
-  const nearestArea = (base: { lat: number; lng: number }) =>
-    [...areas].sort(
-      (a, b) => milesBetween(a, base) - milesBetween(b, base),
-    )[0]?.id ?? "";
-  const [areaId, setAreaId] = useState(() => nearestArea(leads.settings.base));
-  const area = areas.find((a) => a.id === areaId);
-  // The city field starts over after undo, save, or a new area.
   const [pickerKey, setPickerKey] = useState(0);
-  const [pickerText, setPickerText] = useState(leads.settings.base.city);
-  const resetPlace = (saved: LeadsSettings) => {
-    setAreaId(nearestArea(saved.base));
-    setPickerText(saved.base.city);
+  const [state, setState] = useState(leads.market.state ?? "");
+  const resetPlace = () => {
+    setState(leads.market.state ?? "");
     setPickerKey((k) => k + 1);
   };
+  const radii = radiiFor(state);
   const changed = JSON.stringify(draft) !== JSON.stringify(leads.settings);
   // Cleared while they type a new one: no counts until it's picked.
   const located = Boolean(draft.base.city.trim());
@@ -103,7 +96,7 @@ export default function Settings() {
               className={`${ui.btn} ${ui.btn_light}`}
               onClick={() => {
                 setDraft(leads.settings);
-                resetPlace(leads.settings);
+                resetPlace();
               }}
             >
               Undo
@@ -123,7 +116,7 @@ export default function Settings() {
                 setSaving(false);
                 if (!saved) return;
                 setDraft(saved);
-                resetPlace(saved);
+                resetPlace();
                 toast("Settings saved", {
                   detail:
                     saved.base.city !== leads.settings.base.city
@@ -147,8 +140,8 @@ export default function Settings() {
               <div className={ui.panelTitles}>
                 <h2 className={ui.panelTitle}>Your market</h2>
                 <p>
-                  Pick one of the areas we cover, then where you&apos;re based
-                  in it. Leads are matched by distance from your base.
+                  Your state and your city in it. Leads are matched by
+                  distance from your city.
                 </p>
               </div>
               <span className={styles.rangeTag}>
@@ -159,78 +152,39 @@ export default function Settings() {
             </div>
             <div className={styles.formRow}>
               <div className={styles.placeFields}>
-                <div className={ui.field}>
-                  <label className={ui.label} htmlFor='lead-area'>
-                    Your area
-                  </label>
-                  <select
-                    id='lead-area'
-                    className={ui.select}
-                    value={areaId}
-                    disabled={readOnly}
-                    onChange={(e) => {
-                      const next = areas.find((a) => a.id === e.target.value);
-                      if (!next) return;
-                      setAreaId(next.id);
-                      setPickerText("");
-                      setPickerKey((k) => k + 1);
-                      // The area's center, until they pick a city in it.
-                      set({
-                        base: {
-                          city: next.state
-                            ? `${next.city}, ${next.state}`
-                            : next.city,
-                          lat: next.lat,
-                          lng: next.lng,
-                        },
-                      });
-                    }}
-                  >
-                    {areas.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className={ui.field}>
-                  <label className={ui.label} htmlFor='lead-base'>
-                    Your base
-                  </label>
-                  <CityPicker
-                    key={pickerKey}
-                    id='lead-base'
-                    area={areaId || undefined}
-                    defaultText={pickerText}
-                    inputClassName={ui.input}
-                    placeholder={
-                      area
-                        ? `Optional: a city in the ${area.name}`
-                        : "Start typing your city"
-                    }
-                    disabled={readOnly}
-                    onPick={(city) =>
-                      set({
-                        base: city
-                          ? { city: city.text, lat: city.lat, lng: city.lng }
-                          : area
-                            ? {
-                                city: area.state
-                                  ? `${area.city}, ${area.state}`
-                                  : area.city,
-                                lat: area.lat,
-                                lng: area.lng,
-                              }
-                            : { ...draft.base, city: "" },
-                      })
-                    }
-                  />
-                </div>
+                <AreaPicker
+                  key={pickerKey}
+                  areas={areas}
+                  initialState={leads.market.state}
+                  initialCity={leads.settings.base.city}
+                  disabled={readOnly}
+                  idPrefix='lead-base'
+                  onChange={(choice) => {
+                    if (!choice) return;
+                    setState(choice.state);
+                    const { city, area } = choice;
+                    set({
+                      // Their city, or the area's center ("use it anyway").
+                      base: city
+                        ? { city: city.text, lat: city.lat, lng: city.lng }
+                        : {
+                            city: area.state
+                              ? `${area.city}, ${area.state}`
+                              : area.city,
+                            lat: area.lat,
+                            lng: area.lng,
+                          },
+                      ...(radiiFor(choice.state).includes(draft.radius)
+                        ? {}
+                        : { radius: 50 }),
+                    });
+                  }}
+                />
               </div>
               <div className={ui.field}>
                 <span className={ui.label}>How far you&apos;ll drive</span>
                 <div className={ui.chips} role='radiogroup' aria-label='Radius'>
-                  {RADII.map((r) => (
+                  {radii.map((r) => (
                     <button
                       key={r}
                       type='button'
@@ -239,7 +193,7 @@ export default function Settings() {
                       className={ui.chip}
                       onClick={() => set({ radius: r })}
                     >
-                      {r} mi
+                      {radiusLabel(r, state)}
                     </button>
                   ))}
                 </div>

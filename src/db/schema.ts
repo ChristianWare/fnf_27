@@ -25,6 +25,12 @@ import {
   SOURCE_IDS,
 } from "../lib/leads/kinds";
 import { AUDIT_SOURCES, AUDIT_STATUSES, FOLLOW_UPS } from "../lib/audit/kinds";
+import type { SemrushData } from "@/lib/audit/semrush/types";
+import {
+  CALL_OUTCOMES,
+  PROSPECT_ACTIVITY,
+  PROSPECT_STAGES,
+} from "../lib/prospects/kinds";
 import { sql } from "drizzle-orm";
 import {
   boolean,
@@ -978,6 +984,8 @@ export const audits = pgTable(
     /** Copied from a run of the same site in the last day. */
     reusedFrom: text("reused_from"),
     googleClearedAt: at("google_cleared_at"),
+    /** Semrush exports the admin uploaded: summaries, not the raw files. */
+    semrush: jsonb("semrush").$type<SemrushData>(),
     createdAt: created(),
     updatedAt: updated(),
     startedAt: at("started_at"),
@@ -1004,3 +1012,77 @@ export const auditSearches = pgTable("audit_searches", {
     .notNull(),
   fetchedAt: at("fetched_at").notNull().defaultNow(),
 });
+
+/* ── Prospects ──
+ *
+ * The operators the studio calls: imported from a sheet or pasted in,
+ * each with where they are, how many times they've been tried and when
+ * to try next. Linked to their account when they sign up from an invite. */
+
+export const prospects = pgTable(
+  "prospects",
+  {
+    id: text("id").primaryKey(),
+    business: text("business").notNull(),
+    contactName: text("contact_name"),
+    /** As typed: (602) 555-5555. */
+    phone: text("phone"),
+    /** Just the digits, for matching: 6025555555. */
+    phoneDigits: text("phone_digits"),
+    email: text("email"),
+    website: text("website"),
+    /** "azlimo.com", without the www, for matching. */
+    domain: text("domain"),
+    mapsUrl: text("maps_url"),
+    city: text("city"),
+    state: text("state"),
+    /** Where they came from: "AZ Landscape", "Chrome bookmarks". */
+    list: text("list"),
+    tags: jsonb("tags").$type<string[]>().notNull().default([]),
+    notes: text("notes").notNull().default(""),
+    rating: doublePrecision("rating"),
+    reviews: integer("reviews"),
+    stage: text("stage", { enum: PROSPECT_STAGES }).notNull().default("NEW"),
+    /** Calls with no answer in a row. */
+    tries: integer("tries").notNull().default(0),
+    calls: integer("calls").notNull().default(0),
+    /** When they come up in the queue again. Empty: as soon as there's room. */
+    nextAt: at("next_at"),
+    lastCalledAt: at("last_called_at"),
+    lastOutcome: text("last_outcome", { enum: CALL_OUTCOMES }),
+    /** Their account, once they sign up. */
+    clientId: text("client_id").references(() => clients.id, {
+      onDelete: "set null",
+    }),
+    /** The latest audit run for them. */
+    auditId: text("audit_id"),
+    inviteSentAt: at("invite_sent_at"),
+    createdAt: created(),
+    updatedAt: updated(),
+  },
+  (t) => [
+    index("prospects_stage_idx").on(t.stage, t.nextAt),
+    index("prospects_phone_idx").on(t.phoneDigits),
+    index("prospects_domain_idx").on(t.domain),
+    index("prospects_client_idx").on(t.clientId),
+  ],
+);
+
+export const prospectActivity = pgTable(
+  "prospect_activity",
+  {
+    id: text("id").primaryKey(),
+    prospectId: text("prospect_id")
+      .notNull()
+      .references(() => prospects.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: PROSPECT_ACTIVITY }).notNull(),
+    outcome: text("outcome", { enum: CALL_OUTCOMES }),
+    text: text("text").notNull().default(""),
+    by: text("by").references(() => users.id, { onDelete: "set null" }),
+    at: at("at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("prospect_activity_idx").on(t.prospectId, t.at),
+    index("prospect_activity_at_idx").on(t.at),
+  ],
+);

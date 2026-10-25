@@ -190,5 +190,7 @@ export function toView(
     error:
       row.status === "FAILED" ? (row.error ?? "The audit stopped.") : undefined,
     sample,
+    semrush:
+      unlocked && !sample && row.semrush?.files.length ? row.semrush : undefined,
   };
 }

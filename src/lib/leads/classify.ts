@@ -110,6 +110,7 @@ export const sameName = (name: string) =>
 
 const TYPE_CATEGORY: [AccountCategory, string[]][] = [
   ["CASINO", ["casino"]],
+  ["AIRPORT", ["airport", "international_airport", "airstrip", "heliport"]],
   [
     "HOTEL",
     ["lodging", "hotel", "resort_hotel", "motel", "inn", "extended_stay_hotel"],
@@ -141,7 +142,6 @@ const NOT_A_FIT = new Set([
   "taxi_stand",
   "transit_station",
   "bus_station",
-  "airport",
   "parking",
 ]);
 

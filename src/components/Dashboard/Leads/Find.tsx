@@ -14,6 +14,12 @@ import { useLeads } from "./Store";
 import { kindOf, Reasons, SaveButton, ScoreBadge, Thumb } from "./bits";
 import NotReady from "./NotReady";
 import styles from "./Leads.module.css";
+import {
+  radiiFor,
+  radiusLabel,
+  reachText,
+  STATEWIDE_MILES,
+} from "@/lib/leads/areas";
 import { daysUntil, eventDates } from "@/lib/leads/advice";
 import { CATEGORIES, EVENT_TYPES, SOURCES } from "@/lib/leads/catalog";
 import { scoreOf } from "@/lib/leads/score";
@@ -26,7 +32,6 @@ import type {
 
 type Tab = "accounts" | "events";
 
-const RADII = [10, 25, 50, 75];
 const WINDOWS = [
   { days: 14, label: "Next 2 weeks" },
   { days: 30, label: "Next 30 days" },
@@ -149,7 +154,7 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
         title='Find leads'
         text={
           market.ready
-            ? `Everything within ${radius} miles of ${settings.base.city}. Open any of them for free; saving one finds the decision-maker and writes your scripts.`
+            ? `Everything ${reachText(radius, settings.base.city, market.state)}. Open any of them for free; saving one finds the decision-maker and writes your scripts.`
             : `Still loading the area around ${settings.base.city}: here's what's in so far. Events and the rest arrive over the next half hour.`
         }
       />
@@ -184,9 +189,11 @@ export default function Find({ initialTab }: { initialTab: Tab }) {
               value={radius}
               onChange={(e) => setRadius(Number(e.target.value))}
             >
-              {RADII.map((r) => (
+              {radiiFor(market.state).map((r) => (
                 <option key={r} value={r}>
-                  {r} miles
+                  {r >= STATEWIDE_MILES
+                    ? radiusLabel(r, market.state)
+                    : `${r} miles`}
                 </option>
               ))}
             </select>

@@ -9,6 +9,7 @@ import { homeFor } from "@/lib/auth/users";
 import { money } from "@/lib/dashboard/format";
 import { LEADS, PLANS } from "@/lib/dashboard/plans";
 import { formStamp } from "@/lib/server/spam";
+import { invitePrefill } from "@/lib/prospects/store";
 import Photo from "../../../public/images/heroiv.png";
 
 export const metadata: Metadata = {
@@ -52,11 +53,13 @@ const PICK: Record<string, PlanCard["id"]> = {
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string | string[] }>;
+  searchParams: Promise<{ plan?: string | string[]; p?: string | string[] }>;
 }) {
   const user = await getSessionUser();
   if (user) redirect(homeFor(user));
-  const { plan } = await searchParams;
+  const { plan, p } = await searchParams;
+  // A link from a call: what we already know about them is filled in.
+  const invite = await invitePrefill(typeof p === "string" ? p : null);
 
   return (
     <AuthFrame
@@ -81,6 +84,7 @@ export default async function RegisterPage({
         initialPlan={typeof plan === "string" ? PICK[plan] : undefined}
         siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
         stamp={formStamp()}
+        invite={invite ?? undefined}
       />
     </AuthFrame>
   );
