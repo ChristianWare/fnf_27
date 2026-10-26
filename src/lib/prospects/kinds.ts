@@ -17,13 +17,13 @@ export type ProspectStage = (typeof PROSPECT_STAGES)[number];
 
 export const STAGE_LABELS: Record<ProspectStage, string> = {
   NEW: "New",
-  CALLING: "Calling",
+  CALLING: "No answer",
   INTERESTED: "Interested",
   INVITED: "Invited",
   TRIAL: "On a trial",
   PROPOSAL: "Proposal sent",
   WON: "Client",
-  LOST: "Not now",
+  LOST: "Not interested",
   PARKED: "Parked",
   DO_NOT_CALL: "Do not call",
 };
@@ -46,6 +46,13 @@ export const CALL_OUTCOMES = [
   "DO_NOT_CALL",
 ] as const;
 export type CallOutcome = (typeof CALL_OUTCOMES)[number];
+
+/** The outcomes offered after a call. The others stay readable on older calls. */
+export const PICK_OUTCOMES: CallOutcome[] = [
+  "NO_ANSWER",
+  "INTERESTED",
+  "NOT_INTERESTED",
+];
 
 export const OUTCOME_LABELS: Record<CallOutcome, string> = {
   NO_ANSWER: "No answer",

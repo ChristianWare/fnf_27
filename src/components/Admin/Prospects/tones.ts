@@ -6,12 +6,12 @@ import type { ProspectStage } from "@/lib/prospects/kinds";
 export const stageTone: Record<ProspectStage, Tone> = {
   NEW: "white",
   CALLING: "gray",
-  INTERESTED: "yellow",
+  INTERESTED: "lime",
   INVITED: "purple",
   TRIAL: "mint",
   PROPOSAL: "mint",
-  WON: "lime",
-  LOST: "gray",
+  WON: "black",
+  LOST: "red",
   PARKED: "gray",
   DO_NOT_CALL: "red",
 };

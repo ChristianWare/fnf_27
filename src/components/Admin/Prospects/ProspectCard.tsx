@@ -12,7 +12,7 @@ import { useAction } from "@/components/Dashboard/useAction";
 import { useToast } from "@/components/Dashboard/Toast/Toast";
 import { fmtAgo, fmtDate, fmtTime } from "@/lib/dashboard/format";
 import {
-  CALL_OUTCOMES,
+  PICK_OUTCOMES,
   OUTCOME_LABELS,
   PROSPECT_STAGES,
   STAGE_LABELS,
@@ -114,7 +114,7 @@ function Body({
   }, [p.id, version]);
 
   const reload = () => setVersion((v) => v + 1);
-  const needsWhen = outcome === "CALLBACK" || outcome === "INTERESTED";
+  const needsWhen = outcome === "INTERESTED";
 
   const saveCall = (next: boolean) => {
     if (!outcome) return;
@@ -216,7 +216,7 @@ function Body({
         <section className={styles.block}>
           <h3 className={styles.blockTitle}>How did the call go?</h3>
           <div className={ui.chips} role='radiogroup' aria-label='Outcome'>
-            {CALL_OUTCOMES.map((o) => (
+            {PICK_OUTCOMES.map((o) => (
               <button
                 key={o}
                 type='button'
@@ -234,7 +234,7 @@ function Body({
               {needsWhen && (
                 <label className={ui.field}>
                   <span className={ui.label}>
-                    {outcome === "CALLBACK" ? "Call them back" : "Follow up"} (Arizona time)
+                    Follow up (Arizona time)
                   </span>
                   <input
                     className={ui.input}
@@ -552,7 +552,7 @@ function outcomeHelp(o: CallOutcome, tries: number) {
     case "INTERESTED":
       return "Send the trial link below, and they'll come up again for a follow-up.";
     case "NOT_INTERESTED":
-      return "Moved to Not now. They'll come up again in 90 days.";
+      return "Moved to Not interested. They'll come up again in 90 days.";
     case "WRONG_NUMBER":
       return "Parked until you add the right number.";
     case "DO_NOT_CALL":
