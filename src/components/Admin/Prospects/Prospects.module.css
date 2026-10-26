@@ -89,6 +89,7 @@
   font-size: 2rem;
   line-height: 1.2;
   color: var(--black);
+  letter-spacing: normal;
 }
 
 /* ── Rows ── */
