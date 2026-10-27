@@ -409,3 +409,82 @@ export async function countDueProspects(now = new Date()) {
     return 0;
   }
 }
+
+/**
+ * Someone asked for an audit on /audit: they're added to Prospects (or the
+ * prospect they already are is found by phone, site or email), marked
+ * Interested and put at the top of today's list. Returns their id.
+ */
+export async function addAuditRequest(r: {
+  name: string;
+  email: string;
+  phone?: string;
+  business: string;
+  website?: string;
+  city?: string;
+  state?: string;
+  note?: string;
+}) {
+  const digits = phoneDigits(r.phone);
+  const domain = domainOf(r.website);
+  const conds = [
+    eq(s.prospects.email, r.email),
+    ...(digits ? [eq(s.prospects.phoneDigits, digits)] : []),
+    ...(domain ? [eq(s.prospects.domain, domain)] : []),
+  ];
+  const [had] = await db
+    .select()
+    .from(s.prospects)
+    .where(or(...conds))
+    .limit(1);
+  const now = new Date();
+  const TAG = "Audit request";
+  const text = [
+    `Asked for an audit${r.website ? ` of ${r.website}` : ""}.`,
+    r.note ? `Their note: ${r.note}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  if (had) {
+    await db
+      .update(s.prospects)
+      .set({
+        contactName: had.contactName ?? r.name,
+        email: had.email ?? r.email,
+        phone: had.phone ?? (r.phone || null),
+        phoneDigits: had.phoneDigits ?? digits,
+        website: had.website ?? (r.website || null),
+        domain: had.domain ?? domain,
+        city: had.city ?? (r.city || null),
+        state: had.state ?? (r.state || null),
+        stage: CLOSED_STAGES.includes(had.stage) || had.stage === "NEW" || had.stage === "CALLING"
+          ? "INTERESTED"
+          : had.stage,
+        nextAt: now,
+        tags: had.tags.includes(TAG) ? had.tags : [...had.tags, TAG],
+        updatedAt: now,
+      })
+      .where(eq(s.prospects.id, had.id));
+    await logActivity(had.id, "NOTE", text);
+    return had.id;
+  }
+  const id = createId();
+  await db.insert(s.prospects).values({
+    id,
+    business: r.business,
+    contactName: r.name,
+    phone: r.phone || null,
+    phoneDigits: digits,
+    email: r.email,
+    website: r.website || null,
+    domain,
+    city: r.city || null,
+    state: r.state || null,
+    list: "Audit requests",
+    tags: [TAG],
+    stage: "INTERESTED",
+    nextAt: now,
+  });
+  await logActivity(id, "NOTE", text);
+  return id;
+}

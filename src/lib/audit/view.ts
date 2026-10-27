@@ -192,5 +192,9 @@ export function toView(
     sample,
     semrush:
       unlocked && !sample && row.semrush?.files.length ? row.semrush : undefined,
+    compare:
+      unlocked && !sample && row.compare?.show && row.compare.before && row.compare.after
+        ? row.compare
+        : undefined,
   };
 }

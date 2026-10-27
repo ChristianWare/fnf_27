@@ -23,7 +23,7 @@ export function GET() {
     "",
     "> Websites, booking and dispatch software, and a leads tool built only for black car and limo operators in the US. Based in Phoenix, Arizona. Flat, published prices, month to month, and no per-booking fees on any plan.",
     "",
-    "Plans: the free website audit ($0, six checks with the score in about a minute and the full report by email); the leads tool ($125/mo, free for the first 30 days with no card); Website Only ($199/mo plus a one-time $500 setup, keeps the operator's current booking software); the Full Platform ($499/mo plus a one-time $500 setup: custom website, booking and dispatch, driver and admin portals, flight tracking, payments through the operator's own Stripe account, and the leads tool included).",
+    "Plans: the free website audit ($0, six checks, requested on the audit page and emailed as a full report within 24–48 hours); the leads tool ($125/mo, free for the first 30 days with no card); Website Only ($199/mo plus a one-time $500 setup, keeps the operator's current booking software); the Full Platform ($499/mo plus a one-time $500 setup: custom website, booking and dispatch, driver and admin portals, flight tracking, payments through the operator's own Stripe account, and the leads tool included).",
     "",
     "## Services",
     "",

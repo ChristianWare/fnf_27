@@ -12,7 +12,6 @@ import styles from "./PlanDetails.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import { RESULTS_IN } from "@/lib/audit";
 import Clock from "@/components/shared/icons/Clock/Clock";
 import Bell from "@/components/shared/icons/Bell/Bell";
 import Lock from "@/components/shared/icons/Lock/Lock";
@@ -32,10 +31,10 @@ const options = [
       "Your score and top three fixes, ranked",
       "The full report by email, as a PDF",
     ],
-    stat: "1 min",
-    statLabel: "To see your score",
+    stat: "24–48 hrs",
+    statLabel: "To your report",
     tag: "Free website audit",
-    note: `No card, and no email needed to see your score: it shows in ${RESULTS_IN}. I read every audit that comes through.`,
+    note: "No card. Ask for one, and I run it myself and email you the report within 24–48 hours.",
     NoteIcon: Clock,
     src: AuditImg,
     alt: "An operator in a suit checking his phone",

@@ -11,7 +11,6 @@ import Design from "@/components/shared/icons/Design/Design";
 import Chris from "../../../../public/images/chris.png";
 import Logo from "@/components/shared/Logo/Logo";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import { RESULTS_IN } from "@/lib/audit";
 
 type Plan = {
   id: number;
@@ -39,7 +38,7 @@ const auditPlan: Plan = {
   desc: "See what's costing you bookings: how you show up on Google, how your site works on a phone, and whether riders can book you online.",
   price: "$0",
   per: "Always free",
-  setup: `Your score in ${RESULTS_IN}, the full report by email. No card.`,
+  setup: "Your full report by email in 24–48 hours. No card.",
   btnText: "Get a free website audit",
   href: "/audit",
   Icon: AuditIcon,

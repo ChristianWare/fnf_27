@@ -9,6 +9,7 @@ import type { CustomQuestions } from "@/lib/dashboard/customQuestions";
 import type { Growth, GrowthSync } from "@/lib/dashboard/types";
 import type { Contact, Operator, Script } from "@/lib/leads/types";
 import type {
+  AuditCompare,
   Checks,
   Listing,
   Rival,
@@ -986,6 +987,8 @@ export const audits = pgTable(
     googleClearedAt: at("google_cleared_at"),
     /** Semrush exports the admin uploaded: summaries, not the raw files. */
     semrush: jsonb("semrush").$type<SemrushData>(),
+    /** Their site today next to the concept site, for the report. */
+    compare: jsonb("compare").$type<AuditCompare>(),
     createdAt: created(),
     updatedAt: updated(),
     startedAt: at("started_at"),

@@ -179,4 +179,36 @@ export type AuditView = {
   sample?: boolean;
   /** Semrush exports the admin added: the "Search deep-dive". */
   semrush?: SemrushData;
+  /** Their site next to the concept site with their name on it. */
+  compare?: AuditCompare;
+};
+
+/** One uploaded screenshot (Cloudinary). */
+export type CompareShot = { url: string; publicId: string };
+
+/**
+ * The before-and-after the admin adds to an audit: a full-page screenshot
+ * of their site today, and one of the concept site with their name on it.
+ * The report shows the top of each, side by side; the PDF leaves it out.
+ */
+export type AuditCompare = {
+  before?: CompareShot;
+  after?: CompareShot;
+  beforeLabel: string;
+  afterLabel: string;
+  /** Up to three short lines on what's different. */
+  notes: string[];
+  /** On the report, or saved but hidden. */
+  show: boolean;
+};
+
+export const COMPARE_DEFAULTS: AuditCompare = {
+  beforeLabel: "Your site today",
+  afterLabel: "Your site, rebuilt for bookings",
+  notes: [
+    "Book in about two minutes, no call needed",
+    "The price shown before they book",
+    "Your phone number one tap away on every page",
+  ],
+  show: true,
 };

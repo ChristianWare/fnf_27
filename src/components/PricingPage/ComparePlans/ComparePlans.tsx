@@ -5,7 +5,6 @@ import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./ComparePlans.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import { RESULTS_IN } from "@/lib/audit";
 
 // Each column has its own color: the accent on its head and a lighter
 // version on the cells under it. The Full Platform stays black, like its
@@ -61,7 +60,7 @@ const rows: { label: string; values: Value[] }[] = [
   },
   {
     label: "Website audit",
-    values: [{ yes: true, note: `Score in ${RESULTS_IN}` }, true, true, true],
+    values: [{ yes: true, note: "Report in 24–48 hrs" }, true, true, true],
   },
   { label: "Leads tool", values: [false, true, false, true] },
   { label: "Custom website", values: [false, false, true, true] },

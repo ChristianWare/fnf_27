@@ -14,6 +14,7 @@ import Progress from "./Progress";
 import FullReportForm from "./FullReportForm";
 import CopyLink from "./CopyLink";
 import SemrushDeepDive from "../SemrushDeepDive/SemrushDeepDive";
+import SiteCompare from "../SiteCompare/SiteCompare";
 import styles from "./AuditReport.module.css";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
@@ -460,6 +461,10 @@ function Details({ view }: { view: AuditView }) {
             </table>
           </div>
         </div>
+      )}
+
+      {view.compare && (
+        <SiteCompare compare={view.compare} business={view.business} />
       )}
 
       {view.semrush && <SemrushDeepDive data={view.semrush} />}

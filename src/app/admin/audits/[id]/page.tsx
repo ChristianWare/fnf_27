@@ -5,6 +5,7 @@ import { ButtonLink, PageHead, Panel } from "@/components/Dashboard/ui/ui";
 import AuditAdmin from "@/components/Admin/Audits/AuditAdmin";
 import AuditReport from "@/components/AuditPage/AuditReport/AuditReport";
 import SemrushUpload from "@/components/Admin/Audits/SemrushUpload";
+import CompareUpload from "@/components/Admin/Audits/CompareUpload";
 import { semrushWarnings } from "@/lib/audit/semrush/types";
 import styles from "@/components/Admin/Audits/Audits.module.css";
 import { getAdmin } from "@/lib/admin";
@@ -192,6 +193,8 @@ export default async function AuditAdminPage({
         files={row.semrush?.files ?? []}
         warnings={row.semrush ? semrushWarnings(row.semrush) : []}
       />
+
+      <CompareUpload id={row.id} compare={row.compare ?? null} />
 
       <div className={styles.detailGrid}>
         <Panel title='Reaching them'>

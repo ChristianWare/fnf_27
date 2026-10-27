@@ -150,7 +150,7 @@ export default function ProjectDetails({ project }: { project: Project }) {
               <Button
                 href='/audit'
                 btnType='black'
-                text='Run the free audit'
+                text='Get the free audit'
                 arrow
               />
               <Button

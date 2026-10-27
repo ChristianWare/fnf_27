@@ -68,7 +68,7 @@ export default function WhichOne() {
               <p className={styles.note}>
                 Not sure which problem is costing you most? Get a free website
                 audit. It checks your site and your Google listing and shows you
-                where you stand in about a minute.
+                where you stand within 24–48 hours.
               </p>
               <Button
                 href='/audit'

@@ -264,7 +264,7 @@ export const projects: Project[] = [
     ],
     cta: {
       title: "Want this for your fleet?",
-      text: "Run the free audit to see where your site stands today, or book a call and I'll walk you through how Nier's runs.",
+      text: "Ask for the free audit to see where your site stands today, or book a call and I'll walk you through how Nier's runs.",
     },
   },
   {

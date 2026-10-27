@@ -22,8 +22,10 @@ import {
   unlockAudit,
   updateAudit,
 } from "@/lib/audit/store";
-import { STUDIO } from "@/lib/server/config";
-import { alertAdmins } from "@/lib/server/notify";
+import { STUDIO, url } from "@/lib/server/config";
+import { alertAdmins, emailPerson } from "@/lib/server/notify";
+import { addAuditRequest } from "@/lib/prospects/store";
+import { formatPhone } from "@/lib/phone";
 import {
   botReason,
   botText,
@@ -237,5 +239,123 @@ export async function emailFullReport(
       ok: false,
       error: `Your full report is open below, but the email didn't go out. Try again, or write to ${STUDIO.inbox}.`,
     };
+  return { ok: true };
+}
+
+/* ── Asking for an audit ──
+ *
+ * The page no longer runs audits itself: an operator asks for one, and
+ * Chris runs it and sends it within 24–48 hours. The request lands in
+ * Admin → Prospects (marked Interested, at the top of today's list) and
+ * as an alert; the operator gets an email saying it's coming. */
+
+export type RequestField =
+  "name" | "email" | "business" | "site" | "city";
+
+export type RequestResult =
+  { ok: true } | { ok: false; field?: RequestField; error: string };
+
+export async function requestAudit(
+  formData: FormData,
+): Promise<RequestResult> {
+  const name = get(formData, "name").slice(0, 120);
+  const email = get(formData, "email").toLowerCase().slice(0, 200);
+  const phone = get(formData, "phone").slice(0, 40);
+  const business = get(formData, "business").slice(0, 160);
+  const site = get(formData, "site").slice(0, 300);
+  const city = get(formData, "city").slice(0, 80);
+  const note = String(formData.get("note") ?? "").trim().slice(0, 1500);
+
+  if (name.length < 2)
+    return { ok: false, field: "name", error: "Add your name." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return { ok: false, field: "email", error: "That email doesn't look right." };
+  if (business.length < 2)
+    return { ok: false, field: "business", error: "Add your business name." };
+  if (!site && city.length < 2)
+    return {
+      ok: false,
+      field: "city",
+      error: "No website? Add your city, so I can find your Google listing.",
+    };
+
+  const bot = botReason({
+    trap: get(formData, TRAP_FIELD),
+    stamp: get(formData, STAMP_FIELD) || undefined,
+    names: [name, business],
+    message: note,
+  });
+  if (bot) {
+    if (bot === "trap") console.warn(`[audit] bot request turned away: ${email}`);
+    return { ok: false, error: botText(bot) };
+  }
+
+  const ip = await clientIp();
+  if (
+    (await tooMany(`audit-request-ip:${ip}`, 5, 60)) ||
+    (await tooMany(`audit-request:${email}`, 3, 24 * 60))
+  )
+    return {
+      ok: false,
+      error: `Got it already. Your audit is on its way; email ${STUDIO.inbox} if you need anything.`,
+    };
+  if (!(await humanCheck(get(formData, "cf-turnstile-response"), ip)))
+    return {
+      ok: false,
+      error: "Please tick the box to show you're not a robot.",
+    };
+
+  // "Phoenix, AZ" → city and state.
+  const [cityName, stateCode] = city.split(",").map((p) => p.trim());
+  await addAuditRequest({
+    name,
+    email,
+    phone: phone ? formatPhone(phone) : undefined,
+    business,
+    website: site || undefined,
+    city: cityName || undefined,
+    state: /^[A-Za-z]{2}$/.test(stateCode ?? "") ? stateCode.toUpperCase() : undefined,
+    note: note || undefined,
+  });
+
+  after(async () => {
+    await alertAdmins(
+      "audit",
+      `Audit request: ${business}`,
+      {
+        eyebrow: "Audit request",
+        heading: `${business} asked for an audit`,
+        preheader: `${name} · ${site || city}`,
+        paragraphs: [
+          "They're in Prospects, marked Interested and at the top of today's list. You said 24–48 hours.",
+        ],
+        details: [
+          ["Name", name],
+          ["Email", email],
+          ...(phone ? ([["Phone", phone]] as [string, string][]) : []),
+          ["Website", site || "None"],
+          ...(city ? ([["City", city]] as [string, string][]) : []),
+        ],
+        ...(note ? { quote: { text: note, by: name } } : {}),
+        button: { label: "Open Prospects", href: url("/admin/prospects") },
+      },
+      `Audit request: ${business} (${email})`,
+    );
+    await emailPerson(email, "Your free audit is on its way", {
+      preheader: "I'll send your report within 24–48 hours.",
+      eyebrow: "Free website audit",
+      heading: `Thanks, ${name.split(" ")[0]}`,
+      paragraphs: [
+        `I've got your request for ${business}. I'll run the audit on ${site || "your Google listing"} myself and send you the report within 24–48 hours.`,
+        "It covers how you show up on Google, how your site works on a phone, whether riders can book you online, and the three things costing you the most bookings.",
+      ],
+      after: [
+        "Anything you'd like me to look at in particular? Just reply to this email.",
+        "Chris Ware\nFonts & Footers",
+      ],
+      reason: "You're getting this because you asked for a free audit at fontsandfooters.com.",
+    });
+  });
+  revalidatePath("/admin/prospects");
   return { ok: true };
 }

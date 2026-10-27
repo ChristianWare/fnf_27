@@ -12,6 +12,14 @@ import { FOLLOW_UPS, type FollowUp } from "@/lib/audit/kinds";
 import { runAudit, runLater } from "@/lib/audit/run";
 import { sampleId, setSampleId } from "@/lib/audit/sample";
 import { mergeSemrush, type Parsed } from "@/lib/audit/semrush/parse";
+import { COMPARE_DEFAULTS, type AuditCompare } from "@/lib/audit/types";
+import {
+  destroyUpload,
+  isOurUpload,
+  uploadTicket,
+  uploadsReady,
+  type UploadTicket,
+} from "@/lib/server/cloudinary";
 import {
   SEMRUSH_KINDS,
   type SemrushData,
@@ -285,6 +293,62 @@ export async function removeSemrush(
     if (!next.files.length) next = null;
   }
   await updateAudit(row.id, { semrush: next });
+  refresh(row.id);
+  revalidatePath(`/audit/report/${row.id}`);
+  return done();
+}
+
+/* ── Before and after ── */
+
+const compareFolder = (id: string) => `fnf/audits/${id}`;
+
+/** Where the browser uploads this audit's screenshots. */
+export async function compareUploadTicket(
+  id: string,
+): Promise<ActionResult<UploadTicket>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  if (!uploadsReady())
+    return fail("Uploads aren't set up: add the CLOUDINARY_ keys.");
+  const row = await getAudit(String(id));
+  if (!row) return fail("That audit isn't there anymore.");
+  return done(uploadTicket(compareFolder(row.id)));
+}
+
+const clip = (v: unknown, max: number) =>
+  String(v ?? "").replace(/\s+/g, " ").trim().slice(0, max);
+
+/** Saves the screenshots, labels, notes and the show/hide switch. */
+export async function saveCompare(
+  id: string,
+  input: AuditCompare,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const row = await getAudit(String(id));
+  if (!row) return fail("That audit isn't there anymore.");
+  const folder = compareFolder(row.id);
+  const shot = (s: AuditCompare["before"]) =>
+    s && isOurUpload(String(s.url), String(s.publicId), folder)
+      ? { url: String(s.url), publicId: String(s.publicId) }
+      : undefined;
+  const next: AuditCompare = {
+    before: shot(input?.before),
+    after: shot(input?.after),
+    beforeLabel: clip(input?.beforeLabel, 80) || COMPARE_DEFAULTS.beforeLabel,
+    afterLabel: clip(input?.afterLabel, 80) || COMPARE_DEFAULTS.afterLabel,
+    notes: (Array.isArray(input?.notes) ? input.notes : [])
+      .map((n) => clip(n, 120))
+      .filter(Boolean)
+      .slice(0, 3),
+    show: Boolean(input?.show),
+  };
+  // Screenshots that were swapped out are deleted.
+  for (const old of [row.compare?.before, row.compare?.after]) {
+    if (old && old.publicId !== next.before?.publicId && old.publicId !== next.after?.publicId)
+      await destroyUpload(old.publicId, "image/png");
+  }
+  await updateAudit(row.id, { compare: next });
   refresh(row.id);
   revalidatePath(`/audit/report/${row.id}`);
   return done();

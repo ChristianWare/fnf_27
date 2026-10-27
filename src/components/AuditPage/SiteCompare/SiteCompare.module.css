@@ -1,0 +1,142 @@
+/* The report's before and after. */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 2.4rem;
+  padding: 3rem;
+  border-radius: 2rem;
+  background-color: var(--light);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.label {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.title {
+  color: var(--black);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.caption {
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+/* The top of the page only; the rest opens on a click. */
+.frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  padding: 0;
+  border: 1px solid var(--light2);
+  border-radius: 1.6rem;
+  overflow: hidden;
+  background-color: var(--white);
+  cursor: zoom-in;
+}
+
+.frame:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 3px;
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.expand {
+  position: absolute;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  background-color: var(--black);
+  font-family: var(--IBMPlex);
+  font-size: 13px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.notes {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.note {
+  padding: 1.6rem 1.8rem;
+  border-radius: 1.4rem;
+  background-color: var(--white);
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--black);
+}
+
+.full {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 2rem;
+}
+
+.fullLabel {
+  font-size: 2rem;
+  color: var(--black);
+}
+
+.fullImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  border: 1px solid var(--light2);
+}
+
+@media screen and (max-width: 968px) {
+  .notes {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 2.4rem 2rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}

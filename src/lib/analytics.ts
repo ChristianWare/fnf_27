@@ -10,7 +10,12 @@ declare global {
   }
 }
 
-export type Goal = "Audit run" | "Audit report" | "Contact" | "Newsletter";
+export type Goal =
+  | "Audit run"
+  | "Audit report"
+  | "Audit request"
+  | "Contact"
+  | "Newsletter";
 
 export function track(goal: Goal) {
   try {
