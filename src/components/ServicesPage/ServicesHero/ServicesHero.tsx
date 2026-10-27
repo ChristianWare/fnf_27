@@ -8,7 +8,7 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 import AuditImg from "../../../../public/images/audit.jpg";
 import LeadsImg from "../../../../public/images/leads.jpg";
 import WebsiteImg from "../../../../public/images/website.jpg";
-import PlatformImg from "../../../../public/images/fullPlatformii.jpg";
+import PlatformImg from "../../../../public/images/websiteii.jpg";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
 
 // The four services, each on a photo. The whole card links to its page.

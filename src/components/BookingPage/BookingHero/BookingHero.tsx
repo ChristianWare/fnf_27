@@ -3,7 +3,7 @@ import styles from "./BookingHero.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import HeroImg from "../../../../public/images/fullPlatformii.jpg";
+import HeroImg from "../../../../public/images/websiteii.jpg";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 // The live demo: a concept site whose booking flow runs in test mode, so
