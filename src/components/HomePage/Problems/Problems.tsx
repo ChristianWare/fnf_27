@@ -13,7 +13,7 @@ import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import SlideInImage from "@/components/shared/SlideInImage/SlideInImage";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import Img1 from "../../../../public/images/leads.jpg";
-import Img2 from "../../../../public/images/fullPlatformii.jpg";
+import Img2 from "../../../../public/images/websiteii.jpg";
 import Img3 from "../../../../public/images/website.jpg";
 import Img4 from "../../../../public/images/audit.jpg";
 
