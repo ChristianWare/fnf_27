@@ -42,7 +42,7 @@ export default function OnePrice() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.top}>
-            <EyeBrow text='The Full Platform' />
+            <EyeBrow text='The Full Platform' color='gray' />
             <h2
               id='one-price'
               className={`${styles.heading} h3`}

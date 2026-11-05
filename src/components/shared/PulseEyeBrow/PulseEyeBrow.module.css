@@ -1,0 +1,88 @@
+/* Mirrors EyeBrow.module.css spacing — no background, pulsing dot. */
+.container {
+  --pulse-color: var(--black);
+  --dot-size: 8px;
+  --pulse-duration: 2s;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+}
+
+.dot {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  background-color: var(--pulse-color);
+  animation: dotPulse var(--pulse-duration) ease-in-out infinite;
+}
+
+/* The ring: starts at the dot's center, grows ~75% past the dot, fades out. */
+.dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--pulse-color);
+  transform: scale(0);
+  opacity: 0;
+  animation: ringPulse var(--pulse-duration) cubic-bezier(0.2, 0.6, 0.35, 1)
+    infinite;
+  pointer-events: none;
+}
+
+.text {
+  font-family: var(--IBMPlex);
+  font-size: 1.4rem;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--pulse-color);
+}
+
+/* Variants */
+.black {
+  --pulse-color: var(--black);
+}
+
+.white {
+  --pulse-color: var(--white);
+}
+
+@keyframes dotPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(0.85);
+  }
+  35% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ringPulse {
+  0% {
+    transform: scale(0);
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .dot::after {
+    animation: none;
+  }
+}

@@ -35,3 +35,8 @@
 .black .text {
   color: var(--black);
 }
+
+.gray {
+  background-color: var(--light2);
+  border: 1px solid var(--textDarkiii)
+}
