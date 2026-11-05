@@ -437,7 +437,7 @@ export const projects: Project[] = [
     name: "Valley Vintage Carriage Co.",
     logo: NierLogo, // PLACEHOLDER
     title: "Valley Vintage Carriage Co.",
-    status: "Coming soon",
+    // status: "Coming soon",
     summary:
       "A concept wedding car company in Phoenix with five restored classics from 1928 to 1957, built on the same platform as Nier and reshaped for a small fleet that books one wedding per car, per day.",
     facts: [
@@ -446,7 +446,12 @@ export const projects: Project[] = [
       { label: "Service", value: "Full Platform" },
       { label: "Industry", value: "Vintage wedding cars" },
       { label: "Client", value: "Concept, not a real company" },
-      { label: "Status", value: "Coming soon" },
+      {
+        label: "Website",
+        value: "valleyvintage.site",
+        href: "https://www.valleyvintage.site",
+      },
+      // { label: "Status", value: "Coming soon" },
     ],
     results: {
       title: "Built to",
