@@ -36,11 +36,11 @@ export default function Home() {
       <Nav />
       <Hero />
       <ProofStrip />
-      <OnePrice />
+      <WhatWeDo />
+      {/* <OnePrice /> */}
       <AboutUsIntro />
       <Problems />
       {/* <HowItWorks /> */}
-      <WhatWeDo />
       <FeatureMarquee />
       <NierCaseStudy />
       <LiveDemos />
