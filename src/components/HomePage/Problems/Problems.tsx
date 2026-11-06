@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./Problems.module.css";
-import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
+// import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import SlideInImage from "@/components/shared/SlideInImage/SlideInImage";
@@ -16,6 +16,7 @@ import Img1 from "../../../../public/images/leads.jpg";
 import Img2 from "../../../../public/images/websiteii.jpg";
 import Img3 from "../../../../public/images/website.jpg";
 import Img4 from "../../../../public/images/audit.jpg";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const data = [
   {
@@ -113,7 +114,9 @@ export default function Problems() {
           {/* Stays put while the cards scroll past it. */}
           <div className={styles.left}>
             <div className={styles.intro}>
-              <EyeBrow text='Services' />
+              {/* <EyeBrow text='Services' /> */}
+              <PulseEyeBrow text='Services' />
+
               <h2
                 className={styles.heading}
                 data-reveal
@@ -123,9 +126,9 @@ export default function Problems() {
               </h2>
               <p className={styles.copy} data-reveal>
                 The Full Platform puts your website, booking and dispatch
-                software and the leads tool in one system for $499 a month.
-                Need only one part? The leads tool and the website come on
-                their own too, and the audit is always free.
+                software and the leads tool in one system for $499 a month. Need
+                only one part? The leads tool and the website come on their own
+                too, and the audit is always free.
               </p>
             </div>
 
@@ -160,9 +163,9 @@ export default function Problems() {
               >
                 <div className={styles.card}>
                   <div className={styles.cardTop}>
-                    <span className={styles.number} aria-hidden='true'>
+                    {/* <span className={styles.number} aria-hidden='true'>
                       0{index + 1}
-                    </span>
+                    </span> */}
                     <h3 className={styles.title}>{x.title}</h3>
                     <p className={styles.price}>{x.price}</p>
                   </div>

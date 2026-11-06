@@ -13,6 +13,7 @@ import Target from "@/components/shared/icons/Target/Target";
 import Cursor from "@/components/shared/icons/Cursor/Cursor";
 import NierHomePage from "../../../../public/images/nierHomePage.png";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const facts = [
   { id: 1, text: "40 city pages", Icon: Location },
@@ -31,7 +32,8 @@ export default function NierCaseStudy() {
         <div className={styles.content}>
           <div className={styles.left}>
             <div className={styles.leftTop}>
-              <EyeBrow text='Real results' />
+              {/* <EyeBrow text='Real results' /> */}
+              <PulseEyeBrow text='Real Results' />
               <h2
                 className={`${styles.heading}`}
                 data-reveal

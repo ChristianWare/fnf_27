@@ -11,6 +11,7 @@ import Design from "@/components/shared/icons/Design/Design";
 import Chris from "../../../../public/images/chris.png";
 import Logo from "@/components/shared/Logo/Logo";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 type Plan = {
   id: number;
@@ -230,7 +231,8 @@ export default function Pricing() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.top}>
-            <EyeBrow text='Pricing' />
+            {/* <EyeBrow text='Pricing' /> */}
+            <PulseEyeBrow text='Pricing' />
             <h2 className={styles.heading} data-reveal data-reveal-style='fade'>
               Pricing Plans
             </h2>

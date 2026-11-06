@@ -1,6 +1,6 @@
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./Hero.module.css";
-import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
+// import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 // import ServicesHeroPreview from "../ServicesHeroPreview/ServicesHeroPreview";
 import Reveal from "@/components/shared/Reveal/Reveal";
@@ -12,6 +12,7 @@ import Image from "next/image";
 import Plane from "@/components/shared/icons/Plane/Plane";
 import Stariii from "@/components/shared/icons/Stariii/Stariii";
 import Company from "@/components/shared/icons/Company/Company";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 // depth = how far each tag travels with the mouse (higher = farther)
 const tags = [
@@ -33,7 +34,8 @@ export default function Hero() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.left}>
-            <EyeBrow text='Black car & limo operators' />
+            {/* <EyeBrow text='Black car & limo operators' /> */}
+            <PulseEyeBrow text='Black car & limo operators' />
             <h1
               className={`${styles.heading} `}
               data-reveal

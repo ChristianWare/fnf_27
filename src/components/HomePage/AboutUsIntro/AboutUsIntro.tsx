@@ -1,9 +1,10 @@
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./AboutUsIntro.module.css";
-import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
+// import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const data = [
   {
@@ -40,7 +41,8 @@ export default function AboutUsIntro() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text='About Us' />
+              {/* <EyeBrow text='About Us' /> */}
+              <PulseEyeBrow text='About Us' />
               <h2
                 className={styles.heading}
                 data-reveal

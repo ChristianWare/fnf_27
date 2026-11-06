@@ -181,7 +181,7 @@ export default function BookingFeatures() {
         <LayoutWrapper>
           <div className={styles.top} data-reveal>
             <div className={styles.topLeft}>
-              <EyeBrow text='Booking software' />
+              <EyeBrow text='Booking software' color='yellow' />
               <h2 className={`${styles.heading} h3`}>
                 Your website takes the booking, dispatches the driver and gets
                 you paid.

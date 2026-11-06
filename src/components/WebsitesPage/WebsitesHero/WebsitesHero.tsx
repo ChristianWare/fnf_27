@@ -28,7 +28,7 @@ export default function WebsitesHero() {
       <div className={styles.textCard}>
         <Reveal onLoad step={150} />
         <div className={styles.top}>
-          <EyeBrow text='Websites' />
+          <EyeBrow text='Websites' color='yellow' />
           <h1
             className={`${styles.heading} heading2`}
             data-reveal

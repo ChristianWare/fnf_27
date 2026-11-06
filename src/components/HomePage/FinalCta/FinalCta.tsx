@@ -2,6 +2,7 @@ import styles from "./FinalCta.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import CtaVideo from "./CtaVideo";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 export default function FinalCta() {
   return (
@@ -10,7 +11,9 @@ export default function FinalCta() {
 
       <div className={styles.card}>
         <div className={styles.cardTop}>
-          <EyeBrow text='Let&#39;s work together' />
+          {/* <EyeBrow text='Let&#39;s work together' /> */}
+          <PulseEyeBrow text='Let&#39;s work together' />
+
           <h2 className={styles.heading}>
             Ready to expand your black car business?
           </h2>

@@ -22,7 +22,7 @@ export default function LeadsHero() {
       <div className={styles.textCard}>
         <Reveal onLoad step={150} />
         <div className={styles.top}>
-          <EyeBrow text='Leads' />
+          <EyeBrow text='Leads' color='green' />
           <h1
             className={`${styles.heading} heading2`}
             data-reveal

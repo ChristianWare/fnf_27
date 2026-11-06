@@ -21,6 +21,7 @@
   font-size: 1.4rem;
   letter-spacing: -0.5px;
   text-transform: uppercase;
+  color: var(--black);
 }
 
 /* For dark sections: <EyeBrow text='…' color='white' /> */
@@ -38,5 +39,20 @@
 
 .gray {
   background-color: var(--light2);
-  border: 1px solid var(--textDarkiii)
+  border: 1px solid var(--textDarkiii);
+}
+
+.teal {
+  background-color: var(--accent1);
+  border: 1px solid var(--textDarkiii);
+}
+
+.green {
+  background-color: var(--accent3);
+  border: 1px solid var(--textDarkiii);
+}
+
+.yellow {
+  background-color: var(--accent4);
+  border: 1px solid var(--textDarkiii);
 }

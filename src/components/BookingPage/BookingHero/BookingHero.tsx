@@ -27,7 +27,7 @@ export default function BookingHero() {
       <div className={styles.textCard}>
         <Reveal onLoad step={150} />
         <div className={styles.top}>
-          <EyeBrow text='Booking software' />
+          <EyeBrow text='Booking software' color='teal' />
           <h1
             className={`${styles.heading} heading2`}
             data-reveal

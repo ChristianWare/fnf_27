@@ -20,7 +20,7 @@
 }
 
 .heading {
-  max-width: 600px;
+  /* max-width: 800px; */
   color: var(--black);
 }
 
@@ -173,5 +173,3 @@
     margin-top: 3rem;
   }
 }
-
-

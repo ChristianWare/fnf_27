@@ -1,8 +1,9 @@
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./HowItWorks.module.css";
-import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
+// import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const steps = [
   {
@@ -30,7 +31,8 @@ export default function HowItWorks() {
         <div className={styles.content}>
           <div className={styles.top} data-reveal>
             <div className={styles.topLeft}>
-              <EyeBrow text='How it works' />
+              {/* <EyeBrow text='How it works' /> */}
+              <PulseEyeBrow text='The Full Platform' />
               <p className={styles.note}>Free for 30 days · No card</p>
             </div>
             <div className={styles.topMiddle}>

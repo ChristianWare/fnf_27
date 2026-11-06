@@ -10,6 +10,7 @@ import Button from "@/components/shared/Button/Button";
 import Chris from "../../../../public/images/chris.png";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import { getPosts, postHref } from "@/lib/journal";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 export default function JournalPreview() {
   const posts = getPosts().slice(0, 3);
@@ -21,7 +22,8 @@ export default function JournalPreview() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.left} data-reveal>
-            <EyeBrow text='Journal' />
+            {/* <EyeBrow text='Journal' /> */}
+            <PulseEyeBrow text='Journal' />
             <h2 className={styles.heading}>Guides for Operators</h2>
             <p className={styles.copy}>
               Straight answers on booking software, getting found and winning

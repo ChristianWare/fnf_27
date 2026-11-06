@@ -11,6 +11,7 @@ import styles from "./LiveDemos.module.css";
 import NierImg from "../../../../public/images/clients/nier/nier1.png";
 import MesaImg from "../../../../public/images/clients/mesa_midnight/mm1.png";
 import VintageImg from "../../../../public/images/clients/vintage/vintage.png";
+import PulseEyeBrow from "../PulseEyeBrow/PulseEyeBrow";
 
 type Demo = {
   name: string;
@@ -65,7 +66,9 @@ export default function LiveDemos() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.top}>
-            <EyeBrow text='See it working' />
+            {/* <EyeBrow text='See it working' /> */}
+            <PulseEyeBrow text='See it working' />
+
             <h2
               id='live-demos'
               className={`${styles.heading} h3`}
@@ -75,8 +78,8 @@ export default function LiveDemos() {
               Don&apos;t take our word for it. Book a test ride.
             </h2>
             <p className={styles.copy} data-reveal>
-              Every site here runs on the same platform. Visit them, and try
-              the booking flow on Mesa Midnight from your phone.
+              Every site here runs on the same platform. Visit them, and try the
+              booking flow on Mesa Midnight from your phone.
             </p>
           </div>
 

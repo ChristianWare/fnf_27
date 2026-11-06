@@ -5,6 +5,7 @@ import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./Faq.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 export type FaqItem = { id: number; question: string; answer: string };
 
@@ -81,7 +82,9 @@ export default function Faq({
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.left}>
-            <EyeBrow text={eyebrow} />
+            {/* <EyeBrow text={eyebrow} /> */}
+            <PulseEyeBrow text={eyebrow} />
+
             <h2 className={`${styles.heading} h3`}>{heading}</h2>
             <div className={styles.btnContainer}>
               <Button

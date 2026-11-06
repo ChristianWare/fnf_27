@@ -13,6 +13,7 @@ import MapImg from "../../../../public/images/blog/blog9.png";
 import BuildImg from "../../../../public/images/blog/blog10.png";
 import LaunchImg from "../../../../public/images/blog/blog11.png";
 import OngoingImg from "../../../../public/images/blog/blog12.png";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 const CAROUSEL = "(max-width: 968px)";
@@ -227,7 +228,9 @@ export default function Process() {
         <LayoutWrapper paddingNSNone='paddingNSNone'>
           <div className={styles.headContent}>
             <div className={styles.headLeft}>
-              <EyeBrow text='Process' />
+              {/* <EyeBrow text='Process' /> */}
+              <PulseEyeBrow text='Process' />
+
               <h2
                 className={styles.heading}
                 data-reveal

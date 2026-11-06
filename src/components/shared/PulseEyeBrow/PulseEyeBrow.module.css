@@ -1,13 +1,13 @@
 /* Mirrors EyeBrow.module.css spacing — no background, pulsing dot. */
 .container {
   --pulse-color: var(--black);
-  --dot-size: 8px;
-  --pulse-duration: 2s;
+  --dot-size: 10px;
+  --pulse-duration: 1.5s;
 
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.5rem;
+  gap: 1rem;
   padding: 0.5rem 1.5rem;
   border-radius: 50px;
 }
@@ -38,7 +38,7 @@
 
 .text {
   font-family: var(--IBMPlex);
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   letter-spacing: -0.5px;
   text-transform: uppercase;
   color: var(--pulse-color);
@@ -75,7 +75,7 @@
     opacity: 0;
   }
   100% {
-    transform: scale(1.75);
+    transform: scale(4.5);   /* was 1.75 */
     opacity: 0;
   }
 }
