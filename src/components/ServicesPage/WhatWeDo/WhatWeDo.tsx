@@ -24,6 +24,7 @@ import WebsitesImg from "../../../../public/images/websiteOnly.jpg";
 import BookingImg from "../../../../public/images/dispatch.jpg";
 import LeadsImg from "../../../../public/images/leads.jpg";
 import AuditImg from "../../../../public/images/auditImg.jpg";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 
@@ -280,7 +281,9 @@ export default function WhatWeDo() {
 
         <LayoutWrapper>
           <div ref={centerRef} className={styles.center}>
-            <EyeBrow text='we help you ' />
+            {/* <EyeBrow text='we help you ' /> */}
+            <PulseEyeBrow text='We help you' />
+
             <h2
               id='what-we-do-heading'
               className={styles.heading}

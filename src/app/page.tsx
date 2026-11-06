@@ -18,6 +18,7 @@ import Faq from "@/components/HomePage/Faq/Faq";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
 import Process from "@/components/AboutPage/Process/Process";
+import WhatWeDo from "@/components/ServicesPage/WhatWeDo/WhatWeDo";
 
 export const metadata: Metadata = {
   title: {
@@ -38,7 +39,8 @@ export default function Home() {
       <OnePrice />
       <AboutUsIntro />
       <Problems />
-      <HowItWorks />
+      {/* <HowItWorks /> */}
+      <WhatWeDo />
       <FeatureMarquee />
       <NierCaseStudy />
       <LiveDemos />
