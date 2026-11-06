@@ -8,6 +8,7 @@ import NierLogo from "../../../../public/images/nierLogo.png";
 // Placeholder photos. Swap in real Nier fleet photos when you have them.
 import PhotoSmall from "../../../../public/images/cadiv.png";
 import PhotoWide from "../../../../public/images/cadiMotion.png";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 export default function ProjectsHero() {
   return (
@@ -17,7 +18,7 @@ export default function ProjectsHero() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text='Our work' />
+              <PulseEyeBrow text='Our Work' />
               <h1
                 className={styles.heading}
                 data-reveal

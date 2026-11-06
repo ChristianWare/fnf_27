@@ -9,6 +9,7 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import Chris from "../../../../public/images/me.png";
 import { postHref, type Post } from "@/lib/journal";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 export default function MorePosts({
   posts,
@@ -24,7 +25,8 @@ export default function MorePosts({
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.top} data-reveal>
-            <EyeBrow text={heading} />
+            {/* <EyeBrow text={heading} /> */}
+            <PulseEyeBrow text={heading} />
             <span className={styles.count}>
               {String(posts.length).padStart(2, "0")}
             </span>

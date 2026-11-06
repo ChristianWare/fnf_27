@@ -20,6 +20,7 @@ import { STAMP_FIELD, TRAP_FIELD } from "@/lib/forms/fields";
 import { track } from "@/lib/analytics";
 import { requestAudit, type RequestField } from "@/app/audit/actions";
 import HeroImg from "../../../../public/images/audit.jpg";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 // The quick facts along the bottom of the hero's text card.
 const heroFacts = [
@@ -102,7 +103,9 @@ function Tool({ siteKey, stamp }: Props) {
       track("Audit request");
       setSent(String(form.get("email") ?? ""));
     } catch {
-      setError({ text: "That didn't send. Check your connection and try again." });
+      setError({
+        text: "That didn't send. Check your connection and try again.",
+      });
       setFailed((n) => n + 1);
     } finally {
       setBusy(false);
@@ -119,7 +122,7 @@ function Tool({ siteKey, stamp }: Props) {
         <div className={styles.textCard}>
           <Reveal onLoad step={150} />
           <div className={styles.top}>
-            <EyeBrow text='Free website audit' />
+            <PulseEyeBrow text='Free website audit' />
             <h1
               id='audit-heading'
               className={`${styles.heading} heading2`}
@@ -141,11 +144,12 @@ function Tool({ siteKey, stamp }: Props) {
                 btnType='black'
                 text='Request my free audit'
                 arrow
-              />
+                />
               <Button
                 href='#what-it-checks'
                 btnType='gray'
                 text='See what it checks'
+                arrow
               />
             </div>
           </div>
@@ -298,8 +302,8 @@ function Tool({ siteKey, stamp }: Props) {
               </label>
             </div>
             <p className={styles.emailNote}>
-              No website? Leave it blank and add your city. I&apos;ll audit
-              your Google listing and where you show up in the map results.
+              No website? Leave it blank and add your city. I&apos;ll audit your
+              Google listing and where you show up in the map results.
             </p>
             <label className={styles.field}>
               <span className={styles.label}>Anything I should look at?</span>

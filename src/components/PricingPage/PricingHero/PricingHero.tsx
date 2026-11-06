@@ -1,8 +1,8 @@
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./PricingHero.module.css";
-import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import { PricingPlans } from "@/components/HomePage/Pricing/Pricing";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 export default function PricingHero() {
   return (
@@ -12,7 +12,7 @@ export default function PricingHero() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text='Plans & pricing' />
+              <PulseEyeBrow text='Plans & pricing' />
               <h1
                 className={styles.heading}
                 data-reveal

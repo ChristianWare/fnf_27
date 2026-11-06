@@ -18,6 +18,7 @@ import { sendInquiry } from "@/app/contact/actions";
 import { track } from "@/lib/analytics";
 import HeroImg from "../../../../public/images/newHero.png";
 import Barry from "../../../../public/images/barry.png";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 type Field = "name" | "email" | "company" | "role" | "message";
 
@@ -148,7 +149,8 @@ function Hero({ siteKey, stamp }: Props) {
       <div className={styles.textCard}>
         <Reveal onLoad step={150} />
         <div className={styles.top}>
-          <EyeBrow text='Contact' />
+          {/* <EyeBrow text='Contact' /> */}
+          <PulseEyeBrow text='Contact' />
           <h1
             className={`${styles.heading} heading2`}
             data-reveal

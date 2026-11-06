@@ -4,6 +4,7 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import HeroImg from "../../../../public/images/leads.jpg";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 // The quick facts along the bottom of the text card.
 const facts = [
@@ -22,7 +23,9 @@ export default function LeadsHero() {
       <div className={styles.textCard}>
         <Reveal onLoad step={150} />
         <div className={styles.top}>
-          <EyeBrow text='Leads' color='green' />
+          {/* <EyeBrow text='Leads' color='green' /> */}
+          <PulseEyeBrow text='Leads' />
+
           <h1
             className={`${styles.heading} heading2`}
             data-reveal

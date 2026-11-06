@@ -4,6 +4,7 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import HeroImg from "../../../../public/images/subLap.png";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 
@@ -28,7 +29,9 @@ export default function WebsitesHero() {
       <div className={styles.textCard}>
         <Reveal onLoad step={150} />
         <div className={styles.top}>
-          <EyeBrow text='Websites' color='yellow' />
+          {/* <EyeBrow text='Websites' color='yellow' /> */}
+          <PulseEyeBrow text='Websites' />
+
           <h1
             className={`${styles.heading} heading2`}
             data-reveal
@@ -49,11 +52,12 @@ export default function WebsitesHero() {
               btnType='black'
               text='Book a 20-minute call'
               arrow
-            />
+              />
             <Button
               href='/audit'
               btnType='gray'
               text='Get a free website audit'
+              arrow
             />
           </div>
         </div>

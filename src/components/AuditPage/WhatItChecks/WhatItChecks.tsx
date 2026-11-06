@@ -4,6 +4,7 @@ import styles from "./WhatItChecks.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import BgImg from "../../../../public/images/irr.webp";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 // The six checks, in the order the audit goes through them.
 const checks = [
@@ -59,7 +60,7 @@ export default function WhatItChecks() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.top}>
-            <EyeBrow text='What it checks' color='white' />
+            <PulseEyeBrow text='Black car & limo operators' color='white' />
             <h2
               id='what-it-checks'
               className={styles.heading}

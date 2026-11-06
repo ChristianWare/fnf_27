@@ -7,6 +7,7 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import FeaturedPost from "../FeaturedPost/FeaturedPost";
 import type { Post } from "@/lib/journal";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 // A category's page passes its own heading and copy.
 export default function JournalHero({
@@ -27,7 +28,11 @@ export default function JournalHero({
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text={category ? `Journal · ${category}` : "Journal"} />
+              {/* <EyeBrow text={category ? `Journal · ${category}` : "Journal"} /> */}
+              <PulseEyeBrow
+                text={category ? `Journal · ${category}` : "Journal"}
+              />
+
               <h1
                 className={styles.heading}
                 data-reveal

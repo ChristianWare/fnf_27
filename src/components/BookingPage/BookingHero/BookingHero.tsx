@@ -1,9 +1,9 @@
 import Image from "next/image";
 import styles from "./BookingHero.module.css";
-import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import HeroImg from "../../../../public/images/websiteii.jpg";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 // The live demo: a concept site whose booking flow runs in test mode, so
@@ -27,7 +27,7 @@ export default function BookingHero() {
       <div className={styles.textCard}>
         <Reveal onLoad step={150} />
         <div className={styles.top}>
-          <EyeBrow text='Booking software' color='teal' />
+          <PulseEyeBrow text='Booking software' />
           <h1
             className={`${styles.heading} heading2`}
             data-reveal
@@ -36,10 +36,10 @@ export default function BookingHero() {
             Limo Booking Software That Runs Every Ride From Your Own Site
           </h1>
           <p className={styles.copy} data-reveal>
-            Reservations, dispatch, a driver portal and payments for limo,
-            black car and chauffeur companies, built into your own website,
-            with the leads tool included. Unlimited drivers and
-            vehicles, no per-booking fees, one flat $499 a month.
+            Reservations, dispatch, a driver portal and payments for limo, black
+            car and chauffeur companies, built into your own website, with the
+            leads tool included. Unlimited drivers and vehicles, no per-booking
+            fees, one flat $499 a month.
           </p>
           <div className={styles.btnContainer} data-reveal>
             <Button
@@ -48,12 +48,13 @@ export default function BookingHero() {
               btnType='black'
               text='Try a live demo'
               arrow
-            />
+              />
             <Button
               href={CALENDAR}
               target='_blank'
               btnType='gray'
               text='Book a call'
+              arrow
             />
           </div>
         </div>

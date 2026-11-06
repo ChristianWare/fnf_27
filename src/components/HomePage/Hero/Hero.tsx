@@ -1,6 +1,5 @@
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./Hero.module.css";
-// import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 // import ServicesHeroPreview from "../ServicesHeroPreview/ServicesHeroPreview";
 import Reveal from "@/components/shared/Reveal/Reveal";
@@ -34,7 +33,6 @@ export default function Hero() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.left}>
-            {/* <EyeBrow text='Black car & limo operators' /> */}
             <PulseEyeBrow text='Black car & limo operators' />
             <h1
               className={`${styles.heading} `}

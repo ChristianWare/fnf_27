@@ -10,6 +10,7 @@ import Target from "@/components/shared/icons/Target/Target";
 import Customer from "@/components/shared/icons/Customer/Customer";
 import AuditImg from "../../../../public/images/freeAudit.jpg";
 import ChrisImg from "../../../../public/images/me.png";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const items = [
   {
@@ -54,7 +55,7 @@ export default function HowIWork() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text='How I work' />
+              <PulseEyeBrow text='Our process' />
               <h2
                 className={styles.heading}
                 data-reveal
@@ -64,8 +65,8 @@ export default function HowIWork() {
               </h2>
               <p className={styles.copy} data-reveal>
                 We built our platform to solve the real problems operators face.
-                If that sounds good, you&apos;re in the right place. So here are four things you
-                can count on, whichever plan you choose.
+                If that sounds good, you&apos;re in the right place. So here are
+                four things you can count on, whichever plan you choose.
               </p>
             </div>
             <div className={styles.btnContainer} data-reveal>
