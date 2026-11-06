@@ -34,6 +34,13 @@
   flex: none;
 }
 
+/* The pinned part while scrolling. useScrollSteps sets their height and
+   position; on their own they're plain wrappers. */
+.track,
+.sticky {
+  width: 100%;
+}
+
 /* Photo, then the colored card and the note, then the four plans. */
 .grid {
   display: grid;

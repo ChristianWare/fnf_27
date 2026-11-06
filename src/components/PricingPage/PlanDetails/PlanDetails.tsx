@@ -4,8 +4,12 @@
 // swaps the photo and the two cards beside it (a colored stat card and a
 // black note card). At 868px and below, the photo and cards move inside the
 // open plan.
+//
+// On wider screens the cards pin in place as you scroll, and each plan opens
+// in turn (useScrollSteps). It's a normal click-to-open list at 568px and
+// below, or whenever the cards don't fit on screen.
 
-import { useState } from "react";
+import { useScrollSteps } from "@/components/shared/ScrollSteps/useScrollSteps";
 import Image from "next/image";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./PlanDetails.module.css";
@@ -94,8 +98,16 @@ const options = [
 ];
 
 export default function PlanDetails() {
-  const [active, setActive] = useState(options[0].id);
-  const current = options.find((o) => o.id === active) ?? options[0];
+  const {
+    trackRef,
+    stickyRef,
+    active: activeIndex,
+    setActive: goToStep,
+  } = useScrollSteps(options.length, { disableBelow: 568 });
+  const current = options[activeIndex] ?? options[0];
+  const active = current.id;
+  const setActive = (id: number) =>
+    goToStep(options.findIndex((o) => o.id === id));
 
   return (
     <section className={styles.container}>
@@ -108,7 +120,7 @@ export default function PlanDetails() {
               <h2
                 className={styles.heading}
                 data-reveal
-                data-reveal-style='fade'
+                data-reveal-style="fade"
               >
                 What Each Plan <br /> Gets You
               </h2>
@@ -118,136 +130,146 @@ export default function PlanDetails() {
             </div>
             <div className={styles.btnContainer} data-reveal>
               <Button
-                href='/register?plan=leads'
-                btnType='black'
-                text='Get free leads in your city'
+                href="/register?plan=leads"
+                btnType="black"
+                text="Get free leads in your city"
                 arrow
               />
             </div>
           </div>
 
-          <div className={styles.grid} data-reveal>
-            {/* All four photos are stacked; the open plan's fades in. */}
-            <div className={styles.photo}>
-              {options.map((o) => (
-                <Image
-                  key={o.id}
-                  src={o.src}
-                  alt={o.id === active ? o.alt : ""}
-                  aria-hidden={o.id !== active}
-                  fill
-                  sizes='(max-width: 868px) 1px, (max-width: 1068px) 36vw, 28vw'
-                  className={`${styles.img} ${o.id === active ? styles.imgActive : ""}`}
-                />
-              ))}
-            </div>
-
-            <div className={styles.middle} aria-live='polite'>
-              <div className={`${styles.stat} ${styles[`tone${current.id}`]}`}>
-                <div className={styles.statTop} key={current.id}>
-                  <span className={`${styles.statValue} h2`}>
-                    {current.stat}
-                  </span>
-                  <span className={styles.statLabel}>{current.statLabel}</span>
+          <div ref={trackRef} className={styles.track}>
+            <div ref={stickyRef} className={styles.sticky}>
+              <div className={styles.grid} data-reveal>
+                {/* All four photos are stacked; the open plan's fades in. */}
+                <div className={styles.photo}>
+                  {options.map((o) => (
+                    <Image
+                      key={o.id}
+                      src={o.src}
+                      alt={o.id === active ? o.alt : ""}
+                      aria-hidden={o.id !== active}
+                      fill
+                      sizes="(max-width: 868px) 1px, (max-width: 1068px) 36vw, 28vw"
+                      className={`${styles.img} ${o.id === active ? styles.imgActive : ""}`}
+                    />
+                  ))}
                 </div>
-                <span className={styles.statTag}>{current.tag}</span>
-              </div>
-              <div className={styles.note}>
-                <div className={styles.noteInner} key={current.id}>
-                  <current.NoteIcon
-                    className={styles.noteIcon}
-                    aria-hidden='true'
-                  />
-                  <p className={styles.noteText}>{current.note}</p>
-                </div>
-              </div>
-            </div>
 
-            <div className={styles.options}>
-              {options.map(({ NoteIcon, ...o }) => {
-                const open = o.id === active;
-                return (
+                <div className={styles.middle} aria-live="polite">
                   <div
-                    className={`${styles.option} ${open ? styles.optionOpen : ""}`}
-                    key={o.id}
+                    className={`${styles.stat} ${styles[`tone${current.id}`]}`}
                   >
-                    <h3 className={styles.optionHeading}>
-                      <button
-                        type='button'
-                        className={styles.optionButton}
-                        aria-expanded={open}
-                        aria-controls={`plan-${o.id}`}
-                        onClick={() => setActive(o.id)}
-                      >
-                        <span className={styles.pill}>0{o.id}</span>
-                        <span className={`${styles.optionTitle} h5`}>
-                          {o.title}
-                        </span>
-                        <span className={styles.chevron} aria-hidden='true'>
-                          <svg viewBox='0 0 24 24' fill='none'>
-                            <path
-                              d='m6 15 6-6 6 6'
-                              stroke='currentColor'
-                              strokeWidth='2'
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                            />
-                          </svg>
-                        </span>
-                      </button>
-                    </h3>
-                    <div
-                      id={`plan-${o.id}`}
-                      role='region'
-                      className={styles.panel}
-                    >
-                      <div className={styles.panelInner}>
-                        <p className={styles.desc}>{o.desc}</p>
-                        <ul className={styles.bullets}>
-                          {o.bullets.map((b) => (
-                            <li key={b}>{b}</li>
-                          ))}
-                        </ul>
+                    <div className={styles.statTop} key={current.id}>
+                      <span className={`${styles.statValue} h2`}>
+                        {current.stat}
+                      </span>
+                      <span className={styles.statLabel}>
+                        {current.statLabel}
+                      </span>
+                    </div>
+                    <span className={styles.statTag}>{current.tag}</span>
+                  </div>
+                  <div className={styles.note}>
+                    <div className={styles.noteInner} key={current.id}>
+                      <current.NoteIcon
+                        className={styles.noteIcon}
+                        aria-hidden="true"
+                      />
+                      <p className={styles.noteText}>{current.note}</p>
+                    </div>
+                  </div>
+                </div>
 
-                        {/* Shown at 868px and below, inside the open plan. */}
-                        <div className={styles.inlineMedia}>
-                          <div className={styles.inlineCards}>
-                            <div
-                              className={`${styles.stat} ${styles[`tone${o.id}`]}`}
-                            >
-                              <div className={styles.statTop}>
-                                <span className={styles.statValue}>
-                                  {o.stat}
-                                </span>
-                                <span className={styles.statLabel}>
-                                  {o.statLabel}
-                                </span>
+                <div className={styles.options}>
+                  {options.map(({ NoteIcon, ...o }) => {
+                    const open = o.id === active;
+                    return (
+                      <div
+                        className={`${styles.option} ${open ? styles.optionOpen : ""}`}
+                        key={o.id}
+                      >
+                        <h3 className={styles.optionHeading}>
+                          <button
+                            type="button"
+                            className={styles.optionButton}
+                            aria-expanded={open}
+                            aria-controls={`plan-${o.id}`}
+                            onClick={() => setActive(o.id)}
+                          >
+                            <span className={styles.pill}>0{o.id}</span>
+                            <span className={`${styles.optionTitle} h5`}>
+                              {o.title}
+                            </span>
+                            <span className={styles.chevron} aria-hidden="true">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <path
+                                  d="m6 15 6-6 6 6"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </span>
+                          </button>
+                        </h3>
+                        <div
+                          id={`plan-${o.id}`}
+                          role="region"
+                          className={styles.panel}
+                        >
+                          <div className={styles.panelInner}>
+                            <p className={styles.desc}>{o.desc}</p>
+                            <ul className={styles.bullets}>
+                              {o.bullets.map((b) => (
+                                <li key={b}>{b}</li>
+                              ))}
+                            </ul>
+
+                            {/* Shown at 868px and below, inside the open plan. */}
+                            <div className={styles.inlineMedia}>
+                              <div className={styles.inlineCards}>
+                                <div
+                                  className={`${styles.stat} ${styles[`tone${o.id}`]}`}
+                                >
+                                  <div className={styles.statTop}>
+                                    <span className={styles.statValue}>
+                                      {o.stat}
+                                    </span>
+                                    <span className={styles.statLabel}>
+                                      {o.statLabel}
+                                    </span>
+                                  </div>
+                                  <span className={styles.statTag}>
+                                    {o.tag}
+                                  </span>
+                                </div>
+                                <div className={styles.note}>
+                                  <NoteIcon
+                                    className={styles.noteIcon}
+                                    aria-hidden="true"
+                                  />
+                                  <p className={styles.noteText}>{o.note}</p>
+                                </div>
                               </div>
-                              <span className={styles.statTag}>{o.tag}</span>
+                              <div className={styles.inlinePhoto}>
+                                <Image
+                                  src={o.src}
+                                  alt={o.alt}
+                                  fill
+                                  sizes="(max-width: 868px) 92vw, 1px"
+                                  className={styles.img}
+                                />
+                              </div>
                             </div>
-                            <div className={styles.note}>
-                              <NoteIcon
-                                className={styles.noteIcon}
-                                aria-hidden='true'
-                              />
-                              <p className={styles.noteText}>{o.note}</p>
-                            </div>
-                          </div>
-                          <div className={styles.inlinePhoto}>
-                            <Image
-                              src={o.src}
-                              alt={o.alt}
-                              fill
-                              sizes='(max-width: 868px) 92vw, 1px'
-                              className={styles.img}
-                            />
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -12,6 +12,19 @@
   width: 100%;
 }
 
+/* The pinned part while scrolling: the tabs and the panel together.
+   useScrollSteps sets the height and position. */
+.track {
+  width: 100%;
+}
+
+.sticky {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+}
+
 /* A heading for screen readers only; the tabs speak for themselves. */
 .srOnly {
   position: absolute;

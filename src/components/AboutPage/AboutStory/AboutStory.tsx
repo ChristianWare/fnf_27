@@ -2,8 +2,13 @@
 
 // The company in four tabs: what we do, the story, what we believe, and who
 // you work with. Each tab swaps the photo and the text.
+//
+// On wider screens the tabs and panel pin in place as you scroll, and each
+// tab opens in turn (useScrollSteps). Below 568px, or whenever it doesn't
+// fit on screen, it's a normal click-through tab set.
 
-import { useState, type KeyboardEvent } from "react";
+import { type KeyboardEvent } from "react";
+import { useScrollSteps } from "@/components/shared/ScrollSteps/useScrollSteps";
 import Image from "next/image";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./AboutStory.module.css";
@@ -49,7 +54,10 @@ const tabs = [
 ];
 
 export default function AboutStory() {
-  const [active, setActive] = useState(0);
+  const { trackRef, stickyRef, active, setActive } = useScrollSteps(
+    tabs.length,
+    { disableBelow: 568 },
+  );
   const current = tabs[active];
 
   // Left and right arrow keys move between tabs, like any tab control.
@@ -63,67 +71,73 @@ export default function AboutStory() {
     else return;
     e.preventDefault();
     setActive(next);
-    document.getElementById(`about-tab-${tabs[next].id}`)?.focus();
+    document
+      .getElementById(`about-tab-${tabs[next].id}`)
+      ?.focus({ preventScroll: true });
   }
 
   return (
     <section className={styles.container}>
-      <Reveal mode='together' />
+      <Reveal mode="together" />
       <LayoutWrapper>
         <div className={styles.content}>
           <h2 className={styles.srOnly}>Fonts &amp; Footers in four parts</h2>
 
-          <div
-            className={styles.tabs}
-            role='tablist'
-            aria-label='About Fonts & Footers'
-            data-reveal
-          >
-            {tabs.map((tab, i) => (
-              <button
-                key={tab.id}
-                type='button'
-                role='tab'
-                id={`about-tab-${tab.id}`}
-                aria-selected={i === active}
-                aria-controls='about-panel'
-                tabIndex={i === active ? 0 : -1}
-                className={`${styles.tab} ${i === active ? styles.tabActive : ""}`}
-                onClick={() => setActive(i)}
-                onKeyDown={onKeyDown}
+          <div ref={trackRef} className={styles.track}>
+            <div ref={stickyRef} className={styles.sticky}>
+              <div
+                className={styles.tabs}
+                role="tablist"
+                aria-label="About Fonts & Footers"
+                data-reveal
               >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+                {tabs.map((tab, i) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    id={`about-tab-${tab.id}`}
+                    aria-selected={i === active}
+                    aria-controls="about-panel"
+                    tabIndex={i === active ? 0 : -1}
+                    className={`${styles.tab} ${i === active ? styles.tabActive : ""}`}
+                    onClick={() => setActive(i)}
+                    onKeyDown={onKeyDown}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
 
-          <div
-            className={styles.panel}
-            role='tabpanel'
-            id='about-panel'
-            aria-labelledby={`about-tab-${current.id}`}
-            data-reveal
-          >
-            {/* All four photos are stacked; the active one fades in. */}
-            <div className={styles.imgContainer}>
-              {tabs.map((tab, i) => (
-                <Image
-                  key={tab.id}
-                  src={tab.src}
-                  alt={i === active ? tab.alt : ""}
-                  aria-hidden={i !== active}
-                  fill
-                  sizes='(max-width: 968px) 100vw, 45vw'
-                  className={`${styles.img} ${i === active ? styles.imgActive : ""}`}
-                />
-              ))}
-            </div>
+              <div
+                className={styles.panel}
+                role="tabpanel"
+                id="about-panel"
+                aria-labelledby={`about-tab-${current.id}`}
+                data-reveal
+              >
+                {/* All four photos are stacked; the active one fades in. */}
+                <div className={styles.imgContainer}>
+                  {tabs.map((tab, i) => (
+                    <Image
+                      key={tab.id}
+                      src={tab.src}
+                      alt={i === active ? tab.alt : ""}
+                      aria-hidden={i !== active}
+                      fill
+                      sizes="(max-width: 968px) 100vw, 45vw"
+                      className={`${styles.img} ${i === active ? styles.imgActive : ""}`}
+                    />
+                  ))}
+                </div>
 
-            <div className={styles.text} key={current.id}>
-              <span className={`${styles.note} h6`}>({current.label})</span>
-              <div className={styles.textBottom}>
-                <h3 className={`${styles.title} h2`}>{current.title}</h3>
-                <p className={styles.body}>{current.body}</p>
+                <div className={styles.text} key={current.id}>
+                  <span className={`${styles.note} h6`}>({current.label})</span>
+                  <div className={styles.textBottom}>
+                    <h3 className={`${styles.title} h2`}>{current.title}</h3>
+                    <p className={styles.body}>{current.body}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
