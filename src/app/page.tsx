@@ -19,6 +19,7 @@ import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
 import Process from "@/components/AboutPage/Process/Process";
 import WhatWeDo from "@/components/ServicesPage/WhatWeDo/WhatWeDo";
+import ComparePlans from "@/components/PricingPage/ComparePlans/ComparePlans";
 
 export const metadata: Metadata = {
   title: {
@@ -43,11 +44,12 @@ export default function Home() {
       {/* <HowItWorks /> */}
       <FeatureMarquee />
       <NierCaseStudy />
-      <LiveDemos />
+      {/* <LiveDemos /> */}
       <LeadsTool />
       <BookingFeatures />
       <Process />
       <Pricing />
+      <ComparePlans />
       <JournalPreview />
       <Faq />
       <FinalCta />

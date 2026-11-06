@@ -61,7 +61,7 @@ export default function NierCaseStudy() {
               <div className={styles.btnContainer} data-reveal>
                 <Button
                   href='/projects/nier-transportation'
-                  btnType='black'
+                  btnType='blackUnderline'
                   text='Read the Nier case study'
                   arrow
                 />
@@ -106,6 +106,9 @@ export default function NierCaseStudy() {
               <span className={styles.expand}>Click to expand</span>
             </button>
           </div>
+        </div>
+        <div className={styles.btnContainer}>
+          <Button text='See all projects' btnType='black' href='/projects' />
         </div>
       </LayoutWrapper>
 

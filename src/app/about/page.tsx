@@ -11,6 +11,7 @@ import Principles from "@/components/AboutPage/Principles/Principles";
 import JournalPreview from "@/components/HomePage/JournalPreview/JournalPreview";
 import FinalCta from "@/components/HomePage/FinalCta/FinalCta";
 import Footer from "@/components/shared/Footer/Footer";
+import OnePrice from "@/components/HomePage/OnePrice/OnePrice";
 
 export const metadata: Metadata = {
   title: {
@@ -26,6 +27,7 @@ export default function AboutPage() {
     <main className={styles.container}>
       <Nav />
       <AboutHero />
+      <OnePrice />
       <WhyOneIndustry />
       <FeatureMarquee />
       <HowIWork />

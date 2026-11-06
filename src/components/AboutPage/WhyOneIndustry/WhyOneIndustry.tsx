@@ -8,6 +8,7 @@ import Plane from "@/components/shared/icons/Plane/Plane";
 import Stariii from "@/components/shared/icons/Stariii/Stariii";
 import Company from "@/components/shared/icons/Company/Company";
 import Suburban from "../../../../public/images/subNoBG.png";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const stats = [
   {
@@ -40,7 +41,8 @@ export default function WhyOneIndustry() {
         <div className={styles.content}>
           <div className={styles.left}>
             <div className={styles.leftTop}>
-              <EyeBrow text='Why only black car operators' />
+              {/* <EyeBrow text='Why only black car operators' /> */}
+              <PulseEyeBrow text='Why only black car operators' />
               <h2
                 className={`${styles.heading} h4`}
                 data-reveal

@@ -20,6 +20,7 @@ import AuditImg from "../../../../public/images/audit.jpg";
 import LeadsImg from "../../../../public/images/leads.jpg";
 import WebsiteImg from "../../../../public/images/websiteOnly.jpg";
 import PlatformImg from "../../../../public/images/fullPlatform.jpg";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const options = [
   {
@@ -103,7 +104,7 @@ export default function PlanDetails() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text='What you get' />
+              <PulseEyeBrow text="What's included" />
               <h2
                 className={styles.heading}
                 data-reveal

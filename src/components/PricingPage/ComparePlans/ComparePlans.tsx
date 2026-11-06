@@ -5,6 +5,7 @@ import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./ComparePlans.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 // Each column has its own color: the accent on its head and a lighter
 // version on the cells under it. The Full Platform stays black, like its
@@ -157,7 +158,8 @@ export default function ComparePlans() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.top}>
-            <EyeBrow text='Compare plans' />
+            {/* <EyeBrow text='Compare plans' /> */}
+            <PulseEyeBrow text='Compare plans' />
             <h2 className={styles.heading} data-reveal data-reveal-style='fade'>
               Every Plan <br /> Side by Side
             </h2>

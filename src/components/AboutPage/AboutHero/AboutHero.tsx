@@ -1,12 +1,12 @@
 import Image from "next/image";
 import LayoutWrapper from "@/components/shared/LayoutWrapper";
 import styles from "./AboutHero.module.css";
-import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
 import Location from "@/components/shared/icons/Location/Location";
 import AboutHeroVideo from "./AboutHeroVideo";
 import Chris from "../../../../public/images/me.png";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 
@@ -20,7 +20,7 @@ export default function AboutHero() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text='About us' color='white' />
+              <PulseEyeBrow text='About Us' color='white' />
               <h1
                 className={`${styles.heading} display1`}
                 data-reveal

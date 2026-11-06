@@ -10,6 +10,7 @@ import LeadsImg from "../../../../public/images/leads.jpg";
 import WebsiteImg from "../../../../public/images/website.jpg";
 import PlatformImg from "../../../../public/images/websiteii.jpg";
 import Arrow from "@/components/shared/icons/Arrow/Arrow";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 // The four services, each on a photo. The whole card links to its page.
 // Placeholder photos for now; swap in your own when you have them.
@@ -64,7 +65,7 @@ export default function ServicesHero() {
         <div className={styles.content}>
           <div className={styles.top}>
             <div className={styles.topLeft}>
-              <EyeBrow text='Services' />
+              <PulseEyeBrow text='Services' />
               <h1
                 className={styles.heading}
                 data-reveal
@@ -107,7 +108,9 @@ export default function ServicesHero() {
                     <span className={styles.name}>{service.desc}</span>
                   </span>
                   <span className={styles.cardBottom}>
-                    <span className={`${styles.value} h4`}>{service.name} <Arrow className={styles.arrow} /></span>
+                    <span className={`${styles.value} h4`}>
+                      {service.name} <Arrow className={styles.arrow} />
+                    </span>
                     {/* <span className={styles.note}>{service.note}</span> */}
                   </span>
                 </Link>

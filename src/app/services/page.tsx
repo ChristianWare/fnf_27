@@ -12,6 +12,7 @@ import JsonLd from "@/components/shared/JsonLd/JsonLd";
 import { breadcrumbs } from "@/lib/seo";
 import ComparePlans from "@/components/PricingPage/ComparePlans/ComparePlans";
 import PlanDetails from "@/components/PricingPage/PlanDetails/PlanDetails";
+import HowItWorks from "@/components/HomePage/HowItWorks/HowItWorks";
 
 export const metadata: Metadata = {
   title: {
@@ -82,7 +83,8 @@ export default function ServicesPage() {
       <ServicesHero />
       <FeatureMarquee />
       <WhichOne />
-      <WhatWeDo />
+      {/* <WhatWeDo /> */}
+      <HowItWorks />
       <ComparePlans />
       <PlanDetails />
       <Faq faqs={servicesFaqs} heading='Service Questions' />

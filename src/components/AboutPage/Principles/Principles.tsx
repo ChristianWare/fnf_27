@@ -4,6 +4,7 @@ import styles from "./Principles.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import BgImg from "../../../../public/images/irr.webp";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 // The four principles, each with the commitments that come with it.
 const principles = [
@@ -71,7 +72,8 @@ export default function Principles() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.left}>
-            <EyeBrow text='Our principles' color='white' />
+            {/* <EyeBrow text='Our principles' color='white' /> */}
+            <PulseEyeBrow text='Our principles' color='white' />
             <h2 className={styles.heading} data-reveal data-reveal-style='fade'>
               What <br /> Guides Us
             </h2>

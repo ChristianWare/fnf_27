@@ -183,6 +183,10 @@
     padding: 5rem 0rem;
   }
 
+  .phrase {
+    font-family: var(--CreatoDisplayExtraBold);
+  }
+
   .cards {
     grid-template-columns: repeat(1, 1fr);
   }
