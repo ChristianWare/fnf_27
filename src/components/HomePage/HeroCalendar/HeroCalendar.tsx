@@ -2,7 +2,7 @@
 
 // The hero's booking calendar: this month (in the visitor's own time) laid
 // over the subSnow photo. Open days show the photo; a few booked days are
-// blocked off in black. Which days are booked is picked from the month
+// blocked off. Which days are booked is picked from the month
 // itself, so a month always looks the same and December looks different
 // from November. Every size is in container units, so the calendar scales
 // like an image and keeps its shape at any width.

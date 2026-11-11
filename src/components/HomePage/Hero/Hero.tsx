@@ -7,23 +7,7 @@ import Floating, {
   FloatingElement,
 } from "@/components/shared/Floating/Floating";
 import HeroCalendar from "../HeroCalendar/HeroCalendar";
-import Plane from "@/components/shared/icons/Plane/Plane";
-import Stariii from "@/components/shared/icons/Stariii/Stariii";
-import Company from "@/components/shared/icons/Company/Company";
 import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
-
-// depth = how far each tag travels with the mouse (higher = farther)
-const tags = [
-  {
-    id: 1,
-    text: "Airport run, 4:30 AM",
-    Icon: Plane,
-    className: "tag1",
-    depth: 1.5,
-  },
-  { id: 2, text: "Wedding day", Icon: Stariii, className: "tag2", depth: 1 },
-  { id: 3, text: "Client pickup", Icon: Company, className: "tag3", depth: 2 },
-];
 
 export default function Hero() {
   // Today on the server; the calendar switches to the visitor's own date.
@@ -72,18 +56,6 @@ export default function Hero() {
               <FloatingElement depth={0.5} className={styles.imgLayer}>
                 <HeroCalendar initialKey={todayKey} />
               </FloatingElement>
-              {tags.map(({ id, text, Icon, className, depth }) => (
-                <FloatingElement
-                  key={id}
-                  depth={depth}
-                  className={`${styles.tag} ${styles[className]}`}
-                >
-                  <span className={styles.tagIcon}>
-                    <Icon aria-hidden='true' />
-                  </span>
-                  <span className={styles.tagText}>{text}</span>
-                </FloatingElement>
-              ))}
             </Floating>
           </div>
         </div>

@@ -42,7 +42,6 @@
 .imgContainer {
   position: relative;
   width: 100%;
-  max-width: 640px;
 }
 
 /* The <FloatingElement> holding the calendar stays in the flow (it's
@@ -50,71 +49,6 @@
 .imgContainer .imgLayer {
   position: relative;
   width: 100%;
-}
-
-/* Applied to each tag's <FloatingElement> (already position: absolute) */
-.tag {
-  z-index: 1;
-  display: flex;
-  align-items: flex-end;
-}
-
-.tagIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 4.6rem;
-  height: 4.6rem;
-  border-radius: 1rem;
-  border: 1px solid var(--light2);
-  background-color: var(--white);
-  color: var(--black);
-}
-
-.tagIcon svg {
-  width: 2.2rem;
-  height: 2.2rem;
-}
-
-.tagText {
-  margin-left: -0.8rem;
-  margin-bottom: -1.2rem;
-  padding: 0.7rem 1.2rem;
-  border-radius: 0.6rem;
-  background-color: var(--light2);
-  font-family: var(--IBMPlex);
-  font-size: 14px;
-  line-height: 1;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--black);
-}
-
-.tag1 .tagText {
-  background-color: var(--accent1);
-}
-
-.tag1 {
-  top: -5%;
-  right: -3%;
-}
-
-.tag2 {
-  top: 40%;
-  left: -6%;
-}
-
-.tag2 .tagText {
-  background-color: var(--accent2);
-}
-
-.tag3 {
-  top: 84%;
-  left: 46%;
-}
-
-.tag3 .tagText {
-  background-color: var(--accent3);
 }
 
 @media screen and (max-width: 1268px) {
@@ -134,24 +68,6 @@
 @media screen and (max-width: 768px) {
   .container {
     padding: 7rem 0rem;
-  }
-
-  .tagIcon {
-    width: 3.8rem;
-    height: 3.8rem;
-  }
-
-  .tagIcon svg {
-    width: 1.8rem;
-    height: 1.8rem;
-  }
-
-  .tagText {
-    font-size: 11px;
-  }
-
-  .tag3 {
-    left: 40%;
   }
 
   .btnContainer {
