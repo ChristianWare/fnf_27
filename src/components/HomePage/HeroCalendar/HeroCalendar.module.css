@@ -116,6 +116,17 @@
     rgba(13, 13, 14, 0.28) 0%,
     rgba(13, 13, 14, 0) 55%
   );
+  transition: box-shadow 0.2s ease;
+}
+
+.open:hover {
+  box-shadow: inset 0 0 0 0.5cqw var(--accent4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .open {
+    transition: none;
+  }
 }
 
 .open .num {

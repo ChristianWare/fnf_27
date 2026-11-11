@@ -3,9 +3,6 @@ import styles from "./Hero.module.css";
 import Button from "@/components/shared/Button/Button";
 // import ServicesHeroPreview from "../ServicesHeroPreview/ServicesHeroPreview";
 import Reveal from "@/components/shared/Reveal/Reveal";
-import Floating, {
-  FloatingElement,
-} from "@/components/shared/Floating/Floating";
 import HeroCalendar from "../HeroCalendar/HeroCalendar";
 import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
@@ -52,11 +49,9 @@ export default function Hero() {
           </div>
           <div className={styles.right} data-reveal>
             {/* <ServicesHeroPreview /> */}
-            <Floating className={styles.imgContainer} sensitivity={1}>
-              <FloatingElement depth={0.5} className={styles.imgLayer}>
-                <HeroCalendar initialKey={todayKey} />
-              </FloatingElement>
-            </Floating>
+            <div className={styles.imgContainer}>
+              <HeroCalendar initialKey={todayKey} />
+            </div>
           </div>
         </div>
       </LayoutWrapper>

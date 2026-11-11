@@ -7,7 +7,7 @@
 
 .content {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 2fr 2fr;
 }
 
 .left {
@@ -37,17 +37,8 @@
   justify-content: flex-end;
 }
 
-/* Applied to <Floating>, which is the hover area for the parallax. Its
-   height comes from the calendar, which keeps its own shape. */
+/* Holds the calendar, which sets its own height and keeps its shape. */
 .imgContainer {
-  position: relative;
-  width: 100%;
-}
-
-/* The <FloatingElement> holding the calendar stays in the flow (it's
-   absolute by default), so the container takes the calendar's height. */
-.imgContainer .imgLayer {
-  position: relative;
   width: 100%;
 }
 
