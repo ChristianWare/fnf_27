@@ -78,8 +78,31 @@
     border-radius: 2rem;
   }
 
-  .left {
+  /* The calendar moves up under the heading: .left steps out of the way so
+     its children and the calendar share one column, then order sets the
+     sequence (eyebrow, heading, calendar, copy, buttons). */
+  .content {
     gap: 1.5rem;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .left {
+    display: contents;
+  }
+
+  .right {
+    order: 1;
+    width: 100%;
+    margin: 1rem 0;
+  }
+
+  .copy {
+    order: 2;
+  }
+
+  .btnContainer {
+    order: 3;
   }
 
   .btnContainer {
