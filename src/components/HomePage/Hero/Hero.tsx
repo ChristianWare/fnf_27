@@ -23,9 +23,7 @@ export default function Hero() {
               data-reveal
               data-reveal-style='fade'
             >
-              Expand your
-              {/* 👨‍✈️  */}
-              <br /> Black Car Business
+              Your Calendar, <br /> Fully Booked
             </h1>
             <p className={styles.copy} data-reveal>
               Your website, booking and dispatch software, and a leads tool, in

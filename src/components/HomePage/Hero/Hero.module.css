@@ -8,6 +8,7 @@
 .content {
   display: grid;
   grid-template-columns: 2fr 2fr;
+  gap: 5rem;
 }
 
 .left {
@@ -16,6 +17,10 @@
   align-items: flex-start;
   justify-content: fs;
   gap: 2rem;
+}
+
+.heading {
+  max-width: 800px;
 }
 
 .copy {
