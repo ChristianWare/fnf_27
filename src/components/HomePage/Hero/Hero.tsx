@@ -26,9 +26,13 @@ export default function Hero() {
               Your Calendar, <br /> Fully Booked
             </h1>
             <p className={styles.copy} data-reveal>
-              Your website, booking and dispatch software, and a leads tool, in
+              {/* Your website, booking and dispatch software, and a leads tool, in
               one system for $499 a month. No per-booking fees. Start with free
-              leads in your city.
+              leads in your city. */}
+              A website that books rides, a Google listing that brings calls,
+              and a leads tool that finds the hotels, venues and offices that
+              book again and again. One system, $499 a month, no per-booking
+              fees.
             </p>
             <div className={styles.btnContainer} data-reveal>
               <Button
