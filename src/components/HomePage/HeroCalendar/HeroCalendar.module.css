@@ -5,8 +5,8 @@
   container-type: inline-size;
   width: 100%;
   border-radius: 1.6rem;
-  background-color: var(--light);
-  border: 1px solid var(--light2);
+  /* background-color: var(--light); */
+  /* border: 1px solid var(--light2); */
   overflow: hidden;
 }
 
@@ -90,9 +90,9 @@
   border: 0.45cqw solid var(--light);
 }
 
-.empty {
+/* .empty {
   background-color: var(--light);
-}
+} */
 
 .day {
   display: flex;
