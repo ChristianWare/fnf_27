@@ -1,0 +1,199 @@
+/* Sized in cqw (1% of the card's width), so everything scales together
+   and the calendar keeps its shape like an image. */
+
+.card {
+  container-type: inline-size;
+  width: 100%;
+  border-radius: 1.6rem;
+  background-color: var(--black);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2.4rem 6rem rgba(13, 13, 14, 0.18);
+  overflow: hidden;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4cqw;
+  padding: 4cqw 4cqw 3.4cqw;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2cqw;
+}
+
+.title {
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 4.4cqw;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--white);
+  white-space: nowrap;
+}
+
+.month,
+.weekdays,
+.tag,
+.legend {
+  font-family: var(--IBMPlex), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.month {
+  font-size: 1.9cqw;
+  line-height: 1;
+  color: var(--textDarkiii);
+  white-space: nowrap;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-bottom: -1cqw;
+  font-size: 1.8cqw;
+  line-height: 1;
+  color: var(--textDark);
+  text-transform: none;
+}
+
+.weekdays span {
+  padding-left: 0.8cqw;
+}
+
+/* The photo sits behind the whole grid; the dark cells and the dark frame
+   around every cell cover it, so it only shows through the open days. */
+.gridWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+}
+
+.photo {
+  object-fit: cover;
+  object-position: 40% 60%;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+}
+
+.empty,
+.day {
+  position: relative;
+  border: 0.45cqw solid var(--black);
+}
+
+.empty {
+  background-color: #141517;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.9cqw 1cqw;
+}
+
+.num {
+  align-self: flex-start;
+  font-family: var(--IBMPlex), ui-monospace, monospace;
+  font-size: 1.9cqw;
+  line-height: 1;
+  color: var(--white);
+}
+
+/* Open days: the photo, lightly shaded so the number reads. */
+.open {
+  background: linear-gradient(
+    180deg,
+    rgba(13, 13, 14, 0.28) 0%,
+    rgba(13, 13, 14, 0) 55%
+  );
+  transition: box-shadow 0.2s ease;
+}
+
+.open .num {
+  text-shadow: 0 1px 4px rgba(13, 13, 14, 0.6);
+}
+
+.open:hover {
+  box-shadow: inset 0 0 0 0.5cqw var(--accent4);
+}
+
+/* Booked days: blocked off. */
+.booked {
+  background-color: #141517;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 247, 139, 0.09) 0,
+    rgba(255, 247, 139, 0.09) 0.3cqw,
+    transparent 0.3cqw,
+    transparent 1.4cqw
+  );
+}
+
+.booked .num {
+  color: var(--textDark);
+}
+
+.tag {
+  align-self: flex-start;
+  padding: 0.5cqw 0.7cqw;
+  border-radius: 0.5cqw;
+  background-color: var(--accent4);
+  font-size: 1.3cqw;
+  line-height: 1;
+  color: var(--black);
+}
+
+.today {
+  margin: -0.4cqw 0 0 -0.5cqw;
+  padding: 0.4cqw 0.5cqw;
+  border-radius: 0.5cqw;
+  background-color: var(--accent4);
+  color: var(--black);
+  text-shadow: none !important;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+  font-size: 1.7cqw;
+  line-height: 1;
+  color: var(--textDarkiii);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+}
+
+.swatch {
+  width: 1.8cqw;
+  height: 1.8cqw;
+  border-radius: 0.3cqw;
+}
+
+.swatchBooked {
+  background-color: var(--accent4);
+}
+
+.swatchOpen {
+  background: linear-gradient(135deg, #8ea4b8 0%, #e9c79b 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .open {
+    transition: none;
+  }
+}

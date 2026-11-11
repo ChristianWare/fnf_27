@@ -37,22 +37,19 @@
   justify-content: flex-end;
 }
 
-/* Applied to <Floating>, which is the hover area for the parallax */
+/* Applied to <Floating>, which is the hover area for the parallax. Its
+   height comes from the calendar, which keeps its own shape. */
 .imgContainer {
   position: relative;
   width: 100%;
   max-width: 640px;
-  aspect-ratio: 1 / 0.9;
 }
 
-/* Applied to the <FloatingElement> wrapping the image (already position: absolute) */
-.imgLayer {
-  inset: 0;
-}
-
-.img {
-  object-fit: cover;
-  object-position: center 55%;
+/* The <FloatingElement> holding the calendar stays in the flow (it's
+   absolute by default), so the container takes the calendar's height. */
+.imgContainer .imgLayer {
+  position: relative;
+  width: 100%;
 }
 
 /* Applied to each tag's <FloatingElement> (already position: absolute) */
@@ -98,13 +95,13 @@
 }
 
 .tag1 {
-  top: 6%;
-  left: 58%;
+  top: -5%;
+  right: -3%;
 }
 
 .tag2 {
-  top: 44%;
-  left: 0%;
+  top: 40%;
+  left: -6%;
 }
 
 .tag2 .tagText {
@@ -112,8 +109,8 @@
 }
 
 .tag3 {
-  top: 76%;
-  left: 50%;
+  top: 84%;
+  left: 46%;
 }
 
 .tag3 .tagText {
@@ -151,10 +148,6 @@
 
   .tagText {
     font-size: 11px;
-  }
-
-  .tag1 {
-    left: 46%;
   }
 
   .tag3 {

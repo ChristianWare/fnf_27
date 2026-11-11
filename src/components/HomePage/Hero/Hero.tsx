@@ -6,8 +6,7 @@ import Reveal from "@/components/shared/Reveal/Reveal";
 import Floating, {
   FloatingElement,
 } from "@/components/shared/Floating/Floating";
-import Suburban from "../../../../public/images/subNoBG.png";
-import Image from "next/image";
+import HeroCalendar from "../HeroCalendar/HeroCalendar";
 import Plane from "@/components/shared/icons/Plane/Plane";
 import Stariii from "@/components/shared/icons/Stariii/Stariii";
 import Company from "@/components/shared/icons/Company/Company";
@@ -27,6 +26,10 @@ const tags = [
 ];
 
 export default function Hero() {
+  // Today on the server; the calendar switches to the visitor's own date.
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+
   return (
     <section className={styles.container}>
       <Reveal onLoad step={180} />
@@ -67,13 +70,7 @@ export default function Hero() {
             {/* <ServicesHeroPreview /> */}
             <Floating className={styles.imgContainer} sensitivity={1}>
               <FloatingElement depth={0.5} className={styles.imgLayer}>
-                <Image
-                  src={Suburban}
-                  alt='A black Chevrolet Suburban, front view'
-                  fill
-                  sizes='(max-width: 968px) 100vw, 50vw'
-                  className={styles.img}
-                />
+                <HeroCalendar initialKey={todayKey} />
               </FloatingElement>
               {tags.map(({ id, text, Icon, className, depth }) => (
                 <FloatingElement
