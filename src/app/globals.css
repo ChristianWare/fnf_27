@@ -63,9 +63,10 @@ h5,
 h6,
 .subHeading {
   font-family:
-    var(--CreatoDisplayMedium, "Creato Display"), system-ui, sans-serif;
+    var(--CreatoDisplayExtraBold, "Creato Display"), system-ui, sans-serif;
   color: var(--black);
   hyphens: none;
+  text-transform: uppercase;
 }
 
 .display1 {

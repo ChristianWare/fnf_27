@@ -71,8 +71,7 @@ export default function ServicesHero() {
                 data-reveal
                 data-reveal-style='fade'
               >
-                Services for Black Car <br className={styles.br} /> &amp; Limo
-                Operators
+                our Services
               </h1>
               <p className={styles.copy} data-reveal>
                 Four ways we help: a free audit that shows where you stand, a
