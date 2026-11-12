@@ -137,6 +137,10 @@
     grid-template-columns: repeat(1, 1fr);
   }
 
+  .card {
+    order: -1;
+  }
+
   /* Full width: the card takes the calendar's own shape, so its rows
      don't get squashed into a short, wide box. */
   .mediaCell {

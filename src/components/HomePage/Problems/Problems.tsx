@@ -125,7 +125,7 @@ export default function Problems() {
                 Services that fill your calendar
               </h2>
               <p className={styles.copy} data-reveal>
-                The Full Platform puts your website, booking and dispatch
+                The Direct Booking Website puts your website, booking and dispatch
                 software and the leads tool in one system for $499 a month. Need
                 only one part? The leads tool and the website come on their own
                 too, and the audit is always free.
