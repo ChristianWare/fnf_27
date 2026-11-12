@@ -11,6 +11,7 @@ import HowItWorks from "@/components/HomePage/HowItWorks/HowItWorks";
 import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee";
 import NierCaseStudy from "@/components/HomePage/NierCaseStudy/NierCaseStudy";
 import LeadsTool from "@/components/HomePage/LeadsTool/LeadsTool";
+import TrafficTimeline from "@/components/HomePage/TrafficTimeline/TrafficTimeline";
 import BookingFeatures from "@/components/HomePage/BookingFeatures/BookingFeatures";
 import Pricing from "@/components/HomePage/Pricing/Pricing";
 import JournalPreview from "@/components/HomePage/JournalPreview/JournalPreview";
@@ -46,6 +47,7 @@ export default function Home() {
       <NierCaseStudy />
       {/* <LiveDemos /> */}
       {/* <LeadsTool /> */}
+      <TrafficTimeline />
       <BookingFeatures />
       <Process />
       <Pricing />
