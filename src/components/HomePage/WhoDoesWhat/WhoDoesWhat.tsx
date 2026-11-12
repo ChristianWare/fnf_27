@@ -203,7 +203,7 @@ export default function WhoDoesWhat() {
         <LayoutWrapper>
           <div className={styles.top} data-reveal>
             <div className={styles.topLeft}>
-              <EyeBrow text='Who does what' color='yellow' />
+              <EyeBrow text='Working together' color='yellow' />
               <h2 id='who-does-what-heading' className={`${styles.heading} h3`}>
                 We build it. You keep it moving.
               </h2>
