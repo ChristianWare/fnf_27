@@ -10,11 +10,18 @@
 //
 // At 968px and below, or with motion turned off, the cards sit in a column
 // with no pinning.
+//
+// On the home page (home), it follows the honest timeline: the eyebrow and
+// heading pitch the leads tool as the thing to do while search builds, with
+// a short intro and a button to the leads page under the heading. There the
+// heading block sits above the pinned part and scrolls away before the
+// cards come up, so the cards never cover the button.
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import styles from "./WhatItFinds.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
+import Button from "@/components/shared/Button/Button";
 import BgImg from "../../../../public/images/irr.webp";
 
 // How the pinned section plays out, in screen heights of scrolling.
@@ -66,8 +73,14 @@ const easeOut = (t: number) => 1 - (1 - t) ** 3;
 const easeInOut = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
 
-export default function WhatItFinds() {
+export default function WhatItFinds({
+  home = false,
+}: {
+  /** The home page's eyebrow, heading, intro and button. */
+  home?: boolean;
+}) {
   const wrapRef = useRef<HTMLElement>(null);
+  const introRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -87,10 +100,18 @@ export default function WhatItFinds() {
       wrap.style.setProperty(name, value);
     };
 
+    // The home page's heading block, above the pinned part (0 elsewhere).
+    let intro = 0;
+    // On the home page the first card starts rising while the heading
+    // block is still scrolling away, half a screen before the stage pins,
+    // so there's no empty screen in between.
+    const lead = home ? 0.5 : 0;
+
     // Scroll position -> how far along each card is.
     const update = () => {
       if (!pinned) return;
-      const scrolled = -wrap.getBoundingClientRect().top;
+      const scrolled =
+        -wrap.getBoundingClientRect().top - intro + screen * lead;
       leads.forEach((lead, index) => {
         const start = screen * ENTER * index;
         const p = clamp((scrolled - start) / (screen * ENTER));
@@ -123,8 +144,9 @@ export default function WhatItFinds() {
       pinned = true;
       wrap.dataset.pinned = "true";
       screen = window.innerHeight;
+      intro = home ? (introRef.current?.offsetHeight ?? 0) : 0;
       wrap.style.height = `${Math.round(
-        screen * (1 + ENTER * leads.length + SPREAD + HOLD),
+        intro + screen * (1 - lead + ENTER * leads.length + SPREAD + HOLD),
       )}px`;
       last.clear();
       update();
@@ -172,7 +194,37 @@ export default function WhatItFinds() {
       reduced.removeEventListener("change", measure);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [home]);
+
+  const intro = (
+    <div
+      ref={introRef}
+      className={`${styles.top} ${home ? styles.topHome : ""}`}
+    >
+      <EyeBrow text={home ? "Leads tool" : "What it finds"} color='black' />
+      <h2 id='what-it-finds' className={styles.heading}>
+        {home
+          ? "While you wait, utilize our leads tool to fill your calendar"
+          : "The Accounts and Events in Your Market, Every Morning"}
+      </h2>
+      {home && (
+        <>
+          <p className={styles.copy}>
+            The hotels, venues, companies and events near you that book rides,
+            every morning, scored so the best come first, with the
+            decision-maker&apos;s contact and a script written for each one.
+            Free for 30 days, no card.
+          </p>
+          <Button
+            href='/services/leads'
+            btnType='white'
+            text='Learn more about the leads tool'
+            arrow
+          />
+        </>
+      )}
+    </div>
+  );
 
   return (
     <section
@@ -185,13 +237,12 @@ export default function WhatItFinds() {
         <Image src={BgImg} alt='' fill sizes='100vw' className={styles.bgImg} />
       </div>
 
-      <div className={styles.stage}>
-        <div className={styles.top}>
-          <EyeBrow text='What it finds' color='black' />
-          <h2 id='what-it-finds' className={styles.heading}>
-            The Accounts and Events in Your Market, Every Morning
-          </h2>
-        </div>
+      {/* On the home page the heading block comes first and scrolls away;
+          elsewhere it sits in the pinned stage, above the cards. */}
+      {home && intro}
+
+      <div className={`${styles.stage} ${home ? styles.stageHome : ""}`}>
+        {!home && intro}
 
         <ol className={styles.cards}>
           {leads.map((lead) => (

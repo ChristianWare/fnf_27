@@ -58,6 +58,22 @@
   text-wrap: balance;
 }
 
+/* The home page's intro under the heading. */
+.copy {
+  max-width: 620px;
+  color: rgb(255 255 255 / 85%);
+}
+
+/* On the home page the heading block sits above the stage and scrolls
+   away before the cards come up. */
+.topHome {
+  padding: 10rem 3rem 0;
+}
+
+.stageHome {
+  padding-top: 6rem;
+}
+
 .cards {
   list-style: none;
   display: grid;
@@ -181,6 +197,11 @@
   transform: translate(-50%, 0);
 }
 
+/* With no heading above them, the home page's cards sit in the middle. */
+.container[data-pinned="true"] .stageHome .cards {
+  top: 50%;
+}
+
 /* Each card starts below the screen, rises into the same spot, and then
    slides sideways by its share of --spread. Later cards sit on top. */
 .container[data-pinned="true"] .card {
@@ -222,6 +243,14 @@
     padding: 7rem 3rem;
   }
 
+  .topHome {
+    padding: 7rem 3rem 0;
+  }
+
+  .stageHome {
+    padding-top: 5rem;
+  }
+
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     max-width: none;
@@ -251,6 +280,14 @@
     padding: 6rem 1.5rem;
   }
 
+  .topHome {
+    padding: 6rem 1.5rem 0;
+  }
+
+  .stageHome {
+    padding-top: 4rem;
+  }
+
   .cards {
     grid-template-columns: repeat(1, 1fr);
   }
@@ -263,5 +300,13 @@
 @media screen and (max-width: 568px) {
   .stage {
     padding: 5rem 1.5rem;
+  }
+
+  .topHome {
+    padding: 5rem 1.5rem 0;
+  }
+
+  .stageHome {
+    padding-top: 4rem;
   }
 }
