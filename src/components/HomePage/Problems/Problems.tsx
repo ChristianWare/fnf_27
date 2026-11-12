@@ -122,7 +122,7 @@ export default function Problems() {
                 data-reveal
                 data-reveal-style='fade'
               >
-                What We Offer
+                Services that fill your calendar
               </h2>
               <p className={styles.copy} data-reveal>
                 The Full Platform puts your website, booking and dispatch

@@ -25,7 +25,7 @@ const steps = [
   {
     id: 1,
     title: "Free audit",
-    desc: "I run your site and Google profile through the audit, and we go over what's costing you bookings on a 20-minute call.",
+    desc: "We run your site and Google profile through the audit, and we go over what's costing you bookings on a 20-minute call.",
     src: AuditImg,
     alt: "An operator checking his phone",
   },
@@ -46,7 +46,7 @@ const steps = [
   {
     id: 4,
     title: "Launch",
-    desc: "I point your domain at the new site. Your domain and your phone number stay yours.",
+    desc: "We point your domain at the new site. Your domain and your phone number stay yours.",
     src: LaunchImg,
     alt: "A black SUV on an open road",
   },

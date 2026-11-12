@@ -181,7 +181,11 @@ export default function BookingFeatures() {
         <LayoutWrapper>
           <div className={styles.top} data-reveal>
             <div className={styles.topLeft}>
-              <EyeBrow text='Booking software' color='yellow' />
+              <EyeBrow
+                text='Direct Booking Website
+'
+                color='yellow'
+              />
               <h2 className={`${styles.heading} h3`}>
                 Your website takes the booking, dispatches the driver and gets
                 you paid.
@@ -193,7 +197,7 @@ export default function BookingFeatures() {
               </span>
               <span className={styles.badgeText}>
                 <span className={styles.badgeTitle}>
-                  Full Platform · $499/mo
+                  Direct Booking Website · $499/mo
                 </span>
                 <span className={styles.badgeSub}>
                   Leads tool included. See what&apos;s inside
@@ -220,7 +224,9 @@ export default function BookingFeatures() {
                   <div className={styles.stat}>
                     <Icon className={styles.statIcon} aria-hidden='true' />
                     <div className={styles.statBottom}>
-                      <span className={`${styles.statValue} h3`}>{feature.stat}</span>
+                      <span className={`${styles.statValue} h3`}>
+                        {feature.stat}
+                      </span>
                       <span className={styles.statLabel}>
                         {feature.statLabel}
                       </span>

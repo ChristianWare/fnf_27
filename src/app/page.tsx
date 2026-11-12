@@ -45,7 +45,7 @@ export default function Home() {
       <FeatureMarquee />
       <NierCaseStudy />
       {/* <LiveDemos /> */}
-      <LeadsTool />
+      {/* <LeadsTool /> */}
       <BookingFeatures />
       <Process />
       <Pricing />
