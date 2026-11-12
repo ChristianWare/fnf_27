@@ -48,7 +48,7 @@ export default function Home() {
       {/* <LiveDemos /> */}
       {/* <LeadsTool /> */}
       <TrafficTimeline />
-      <BookingFeatures />
+      {/* <BookingFeatures /> */}
       <Process />
       <Pricing />
       <ComparePlans />
