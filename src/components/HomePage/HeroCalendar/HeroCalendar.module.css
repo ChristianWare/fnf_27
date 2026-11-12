@@ -204,9 +204,21 @@
 .through {
   position: relative;
   isolation: isolate;
+  height: 100%;
+  border-radius: inherit;
+}
+
+/* See-through calendars fill the space they're given: the grid takes the
+   height left after the title, weekdays and legend, and its rows stretch
+   to match, so the calendar can cover a whole card. */
+.through .inner {
+  height: 100%;
 }
 
 .through .gridWrap {
+  flex: 1;
+  min-height: 0;
+  aspect-ratio: auto;
   box-shadow: 0 0 0 100vmax var(--white);
 }
 

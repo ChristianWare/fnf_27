@@ -7,14 +7,10 @@
   margin: 0 0.5rem;
 }
 
-/* The left card: the video fills it, the calendar sits in the middle. */
+/* The left card: the video fills it, and the calendar covers all of it. */
 .mediaCell {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   min-height: 50rem;
-  padding: 4rem;
   border-radius: 3rem;
   overflow: hidden;
   isolation: isolate;
@@ -23,28 +19,16 @@
 .media {
   position: absolute;
   inset: 0;
-  z-index: 0;
-  isolation: isolate;
 }
 
-/* A light wash over the video so the calendar stands out from it. */
-.media::after {
-  content: "";
+/* The calendar over the whole video. It paints its own white around the
+   grid; the open days show the video. */
+.calendar {
   position: absolute;
   inset: 0;
-  background: rgb(13 13 14 / 25%);
-  pointer-events: none;
-}
-
-/* The calendar over the video, keeping its own shape at every width. It
-   paints its own white around the grid; the open days show the video. */
-.calendar {
-  position: relative;
   z-index: 1;
-  width: min(100%, 560px);
-  border-radius: 1.6rem;
+  border-radius: inherit;
   overflow: hidden;
-  box-shadow: 0 2.4rem 6rem rgb(13 13 14 / 25%);
 }
 
 .video {
@@ -60,14 +44,14 @@
   position: absolute;
   right: 1.4rem;
   bottom: 1.4rem;
-  z-index: 1;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 3.6rem;
   height: 3.6rem;
   border-radius: 1rem;
-  background-color: rgb(255 255 255 / 25%);
+  background-color: rgb(13 13 14 / 70%);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: var(--white);
@@ -75,8 +59,9 @@
   transition: background-color 0.2s ease;
 }
 
+/* Over the calendar's white corner, so it's dark rather than glassy. */
 .toggle:hover {
-  background-color: rgb(255 255 255 / 40%);
+  background-color: rgb(13 13 14 / 90%);
 }
 
 .toggle:focus-visible {
@@ -152,8 +137,11 @@
     grid-template-columns: repeat(1, 1fr);
   }
 
+  /* Full width: the card takes the calendar's own shape, so its rows
+     don't get squashed into a short, wide box. */
   .mediaCell {
-    min-height: 42rem;
+    min-height: 0;
+    aspect-ratio: 5 / 4;
   }
 
   .card {
@@ -166,11 +154,6 @@
   .mediaCell,
   .card {
     border-radius: 2rem;
-  }
-
-  .mediaCell {
-    min-height: 34rem;
-    padding: 2rem;
   }
 
   .card {
