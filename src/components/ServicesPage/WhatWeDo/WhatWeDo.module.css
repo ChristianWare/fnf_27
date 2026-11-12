@@ -26,19 +26,14 @@
   text-align: center;
 }
 
-/* Breaks only between the phrases, into lines of about the same length. */
+/* Sized by the global .h3 class, in the display font. */
 .heading {
-  max-width: 56rem;
-  text-wrap: balance;
+  font-family: var(--CreatoDisplayExtraBold);
+  max-width: 64rem;
 }
 
-.phrase {
-  white-space: nowrap;
-}
-
-/* The line breaks only apply in the pinned layout. */
-.br {
-  display: none;
+.intro {
+  max-width: 46rem;
 }
 
 .btnWrap {
@@ -60,12 +55,12 @@
   flex-direction: column;
 }
 
-/* One service: number and photo on top, then the text, price and link. */
+/* One source: number and photo on top, then the text, then who does what. */
 .cardInner {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 7rem;
+  gap: 4rem;
   padding: 2rem;
   border-radius: 1.6rem;
   background-color: var(--light);
@@ -107,28 +102,35 @@
   object-fit: cover;
 }
 
-.cardBody,
-.cardFoot {
+.cardBody {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0 0.6rem;
-}
-
-.cardBody {
   gap: 1rem;
-}
-
-.cardFoot {
-  gap: 1.4rem;
-  margin-top: auto;
+  padding: 0 0.6rem;
 }
 
 .desc {
   font-size: 16px;
 }
 
-.price {
+/* We do / You do, at the foot of the card. */
+.split {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding: 0 0.6rem;
+}
+
+.splitRow {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 1.6rem;
+  padding: 1.2rem 0;
+  border-top: 1px solid var(--light2);
+}
+
+.splitLabel {
   font-family: var(--IBMPlex);
   font-size: 14px;
   line-height: 1.4;
@@ -136,34 +138,12 @@
   color: var(--black);
 }
 
-.link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.8rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--black);
-  font-family: var(--CreatoDisplayExtraBold);
-  font-size: 16px;
-  line-height: 1;
-  color: var(--black);
-}
-
-.link:focus-visible {
-  outline: 2px solid var(--black);
-  outline-offset: 4px;
-}
-
-.linkArrow {
-  width: 1.4rem;
-  height: 1.4rem;
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .link:hover .linkArrow {
-    transform: rotate(90deg);
-  }
+.splitText {
+  margin: 0;
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
 }
 
 @media screen and (max-width: 768px) {
@@ -183,28 +163,20 @@
     padding: 5rem 0rem;
   }
 
-  .phrase {
-    font-family: var(--CreatoDisplayExtraBold);
-  }
-
   .cards {
     grid-template-columns: repeat(1, 1fr);
   }
 }
 
 /* ── The pinned layout. The component turns it on (data-pinned) on wide
-   screens where the cards fit around the statement, and sets these:
+   screens where a card fits on the screen, and sets these:
      --rise-p   0 to 1, how far the button has risen
      --rise     how far below its place the button starts, in px
-     --spread   0 to 1, how far the cards have spread out
-     --gap-x    the space between the middle and the cards, in px
      --card-h   the height of the tallest card, in px
-     --fit      the finished cards' size: 1, or a little less on shorter
-                screens so they fit
-     --dx --dy  per card: the distance from its center to the middle ── */
+     --travel   how far below the middle a card starts, in px
+     --p        per card: 0 to 1, how far it has come up
+     --after    per card: how many cards have landed on top of it ── */
 .container[data-pinned="true"] .stage {
-  --gap-y: 4rem; /* the space between the middle and the cards, up and down */
-
   position: sticky;
   top: 0;
   height: 100vh;
@@ -232,31 +204,23 @@
 }
 
 .circleInner {
-  width: calc((var(--gap-x, 24rem) * 2 - 3rem) * var(--fit, 1));
+  width: 72rem;
 }
 
 .circleOuter {
-  width: calc((var(--gap-x, 24rem) * 2 + 9rem) * var(--fit, 1));
+  width: 88rem;
 }
 
-/* The statement, held in the middle of the screen, in front of the cards
-   as they pass behind it. */
+/* The statement, held in the middle of the screen, under the cards. */
 .container[data-pinned="true"] .center {
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 2;
+  z-index: 1;
   width: max-content;
+  max-width: calc(100% - 4.8rem);
   padding: 0;
   transform: translate(-50%, -50%);
-}
-
-.container[data-pinned="true"] .heading {
-  max-width: none;
-}
-
-.container[data-pinned="true"] .br {
-  display: inline;
 }
 
 /* The button starts below its place, faded, and rises with the scroll. */
@@ -265,12 +229,13 @@
   transform: translate3d(0, calc((1 - var(--rise-p, 1)) * var(--rise, 0px)), 0);
 }
 
-/* The cards start as a small, see-through copy of the finished layout in
-   the middle of the screen, and grow out to the corners. */
+/* The cards wait below the screen and come up one at a time into a stack
+   in the middle. The ones underneath sit a little higher and smaller, so
+   the stack shows its edges. */
 .container[data-pinned="true"] .cards {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   display: block;
   max-width: none;
   margin: 0;
@@ -278,44 +243,46 @@
 }
 
 .container[data-pinned="true"] .card {
-  --scale: calc(var(--fit, 1) * (0.35 + 0.65 * var(--spread, 1)));
+  --r: 0deg; /* each card lands at its own small angle */
 
   position: absolute;
-  width: min(44rem, calc(50% - var(--gap-x, 24rem) - 3rem));
+  top: 50%;
+  left: 50%;
+  width: min(56rem, calc(100% - 4.8rem));
   min-height: var(--card-h, 0px);
-  opacity: min(1, calc(var(--spread, 1) * 1.4));
+  opacity: min(1, calc(var(--p, 0) * 4));
   transform: translate3d(
-      calc(var(--dx, 0px) * (1 - var(--scale))),
-      calc(var(--dy, 0px) * (1 - var(--scale))),
+      -50%,
+      calc(
+        -50% + (1 - var(--p, 0)) * var(--travel, 100vh) - var(--after, 0) * 14px
+      ),
       0
     )
-    scale(var(--scale));
+    rotate(calc(var(--r) * var(--p, 0))) scale(calc(1 - var(--after, 0) * 0.03));
   will-change: transform, opacity;
 }
 
-/* In place: the cards take clicks, and their text is drawn sharp again at
-   its finished size. */
-.container[data-pinned="true"][data-settled="true"] .card {
-  pointer-events: auto;
-  will-change: auto;
-}
-
 .container[data-pinned="true"] .card:nth-child(1) {
-  right: calc(50% + var(--gap-x, 24rem));
-  bottom: calc(50% + var(--gap-y));
+  --r: -2deg;
 }
 
 .container[data-pinned="true"] .card:nth-child(2) {
-  left: calc(50% + var(--gap-x, 24rem));
-  bottom: calc(50% + var(--gap-y));
+  --r: 1.5deg;
 }
 
 .container[data-pinned="true"] .card:nth-child(3) {
-  right: calc(50% + var(--gap-x, 24rem));
-  top: calc(50% + var(--gap-y));
+  --r: -1deg;
 }
 
 .container[data-pinned="true"] .card:nth-child(4) {
-  left: calc(50% + var(--gap-x, 24rem));
-  top: calc(50% + var(--gap-y));
+  --r: 2deg;
+}
+
+.container[data-pinned="true"] .card:nth-child(5) {
+  --r: -1.5deg;
+}
+
+.container[data-pinned="true"] .cardInner {
+  border: 1px solid var(--light2);
+  box-shadow: 0 1.6rem 4rem rgb(13 13 14 / 10%);
 }
