@@ -52,7 +52,7 @@ export default function TrafficTimeline() {
             <div className={styles.topLeft}>
               <EyeBrow text='The honest timeline' color='green' />
               <h2 className={styles.heading}>
-                The main goal for your website is traffic, but that takes time
+                The main goal for your website is to get traffic, but that takes time
               </h2>
               <p className={styles.copy}>
                 Google trusts new pages slowly. For most operators, search and
