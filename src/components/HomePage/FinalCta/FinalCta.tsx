@@ -12,11 +12,13 @@ export default function FinalCta() {
 
   return (
     <section className={styles.container}>
-      {/* The video, with the hero's booking calendar on top of it. */}
+      {/* The video, with the hero's booking calendar on top of it. The
+          calendar has no photo of its own: the video shows through its open
+          days. */}
       <div className={styles.mediaCell}>
         <CtaVideo />
         <div className={styles.calendar}>
-          <HeroCalendar initialKey={todayKey} />
+          <HeroCalendar initialKey={todayKey} see='through' />
         </div>
       </div>
 

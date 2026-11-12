@@ -36,13 +36,14 @@
   pointer-events: none;
 }
 
-/* The calendar on a white card, keeping its own shape at every width. */
+/* The calendar over the video, keeping its own shape at every width. It
+   paints its own white around the grid; the open days show the video. */
 .calendar {
   position: relative;
   z-index: 1;
   width: min(100%, 560px);
   border-radius: 1.6rem;
-  background-color: var(--white);
+  overflow: hidden;
   box-shadow: 0 2.4rem 6rem rgb(13 13 14 / 25%);
 }
 

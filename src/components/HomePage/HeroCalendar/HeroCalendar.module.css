@@ -196,3 +196,24 @@
 .swatchOpen {
   background: linear-gradient(135deg, #8ea4b8 0%, #e9c79b 100%);
 }
+
+/* ── See-through: no photo. The grid is a window onto whatever is behind
+   the calendar, and a white shadow spread out from the grid paints the
+   rest of the card (the title, weekdays, legend and margins) white. The
+   card's rounded corners clip it. ── */
+.through {
+  position: relative;
+  isolation: isolate;
+}
+
+.through .gridWrap {
+  box-shadow: 0 0 0 100vmax var(--white);
+}
+
+/* Above the white, so it doesn't paint over them. */
+.through .head,
+.through .weekdays,
+.through .legend {
+  position: relative;
+  z-index: 1;
+}

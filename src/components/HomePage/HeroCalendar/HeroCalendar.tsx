@@ -43,10 +43,18 @@ function bookedDays(year: number, month: number, daysInMonth: number) {
 export default function HeroCalendar({
   initialKey,
   title = "Executive SUV",
+  see = "photo",
 }: {
   /** Today when the page was rendered; the browser's own date takes over. */
   initialKey: string;
   title?: string;
+  /**
+   * What shows through the open days. "photo" (the default) is subSnow.png.
+   * "through" leaves the grid see-through, so whatever sits behind the
+   * calendar (a video, say) shows in the open days, and paints the rest of
+   * the card white.
+   */
+  see?: "photo" | "through";
 }) {
   const key = useSyncExternalStore(subscribe, todayKey, () => initialKey);
   const [year, month, today] = key.split("-").map(Number);
@@ -68,7 +76,7 @@ export default function HeroCalendar({
 
   return (
     <div
-      className={styles.card}
+      className={`${styles.card} ${see === "through" ? styles.through : ""}`}
       role='img'
       aria-label={`Booking calendar for ${monthLabel}, ${booked.size} days booked`}
     >
@@ -85,15 +93,17 @@ export default function HeroCalendar({
         </div>
 
         <div className={styles.gridWrap}>
-          <Image
-            src={SubSnow}
-            alt=''
-            fill
-            priority
-            placeholder='blur'
-            sizes='(max-width: 1268px) 90vw, 640px'
-            className={styles.photo}
-          />
+          {see === "photo" && (
+            <Image
+              src={SubSnow}
+              alt=''
+              fill
+              priority
+              placeholder='blur'
+              sizes='(max-width: 1268px) 90vw, 640px'
+              className={styles.photo}
+            />
+          )}
           <div className={styles.grid}>
             {cells.map((day, i) => {
               if (day === null) {
