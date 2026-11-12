@@ -12,6 +12,7 @@ import FeatureMarquee from "@/components/HomePage/FeatureMarquee/FeatureMarquee"
 import NierCaseStudy from "@/components/HomePage/NierCaseStudy/NierCaseStudy";
 import LeadsTool from "@/components/HomePage/LeadsTool/LeadsTool";
 import TrafficTimeline from "@/components/HomePage/TrafficTimeline/TrafficTimeline";
+import WhoDoesWhat from "@/components/HomePage/WhoDoesWhat/WhoDoesWhat";
 import BookingFeatures from "@/components/HomePage/BookingFeatures/BookingFeatures";
 import Pricing from "@/components/HomePage/Pricing/Pricing";
 import JournalPreview from "@/components/HomePage/JournalPreview/JournalPreview";
@@ -49,6 +50,7 @@ export default function Home() {
       {/* <LeadsTool /> */}
       <TrafficTimeline />
       {/* <BookingFeatures /> */}
+      <WhoDoesWhat />
       <Process />
       <Pricing />
       <ComparePlans />
