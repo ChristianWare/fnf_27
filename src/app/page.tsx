@@ -37,7 +37,7 @@ export default function Home() {
       <Nav />
       <Hero />
       <ProofStrip />
-      {/* <WhatWeDo /> */}
+      <WhatWeDo />
       {/* <OnePrice /> */}
       <AboutUsIntro />
       <Problems />

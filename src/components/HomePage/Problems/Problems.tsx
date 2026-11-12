@@ -21,7 +21,7 @@ import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 const data = [
   {
     id: 2,
-    title: "Full Platform",
+    title: "Direct Booking Website",
     price: "$499/mo + $500 setup · Website + booking + leads tool",
     bullets: [
       "Website, booking software and leads tool in one",
