@@ -1,4 +1,5 @@
-/* Two cards side by side on the gray page: the video and the message. */
+/* Two cards side by side on the gray page: the video with the booking
+   calendar on top of it, and the message. */
 .container {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -6,12 +7,43 @@
   margin: 0 0.5rem;
 }
 
-.media {
+/* The left card: the video fills it, the calendar sits in the middle. */
+.mediaCell {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 50rem;
+  padding: 4rem;
   border-radius: 3rem;
   overflow: hidden;
   isolation: isolate;
+}
+
+.media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  isolation: isolate;
+}
+
+/* A light wash over the video so the calendar stands out from it. */
+.media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(13 13 14 / 25%);
+  pointer-events: none;
+}
+
+/* The calendar on a white card, keeping its own shape at every width. */
+.calendar {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 560px);
+  border-radius: 1.6rem;
+  background-color: var(--white);
+  box-shadow: 0 2.4rem 6rem rgb(13 13 14 / 25%);
 }
 
 .video {
@@ -119,7 +151,7 @@
     grid-template-columns: repeat(1, 1fr);
   }
 
-  .media {
+  .mediaCell {
     min-height: 42rem;
   }
 
@@ -130,13 +162,14 @@
 }
 
 @media screen and (max-width: 568px) {
-  .media,
+  .mediaCell,
   .card {
     border-radius: 2rem;
   }
 
-  .media {
+  .mediaCell {
     min-height: 34rem;
+    padding: 2rem;
   }
 
   .card {

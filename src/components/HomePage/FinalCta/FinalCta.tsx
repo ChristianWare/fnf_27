@@ -2,12 +2,23 @@ import styles from "./FinalCta.module.css";
 import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import CtaVideo from "./CtaVideo";
+import HeroCalendar from "../HeroCalendar/HeroCalendar";
 import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 export default function FinalCta() {
+  // Today on the server; the calendar switches to the visitor's own date.
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+
   return (
     <section className={styles.container}>
-      <CtaVideo />
+      {/* The video, with the hero's booking calendar on top of it. */}
+      <div className={styles.mediaCell}>
+        <CtaVideo />
+        <div className={styles.calendar}>
+          <HeroCalendar initialKey={todayKey} />
+        </div>
+      </div>
 
       <div className={styles.card}>
         <div className={styles.cardTop}>
@@ -15,7 +26,7 @@ export default function FinalCta() {
           <PulseEyeBrow text='Let&#39;s work together' />
 
           <h2 className={styles.heading}>
-            Ready to expand your black car business?
+            Your Calendar, <br /> Fully Booked
           </h2>
           <p className={styles.copy}>
             See the hotels, venues and events you could be calling this week.
