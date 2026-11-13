@@ -9,6 +9,7 @@ import Location from "@/components/shared/icons/Location/Location";
 import Business from "@/components/shared/icons/Business/Business";
 import Speedometer from "@/components/shared/icons/Speedometer/Speedometer";
 import MouseIcon from "@/components/shared/icons/MouseIcon/MouseIcon";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 type PageType = {
   id: number;
@@ -66,7 +67,8 @@ export default function PageMap() {
       <Reveal />
       <div className={styles.content}>
         <div className={styles.eyebrow}>
-          <EyeBrow text='The page map' />
+          {/* <EyeBrow text='The page map' /> */}
+          <PulseEyeBrow text='The page map' />
         </div>
 
         <h2

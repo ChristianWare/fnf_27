@@ -23,6 +23,8 @@ import Footer from "@/components/shared/Footer/Footer";
 import Process from "@/components/AboutPage/Process/Process";
 import WhatWeDo from "@/components/ServicesPage/WhatWeDo/WhatWeDo";
 import ComparePlans from "@/components/PricingPage/ComparePlans/ComparePlans";
+import BuildProcess from "@/components/WebsitesPage/BuildProcess/BuildProcess";
+import PageMap from "@/components/WebsitesPage/PageMap/PageMap";
 
 export const metadata: Metadata = {
   title: {
@@ -47,15 +49,17 @@ export default function Home() {
       {/* <HowItWorks /> */}
       <FeatureMarquee />
       <NierCaseStudy />
+      <PageMap />
       {/* <LiveDemos /> */}
       {/* <LeadsTool /> */}
       <TrafficTimeline />
       <WhatItFinds home />
       {/* <BookingFeatures /> */}
       <WhoDoesWhat />
-      <Process />
+      <BuildProcess />
+      {/* <Process /> */}
       <Pricing />
-      <ComparePlans />
+      {/* <ComparePlans /> */}
       <JournalPreview />
       <Faq />
       <FinalCta />

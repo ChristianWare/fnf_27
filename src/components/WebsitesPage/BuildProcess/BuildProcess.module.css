@@ -124,6 +124,7 @@
 
 .img {
   object-fit: cover;
+  object-position: top;
 }
 
 /* The black bar with the short version. */
@@ -169,7 +170,7 @@
 
   .photo {
     min-height: 0;
-    height: 300px;
+    height: 550px;
   }
 
   .bar {
@@ -205,7 +206,7 @@
   }
 
   .photo {
-    height: 250px;
+    height: 450px;
   }
 
   .card {

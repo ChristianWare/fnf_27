@@ -9,7 +9,8 @@ import EyeBrow from "@/components/shared/EyeBrow/EyeBrow";
 import Button from "@/components/shared/Button/Button";
 import Reveal from "@/components/shared/Reveal/Reveal";
 import Logo from "@/components/shared/Logo/Logo";
-import BuildImg from "../../../../public/images/launch.jpg";
+import BuildImg from "../../../../public/images/blog/blog11.png";
+import PulseEyeBrow from "@/components/shared/PulseEyeBrow/PulseEyeBrow";
 
 const CALENDAR = "https://calendly.com/chris-ware-dev/discovery-call";
 
@@ -53,7 +54,8 @@ export default function BuildProcess() {
       <LayoutWrapper>
         <div className={styles.content}>
           <div className={styles.top}>
-            <EyeBrow text='The process' />
+            {/* <EyeBrow text='The process' /> */}
+            <PulseEyeBrow text='The Process' />
             <h2
               id='build-process'
               className={styles.heading}
