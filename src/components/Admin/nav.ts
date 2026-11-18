@@ -51,7 +51,9 @@ export function adminNav(
           label: "Prospects",
           icon: "phone",
           badge: prospectsDue || undefined,
+          match: "prefix",
         },
+        { href: "/admin/demos", label: "Previews", icon: "sparkle" },
         { href: "/admin/proposals", label: "Proposals", icon: "file" },
         {
           href: "/admin/audits",

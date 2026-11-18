@@ -5,7 +5,7 @@
 // and running their audit.
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db, schema as s } from "@/db";
 import { getSessionUser } from "@/lib/auth/dal";
 import { done, fail, type ActionResult } from "@/lib/actions";
@@ -29,7 +29,6 @@ import {
 } from "@/lib/prospects/parse";
 import {
   afterCall,
-  getProspect,
   importProspects,
   inviteLink,
   logActivity,
@@ -45,7 +44,8 @@ async function admin() {
   return { ok: true as const, user };
 }
 
-const refresh = () => revalidatePath("/admin/prospects");
+// The list and every prospect's own page under it.
+const refresh = () => revalidatePath("/admin/prospects", "layout");
 
 async function load(id: string) {
   const [row] = await db
@@ -273,6 +273,25 @@ export async function deleteProspect(id: string): Promise<ActionResult> {
   return done();
 }
 
+/** The ones ticked on the list, with their timelines. Their accounts, if
+ *  any signed up, stay. */
+export async function deleteProspects(
+  ids: string[],
+): Promise<ActionResult<number>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const list = [
+    ...new Set((Array.isArray(ids) ? ids : []).map(String).filter(Boolean)),
+  ].slice(0, 2000);
+  if (!list.length) return fail("Pick who to delete first.");
+  const gone = await db
+    .delete(s.prospects)
+    .where(inArray(s.prospects.id, list))
+    .returning({ id: s.prospects.id });
+  refresh();
+  return done(gone.length);
+}
+
 /** Emails them their own sign-up link for the free trial. */
 export async function sendInvite(
   id: string,
@@ -387,23 +406,3 @@ export type TimelineItem = {
   by: string | null;
   at: string;
 };
-
-/** Their timeline, newest first. */
-export async function prospectTimeline(
-  id: string,
-): Promise<ActionResult<TimelineItem[]>> {
-  const a = await admin();
-  if (!a.ok) return fail(a.error);
-  const found = await getProspect(String(id));
-  if (!found) return fail("That prospect isn't there anymore.");
-  return done(
-    found.activity.map(({ a: x, by }) => ({
-      id: x.id,
-      kind: x.kind,
-      outcome: x.outcome,
-      text: x.text,
-      by,
-      at: x.at.toISOString(),
-    })),
-  );
-}

@@ -1,0 +1,464 @@
+/* Previews: the list (Admin → Previews), the "New preview" picker, and the
+   panel on a prospect's page. */
+
+.btnIcon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.muted {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.row,
+.footRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.footRow {
+  padding-top: 2rem;
+  border-top: 1px solid var(--light2);
+}
+
+.danger {
+  color: #a2301c;
+}
+
+.soon {
+  color: #a2301c;
+}
+
+/* ── Panel: before one is made ── */
+.steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.6rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--black);
+}
+
+.stepNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 50%;
+  background-color: var(--black);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  color: var(--accent3);
+}
+
+/* ── Panel: a made preview ── */
+.linkBox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.6rem;
+  padding: 1.2rem 1.2rem 1.2rem 1.8rem;
+  border-radius: 1.6rem;
+  background-color: var(--black);
+}
+
+.linkText {
+  min-width: 0;
+  font-family: var(--IBMPlex);
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--accent3);
+  overflow-wrap: anywhere;
+}
+
+.linkActions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.4rem 1.6rem;
+  border-radius: 1.4rem;
+  border: 1px solid var(--light2);
+}
+
+.stat dt {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.stat dd {
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 2rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.statNote {
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--light2);
+}
+
+.blockTitle {
+  font-size: 2rem;
+  line-height: 1.2;
+  letter-spacing: normal;
+}
+
+.message {
+  padding: 1.4rem 1.6rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--black);
+}
+
+.events {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.eventRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 1.2rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--light);
+}
+
+.eventRow:last-child {
+  border-bottom: none;
+}
+
+.eventDot {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background-color: var(--accent3Dark);
+  transform: translateY(-0.1rem);
+}
+
+.eventText {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--black);
+}
+
+.eventWhen {
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.logins {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.login {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1rem 1rem 1rem 1.6rem;
+  border-radius: 1.4rem;
+  background-color: var(--light);
+}
+
+.loginWho {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.loginWhat {
+  font-family: var(--cdCopy);
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+/* ── The list ── */
+.listPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2.4rem;
+  border-radius: 2.4rem;
+  background-color: var(--white);
+}
+
+.tools {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+  height: 2.2rem;
+  padding: 0 0.6rem;
+  border-radius: 50px;
+  background-color: rgb(13 13 14 / 8%);
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+}
+
+[aria-pressed="true"] .count {
+  background-color: rgb(255 255 255 / 18%);
+}
+
+.rows {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.rows li + li {
+  box-shadow: inset 0 1px 0 var(--light);
+}
+
+.rowWrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.listRow,
+.pick {
+  display: grid;
+  align-items: center;
+  gap: 1.6rem;
+  width: 100%;
+  padding: 1.4rem 1.2rem;
+  border-radius: 1.6rem;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.listRow {
+  grid-template-columns:
+    minmax(22rem, 2fr) minmax(14rem, 0.9fr) minmax(16rem, 1.1fr)
+    minmax(10rem, 0.7fr) 2rem;
+}
+
+.pick {
+  grid-template-columns: minmax(0, 1fr) 2rem;
+  padding: 1.2rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .listRow:hover,
+  .pick:hover {
+    background-color: var(--light);
+  }
+}
+
+.listRow:focus-visible,
+.pick:focus-visible,
+.rowBtn:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.name {
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub,
+.cell {
+  font-family: var(--cdCopy);
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell {
+  min-width: 0;
+  color: var(--black);
+}
+
+.arrow {
+  width: 1.8rem;
+  height: 1.8rem;
+  color: var(--text);
+}
+
+.rowBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 50%;
+  background-color: var(--light);
+  color: var(--black);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.rowBtn:hover {
+  background-color: var(--light2);
+}
+
+.rowBtn svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.none {
+  padding: 2.4rem 1.2rem;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--text);
+}
+
+/* ── The picker ── */
+.pickList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  max-height: 42rem;
+  overflow-y: auto;
+  margin: 0 -1.2rem;
+}
+
+.pickList li + li {
+  box-shadow: inset 0 1px 0 var(--light);
+}
+
+.inlineLink {
+  color: var(--black);
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
+}
+
+@media screen and (max-width: 1100px) {
+  .listRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.6rem 1.2rem;
+  }
+
+  .listRow > .cell:nth-child(3),
+  .listRow > .cell:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
+  .listRow > .arrow {
+    display: none;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .listPanel {
+    padding: 1.8rem 1.6rem;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .login {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+    padding: 1.4rem 1.6rem;
+  }
+
+  .login button {
+    justify-self: start;
+  }
+
+  .eventRow {
+    grid-template-columns: 1.6rem minmax(0, 1fr);
+  }
+
+  .eventWhen {
+    grid-column: 2;
+  }
+}

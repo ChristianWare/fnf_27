@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
-import { inArray } from "drizzle-orm";
-import { db, schema as s } from "@/db";
 import { PageHead } from "@/components/Dashboard/ui/ui";
 import Stats from "@/components/Admin/Stats/Stats";
-import Prospects, {
-  type ProspectView,
-} from "@/components/Admin/Prospects/Prospects";
+import Prospects from "@/components/Admin/Prospects/Prospects";
 import { getAdmin } from "@/lib/admin";
-import { statewide, stateName } from "@/lib/leads/areas";
-import { openAreas } from "@/lib/leads/workspace";
 import {
   azDayStart,
   callsSince,
@@ -16,8 +10,8 @@ import {
   listProspects,
   markWon,
   queueOf,
-  type ProspectRow,
 } from "@/lib/prospects/store";
+import { prospectViews } from "@/lib/prospects/view";
 
 export const metadata: Metadata = { title: "Prospects" };
 
@@ -32,69 +26,14 @@ export default async function ProspectsPage() {
     today.getTime() - ((new Date(today.getTime() - 7 * 3_600_000).getUTCDay() + 6) % 7) * DAY,
   );
 
-  const [rows, goal, week, areas] = await Promise.all([
+  const [rows, goal, week] = await Promise.all([
     listProspects(),
     dailyGoal(),
     callsSince(weekStart),
-    openAreas(),
   ]);
   await markWon(rows);
 
-  const auditIds = rows.map((r) => r.auditId).filter((x): x is string => Boolean(x));
-  const audits = auditIds.length
-    ? await db
-        .select({ id: s.audits.id, score: s.audits.score, status: s.audits.status })
-        .from(s.audits)
-        .where(inArray(s.audits.id, auditIds))
-    : [];
-  const auditById = new Map(audits.map((a) => [a.id, a]));
-
-  // Whether the Leads Tool has their area: the whole state, a city we
-  // have an area for, or a state we don't cover yet.
-  const coverage = (r: ProspectRow): ProspectView["coverage"] => {
-    if (!r.state) return { tone: "gray", label: "Area unknown" };
-    if (statewide(r.state)) return { tone: "lime", label: `Covered: all of ${stateName(r.state)}` };
-    const inState = areas.filter((a) => a.state === r.state);
-    if (!inState.length) return { tone: "red", label: `No leads in ${stateName(r.state)} yet` };
-    const city = r.city?.toLowerCase();
-    const match = inState.find((a) => a.city.toLowerCase().startsWith(city ?? "~"));
-    return match
-      ? { tone: "lime", label: `Covered: ${match.name}` }
-      : { tone: "yellow", label: `Check: near ${inState.map((a) => a.name).join(" or ")}?` };
-  };
-
-  const view: ProspectView[] = rows.map((r) => {
-    const audit = r.auditId ? auditById.get(r.auditId) : undefined;
-    return {
-      id: r.id,
-      business: r.business,
-      contactName: r.contactName ?? "",
-      phone: r.phone ?? "",
-      email: r.email ?? "",
-      website: r.website ?? "",
-      mapsUrl: r.mapsUrl ?? "",
-      city: r.city ?? "",
-      state: r.state ?? "",
-      list: r.list ?? "",
-      tags: r.tags,
-      notes: r.notes,
-      rating: r.rating,
-      reviews: r.reviews,
-      stage: r.stage,
-      tries: r.tries,
-      calls: r.calls,
-      nextAt: r.nextAt?.toISOString() ?? null,
-      lastCalledAt: r.lastCalledAt?.toISOString() ?? null,
-      lastOutcome: r.lastOutcome,
-      clientId: r.clientId,
-      audit: audit
-        ? { id: audit.id, score: audit.status === "DONE" ? audit.score : null }
-        : null,
-      inviteSentAt: r.inviteSentAt?.toISOString() ?? null,
-      coverage: coverage(r),
-      createdAt: r.createdAt.toISOString(),
-    };
-  });
+  const view = await prospectViews(rows);
 
   const { due, fresh } = queueOf(rows, now, goal);
   const calledToday = week.filter((c) => c.at >= today).length;

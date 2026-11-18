@@ -2,9 +2,15 @@
 
 // Admin → Prospects: today's calls (follow-ups first, then new ones up to
 // your daily goal), everyone on your lists, and importing more. Opening
-// one shows its card, where the call is logged.
+// one goes to their page, where the call is logged.
+//
+// Tick prospects to delete them, one or many at a time. Coming back from a
+// prospect's page puts you where you were: the same tab, search, filters
+// and scroll.
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/components/Dashboard/icons";
 import { Pill, Progress, btn, ui } from "@/components/Dashboard/ui/ui";
 import { useAction } from "@/components/Dashboard/useAction";
@@ -13,45 +19,56 @@ import {
   OUTCOME_LABELS,
   PROSPECT_STAGES,
   STAGE_LABELS,
-  type CallOutcome,
   type ProspectStage,
 } from "@/lib/prospects/kinds";
-import type { Tone } from "@/components/Dashboard/ui/ui";
-import { saveGoal } from "@/app/admin/prospects/actions";
-import ProspectCard from "./ProspectCard";
+import { deleteProspects, saveGoal } from "@/app/admin/prospects/actions";
+import type { ProspectView } from "@/lib/prospects/view";
 import ImportProspects from "./ImportProspects";
 import { stageTone } from "./tones";
 import styles from "./Prospects.module.css";
 
-export type ProspectView = {
-  id: string;
-  business: string;
-  contactName: string;
-  phone: string;
-  email: string;
-  website: string;
-  mapsUrl: string;
-  city: string;
-  state: string;
-  list: string;
-  tags: string[];
-  notes: string;
-  rating: number | null;
-  reviews: number | null;
-  stage: ProspectStage;
-  tries: number;
-  calls: number;
-  nextAt: string | null;
-  lastCalledAt: string | null;
-  lastOutcome: CallOutcome | null;
-  clientId: string | null;
-  audit: { id: string; score: number | null } | null;
-  inviteSentAt: string | null;
-  coverage: { tone: Tone; label: string };
-  createdAt: string;
-};
+export type { ProspectView };
 
 type Tab = "TODAY" | "ALL" | "IMPORT";
+
+const CLOSED: ProspectStage[] = ["WON", "LOST", "PARKED", "DO_NOT_CALL"];
+
+const FILTERS: { key: "OPEN" | "ALL" | ProspectStage; label: string }[] = [
+  { key: "OPEN", label: "Still working" },
+  { key: "ALL", label: "All" },
+  ...PROSPECT_STAGES.map((s) => ({ key: s, label: STAGE_LABELS[s] })),
+];
+
+type FilterKey = (typeof FILTERS)[number]["key"];
+
+/* ── Where you were, kept for when you come back from a prospect ── */
+
+const VIEW_KEY = "fnf:prospects:view";
+
+type SavedView = {
+  tab: Tab;
+  query: string;
+  filter: FilterKey;
+  list: string;
+  scroll: number;
+};
+
+function readView(): Partial<SavedView> | null {
+  try {
+    const raw = sessionStorage.getItem(VIEW_KEY);
+    return raw ? (JSON.parse(raw) as Partial<SavedView>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeView(v: SavedView) {
+  try {
+    sessionStorage.setItem(VIEW_KEY, JSON.stringify(v));
+  } catch {
+    // Private mode or storage blocked: the list just opens fresh.
+  }
+}
 
 export default function Prospects({
   rows,
@@ -68,19 +85,69 @@ export default function Prospects({
   now: string;
   lists: string[];
 }) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>(rows.length ? "TODAY" : "IMPORT");
-  const [openId, setOpenId] = useState<string | null>(null);
-  // The queue as it was when you opened the first card, so a logged call
-  // doesn't make the list jump under you.
-  const [order, setOrder] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<FilterKey>("OPEN");
+  const [list, setList] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const byId = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
-  const open = openId ? (byId.get(openId) ?? null) : null;
-  const inQueue = openId ? order.includes(openId) : false;
+  const restored = useRef(false);
 
-  const next = () => {
-    const i = order.indexOf(openId ?? "");
-    const after = order.slice(i + 1).find((id) => byId.has(id));
-    setOpenId(after ?? null);
+  // Back from a prospect's page: the same tab, search, filters and scroll.
+  useEffect(() => {
+    if (restored.current) return;
+    restored.current = true;
+    const saved = readView();
+    if (!saved) return;
+    /* eslint-disable react-hooks/set-state-in-effect -- read once, after
+       hydration, from storage the server can't see */
+    if (saved.tab && (saved.tab !== "IMPORT" || !rows.length)) setTab(saved.tab);
+    if (typeof saved.query === "string") setQuery(saved.query);
+    if (saved.filter) setFilter(saved.filter);
+    if (typeof saved.list === "string") setList(saved.list);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    const y = Number(saved.scroll) || 0;
+    if (y > 0) requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)));
+  }, [rows.length]);
+
+  /** Remember where we are, then go to their page. */
+  const remember = () => writeView({ tab, query, filter, list, scroll: window.scrollY });
+  const openPage = (id: string) => {
+    remember();
+    router.push(`/admin/prospects/${id}`);
+  };
+
+  const switchTab = (t: Tab) => {
+    setTab(t);
+    setSelected(new Set());
+  };
+
+  const toggle = (id: string) =>
+    setSelected((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const setMany = (ids: string[], on: boolean) =>
+    setSelected((cur) => {
+      const next = new Set(cur);
+      for (const id of ids) {
+        if (on) next.add(id);
+        else next.delete(id);
+      }
+      return next;
+    });
+
+  const pick: Picking = {
+    selected,
+    toggle,
+    setMany,
+    clear: () => setSelected(new Set()),
+    remember,
+    openPage,
   };
 
   return (
@@ -98,7 +165,7 @@ export default function Prospects({
             type='button'
             aria-pressed={tab === key}
             className={ui.chip}
-            onClick={() => setTab(key)}
+            onClick={() => switchTab(key)}
           >
             {label}
             {count !== null && <span className={styles.count}>{count}</span>}
@@ -113,11 +180,8 @@ export default function Prospects({
           goal={goal}
           calledToday={calledToday}
           now={now}
-          onOpen={(id) => {
-            if (!order.includes(id)) setOrder([...queue.due, ...queue.fresh]);
-            setOpenId(id);
-          }}
-          onImport={() => setTab("IMPORT")}
+          pick={pick}
+          onImport={() => switchTab("IMPORT")}
         />
       )}
       {tab === "ALL" && (
@@ -125,23 +189,29 @@ export default function Prospects({
           rows={rows}
           lists={lists}
           now={now}
-          onOpen={(id) => {
-            setOrder([]);
-            setOpenId(id);
-          }}
+          query={query}
+          setQuery={setQuery}
+          filter={filter}
+          setFilter={setFilter}
+          list={list}
+          setList={setList}
+          pick={pick}
         />
       )}
-      {tab === "IMPORT" && <ImportProspects lists={lists} onDone={() => setTab("TODAY")} />}
-
-      <ProspectCard
-        prospect={open}
-        now={now}
-        onClose={() => setOpenId(null)}
-        onNext={inQueue ? next : undefined}
-      />
+      {tab === "IMPORT" && <ImportProspects lists={lists} onDone={() => switchTab("TODAY")} />}
     </section>
   );
 }
+
+type Picking = {
+  selected: Set<string>;
+  toggle: (id: string) => void;
+  setMany: (ids: string[], on: boolean) => void;
+  clear: () => void;
+  /** Keep the list's place before leaving it. */
+  remember: () => void;
+  openPage: (id: string) => void;
+};
 
 function Today({
   due,
@@ -149,7 +219,7 @@ function Today({
   goal,
   calledToday,
   now,
-  onOpen,
+  pick,
   onImport,
 }: {
   due: ProspectView[];
@@ -157,12 +227,13 @@ function Today({
   goal: number;
   calledToday: number;
   now: string;
-  onOpen: (id: string) => void;
+  pick: Picking;
   onImport: () => void;
 }) {
   const { run, pending } = useAction();
   const [editGoal, setEditGoal] = useState(false);
   const [value, setValue] = useState(String(goal));
+  const all = [...due, ...fresh];
 
   return (
     <div className={styles.today}>
@@ -208,16 +279,18 @@ function Today({
         <Progress value={calledToday} max={goal} label='Calls today' tone={calledToday >= goal ? "lime" : "black"} />
       </div>
 
+      {all.length > 0 && <SelectBar shown={all} pick={pick} />}
+
       {due.length > 0 && (
         <div className={styles.group}>
           <h2 className={styles.groupTitle}>Call backs and follow-ups</h2>
-          <List rows={due} now={now} onOpen={onOpen} showNext />
+          <List rows={due} now={now} pick={pick} showNext />
         </div>
       )}
       {fresh.length > 0 && (
         <div className={styles.group}>
           <h2 className={styles.groupTitle}>New to call</h2>
-          <List rows={fresh} now={now} onOpen={onOpen} />
+          <List rows={fresh} now={now} pick={pick} />
         </div>
       )}
       {!due.length && !fresh.length && (
@@ -232,29 +305,29 @@ function Today({
   );
 }
 
-const CLOSED: ProspectStage[] = ["WON", "LOST", "PARKED", "DO_NOT_CALL"];
-
-const FILTERS: { key: "OPEN" | "ALL" | ProspectStage; label: string }[] = [
-  { key: "OPEN", label: "Still working" },
-  { key: "ALL", label: "All" },
-  ...PROSPECT_STAGES.map((s) => ({ key: s, label: STAGE_LABELS[s] })),
-];
-
 function Everyone({
   rows,
   lists,
   now,
-  onOpen,
+  query,
+  setQuery,
+  filter,
+  setFilter,
+  list,
+  setList,
+  pick,
 }: {
   rows: ProspectView[];
   lists: string[];
   now: string;
-  onOpen: (id: string) => void;
+  query: string;
+  setQuery: (v: string) => void;
+  filter: FilterKey;
+  setFilter: (v: FilterKey) => void;
+  list: string;
+  setList: (v: string) => void;
+  pick: Picking;
 }) {
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("OPEN");
-  const [list, setList] = useState("");
-
   const counts = useMemo(() => {
     const out: Record<string, number> = { ALL: rows.length, OPEN: 0 };
     for (const r of rows) {
@@ -322,9 +395,75 @@ function Everyone({
         ))}
       </div>
       {shown.length ? (
-        <List rows={shown} now={now} onOpen={onOpen} showNext />
+        <>
+          <SelectBar shown={shown} pick={pick} />
+          <List rows={shown} now={now} pick={pick} showNext />
+        </>
       ) : (
         <p className={styles.none}>{rows.length ? "Nobody matches." : "No prospects yet. Import a list to start."}</p>
+      )}
+    </div>
+  );
+}
+
+/** Select all of what's shown, and delete what's ticked. Only ticked
+ *  prospects that are still shown are deleted, so a search can't hide one. */
+function SelectBar({ shown, pick }: { shown: ProspectView[]; pick: Picking }) {
+  const { run, pending } = useAction();
+  const ids = shown.map((r) => r.id);
+  const picked = ids.filter((id) => pick.selected.has(id));
+  const all = picked.length === ids.length && ids.length > 0;
+  const some = picked.length > 0 && !all;
+  const boxRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (boxRef.current) boxRef.current.indeterminate = some;
+  }, [some]);
+
+  const remove = () => {
+    const names = shown.filter((r) => pick.selected.has(r.id)).map((r) => r.business);
+    const what =
+      names.length === 1 ? names[0] : `these ${names.length} prospects`;
+    if (!window.confirm(`Delete ${what} and their timelines? This can't be undone.`)) return;
+    run(
+      () => deleteProspects(picked),
+      (n) => {
+        pick.clear();
+        const count = n ?? picked.length;
+        return {
+          message: count === 1 ? `Deleted ${names[0]}` : `Deleted ${count} prospects`,
+        };
+      },
+    );
+  };
+
+  return (
+    <div className={`${styles.selectBar} ${picked.length ? styles.selectBarOn : ""}`}>
+      <label className={styles.selectAll}>
+        <input
+          ref={boxRef}
+          type='checkbox'
+          className={styles.checkInput}
+          checked={all}
+          onChange={() => pick.setMany(ids, !all)}
+        />
+        <span className={styles.checkBox} aria-hidden='true'>
+          <Icon name={some ? "close" : "check"} />
+        </span>
+        <span className={styles.selectText}>
+          {picked.length ? `${picked.length} selected` : `Select all ${ids.length}`}
+        </span>
+      </label>
+      {picked.length > 0 && (
+        <div className={styles.selectActions}>
+          <button type='button' className={btn("light", true)} onClick={pick.clear} disabled={pending}>
+            Clear
+          </button>
+          <button type='button' className={`${btn("black", true)} ${styles.deleteBtn}`} onClick={remove} disabled={pending}>
+            <Icon name='trash' className={styles.btnIcon} />
+            Delete {picked.length === 1 ? "1 prospect" : `${picked.length} prospects`}
+          </button>
+        </div>
       )}
     </div>
   );
@@ -333,21 +472,34 @@ function Everyone({
 function List({
   rows,
   now,
-  onOpen,
+  pick,
   showNext,
 }: {
   rows: ProspectView[];
   now: string;
-  onOpen: (id: string) => void;
+  pick: Picking;
   showNext?: boolean;
 }) {
   return (
     <ul className={styles.rows}>
       {rows.map((r) => {
         const late = r.nextAt && r.nextAt < now;
+        const on = pick.selected.has(r.id);
         return (
-          <li key={r.id} className={styles.rowWrap}>
-            <button type='button' className={styles.row} onClick={() => onOpen(r.id)}>
+          <li key={r.id} className={`${styles.rowWrap} ${on ? styles.rowPicked : ""}`}>
+            <label className={styles.pickBox}>
+              <input
+                type='checkbox'
+                className={styles.checkInput}
+                checked={on}
+                onChange={() => pick.toggle(r.id)}
+                aria-label={`Select ${r.business}`}
+              />
+              <span className={styles.checkBox} aria-hidden='true'>
+                <Icon name='check' />
+              </span>
+            </label>
+            <Link href={`/admin/prospects/${r.id}`} className={styles.row} onClick={pick.remember}>
               <span className={styles.who}>
                 <span className={styles.name}>{r.business}</span>
                 <span className={styles.sub}>
@@ -372,16 +524,18 @@ function List({
                 {showNext && r.nextAt ? `${fmtShort(r.nextAt)}, ${fmtTime(r.nextAt)}` : ""}
               </span>
               <Icon name='arrow' className={styles.arrow} />
-            </button>
-            {r.phone && r.stage !== "DO_NOT_CALL" && (
+            </Link>
+            {r.phone && r.stage !== "DO_NOT_CALL" ? (
               <a
                 className={styles.call}
                 href={`tel:${r.phone.replace(/[^\d+]/g, "")}`}
                 aria-label={`Call ${r.business}`}
-                onClick={() => onOpen(r.id)}
+                onClick={() => pick.openPage(r.id)}
               >
                 <Icon name='phone' />
               </a>
+            ) : (
+              <span className={styles.callSpace} aria-hidden='true' />
             )}
           </li>
         );

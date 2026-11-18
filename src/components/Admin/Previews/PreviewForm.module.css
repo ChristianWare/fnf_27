@@ -1,0 +1,547 @@
+/* Make a preview: the choices on the left, a black summary of what gets
+   made on the right (it stays in view as you scroll). One column on
+   tablets and phones, the summary last. */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(30rem, 38rem);
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.help {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.btnIcon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* ── Their business ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.6rem;
+}
+
+.grid :global(label),
+.daysRow :global(label) {
+  margin: 0;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+/* ── Market ── */
+.markets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.market {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 1.6rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+  box-shadow: inset 0 0 0 1px transparent;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .market:hover {
+    background-color: var(--light2);
+  }
+}
+
+.market[aria-checked="true"] {
+  background-color: var(--white);
+  box-shadow: inset 0 0 0 2px var(--black);
+}
+
+.market:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.marketName {
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--black);
+}
+
+.marketNote {
+  font-family: var(--cdCopy);
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.marketTag {
+  margin-top: 0.4rem;
+}
+
+.marketDetail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.4rem;
+  padding: 2rem;
+  border-radius: 1.6rem;
+  border: 1px solid var(--light2);
+}
+
+.detailCol {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  min-width: 0;
+}
+
+.airports {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.airports li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 1rem;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--black);
+}
+
+.code {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  color: var(--black);
+  min-width: 3.6rem;
+}
+
+.kind {
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.areaList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.area {
+  padding: 0.5rem 1.1rem;
+  border-radius: 50px;
+  background-color: var(--light);
+  font-family: var(--cdCopy);
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--black);
+}
+
+/* ── Services and fleet ── */
+.checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.check {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  min-height: 5.6rem;
+  padding: 1rem 1.4rem;
+  border-radius: 1.4rem;
+  background-color: var(--light);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .check:hover {
+    background-color: var(--light2);
+  }
+}
+
+.checkInput {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.checkBox {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.7rem;
+  background-color: var(--white);
+  box-shadow: inset 0 0 0 1.5px var(--textDarkiii);
+  color: transparent;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.checkBox svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.checkInput:checked + .checkBox {
+  background-color: var(--black);
+  box-shadow: none;
+  color: var(--accent3);
+}
+
+.checkInput:focus-visible + .checkBox {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.checkText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--black);
+}
+
+.checkNote {
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* ── Photos ── */
+.photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.8rem;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 1.4rem;
+  overflow: hidden;
+  background-color: var(--light);
+}
+
+.photoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoRemove {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  background-color: rgb(13 13 14 / 75%);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.photoRemove svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.photoRemove:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
+
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  aspect-ratio: 4 / 3;
+  border-radius: 1.4rem;
+  border: 1.5px dashed var(--textDarkiii);
+  background-color: var(--light);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .drop:hover {
+    border-color: var(--black);
+  }
+}
+
+.drop:focus-within {
+  border-color: var(--black);
+  background-color: var(--white);
+}
+
+.dropIcon {
+  width: 2.2rem;
+  height: 2.2rem;
+  color: var(--black);
+}
+
+.dropText {
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 16px;
+  color: var(--black);
+}
+
+.dropNote {
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* ── Address and length ── */
+.slug {
+  display: flex;
+  align-items: center;
+  min-height: 5.2rem;
+  padding: 0 1.6rem;
+  border-radius: 1.2rem;
+  background-color: var(--light);
+  border: 1px solid transparent;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--text);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.slug:focus-within {
+  border-color: var(--black);
+  background-color: var(--white);
+}
+
+.slugPre,
+.slugPost {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.slugInput {
+  flex: 1;
+  min-width: 6rem;
+  height: 5rem;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  color: var(--black);
+}
+
+.daysRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+/* ── Summary ── */
+.side {
+  position: sticky;
+  top: 2rem;
+  min-width: 0;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 3.2rem;
+  border-radius: 2.4rem;
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.summaryEyebrow {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--accent3);
+}
+
+.summaryName {
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 2.6rem;
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+  text-transform: uppercase;
+  color: var(--white);
+  overflow-wrap: anywhere;
+}
+
+.summaryHost {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--textDarkiii);
+  overflow-wrap: anywhere;
+}
+
+.made {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.6rem 0;
+  border-top: 1px solid rgb(255 255 255 / 14%);
+  border-bottom: 1px solid rgb(255 255 255 / 14%);
+}
+
+.made li {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--white);
+}
+
+.madeIcon {
+  flex-shrink: 0;
+  width: 1.8rem;
+  height: 1.8rem;
+  margin-top: 0.1rem;
+  color: var(--accent3);
+}
+
+.summaryFacts {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.summaryFacts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.summaryFacts dt {
+  font-family: var(--IBMPlex);
+  font-size: 14px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--textDarkiii);
+}
+
+.summaryFacts dd {
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: right;
+  color: var(--white);
+}
+
+.submit {
+  width: 100%;
+}
+
+.summaryNote {
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--textDarkiii);
+}
+
+@media screen and (max-width: 1200px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .side {
+    position: static;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .markets {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .marketDetail {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 1.6rem;
+  }
+
+  .summary {
+    padding: 2.4rem;
+  }
+}
+
+@media screen and (max-width: 568px) {
+  .grid,
+  .checks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wide {
+    grid-column: auto;
+  }
+
+  /* The name gets its own line; the domain sits under it. */
+  .slug {
+    flex-wrap: wrap;
+    padding: 0.4rem 1.6rem 1rem;
+  }
+
+  .slugPre {
+    display: none;
+  }
+
+  .slugInput {
+    flex-basis: 100%;
+    height: 4.4rem;
+  }
+
+  .summary {
+    border-radius: 2rem;
+  }
+}
