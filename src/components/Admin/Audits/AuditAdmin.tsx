@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { btn, ui } from "@/components/Dashboard/ui/ui";
+import ConfirmDialog from "@/components/Dashboard/ConfirmDialog/ConfirmDialog";
 import { useAction } from "@/components/Dashboard/useAction";
 import { FOLLOW_UPS, FOLLOW_UP_LABELS, type FollowUp } from "@/lib/audit/kinds";
 import {
@@ -38,6 +39,7 @@ export default function AuditAdmin({
   const [status, setStatus] = useState(followUp);
   const [text, setText] = useState(notes);
   const [copied, setCopied] = useState(false);
+  const [asking, setAsking] = useState<"sample" | "delete" | null>(null);
 
   async function copy() {
     try {
@@ -50,6 +52,17 @@ export default function AuditAdmin({
       setCopied(false);
     }
   }
+
+  const toggleSample = () =>
+    run(
+      () => setSample(id, !sample),
+      () => {
+        setAsking(null);
+        return {
+          message: sample ? "No longer the sample" : "Now the sample report",
+        };
+      },
+    );
 
   return (
     <section className={styles.panel} aria-label='Follow-up'>
@@ -129,23 +142,7 @@ export default function AuditAdmin({
             type='button'
             className={btn("light")}
             disabled={pending}
-            onClick={() => {
-              if (
-                !sample &&
-                !window.confirm(
-                  "The sample takes out their name, website, address, phone and anything quoted from their site, but keeps their review count, rating and where they rank, which someone could look up. Use it for an operator who's fine being shown?",
-                )
-              )
-                return;
-              run(
-                () => setSample(id, !sample),
-                () => ({
-                  message: sample
-                    ? "No longer the sample"
-                    : "Now the sample report",
-                }),
-              );
-            }}
+            onClick={() => (sample ? toggleSample() : setAsking("sample"))}
           >
             {sample ? "Stop using as the sample" : "Use as the sample report"}
           </button>
@@ -154,25 +151,46 @@ export default function AuditAdmin({
           type='button'
           className={btn("outline")}
           disabled={pending}
-          onClick={() => {
-            if (
-              !window.confirm(
-                "Delete this audit for good? Its link will stop working.",
-              )
-            )
-              return;
-            run(
-              () => removeAudit(id),
-              () => {
-                router.push("/admin/audits");
-                return { message: "Deleted" };
-              },
-            );
-          }}
+          onClick={() => setAsking("delete")}
         >
           Delete
         </button>
       </div>
+
+      <ConfirmDialog
+        open={asking === "sample"}
+        icon='eye'
+        title='Use this as the sample report?'
+        text="The sample takes out their name, website, address, phone and anything quoted from their site, but keeps their review count, rating and where they rank, which someone could look up. Use it for an operator who's fine being shown."
+        confirmLabel='Use as the sample'
+        cancelLabel='Not this one'
+        pendingLabel='Saving…'
+        pending={pending}
+        onConfirm={toggleSample}
+        onClose={() => setAsking(null)}
+      />
+      <ConfirmDialog
+        open={asking === "delete"}
+        tone='danger'
+        icon='trash'
+        title='Delete this audit?'
+        text="It's gone for good, and its link stops working."
+        confirmLabel='Delete'
+        cancelLabel='Keep it'
+        pendingLabel='Deleting…'
+        pending={pending}
+        onConfirm={() =>
+          run(
+            () => removeAudit(id),
+            () => {
+              setAsking(null);
+              router.push("/admin/audits");
+              return { message: "Deleted" };
+            },
+          )
+        }
+        onClose={() => setAsking(null)}
+      />
     </section>
   );
 }

@@ -23,6 +23,7 @@ import {
 } from "@/lib/prospects/kinds";
 import { deleteProspects, saveGoal } from "@/app/admin/prospects/actions";
 import type { ProspectView } from "@/lib/prospects/view";
+import ConfirmDialog from "@/components/Dashboard/ConfirmDialog/ConfirmDialog";
 import ImportProspects from "./ImportProspects";
 import { stageTone } from "./tones";
 import styles from "./Prospects.module.css";
@@ -415,19 +416,20 @@ function SelectBar({ shown, pick }: { shown: ProspectView[]; pick: Picking }) {
   const all = picked.length === ids.length && ids.length > 0;
   const some = picked.length > 0 && !all;
   const boxRef = useRef<HTMLInputElement>(null);
+  // Who's being deleted, kept while the dialog closes so it doesn't change
+  // under you.
+  const [asking, setAsking] = useState(false);
+  const [names, setNames] = useState<string[]>([]);
 
   useEffect(() => {
     if (boxRef.current) boxRef.current.indeterminate = some;
   }, [some]);
 
-  const remove = () => {
-    const names = shown.filter((r) => pick.selected.has(r.id)).map((r) => r.business);
-    const what =
-      names.length === 1 ? names[0] : `these ${names.length} prospects`;
-    if (!window.confirm(`Delete ${what} and their timelines? This can't be undone.`)) return;
+  const remove = () =>
     run(
       () => deleteProspects(picked),
       (n) => {
+        setAsking(false);
         pick.clear();
         const count = n ?? picked.length;
         return {
@@ -435,37 +437,62 @@ function SelectBar({ shown, pick }: { shown: ProspectView[]; pick: Picking }) {
         };
       },
     );
-  };
 
+  // The dialog sits outside the sticky bar, so it isn't caught under it.
   return (
-    <div className={`${styles.selectBar} ${picked.length ? styles.selectBarOn : ""}`}>
-      <label className={styles.selectAll}>
-        <input
-          ref={boxRef}
-          type='checkbox'
-          className={styles.checkInput}
-          checked={all}
-          onChange={() => pick.setMany(ids, !all)}
-        />
-        <span className={styles.checkBox} aria-hidden='true'>
-          <Icon name={some ? "close" : "check"} />
-        </span>
-        <span className={styles.selectText}>
-          {picked.length ? `${picked.length} selected` : `Select all ${ids.length}`}
-        </span>
-      </label>
-      {picked.length > 0 && (
-        <div className={styles.selectActions}>
-          <button type='button' className={btn("light", true)} onClick={pick.clear} disabled={pending}>
-            Clear
-          </button>
-          <button type='button' className={`${btn("black", true)} ${styles.deleteBtn}`} onClick={remove} disabled={pending}>
-            <Icon name='trash' className={styles.btnIcon} />
-            Delete {picked.length === 1 ? "1 prospect" : `${picked.length} prospects`}
-          </button>
-        </div>
-      )}
-    </div>
+    <>
+      <div className={`${styles.selectBar} ${picked.length ? styles.selectBarOn : ""}`}>
+        <label className={styles.selectAll}>
+          <input
+            ref={boxRef}
+            type='checkbox'
+            className={styles.checkInput}
+            checked={all}
+            onChange={() => pick.setMany(ids, !all)}
+          />
+          <span className={styles.checkBox} aria-hidden='true'>
+            <Icon name={some ? "close" : "check"} />
+          </span>
+          <span className={styles.selectText}>
+            {picked.length ? `${picked.length} selected` : `Select all ${ids.length}`}
+          </span>
+        </label>
+        {picked.length > 0 && (
+          <div className={styles.selectActions}>
+            <button type='button' className={btn("light", true)} onClick={pick.clear} disabled={pending}>
+              Clear
+            </button>
+            <button
+              type='button'
+              className={`${btn("black", true)} ${styles.deleteBtn}`}
+              onClick={() => {
+                setNames(shown.filter((r) => pick.selected.has(r.id)).map((r) => r.business));
+                setAsking(true);
+              }}
+              disabled={pending}
+            >
+              <Icon name='trash' className={styles.btnIcon} />
+              Delete {picked.length === 1 ? "1 prospect" : `${picked.length} prospects`}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <ConfirmDialog
+        open={asking}
+        tone='danger'
+        icon='trash'
+        title={names.length === 1 ? `Delete ${names[0]}?` : `Delete ${names.length} prospects?`}
+        text={`${names.length === 1 ? "Their timeline goes" : "Their timelines go"} too, and this can't be undone. An account someone signed up for stays.`}
+        items={names.length > 1 ? names : undefined}
+        confirmLabel={names.length === 1 ? "Delete" : `Delete ${names.length} prospects`}
+        cancelLabel='Keep them'
+        pendingLabel='Deleting…'
+        pending={pending}
+        onConfirm={remove}
+        onClose={() => setAsking(false)}
+      />
+    </>
   );
 }
 

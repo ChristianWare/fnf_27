@@ -42,6 +42,7 @@ import {
   type TimelineItem,
 } from "@/app/admin/prospects/actions";
 import PreviewPanel from "@/components/Admin/Previews/PreviewPanel";
+import ConfirmDialog from "@/components/Dashboard/ConfirmDialog/ConfirmDialog";
 import { stageTone } from "./tones";
 import styles from "./ProspectPage.module.css";
 
@@ -139,8 +140,8 @@ export default function ProspectPage({
       },
     );
 
-  const remove = () => {
-    if (!window.confirm(`Delete ${p.business} and their timeline? This can't be undone.`)) return;
+  const [asking, setAsking] = useState(false);
+  const remove = () =>
     run(
       () => deleteProspect(p.id),
       () => {
@@ -148,7 +149,6 @@ export default function ProspectPage({
         return { message: `Deleted ${p.business}` };
       },
     );
-  };
 
   const goalMet = queue.calledToday >= queue.goal;
 
@@ -591,7 +591,7 @@ export default function ProspectPage({
             text='Takes them and their timeline off your lists for good. An account they signed up for stays.'
           >
             <div className={styles.row}>
-              <button type='button' className={`${btn("outline")} ${styles.danger}`} disabled={pending} onClick={remove}>
+              <button type='button' className={`${btn("outline")} ${styles.danger}`} disabled={pending} onClick={() => setAsking(true)}>
                 <Icon name='trash' className={styles.btnIcon} />
                 Delete {p.business}
               </button>
@@ -599,6 +599,20 @@ export default function ProspectPage({
           </Panel>
         </aside>
       </div>
+
+      <ConfirmDialog
+        open={asking}
+        tone='danger'
+        icon='trash'
+        title={`Delete ${p.business}?`}
+        text="Their timeline goes too, and this can't be undone. An account they signed up for stays."
+        confirmLabel='Delete'
+        cancelLabel='Keep them'
+        pendingLabel='Deleting…'
+        pending={pending}
+        onConfirm={remove}
+        onClose={() => setAsking(false)}
+      />
     </div>
   );
 }
