@@ -8,7 +8,11 @@ import type { PlatformDemo } from "./preview";
 
 export class PlatformError extends Error {}
 
-const baseUrl = () => (process.env.DEMO_PLATFORM_URL ?? "").trim().replace(/\/+$/, "");
+const baseUrl = () =>
+  (process.env.DEMO_PLATFORM_URL ?? "")
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .replace(/\/+$/, "");
 const secret = () => (process.env.DEMO_PLATFORM_SECRET ?? "").trim();
 
 /** Both settings are in place. */
@@ -17,17 +21,44 @@ export const platformReady = () => Boolean(baseUrl() && secret().length >= 16);
 export const NOT_SET_UP =
   "The demo platform isn't connected yet. Add DEMO_PLATFORM_URL and DEMO_PLATFORM_SECRET to this site's settings.";
 
+/** Why a request never got an answer, in words. */
+function unreachable(e: unknown) {
+  const err = e as { name?: string; message?: string; cause?: { code?: string; message?: string } };
+  const code = err?.cause?.code ?? "";
+  const why =
+    err?.name === "TimeoutError"
+      ? "it didn't answer within 90 seconds"
+      : code === "ENOTFOUND"
+        ? `there's no site at ${baseUrl()}`
+        : code === "ECONNREFUSED"
+          ? `nothing is running at ${baseUrl()}`
+          : code
+            ? `${code}${err?.cause?.message ? `: ${err.cause.message}` : ""}`
+            : (err?.message ?? "no answer");
+  console.error(`[demos] couldn't reach ${baseUrl()}:`, e);
+  return new PlatformError(`Couldn't reach the demo platform (${why}). Check DEMO_PLATFORM_URL.`);
+}
+
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!platformReady()) throw new PlatformError(NOT_SET_UP);
+  const url = `${baseUrl()}/api/platform${path}`;
+  try {
+    new URL(url);
+  } catch {
+    throw new PlatformError(
+      `DEMO_PLATFORM_URL isn't a web address (it's "${baseUrl()}"). It should look like https://fnf-demos.vercel.app`,
+    );
+  }
   let res: Response;
   try {
-    res = await fetch(`${baseUrl()}/api/platform${path}`, {
+    res = await fetch(url, {
       ...init,
       headers: { ...init.headers, Authorization: `Bearer ${secret()}` },
       cache: "no-store",
+      signal: AbortSignal.timeout(90_000),
     });
-  } catch {
-    throw new PlatformError("Couldn't reach the demo platform. Try again in a minute.");
+  } catch (e) {
+    throw unreachable(e);
   }
   const body = (await res.json().catch(() => ({}))) as { error?: string } & T;
   if (!res.ok) {
