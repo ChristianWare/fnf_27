@@ -13,7 +13,12 @@ const baseUrl = () =>
     .trim()
     .replace(/^["']|["']$/g, "")
     .replace(/\/+$/, "");
-const secret = () => (process.env.DEMO_PLATFORM_SECRET ?? "").trim();
+/** The shared secret, ignoring spaces or quotes pasted around it. */
+export const secret = () =>
+  (process.env.DEMO_PLATFORM_SECRET ?? "")
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .trim();
 
 /** Both settings are in place. */
 export const platformReady = () => Boolean(baseUrl() && secret().length >= 16);

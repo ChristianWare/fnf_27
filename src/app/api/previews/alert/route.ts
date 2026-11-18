@@ -10,11 +10,12 @@ import { alertAdmins } from "@/lib/server/notify";
 import { url } from "@/lib/server/config";
 import { logActivity } from "@/lib/prospects/store";
 import { alertMessage, readAlert } from "@/lib/demos/alerts";
+import { secret as platformSecret } from "@/lib/demos/platform";
 
 function authorized(request: Request) {
-  const secret = (process.env.DEMO_PLATFORM_SECRET ?? "").trim();
+  const secret = platformSecret();
   if (secret.length < 16) return false;
-  const given = Buffer.from((request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, ""));
+  const given = Buffer.from((request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim());
   const expected = Buffer.from(secret);
   return given.length === expected.length && timingSafeEqual(given, expected);
 }
