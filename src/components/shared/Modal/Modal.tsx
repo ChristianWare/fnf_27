@@ -18,6 +18,13 @@ interface Props {
   size?: "default" | "fit";
   /** What a screen reader calls the dialog. */
   label?: string;
+  /**
+   * The close button sits over the content's top-right corner, so the
+   * content runs the full width under it. Without it, the content keeps
+   * clear of the button down its whole right side. The content's title
+   * leaves room for the button (ui.modalTitle does).
+   */
+  closeOver?: boolean;
 }
 
 export default function Modal({
@@ -27,6 +34,7 @@ export default function Modal({
   variant = "light",
   size = "default",
   label,
+  closeOver = false,
 }: Props) {
   const scrollRef = useRef(0);
   const htmlPrev = useRef<string>("");
@@ -81,6 +89,7 @@ export default function Modal({
   const stop = (e: MouseEvent) => e.stopPropagation();
   const dark = variant === "dark" ? styles.dark : "";
   const fit = size === "fit" ? styles.fit : "";
+  const over = closeOver ? styles.over : "";
 
   return (
     <div
@@ -90,7 +99,7 @@ export default function Modal({
     >
       <div
         id={dialogId}
-        className={`${styles.dialog} ${dark} ${fit} ${isOpen ? styles.open : styles.closed}`}
+        className={`${styles.dialog} ${dark} ${fit} ${over} ${isOpen ? styles.open : styles.closed}`}
         onClick={stop}
         role='dialog'
         aria-modal='true'

@@ -64,6 +64,7 @@ export default function ConfirmDialog({
       isOpen={open}
       onClose={() => !pending && onClose()}
       size='fit'
+      closeOver
       label={title}
     >
       <div className={`${ui.modalBody} ${styles.body}`}>
@@ -80,7 +81,7 @@ export default function ConfirmDialog({
             {more > 0 && <li className={styles.more}>and {more} more</li>}
           </ul>
         )}
-        <div className={ui.modalActions}>
+        <div className={`${ui.modalActions} ${styles.actions}`}>
           <button
             type='button'
             className={`${ui.btn} ${ui.btn_light}`}

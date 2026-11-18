@@ -78,6 +78,13 @@
   width: auto;
 }
 
+/* closeOver: the content starts at the top and runs the full width, with
+   the close button over its top-right corner (the button's negative bottom
+   margin means clearing it costs no height). */
+.dialog.over .body {
+  clear: both;
+}
+
 @media (max-width: 768px) {
   .dialog,
   .dialog.fit {

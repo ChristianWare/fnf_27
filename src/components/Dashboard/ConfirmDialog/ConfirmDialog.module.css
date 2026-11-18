@@ -65,8 +65,17 @@
   }
 }
 
+/* Phones: the two choices full width, the one that does it on top. */
 @media screen and (max-width: 568px) {
   .body {
     width: auto;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
   }
 }
