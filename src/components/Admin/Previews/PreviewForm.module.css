@@ -164,99 +164,57 @@
   color: var(--black);
 }
 
-/* ── Services and fleet ── */
-.checks {
+/* ── Photos: the home and About photos, default or theirs ── */
+.slots {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
+  gap: 1.6rem;
 }
 
-.check {
-  position: relative;
+.slot {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 1.2rem;
-  min-height: 5.6rem;
-  padding: 1rem 1.4rem;
-  border-radius: 1.4rem;
-  background-color: var(--light);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
+  min-width: 0;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .check:hover {
-    background-color: var(--light2);
-  }
-}
-
-.checkInput {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-}
-
-.checkBox {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 0.7rem;
-  background-color: var(--white);
-  box-shadow: inset 0 0 0 1.5px var(--textDarkiii);
-  color: transparent;
-  transition:
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.checkBox svg {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.checkInput:checked + .checkBox {
-  background-color: var(--black);
-  box-shadow: none;
-  color: var(--accent3);
-}
-
-.checkInput:focus-visible + .checkBox {
-  outline: 2px solid var(--black);
-  outline-offset: 2px;
-}
-
-.checkText {
+.slotHead {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  font-family: var(--cdCopy);
-  font-size: 16px;
-  line-height: 1.3;
+}
+
+.slotTitle {
+  font-family: var(--CreatoDisplayExtraBold);
+  font-size: 1.6rem;
+  line-height: 1.2;
   color: var(--black);
 }
 
-.checkNote {
+.slotNote {
+  font-family: var(--cdCopy);
   font-size: 14px;
+  line-height: 1.3;
   color: var(--text);
 }
 
-/* ── Photos ── */
-.photos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: 0.8rem;
-}
-
-.photo {
+.slotPhoto {
   position: relative;
-  aspect-ratio: 4 / 3;
+  margin: 0;
+  aspect-ratio: 16 / 10;
   border-radius: 1.4rem;
   overflow: hidden;
   background-color: var(--light);
+}
+
+.slotTag {
+  position: absolute;
+  left: 0.8rem;
+  bottom: 0.8rem;
+}
+
+.slotDrop {
+  aspect-ratio: 16 / 10;
 }
 
 .photoImg {
@@ -518,7 +476,7 @@
 
 @media screen and (max-width: 568px) {
   .grid,
-  .checks {
+  .slots {
     grid-template-columns: minmax(0, 1fr);
   }
 

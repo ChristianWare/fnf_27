@@ -1,9 +1,10 @@
 "use client";
 
 // Make a preview for one prospect: their business (filled in from their
-// prospect page), the market (which brings its airports and areas), the
-// services and vehicles they run, a few photos, and the preview's address
-// and length. The summary on the right says what gets made.
+// prospect page), the market (which brings its airports, areas, wording
+// and photos), the two photos they can swap for their own, and the
+// preview's address and length. The summary on the right says what gets
+// made.
 //
 // Screens only for now: "Make the preview" makes nothing yet. It goes back
 // to their page and shows a sample of what a made preview looks like.
@@ -17,17 +18,23 @@ import { useToast } from "@/components/Dashboard/Toast/Toast";
 import { fmtDate } from "@/lib/dashboard/format";
 import type { ProspectView } from "@/lib/prospects/view";
 import {
+  DEMO_ABOUT_THUMB,
   DEMO_DAYS,
   DEMO_DOMAIN,
   DEMO_MARKETS,
-  DEMO_SERVICES,
-  DEMO_VEHICLES,
+  type DemoMarket,
   demoSlug,
   marketFor,
 } from "@/lib/demos/options";
 import styles from "./PreviewForm.module.css";
 
-const MAX_PHOTOS = 6;
+/** One of the two photos: the market's default, or one of theirs. */
+type PhotoChoice = {
+  own: boolean;
+  file: { url: string; name: string } | null;
+};
+
+const DEFAULT_PHOTO: PhotoChoice = { own: false, file: null };
 
 export default function PreviewForm({ p, now }: { p: ProspectView; now: string }) {
   const router = useRouter();
@@ -36,15 +43,9 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
   const [slug, setSlug] = useState(demoSlug(p.business));
   const [slugEdited, setSlugEdited] = useState(false);
   const [marketId, setMarketId] = useState(marketFor(p.state).id);
-  const [services, setServices] = useState<string[]>(
-    DEMO_SERVICES.filter((s) => s.on).map((s) => s.id),
-  );
-  const [vehicles, setVehicles] = useState<string[]>(
-    DEMO_VEHICLES.filter((v) => v.on).map((v) => v.id),
-  );
   const [days, setDays] = useState<number>(30);
-  const [photos, setPhotos] = useState<{ id: string; url: string; name: string }[]>([]);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [hero, setHero] = useState<PhotoChoice>(DEFAULT_PHOTO);
+  const [about, setAbout] = useState<PhotoChoice>(DEFAULT_PHOTO);
 
   const market = DEMO_MARKETS.find((m) => m.id === marketId) ?? DEMO_MARKETS[0];
   const expires = useMemo(
@@ -53,38 +54,18 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
   );
 
   // Photo previews live only in this tab; let them go when it closes.
-  const photosRef = useRef(photos);
+  const filesRef = useRef([hero.file, about.file]);
   useEffect(() => {
-    photosRef.current = photos;
-  }, [photos]);
-  useEffect(() => () => photosRef.current.forEach((x) => URL.revokeObjectURL(x.url)), []);
+    filesRef.current = [hero.file, about.file];
+  }, [hero.file, about.file]);
+  useEffect(
+    () => () => filesRef.current.forEach((f) => f && URL.revokeObjectURL(f.url)),
+    [],
+  );
 
-  const toggle = (list: string[], id: string) =>
-    list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
-
-  const addPhotos = (files: FileList | null) => {
-    if (!files) return;
-    const room = MAX_PHOTOS - photos.length;
-    const picked = [...files].filter((f) => f.type.startsWith("image/")).slice(0, room);
-    setPhotos((list) => [
-      ...list,
-      ...picked.map((f) => ({
-        id: `${f.name}-${f.size}-${f.lastModified}`,
-        url: URL.createObjectURL(f),
-        name: f.name,
-      })),
-    ]);
-    if (fileRef.current) fileRef.current.value = "";
-  };
-
-  const removePhoto = (id: string) =>
-    setPhotos((list) => {
-      const gone = list.find((x) => x.id === id);
-      if (gone) URL.revokeObjectURL(gone.url);
-      return list.filter((x) => x.id !== id);
-    });
-
-  const ready = business.trim().length > 1 && services.length > 0 && vehicles.length > 0;
+  const ownCount = [hero, about].filter((x) => x.own && x.file).length;
+  // "Their own" with no photo picked yet still counts as the default.
+  const ready = business.trim().length > 1;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +113,7 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
         {/* ── Market ── */}
         <Panel
           title='Market'
-          text='Sets the airports, neighborhoods, time zone and sample trips on their site.'
+          text='Sets the airports, neighborhoods, time zone, wording and photos on their site.'
         >
           <div className={styles.markets} role='radiogroup' aria-label='Market'>
             {DEMO_MARKETS.map((m) => (
@@ -151,13 +132,6 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
                   {m.airports.filter((a) => a.kind === "commercial").map((a) => a.code).join(", ")} ·{" "}
                   {m.timeZone} time
                 </span>
-                <span className={styles.marketTag}>
-                  {m.ready ? (
-                    <Pill tone='lime'>Ready</Pill>
-                  ) : (
-                    <Pill tone='yellow'>Market not built yet</Pill>
-                  )}
-                </span>
               </button>
             ))}
           </div>
@@ -170,7 +144,9 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
                   <li key={a.code}>
                     <span className={styles.code}>{a.code}</span>
                     {a.name}
-                    <span className={styles.kind}>{a.kind === "private" ? "Private aviation" : "Commercial"}</span>
+                    <span className={styles.kind}>
+                      {a.kind === "private" ? "Private aviation" : a.kind === "tours" ? "Air tours" : "Commercial"}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -186,79 +162,30 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
               </div>
             </div>
           </div>
-          {!market.ready && (
-            <p className={styles.help}>
-              {market.city} still needs its market built on the demo platform. Pick Las
-              Vegas to see a ready one.
-            </p>
-          )}
-        </Panel>
-
-        {/* ── Services ── */}
-        <Panel title='Services' text='What their site offers and the booking tool lets riders pick.'>
-          <div className={styles.checks}>
-            {DEMO_SERVICES.map((s) => (
-              <Check
-                key={s.id}
-                label={s.label}
-                checked={services.includes(s.id)}
-                onChange={() => setServices((list) => toggle(list, s.id))}
-              />
-            ))}
-          </div>
-        </Panel>
-
-        {/* ── Fleet ── */}
-        <Panel title='Fleet' text='Each gets a fleet page and sample rates, marked as samples.'>
-          <div className={styles.checks}>
-            {DEMO_VEHICLES.map((v) => (
-              <Check
-                key={v.id}
-                label={v.label}
-                note={v.seats}
-                checked={vehicles.includes(v.id)}
-                onChange={() => setVehicles((list) => toggle(list, v.id))}
-              />
-            ))}
-          </div>
         </Panel>
 
         {/* ── Photos ── */}
         <Panel
           title='Photos'
-          text='Up to 6 of their own, from their Instagram or Facebook. Used only inside their private preview. Without any, it uses photos of the city.'
+          text={`Their site starts with the ${market.city} photos. Swap either one for a photo of theirs, from their Instagram or Facebook. Used only inside their private preview.`}
         >
-          <div className={styles.photos}>
-            {photos.map((ph) => (
-              <figure key={ph.id} className={styles.photo}>
-                {/* Local previews of files they picked; not served by Next. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={ph.url} alt={ph.name} className={styles.photoImg} />
-                <button
-                  type='button'
-                  className={styles.photoRemove}
-                  aria-label={`Remove ${ph.name}`}
-                  onClick={() => removePhoto(ph.id)}
-                >
-                  <Icon name='close' />
-                </button>
-              </figure>
-            ))}
-            {photos.length < MAX_PHOTOS && (
-              <label className={styles.drop}>
-                <Icon name='upload' className={styles.dropIcon} />
-                <span className={styles.dropText}>Add photos</span>
-                <span className={styles.dropNote}>{MAX_PHOTOS - photos.length} more</span>
-                <input
-                  ref={fileRef}
-                  type='file'
-                  accept='image/*'
-                  multiple
-                  className={ui.srOnly}
-                  onChange={(e) => addPhotos(e.target.files)}
-                />
-              </label>
-            )}
+          <div className={styles.slots}>
+            <PhotoSlot
+              title='Home page'
+              note='The big photo at the top.'
+              market={market}
+              defaultSrc={market.heroThumb}
+              value={hero}
+              onChange={setHero}
+            />
+            <PhotoSlot
+              title='About page'
+              note='The wide photo under the heading.'
+              market={market}
+              defaultSrc={DEMO_ABOUT_THUMB}
+              value={about}
+              onChange={setAbout}
+            />
           </div>
         </Panel>
 
@@ -324,12 +251,15 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
             </li>
             <li>
               <Icon name='booking' className={styles.madeIcon} />
-              Booking and test payments for {services.length} service
-              {services.length === 1 ? "" : "s"}
+              Booking and test payments
             </li>
             <li>
-              <Icon name='card' className={styles.madeIcon} />
-              {vehicles.length} vehicle type{vehicles.length === 1 ? "" : "s"} with sample rates
+              <Icon name='image' className={styles.madeIcon} />
+              {ownCount === 2
+                ? "Their own photos on the home and About pages"
+                : ownCount === 1
+                  ? `One of their photos, one of ${market.city}`
+                  : `The ${market.city} photos`}
             </li>
             <li>
               <Icon name='users' className={styles.madeIcon} />
@@ -391,27 +321,103 @@ function Field({
   );
 }
 
-function Check({
-  label,
+/** One of the two photos: the market's default or their own, with a
+ *  preview of whichever the site will use. */
+function PhotoSlot({
+  title,
   note,
-  checked,
+  market,
+  defaultSrc,
+  value,
   onChange,
 }: {
-  label: string;
-  note?: string;
-  checked: boolean;
-  onChange: () => void;
+  title: string;
+  note: string;
+  market: DemoMarket;
+  defaultSrc: string;
+  value: PhotoChoice;
+  onChange: (next: PhotoChoice) => void;
 }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const pick = (files: FileList | null) => {
+    const f = [...(files ?? [])].find((x) => x.type.startsWith("image/"));
+    if (!f) return;
+    if (value.file) URL.revokeObjectURL(value.file.url);
+    onChange({ own: true, file: { url: URL.createObjectURL(f), name: f.name } });
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const clear = () => {
+    if (value.file) URL.revokeObjectURL(value.file.url);
+    onChange({ own: true, file: null });
+  };
+
   return (
-    <label className={styles.check}>
-      <input type='checkbox' className={styles.checkInput} checked={checked} onChange={onChange} />
-      <span className={styles.checkBox} aria-hidden='true'>
-        <Icon name='check' />
-      </span>
-      <span className={styles.checkText}>
-        {label}
-        {note && <span className={styles.checkNote}>{note}</span>}
-      </span>
-    </label>
+    <div className={styles.slot}>
+      <div className={styles.slotHead}>
+        <span className={styles.slotTitle}>{title}</span>
+        <span className={styles.slotNote}>{note}</span>
+      </div>
+
+      <div className={ui.chips} role='radiogroup' aria-label={`${title} photo`}>
+        <button
+          type='button'
+          role='radio'
+          aria-checked={!value.own}
+          className={ui.chip}
+          onClick={() => onChange({ ...value, own: false })}
+        >
+          The {market.city} default
+        </button>
+        <button
+          type='button'
+          role='radio'
+          aria-checked={value.own}
+          className={ui.chip}
+          onClick={() => onChange({ ...value, own: true })}
+        >
+          Their own
+        </button>
+      </div>
+
+      {!value.own ? (
+        <figure className={styles.slotPhoto}>
+          {/* A small copy of the demo platform's photo, from /public. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={defaultSrc} alt='' className={styles.photoImg} />
+          <span className={styles.slotTag}>
+            <Pill tone='white'>{market.city} default</Pill>
+          </span>
+        </figure>
+      ) : value.file ? (
+        <figure className={styles.slotPhoto}>
+          {/* A local preview of the file they picked; not served by Next. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={value.file.url} alt={value.file.name} className={styles.photoImg} />
+          <button
+            type='button'
+            className={styles.photoRemove}
+            aria-label={`Remove ${value.file.name}`}
+            onClick={clear}
+          >
+            <Icon name='close' />
+          </button>
+        </figure>
+      ) : (
+        <label className={`${styles.drop} ${styles.slotDrop}`}>
+          <Icon name='upload' className={styles.dropIcon} />
+          <span className={styles.dropText}>Add their photo</span>
+          <span className={styles.dropNote}>A wide one works best</span>
+          <input
+            ref={fileRef}
+            type='file'
+            accept='image/*'
+            className={ui.srOnly}
+            onChange={(e) => pick(e.target.files)}
+          />
+        </label>
+      )}
+    </div>
   );
 }

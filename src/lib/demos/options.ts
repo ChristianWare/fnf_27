@@ -1,26 +1,27 @@
-// Previews (the demo sites made for a prospect): the markets, services and
-// vehicles to pick from when making one. Safe anywhere.
+// Previews (the demo sites made for a prospect): the markets to pick from
+// when making one, and the photos each starts with. Safe anywhere.
 //
-// For now this only feeds the screens. A market marked "ready" has its
-// airports, areas and sample trips built on the demo platform; the others
-// are still to do.
+// The markets match the demo platform's (fnf-demos, src/markets/): each
+// brings its airports, areas, wording and photos. A preview only chooses
+// the market and whether to swap in the prospect's own two photos.
 
 export type DemoAirport = {
   code: string;
   name: string;
-  kind: "commercial" | "private";
+  kind: "commercial" | "private" | "tours";
 };
 
 export type DemoMarket = {
+  /** The demo platform's market id (its DEMO_MARKET). */
   id: string;
   city: string;
   state: string;
-  /** Built on the demo platform yet. */
-  ready: boolean;
   timeZone: string;
   airports: DemoAirport[];
   /** The neighborhoods and suburbs the site names. */
   areas: string[];
+  /** A small copy of the market's home page hero, for the form. */
+  heroThumb: string;
 };
 
 export const DEMO_MARKETS: DemoMarket[] = [
@@ -28,73 +29,77 @@ export const DEMO_MARKETS: DemoMarket[] = [
     id: "las-vegas",
     city: "Las Vegas",
     state: "NV",
-    ready: true,
     timeZone: "Pacific",
     airports: [
       { code: "LAS", name: "Harry Reid International", kind: "commercial" },
       { code: "HND", name: "Henderson Executive", kind: "private" },
       { code: "VGT", name: "North Las Vegas", kind: "private" },
+      { code: "BLD", name: "Boulder City", kind: "tours" },
     ],
-    areas: ["The Strip", "Downtown", "Henderson", "Summerlin", "Lake Las Vegas"],
+    areas: [
+      "The Strip",
+      "Downtown",
+      "Henderson",
+      "Summerlin",
+      "North Las Vegas",
+      "Boulder City",
+      "Lake Las Vegas",
+    ],
+    heroThumb: "/demos/las-vegas-hero.jpg",
   },
   {
     id: "phoenix",
     city: "Phoenix",
     state: "AZ",
-    ready: false,
     timeZone: "Arizona",
     airports: [
       { code: "PHX", name: "Sky Harbor", kind: "commercial" },
       { code: "AZA", name: "Mesa Gateway", kind: "commercial" },
-      { code: "SDL", name: "Scottsdale Airport", kind: "private" },
+      { code: "SDL", name: "Scottsdale", kind: "private" },
       { code: "DVT", name: "Deer Valley", kind: "private" },
-      { code: "FFZ", name: "Falcon Field", kind: "private" },
     ],
-    areas: ["Scottsdale", "Tempe", "Mesa", "Chandler", "Glendale", "Paradise Valley"],
+    areas: [
+      "Downtown Phoenix",
+      "Scottsdale",
+      "Tempe",
+      "Mesa",
+      "Chandler",
+      "Paradise Valley",
+      "Glendale",
+    ],
+    heroThumb: "/demos/phoenix-hero.jpg",
   },
   {
-    id: "atlanta",
-    city: "Atlanta",
-    state: "GA",
-    ready: false,
-    timeZone: "Eastern",
+    id: "los-angeles",
+    city: "Los Angeles",
+    state: "CA",
+    timeZone: "Pacific",
     airports: [
-      { code: "ATL", name: "Hartsfield-Jackson", kind: "commercial" },
-      { code: "PDK", name: "DeKalb-Peachtree", kind: "private" },
-      { code: "FTY", name: "Fulton County", kind: "private" },
+      { code: "LAX", name: "Los Angeles International", kind: "commercial" },
+      { code: "BUR", name: "Hollywood Burbank", kind: "commercial" },
+      { code: "LGB", name: "Long Beach", kind: "commercial" },
+      { code: "VNY", name: "Van Nuys", kind: "private" },
     ],
-    areas: ["Buckhead", "Midtown", "Downtown", "Alpharetta", "Sandy Springs"],
+    areas: [
+      "Beverly Hills",
+      "Santa Monica",
+      "Hollywood",
+      "Downtown",
+      "Pasadena",
+      "Burbank",
+      "Malibu",
+    ],
+    heroThumb: "/demos/los-angeles-hero.jpg",
   },
 ];
 
-/** The market that fits a prospect's state, else the first ready one. */
+/** The About page photo every market starts with (small copy). */
+export const DEMO_ABOUT_THUMB = "/demos/about-hero.jpg";
+
+/** The market that fits a prospect's state, else Las Vegas. */
 export function marketFor(state: string): DemoMarket {
-  return (
-    DEMO_MARKETS.find((m) => m.state === state.toUpperCase()) ??
-    DEMO_MARKETS.find((m) => m.ready) ??
-    DEMO_MARKETS[0]
-  );
+  return DEMO_MARKETS.find((m) => m.state === state.toUpperCase()) ?? DEMO_MARKETS[0];
 }
-
-export const DEMO_SERVICES = [
-  { id: "airport", label: "Airport transfers", on: true },
-  { id: "point", label: "Point to point", on: true },
-  { id: "hourly", label: "Hourly chauffeur", on: true },
-  { id: "corporate", label: "Corporate travel", on: true },
-  { id: "events", label: "Weddings and events", on: false },
-  { id: "nights", label: "Nights out and concerts", on: false },
-  { id: "long", label: "Long distance", on: false },
-  { id: "tours", label: "Tours and wine country", on: false },
-] as const;
-
-export const DEMO_VEHICLES = [
-  { id: "sedan", label: "Sedan", seats: "Up to 3", on: true },
-  { id: "suv", label: "SUV", seats: "Up to 6", on: true },
-  { id: "sprinter", label: "Sprinter van", seats: "Up to 14", on: false },
-  { id: "limo", label: "Stretch limo", seats: "Up to 10", on: false },
-  { id: "coach", label: "Mini coach", seats: "Up to 28", on: false },
-  { id: "party", label: "Party bus", seats: "Up to 30", on: false },
-] as const;
 
 export const DEMO_DAYS = [14, 30, 45] as const;
 
