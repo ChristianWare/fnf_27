@@ -3,8 +3,6 @@
 // Admin → Previews: every demo site made for a prospect. Who opened theirs,
 // who hasn't yet, and which are about to run out, so the morning's
 // follow-up calls are obvious. Each row opens the prospect's page.
-//
-// Screens only for now: the rows are samples, made from your prospects.
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -13,7 +11,7 @@ import Icon from "@/components/Dashboard/icons";
 import { Pill, btn, ui } from "@/components/Dashboard/ui/ui";
 import { useToast } from "@/components/Dashboard/Toast/Toast";
 import { daysBetween, fmtAgo, fmtShort } from "@/lib/dashboard/format";
-import type { PreviewStatus, PreviewView } from "@/lib/demos/sample";
+import { previewText, type PreviewStatus, type PreviewView } from "@/lib/demos/preview";
 import { STATUS_LABEL, statusTone } from "./status";
 import styles from "./Previews.module.css";
 
@@ -55,10 +53,14 @@ export default function Previews({ rows, now }: { rows: PreviewView[]; now: stri
       .filter((r) => !q || `${r.business} ${r.contactName} ${r.market} ${r.url}`.toLowerCase().includes(q));
   }, [rows, filter, query]);
 
-  const notYet = () =>
-    toast("Not live yet", {
-      detail: "Previews are screens only for now. This is how it will work.",
-    });
+  const copyText = async (r: PreviewView) => {
+    try {
+      await navigator.clipboard.writeText(previewText(r));
+      toast("Text copied", { detail: `For ${r.contactName || r.business}` });
+    } catch {
+      toast("Couldn't copy. Open their page and copy it there.", { tone: "error" });
+    }
+  };
 
   return (
     <section className={styles.listPanel}>
@@ -95,7 +97,7 @@ export default function Previews({ rows, now }: { rows: PreviewView[]; now: stri
             const left = daysBetween(now, r.expiresAt);
             return (
               <li key={r.id} className={styles.rowWrap}>
-                <Link href={`/admin/prospects/${r.prospectId}?preview=sample`} className={styles.listRow}>
+                <Link href={`/admin/prospects/${r.prospectId}`} className={styles.listRow}>
                   <span className={styles.who}>
                     <span className={styles.name}>{r.business}</span>
                     <span className={styles.sub}>
@@ -121,7 +123,7 @@ export default function Previews({ rows, now }: { rows: PreviewView[]; now: stri
                   type='button'
                   className={styles.rowBtn}
                   aria-label={`Copy the text for ${r.business}`}
-                  onClick={notYet}
+                  onClick={() => copyText(r)}
                 >
                   <Icon name='copy' />
                 </button>

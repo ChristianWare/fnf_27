@@ -1,7 +1,7 @@
 // Where each preview is, and its pill color. Safe anywhere.
 
 import type { Tone } from "@/components/Dashboard/ui/ui";
-import type { PreviewStatus } from "@/lib/demos/sample";
+import type { PreviewStatus } from "@/lib/demos/preview";
 
 export const STATUS_LABEL: Record<PreviewStatus, string> = {
   NOT_OPENED: "Not opened yet",

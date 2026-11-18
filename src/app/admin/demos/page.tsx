@@ -4,35 +4,34 @@ import { PageHead, Notice } from "@/components/Dashboard/ui/ui";
 import Stats from "@/components/Admin/Stats/Stats";
 import Previews, { NewPreview } from "@/components/Admin/Previews/Previews";
 import { listProspects } from "@/lib/prospects/store";
-import { samplePreview } from "@/lib/demos/sample";
+import { EXPIRING_DAYS, toPreviewView, type PreviewView } from "@/lib/demos/preview";
+import {
+  NOT_SET_UP,
+  PlatformError,
+  listPlatformDemos,
+  platformReady,
+} from "@/lib/demos/platform";
 
 export const metadata: Metadata = { title: "Previews" };
 
-/** How far along each sample is: opened, not yet, expiring, expired. */
-const SHAPES = [1, 0, 1, 2, 0, 3, 1];
-
-/** Admin → Previews: every demo site made for a prospect. Screens only for
- *  now: the rows are samples made from your prospects. */
+/** Admin → Previews: every demo site made for a prospect, from the demo
+ *  platform (fnf-demos). */
 export default async function DemosPage() {
   await requireAdmin();
   const now = new Date();
   const prospects = (await listProspects()).filter((p) => p.stage !== "DO_NOT_CALL");
 
-  const rows = prospects
-    .slice(0, SHAPES.length)
-    .map((p, i) =>
-      samplePreview(
-        {
-          id: p.id,
-          business: p.business,
-          contactName: p.contactName ?? "",
-          phone: p.phone ?? "",
-          state: p.state ?? "",
-        },
-        now,
-        SHAPES[i],
-      ),
-    );
+  let rows: PreviewView[] = [];
+  let issue: string | null = null;
+  if (!platformReady()) {
+    issue = NOT_SET_UP;
+  } else {
+    try {
+      rows = (await listPlatformDemos()).map((d) => toPreviewView(d, now));
+    } catch (e) {
+      issue = e instanceof PlatformError ? e.message : "The previews couldn't be loaded.";
+    }
+  }
 
   const live = rows.filter((r) => r.status !== "EXPIRED");
   const opened = live.filter((r) => r.views > 0).length;
@@ -54,10 +53,7 @@ export default async function DemosPage() {
           }))}
         />
       </PageHead>
-      <Notice>
-        Sample data. Previews aren&apos;t built yet, so these are made up from your
-        prospects to show how this page will work.
-      </Notice>
+      {issue && <Notice>{issue}</Notice>}
       <Stats
         items={[
           { label: "Live", value: String(live.length), note: "Previews still up" },
@@ -67,7 +63,7 @@ export default async function DemosPage() {
             note: `${notOpened} not opened yet`,
             tone: opened ? "lime" : undefined,
           },
-          { label: "Expiring", value: String(expiring), note: "In the next 5 days" },
+          { label: "Expiring", value: String(expiring), note: `In the next ${EXPIRING_DAYS} days` },
           { label: "Made", value: String(rows.length), note: "All time" },
         ]}
       />

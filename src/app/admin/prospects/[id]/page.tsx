@@ -11,22 +11,24 @@ import {
   queueOf,
 } from "@/lib/prospects/store";
 import { prospectViews } from "@/lib/prospects/view";
-import { samplePreview } from "@/lib/demos/sample";
+import { toPreviewView } from "@/lib/demos/preview";
+import {
+  NOT_SET_UP,
+  PlatformError,
+  platformReady,
+  previewForProspect,
+} from "@/lib/demos/platform";
 
-type Props = {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ preview?: string | string[] }>;
-};
+type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = await getProspect((await params).id);
   return { title: found?.row.business ?? "Prospect" };
 }
 
-export default async function Page({ params, searchParams }: Props) {
+export default async function Page({ params }: Props) {
   await requireAdmin();
   const { id } = await params;
-  const { preview } = await searchParams;
   const found = await getProspect(id);
   if (!found) notFound();
 
@@ -44,22 +46,21 @@ export default async function Page({ params, searchParams }: Props) {
   const at = order.indexOf(id);
   const nextId = at >= 0 ? (order[at + 1] ?? null) : null;
 
-  // Previews aren't built yet: "?preview=sample" shows what one will look
-  // like once it's made.
-  const sample =
-    preview === "sample"
-      ? samplePreview(
-          {
-            id: view.id,
-            business: view.business,
-            contactName: view.contactName,
-            phone: view.phone,
-            state: view.state,
-          },
-          now,
-          1,
-        )
-      : null;
+  // Their preview, from the demo platform. If it can't be reached, the
+  // page still works and says why.
+  let preview = null;
+  let previewIssue: string | null = null;
+  if (!platformReady()) {
+    previewIssue = NOT_SET_UP;
+  } else {
+    try {
+      const demo = await previewForProspect(id);
+      preview = demo ? toPreviewView(demo, now) : null;
+    } catch (e) {
+      previewIssue =
+        e instanceof PlatformError ? e.message : "Their preview couldn't be loaded.";
+    }
+  }
 
   return (
     <ProspectPage
@@ -80,7 +81,8 @@ export default async function Page({ params, searchParams }: Props) {
         goal,
         left: order.length,
       }}
-      preview={sample}
+      preview={preview}
+      previewIssue={previewIssue}
     />
   );
 }

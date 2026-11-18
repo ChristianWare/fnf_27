@@ -4,10 +4,8 @@
 // prospect page), the market (which brings its airports, areas, wording
 // and photos), the two photos they can swap for their own, and the
 // preview's address and length. The summary on the right says what gets
-// made.
-//
-// Screens only for now: "Make the preview" makes nothing yet. It goes back
-// to their page and shows a sample of what a made preview looks like.
+// made. "Make the preview" sends it all to the demo platform (fnf-demos)
+// and goes back to their page, where the preview's link now is.
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/components/Dashboard/icons";
 import { Panel, Pill, btn, ui } from "@/components/Dashboard/ui/ui";
 import { useToast } from "@/components/Dashboard/Toast/Toast";
+import { makePreview } from "@/app/admin/demos/actions";
 import { fmtDate } from "@/lib/dashboard/format";
 import type { ProspectView } from "@/lib/prospects/view";
 import {
@@ -31,8 +30,27 @@ import styles from "./PreviewForm.module.css";
 /** One of the two photos: the market's default, or one of theirs. */
 type PhotoChoice = {
   own: boolean;
-  file: { url: string; name: string } | null;
+  /** Their photo, already made smaller for the upload, and its preview. */
+  file: { url: string; name: string; blob: File } | null;
 };
+
+/** Their photo at most 2400px wide, as a JPEG: phone photos are often
+ *  several MB, and the upload has to stay small. */
+async function shrink(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 2400 / bitmap.width);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/jpeg", 0.82));
+    if (!blob) return file;
+    return new File([blob], file.name.replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
 
 const DEFAULT_PHOTO: PhotoChoice = { own: false, file: null };
 
@@ -46,6 +64,7 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
   const [days, setDays] = useState<number>(30);
   const [hero, setHero] = useState<PhotoChoice>(DEFAULT_PHOTO);
   const [about, setAbout] = useState<PhotoChoice>(DEFAULT_PHOTO);
+  const [pending, setPending] = useState(false);
 
   const market = DEMO_MARKETS.find((m) => m.id === marketId) ?? DEMO_MARKETS[0];
   const expires = useMemo(
@@ -67,13 +86,29 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
   // "Their own" with no photo picked yet still counts as the default.
   const ready = business.trim().length > 1;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!ready) return;
-    toast("Nothing was made yet", {
-      detail: "Previews are screens only for now. Here's how a made one will look.",
-    });
-    router.push(`/admin/prospects/${p.id}?preview=sample`);
+    if (!ready || pending) return;
+    // The named fields (contact, phone, email…), then the rest.
+    const form = new FormData(e.currentTarget);
+    form.set("ref", p.id);
+    form.set("business", business.trim());
+    form.set("slug", slug);
+    form.set("marketId", marketId);
+    form.set("days", String(days));
+    if (hero.own && hero.file) form.set("hero", hero.file.blob);
+    if (about.own && about.file) form.set("about", about.file.blob);
+
+    setPending(true);
+    const res = await makePreview(form);
+    setPending(false);
+    if (!res.ok) {
+      toast("The preview wasn't made", { tone: "error", detail: res.error });
+      return;
+    }
+    toast("Preview made", { detail: res.data?.url.replace(/^https:\/\//, "") });
+    router.push(`/admin/prospects/${p.id}`);
+    router.refresh();
   };
 
   return (
@@ -265,10 +300,6 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
               <Icon name='users' className={styles.madeIcon} />
               Admin, driver and rider logins
             </li>
-            <li>
-              <Icon name='calendar' className={styles.madeIcon} />
-              A few sample bookings, marked as samples
-            </li>
           </ul>
 
           <dl className={styles.summaryFacts}>
@@ -282,15 +313,20 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
             </div>
           </dl>
 
-          <button type='submit' className={`${btn("lime")} ${styles.submit}`} disabled={!ready}>
-            Make the preview
+          <button
+            type='submit'
+            className={`${btn("lime")} ${styles.submit}`}
+            disabled={!ready || pending}
+            aria-busy={pending}
+          >
+            {pending ? "Making it…" : "Make the preview"}
             <Icon name='sparkle' className={styles.btnIcon} />
           </button>
           <Link href={`/admin/prospects/${p.id}`} className={`${btn("white")} ${styles.submit}`}>
             Cancel
           </Link>
           <p className={styles.summaryNote}>
-            Screens only for now: nothing is made yet. You&apos;ll see a sample on their page.
+            Takes about half a minute. Then their link and logins are on their page.
           </p>
         </div>
       </aside>
@@ -340,12 +376,13 @@ function PhotoSlot({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const pick = (files: FileList | null) => {
+  const pick = async (files: FileList | null) => {
     const f = [...(files ?? [])].find((x) => x.type.startsWith("image/"));
-    if (!f) return;
-    if (value.file) URL.revokeObjectURL(value.file.url);
-    onChange({ own: true, file: { url: URL.createObjectURL(f), name: f.name } });
     if (fileRef.current) fileRef.current.value = "";
+    if (!f) return;
+    const blob = await shrink(f);
+    if (value.file) URL.revokeObjectURL(value.file.url);
+    onChange({ own: true, file: { url: URL.createObjectURL(blob), name: f.name, blob } });
   };
 
   const clear = () => {
@@ -414,7 +451,7 @@ function PhotoSlot({
             type='file'
             accept='image/*'
             className={ui.srOnly}
-            onChange={(e) => pick(e.target.files)}
+            onChange={(e) => void pick(e.target.files)}
           />
         </label>
       )}

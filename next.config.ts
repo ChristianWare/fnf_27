@@ -5,6 +5,11 @@ const PDF_FILES = ["./public/fonts/**/*", "./public/logos/fnf_logo_black.png"];
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  // Making a preview sends up to two photos (made smaller in the browser
+  // first) with the form.
+  experimental: {
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   // The PDFs (invoices, the signed agreement, the audit report): keep the
   // renderer out of the bundle, and ship the fonts and logo it reads from
   // /public with every route that makes one, including the Stripe webhook

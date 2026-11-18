@@ -28,7 +28,7 @@ import {
   type ProspectStage,
 } from "@/lib/prospects/kinds";
 import type { ProspectView } from "@/lib/prospects/view";
-import type { PreviewView } from "@/lib/demos/sample";
+import type { PreviewView } from "@/lib/demos/preview";
 import {
   addNote,
   auditProspect,
@@ -85,13 +85,16 @@ export default function ProspectPage({
   timeline,
   queue,
   preview,
+  previewIssue,
 }: {
   p: ProspectView;
   now: string;
   timeline: TimelineItem[];
   queue: QueueInfo;
-  /** Their preview (a sample, until previews are built). */
+  /** Their newest preview, from the demo platform. */
   preview: PreviewView | null;
+  /** Why it couldn't be loaded, if it couldn't. */
+  previewIssue?: string | null;
 }) {
   const router = useRouter();
   const { run, pending } = useAction();
@@ -311,7 +314,7 @@ export default function ProspectPage({
           )}
 
           {/* ── Their preview ── */}
-          <PreviewPanel p={p} preview={preview} now={now} />
+          <PreviewPanel p={p} preview={preview} issue={previewIssue} now={now} />
 
           {/* ── Their audit ── */}
           <Panel
