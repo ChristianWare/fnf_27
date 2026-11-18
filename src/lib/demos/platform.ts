@@ -40,8 +40,10 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body;
 }
 
-export async function listPlatformDemos(): Promise<PlatformDemo[]> {
-  return (await call<{ demos: PlatformDemo[] }>("/demos")).demos;
+/** Every preview. With `since`, each one carries its events since then. */
+export async function listPlatformDemos(since?: Date): Promise<PlatformDemo[]> {
+  const query = since ? `?since=${encodeURIComponent(since.toISOString())}` : "";
+  return (await call<{ demos: PlatformDemo[] }>(`/demos${query}`)).demos;
 }
 
 export async function getPlatformDemo(id: string): Promise<PlatformDemo> {

@@ -711,6 +711,8 @@ const ADMIN_ALERTS = [
   "digest",
   "leads",
   "audit",
+  "preview",
+  "previews",
 ];
 
 export async function saveNotifications(

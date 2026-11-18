@@ -8,6 +8,7 @@
     { "path": "/api/cron/leads", "schedule": "0 12 * * *" },
     { "path": "/api/cron/leads-morning", "schedule": "0 13 * * *" },
     { "path": "/api/cron/housekeeping", "schedule": "0 14 * * *" },
+    { "path": "/api/cron/previews", "schedule": "0 14 * * *" },
     { "path": "/api/cron/growth", "schedule": "0 7 * * *" }
   ]
 }

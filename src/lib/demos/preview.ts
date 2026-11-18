@@ -7,6 +7,8 @@ export type PreviewStatus = "NOT_OPENED" | "OPENED" | "EXPIRING" | "EXPIRED";
 
 export type PreviewEvent = { at: string; text: string };
 
+export type PreviewEventKind = "view" | "login" | "booking" | "signup";
+
 /** One demo as the platform's API returns it (fnf-demos, /api/platform). */
 export type PlatformDemo = {
   id: string;
@@ -27,7 +29,7 @@ export type PlatformDemo = {
   firstOpenedAt: string | null;
   lastSeenAt: string | null;
   logins: { password: string; admin: string; driver: string; rider: string };
-  events?: { at: string; kind: "view" | "login" | "booking"; detail: string }[];
+  events?: { at: string; kind: PreviewEventKind; detail: string }[];
 };
 
 export type PreviewView = {
@@ -69,12 +71,50 @@ const PAGES: Record<string, string> = {
   corporate: "the corporate portal",
 };
 
-/** "/fleet/luxury-suv" → "Looked at the fleet". */
+/** "/fleet/luxury-suv" → "the fleet". */
+export function pageName(path: string) {
+  const first = path.replace(/^\/+/, "").split(/[/?#]/)[0];
+  return PAGES[first] ?? path;
+}
+
+/** Where each sign-in lands. */
+const LOGINS: Record<string, string> = {
+  admin: "Signed in to the admin",
+  driver: "Signed in to the driver app",
+  rider: "Signed in as a rider",
+  corporate: "Signed in to the corporate portal",
+};
+
+/** One line on the "What they did" list. */
 export function eventText(e: NonNullable<PlatformDemo["events"]>[number]) {
-  if (e.kind === "login") return `Logged in (${e.detail || "a login"})`;
-  if (e.kind === "booking") return `Made a test booking${e.detail ? ` (${e.detail})` : ""}`;
-  const first = e.detail.replace(/^\/+/, "").split(/[/?#]/)[0];
-  return `Looked at ${PAGES[first] ?? e.detail}`;
+  if (e.kind === "login") return LOGINS[e.detail] ?? `Signed in (${e.detail || "a login"})`;
+  if (e.kind === "signup") return "Made a rider account";
+  if (e.kind === "booking") return `Booked a test ride${e.detail ? ` (${e.detail})` : ""}`;
+  return `Looked at ${pageName(e.detail)}`;
+}
+
+/** "14 page views (the home page, the fleet and the booking page), signed
+ *  in to the admin, 2 test bookings": a day of events in one line. */
+export function eventsSummary(events: NonNullable<PlatformDemo["events"]>) {
+  const views = events.filter((e) => e.kind === "view");
+  const pages = [...new Set(views.map((e) => pageName(e.detail)))];
+  const logins = [...new Set(events.filter((e) => e.kind === "login").map((e) => e.detail))];
+  const bookings = events.filter((e) => e.kind === "booking").length;
+  const signups = events.filter((e) => e.kind === "signup").length;
+  const list = (items: string[]) =>
+    items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+  const shown = pages.slice(0, 4);
+  const more = pages.length - shown.length;
+  return [
+    views.length
+      ? `${views.length} page view${views.length === 1 ? "" : "s"} (${list(more > 0 ? [...shown, `${more} more`] : shown)})`
+      : "",
+    logins.length ? `signed in as the ${list(logins)}` : "",
+    signups ? `made ${signups === 1 ? "a rider account" : `${signups} rider accounts`}` : "",
+    bookings ? `${bookings} test booking${bookings === 1 ? "" : "s"}` : "",
+  ]
+    .filter(Boolean)
+    .join(", ");
 }
 
 export function toPreviewView(d: PlatformDemo, now: Date): PreviewView {

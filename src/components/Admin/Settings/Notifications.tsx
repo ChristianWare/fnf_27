@@ -51,6 +51,16 @@ const options = [
     text: "Their score, their website and the number on their Google listing, and again if they ask for the full report.",
   },
   {
+    id: "preview",
+    title: "A prospect uses their preview",
+    text: "The first time they open it (a text too), when they come back, sign in, make an account or book a test ride.",
+  },
+  {
+    id: "previews",
+    title: "A morning previews summary",
+    text: "What prospects did in their previews yesterday, previews ending in the next 3 days, and ones still unopened. At 7am Arizona time.",
+  },
+  {
     id: "digest",
     title: "A morning summary",
     text: "Everything waiting on you, at 7am Arizona time.",
