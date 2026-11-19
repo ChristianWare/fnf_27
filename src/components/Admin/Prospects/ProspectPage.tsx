@@ -17,7 +17,6 @@ import { useState } from "react";
 import Icon from "@/components/Dashboard/icons";
 import { Panel, Pill, btn, ui } from "@/components/Dashboard/ui/ui";
 import { useAction } from "@/components/Dashboard/useAction";
-import { useToast } from "@/components/Dashboard/Toast/Toast";
 import { fmtAgo, fmtDate, fmtTime } from "@/lib/dashboard/format";
 import {
   PICK_OUTCOMES,
@@ -31,12 +30,9 @@ import type { ProspectView } from "@/lib/prospects/view";
 import type { PreviewView } from "@/lib/demos/preview";
 import {
   addNote,
-  auditProspect,
   deleteProspect,
-  inviteLinkFor,
   logCall,
   saveProspect,
-  sendInvite,
   setFollowUpAt,
   setStage,
   type TimelineItem,
@@ -64,6 +60,7 @@ const KIND_LABEL: Record<string, string> = {
   STAGE: "Stage",
   IMPORT: "Added",
   SIGNUP: "Signed up",
+  PREVIEW: "Preview",
 };
 
 const href = (site: string) => (/^https?:\/\//i.test(site) ? site : `https://${site}`);
@@ -98,12 +95,9 @@ export default function ProspectPage({
 }) {
   const router = useRouter();
   const { run, pending } = useAction();
-  const toast = useToast();
   const [outcome, setOutcome] = useState<CallOutcome | null>(null);
   const [note, setNote] = useState("");
   const [when, setWhen] = useState(tomorrowNine(now));
-  const [email, setEmail] = useState(p.email);
-  const [name, setName] = useState(p.contactName);
   const [editing, setEditing] = useState(false);
   const [jot, setJot] = useState("");
   const dnc = p.stage === "DO_NOT_CALL";
@@ -124,24 +118,6 @@ export default function ProspectPage({
       },
     );
   };
-
-  const copyLink = (thenText: boolean) =>
-    run(
-      () => inviteLinkFor(p.id),
-      (link) => {
-        if (!link) return;
-        if (thenText) {
-          const first = p.contactName.split(/\s+/)[0];
-          const body = `${first ? `Hi ${first}, ` : ""}it's Chris from Fonts & Footers. Here's the free month of the Leads Tool we talked about: ${link}`;
-          window.location.href = `sms:${p.phone.replace(/[^\d+]/g, "")}?&body=${encodeURIComponent(body)}`;
-          return;
-        }
-        navigator.clipboard?.writeText(link).then(
-          () => toast("Link copied"),
-          () => toast(link),
-        );
-      },
-    );
 
   const [asking, setAsking] = useState(false);
   const remove = () =>
@@ -316,40 +292,6 @@ export default function ProspectPage({
           {/* ── Their preview ── */}
           <PreviewPanel p={p} preview={preview} issue={previewIssue} now={now} />
 
-          {/* ── Their audit ── */}
-          <Panel
-            title='Their audit'
-            text='A free look at their current site, to send after the call.'
-          >
-            <div className={styles.row}>
-              {p.audit && (
-                <Link className={btn("light")} href={`/admin/audits/${p.audit.id}`}>
-                  {p.audit.score !== null ? `Score ${p.audit.score}/100` : "Running…"}
-                  <Icon name='arrow' className={styles.btnIcon} />
-                </Link>
-              )}
-              <button
-                type='button'
-                className={btn(p.audit ? "outline" : "black")}
-                disabled={pending || (!p.website && !p.city)}
-                onClick={() =>
-                  run(
-                    () => auditProspect(p.id),
-                    () => {
-                      router.refresh();
-                      return { message: "Audit started", detail: "It takes about a minute." };
-                    },
-                  )
-                }
-              >
-                {p.audit ? "Run it again" : "Run their audit"}
-              </button>
-            </div>
-            {!p.website && !p.city && (
-              <p className={styles.help}>Add their website or city first.</p>
-            )}
-          </Panel>
-
           {/* ── What's happened ── */}
           <Panel title='Timeline'>
             <form
@@ -450,64 +392,6 @@ export default function ProspectPage({
             </p>
           </Panel>
 
-          {/* ── The trial link ── */}
-          {!dnc && !p.clientId && (
-            <Panel
-              title='Send the free trial'
-              text={
-                <>
-                  Their own sign-up link, with their details filled in. When they sign up,
-                  they&apos;re linked here and move to On a trial.
-                  {p.inviteSentAt ? ` Last sent ${fmtAgo(p.inviteSentAt, now).replace(/^J/, "j")}.` : ""}
-                </>
-              }
-            >
-              <div className={styles.form}>
-                <label className={ui.field}>
-                  <span className={ui.label}>Their name</span>
-                  <input className={ui.input} value={name} onChange={(e) => setName(e.target.value)} />
-                </label>
-                <label className={ui.field}>
-                  <span className={ui.label}>Email</span>
-                  <input
-                    className={ui.input}
-                    type='email'
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </label>
-                <div className={styles.row}>
-                  <button
-                    type='button'
-                    className={btn("black")}
-                    disabled={pending || !email}
-                    onClick={() =>
-                      run(
-                        () => sendInvite(p.id, email, name),
-                        () => {
-                          router.refresh();
-                          return { message: "Trial link sent", detail: email };
-                        },
-                      )
-                    }
-                  >
-                    <Icon name='send' className={styles.btnIcon} />
-                    Email the link
-                  </button>
-                  <button type='button' className={btn("light")} disabled={pending} onClick={() => copyLink(false)}>
-                    <Icon name='copy' className={styles.btnIcon} />
-                    Copy link
-                  </button>
-                  {p.phone && (
-                    <button type='button' className={btn("light")} disabled={pending} onClick={() => copyLink(true)}>
-                      <Icon name='message' className={styles.btnIcon} />
-                      Text from my phone
-                    </button>
-                  )}
-                </div>
-              </div>
-            </Panel>
-          )}
           {p.clientId && (
             <Panel title='Signed up'>
               <Link className={btn("light")} href={`/admin/clients/${p.clientId}`}>

@@ -45,6 +45,11 @@
 }
 
 /* ── Market ── */
+.marketPick {
+  max-width: 52rem;
+  margin-bottom: 0.4rem;
+}
+
 .markets {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

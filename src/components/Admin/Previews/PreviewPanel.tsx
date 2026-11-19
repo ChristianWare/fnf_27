@@ -19,7 +19,7 @@ import ConfirmDialog from "@/components/Dashboard/ConfirmDialog/ConfirmDialog";
 import { daysBetween, fmtAgo, fmtDate, fmtTime } from "@/lib/dashboard/format";
 import type { ProspectView } from "@/lib/prospects/view";
 import { ownerUrl, previewText, type PreviewView } from "@/lib/demos/preview";
-import { deletePreview, extendPreview } from "@/app/admin/demos/actions";
+import { deletePreview, extendPreview, markPreviewSent } from "@/app/admin/demos/actions";
 import { STATUS_LABEL, statusTone } from "./status";
 import styles from "./Previews.module.css";
 
@@ -44,9 +44,16 @@ export default function PreviewPanel({
     try {
       await navigator.clipboard.writeText(text);
       toast(`${what} copied`);
+      if (preview?.live) sent(`${what.toLowerCase()} copied`);
     } catch {
       toast("Couldn't copy. Select it and copy instead.", { tone: "error" });
     }
+  };
+
+  /** The Prospects list shows "Preview sent" once it's gone out. */
+  const sent = (how: string) => {
+    if (!preview) return;
+    void markPreviewSent(p.id, preview.url, how).catch(() => {});
   };
 
   const makeButton = (
@@ -170,7 +177,11 @@ export default function PreviewPanel({
         <p className={styles.message}>{message}</p>
         <div className={styles.row}>
           {digits && (
-            <a href={`sms:${digits}?&body=${encodeURIComponent(message)}`} className={btn("black")}>
+            <a
+              href={`sms:${digits}?&body=${encodeURIComponent(message)}`}
+              className={btn("black")}
+              onClick={() => sent("texted")}
+            >
               <Icon name='message' className={styles.btnIcon} />
               Text from my phone
             </a>

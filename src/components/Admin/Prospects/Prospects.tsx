@@ -50,7 +50,7 @@ type SavedView = {
   tab: Tab;
   query: string;
   filter: FilterKey;
-  list: string;
+  market: string;
   scroll: number;
 };
 
@@ -90,7 +90,7 @@ export default function Prospects({
   const [tab, setTab] = useState<Tab>(rows.length ? "TODAY" : "IMPORT");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterKey>("OPEN");
-  const [list, setList] = useState("");
+  const [market, setMarket] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const byId = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
   const restored = useRef(false);
@@ -106,14 +106,14 @@ export default function Prospects({
     if (saved.tab && (saved.tab !== "IMPORT" || !rows.length)) setTab(saved.tab);
     if (typeof saved.query === "string") setQuery(saved.query);
     if (saved.filter) setFilter(saved.filter);
-    if (typeof saved.list === "string") setList(saved.list);
+    if (typeof saved.market === "string") setMarket(saved.market);
     /* eslint-enable react-hooks/set-state-in-effect */
     const y = Number(saved.scroll) || 0;
     if (y > 0) requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)));
   }, [rows.length]);
 
   /** Remember where we are, then go to their page. */
-  const remember = () => writeView({ tab, query, filter, list, scroll: window.scrollY });
+  const remember = () => writeView({ tab, query, filter, market, scroll: window.scrollY });
   const openPage = (id: string) => {
     remember();
     router.push(`/admin/prospects/${id}`);
@@ -188,14 +188,13 @@ export default function Prospects({
       {tab === "ALL" && (
         <Everyone
           rows={rows}
-          lists={lists}
           now={now}
           query={query}
           setQuery={setQuery}
           filter={filter}
           setFilter={setFilter}
-          list={list}
-          setList={setList}
+          market={market}
+          setMarket={setMarket}
           pick={pick}
         />
       )}
@@ -308,27 +307,36 @@ function Today({
 
 function Everyone({
   rows,
-  lists,
   now,
   query,
   setQuery,
   filter,
   setFilter,
-  list,
-  setList,
+  market,
+  setMarket,
   pick,
 }: {
   rows: ProspectView[];
-  lists: string[];
   now: string;
   query: string;
   setQuery: (v: string) => void;
   filter: FilterKey;
   setFilter: (v: FilterKey) => void;
-  list: string;
-  setList: (v: string) => void;
+  /** A state code ("AZ"), or "" for every market. */
+  market: string;
+  setMarket: (v: string) => void;
   pick: Picking;
 }) {
+  // The states your prospects are in, most first.
+  const markets = useMemo(() => {
+    const n = new Map<string, number>();
+    for (const r of rows) {
+      const st = r.state.trim().toUpperCase();
+      if (st) n.set(st, (n.get(st) ?? 0) + 1);
+    }
+    return [...n.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  }, [rows]);
+
   const counts = useMemo(() => {
     const out: Record<string, number> = { ALL: rows.length, OPEN: 0 };
     for (const r of rows) {
@@ -344,7 +352,7 @@ function Everyone({
       .filter((r) =>
         filter === "ALL" ? true : filter === "OPEN" ? !CLOSED.includes(r.stage) : r.stage === filter,
       )
-      .filter((r) => !list || r.list === list)
+      .filter((r) => !market || r.state.trim().toUpperCase() === market)
       .filter(
         (r) =>
           !q ||
@@ -352,7 +360,7 @@ function Everyone({
             .toLowerCase()
             .includes(q),
       );
-  }, [rows, query, filter, list]);
+  }, [rows, query, filter, market]);
 
   return (
     <div className={styles.everyone}>
@@ -367,14 +375,14 @@ function Everyone({
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
-        {lists.length > 1 && (
+        {markets.length > 0 && (
           <label>
-            <span className={ui.srOnly}>List</span>
-            <select className={ui.select} value={list} onChange={(e) => setList(e.target.value)}>
-              <option value=''>Every list</option>
-              {lists.map((l) => (
-                <option key={l} value={l}>
-                  {l}
+            <span className={ui.srOnly}>Market</span>
+            <select className={ui.select} value={market} onChange={(e) => setMarket(e.target.value)}>
+              <option value=''>Every market</option>
+              {markets.map(([st, count]) => (
+                <option key={st} value={st}>
+                  {st} ({count})
                 </option>
               ))}
             </select>
@@ -528,7 +536,19 @@ function List({
             </label>
             <Link href={`/admin/prospects/${r.id}`} className={styles.row} onClick={pick.remember}>
               <span className={styles.who}>
-                <span className={styles.name}>{r.business}</span>
+                <span className={styles.nameRow}>
+                  <span className={styles.name}>{r.business}</span>
+                  {r.preview && (
+                    <span className={`${styles.previewTag} ${styles[`preview_${r.preview.state}`]}`}>
+                      <Icon name='sparkle' className={styles.previewIcon} />
+                      {r.preview.state === "opened"
+                        ? `Preview opened${r.preview.views > 1 ? ` · ${r.preview.views} views` : ""}`
+                        : r.preview.state === "sent"
+                          ? "Preview sent"
+                          : "Preview made, not sent"}
+                    </span>
+                  )}
+                </span>
                 <span className={styles.sub}>
                   {[
                     [r.city, r.state].filter(Boolean).join(", "),

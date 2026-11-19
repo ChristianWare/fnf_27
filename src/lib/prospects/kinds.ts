@@ -78,6 +78,7 @@ export const PROSPECT_ACTIVITY = [
   "STAGE",
   "IMPORT",
   "SIGNUP",
+  "PREVIEW",
 ] as const;
 export type ProspectActivityKind = (typeof PROSPECT_ACTIVITY)[number];
 

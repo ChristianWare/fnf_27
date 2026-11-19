@@ -225,26 +225,19 @@ export default function PreviewForm({
           title='Market'
           text='Sets the airports, neighborhoods, time zone, wording and photos on their site.'
         >
-          <div className={styles.markets} role='radiogroup' aria-label='Market'>
-            {DEMO_MARKETS.map((m) => (
-              <button
-                key={m.id}
-                type='button'
-                role='radio'
-                aria-checked={marketId === m.id}
-                className={styles.market}
-                onClick={() => setMarketId(m.id)}
-              >
-                <span className={styles.marketName}>
-                  {marketLabel(m)}
-                </span>
-                <span className={styles.marketNote}>
-                  {m.airports.filter((a) => a.kind === "commercial").map((a) => a.code).join(", ")} ·{" "}
-                  {m.timeZone} time
-                </span>
-              </button>
-            ))}
-          </div>
+          <label className={`${ui.field} ${styles.marketPick}`}>
+            <span className={ui.label}>Their market</span>
+            <select className={ui.select} value={marketId} onChange={(e) => setMarketId(e.target.value)}>
+              {DEMO_MARKETS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {`${marketLabel(m)} · ${m.airports
+                    .filter((a) => a.kind === "commercial")
+                    .map((a) => a.code)
+                    .join(", ")} · ${m.timeZone} time`}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <div className={styles.marketDetail}>
             <div className={styles.detailCol}>

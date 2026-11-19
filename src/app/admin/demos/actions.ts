@@ -4,6 +4,8 @@
 // The demo platform (fnf-demos) does the work; see src/lib/demos/platform.ts.
 
 import { revalidatePath } from "next/cache";
+import { and, eq, like } from "drizzle-orm";
+import { db, schema as s } from "@/db";
 import { getSessionUser } from "@/lib/auth/dal";
 import { done, fail, type ActionResult } from "@/lib/actions";
 import { logActivity } from "@/lib/prospects/store";
@@ -24,6 +26,35 @@ const refresh = () => {
   revalidatePath("/admin/demos");
   revalidatePath("/admin/prospects", "layout");
 };
+
+/** Notes that their preview went out (texted, or its link or text
+ *  copied to send another way). Once per preview: the Prospects list shows
+ *  "Preview sent" from this. */
+export async function markPreviewSent(prospectId: string, url: string, how: string): Promise<ActionResult> {
+  const user = await admin();
+  if (!user) return fail("Only admins can do that.");
+  const id = String(prospectId);
+  const link = String(url).slice(0, 300);
+  const [already] = await db
+    .select({ id: s.prospectActivity.id })
+    .from(s.prospectActivity)
+    .where(
+      and(
+        eq(s.prospectActivity.prospectId, id),
+        eq(s.prospectActivity.kind, "PREVIEW"),
+        like(s.prospectActivity.text, `%${link}`),
+      ),
+    )
+    .limit(1);
+  if (!already) {
+    await logActivity(id, "PREVIEW", `Sent their preview (${String(how).slice(0, 40)}): ${link}`, user.id).catch(
+      () => {},
+    );
+    revalidatePath(`/admin/prospects/${id}`);
+    revalidatePath("/admin/prospects");
+  }
+  return done();
+}
 
 const why = (e: unknown) =>
   e instanceof PlatformError ? e.message : "Something went wrong. Try again.";

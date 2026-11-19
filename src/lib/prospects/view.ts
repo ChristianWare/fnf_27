@@ -36,6 +36,9 @@ export type ProspectView = {
   inviteSentAt: string | null;
   coverage: { tone: Tone; label: string };
   createdAt: string;
+  /** Their live preview, where the Prospects list shows it: made, sent
+   *  (texted or its link copied) or opened. Filled in by that page only. */
+  preview?: { state: "made" | "sent" | "opened"; views: number } | null;
 };
 
 export async function prospectViews(rows: ProspectRow[]): Promise<ProspectView[]> {

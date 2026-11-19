@@ -12,6 +12,10 @@ import {
   queueOf,
 } from "@/lib/prospects/store";
 import { prospectViews } from "@/lib/prospects/view";
+import { and, eq } from "drizzle-orm";
+import { db, schema as s } from "@/db";
+import { isGone, listPlatformDemos, platformReady } from "@/lib/demos/platform";
+import type { PlatformDemo } from "@/lib/demos/preview";
 
 export const metadata: Metadata = { title: "Prospects" };
 
@@ -33,7 +37,29 @@ export default async function ProspectsPage() {
   ]);
   await markWon(rows);
 
-  const view = await prospectViews(rows);
+  const [base, demos, sentRows] = await Promise.all([
+    prospectViews(rows),
+    platformReady() ? listPlatformDemos().catch(() => [] as PlatformDemo[]) : Promise.resolve([] as PlatformDemo[]),
+    db
+      .select({ prospectId: s.prospectActivity.prospectId, text: s.prospectActivity.text })
+      .from(s.prospectActivity)
+      .where(and(eq(s.prospectActivity.kind, "PREVIEW"))),
+  ]);
+
+  // Each prospect's newest live preview: opened, sent, or just made.
+  const sent = new Set(sentRows.map((r) => `${r.prospectId} ${r.text.split(": ").pop()}`));
+  const newest = new Map<string, PlatformDemo>();
+  for (const d of demos) {
+    if (isGone(d) || d.status !== "live" || !d.ref) continue;
+    const cur = newest.get(d.ref);
+    if (!cur || d.createdAt > cur.createdAt) newest.set(d.ref, d);
+  }
+  const view = base.map((v) => {
+    const d = newest.get(v.id);
+    if (!d) return { ...v, preview: null };
+    const state = d.firstOpenedAt ? "opened" : sent.has(`${v.id} ${d.url}`) ? "sent" : "made";
+    return { ...v, preview: { state, views: d.views } as const };
+  });
 
   const { due, fresh } = queueOf(rows, now, goal);
   const calledToday = week.filter((c) => c.at >= today).length;
