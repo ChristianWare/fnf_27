@@ -8,6 +8,10 @@ import { createHash, randomBytes } from "node:crypto";
 import pg from "pg";
 import { createId } from "./import-old-site.mjs";
 
+// sslmode=require → verify-full: the same connection, without pg's warning.
+const pgUrl = (u) =>
+  !u || /[?&]uselibpqcompat=/.test(u) ? u : u.replace(/([?&]sslmode=)(require|prefer|verify-ca)\b/, "$1verify-full");
+
 const [emailArg, ...nameParts] = process.argv.slice(2);
 const email = String(emailArg ?? "")
   .trim()
@@ -30,7 +34,7 @@ const base = (
   "http://localhost:3000"
 ).replace(/\/$/, "");
 
-const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+const client = new pg.Client({ connectionString: pgUrl(process.env.DATABASE_URL) });
 await client.connect();
 try {
   await client.query("begin");

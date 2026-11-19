@@ -6,12 +6,20 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
+/** Neon's strings say sslmode=require; pg now warns that it treats that as
+ *  verify-full. Say verify-full outright: the same secure connection,
+ *  without the warning. */
+export function pgUrl(url: string | undefined) {
+  if (!url || /[?&]uselibpqcompat=/.test(url)) return url;
+  return url.replace(/([?&]sslmode=)(require|prefer|verify-ca)\b/, "$1verify-full");
+}
+
 const cached = globalThis as unknown as { fnfPool?: Pool };
 
 const pool =
   cached.fnfPool ??
   new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: pgUrl(process.env.DATABASE_URL),
     max: 5,
     idleTimeoutMillis: 10_000,
   });

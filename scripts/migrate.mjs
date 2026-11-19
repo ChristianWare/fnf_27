@@ -17,6 +17,10 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { hasOldTables, importOldSite } from "./import-old-site.mjs";
 
+// sslmode=require → verify-full: the same connection, without pg's warning.
+const pgUrl = (u) =>
+  !u || /[?&]uselibpqcompat=/.test(u) ? u : u.replace(/([?&]sslmode=)(require|prefer|verify-ca)\b/, "$1verify-full");
+
 const url = process.env.DATABASE_URL;
 if (!url) {
   console.error("DATABASE_URL isn't set. Add it to .env first.");
@@ -40,7 +44,7 @@ const where = (() => {
   }
 })();
 
-const client = new pg.Client({ connectionString: url });
+const client = new pg.Client({ connectionString: pgUrl(url) });
 await client.connect();
 
 try {

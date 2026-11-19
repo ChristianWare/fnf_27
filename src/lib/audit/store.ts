@@ -180,6 +180,13 @@ export async function deleteAudit(id: string) {
   await db.delete(a).where(eq(a.id, id));
 }
 
+/** Deletes several at once; returns how many went. */
+export async function deleteAudits(ids: string[]) {
+  if (!ids.length) return 0;
+  const gone = await db.delete(a).where(inArray(a.id, ids)).returning({ id: a.id });
+  return gone.length;
+}
+
 /** True the first time a key is used: for alerts that go out once. */
 export async function noticeOnce(key: string) {
   const [row] = await db

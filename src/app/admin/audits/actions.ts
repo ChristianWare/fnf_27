@@ -29,6 +29,7 @@ import { beginAudit, pickListing, type Candidate } from "@/lib/audit/start";
 import {
   createAudit,
   deleteAudit,
+  deleteAudits,
   getAudit,
   updateAudit,
 } from "@/lib/audit/store";
@@ -211,6 +212,20 @@ export async function removeAudit(id: string): Promise<ActionResult> {
   await deleteAudit(String(id));
   refresh();
   return done();
+}
+
+/** Deletes the ticked audits for good. Their report links stop working. */
+export async function removeAudits(ids: string[]): Promise<ActionResult<number>> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const list = [...new Set((Array.isArray(ids) ? ids : []).map(String).filter(Boolean))].slice(0, 2000);
+  if (!list.length) return fail("Pick which audits to delete first.");
+  const sample = await sampleId();
+  if (sample && list.includes(sample)) await setSampleId(null);
+  const count = await deleteAudits(list);
+  refresh();
+  revalidatePath("/audit/sample");
+  return done(count);
 }
 
 /* ── Semrush exports ── */

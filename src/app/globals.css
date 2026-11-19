@@ -420,16 +420,17 @@ textarea:focus {
 }
 
 /* ── Fade-ins (see components/shared/Reveal) ──
-   The hidden starting state only applies once the script in the root
-   layout has marked the page, so nothing is ever hidden without
-   JavaScript. */
-html[data-reveal-ready] [data-reveal]:not([data-revealed]) {
-  opacity: 0;
-  transform: translate3d(0, 2.4rem, 0);
-}
+   The hidden starting state only applies when the browser runs scripts
+   (scripting: enabled), so nothing is ever hidden without JavaScript. */
+@media (scripting: enabled) {
+  html [data-reveal]:not([data-revealed]) {
+    opacity: 0;
+    transform: translate3d(0, 2.4rem, 0);
+  }
 
-html[data-reveal-ready] [data-reveal-style="fade"]:not([data-revealed]) {
-  transform: none;
+  html [data-reveal-style="fade"]:not([data-revealed]) {
+    transform: none;
+  }
 }
 
 html [data-reveal] {
@@ -444,7 +445,7 @@ html [data-reveal-style="fade"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-reveal-ready] [data-reveal]:not([data-revealed]) {
+  html [data-reveal]:not([data-revealed]) {
     opacity: 1;
     transform: none;
   }
