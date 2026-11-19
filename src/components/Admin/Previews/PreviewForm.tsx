@@ -27,6 +27,7 @@ import {
   DEMO_DAYS,
   DEMO_DOMAIN,
   DEMO_MARKETS,
+  marketLabel,
   type DemoMarket,
   demoSlug,
   marketFor,
@@ -235,7 +236,7 @@ export default function PreviewForm({
                 onClick={() => setMarketId(m.id)}
               >
                 <span className={styles.marketName}>
-                  {m.city}, {m.state}
+                  {marketLabel(m)}
                 </span>
                 <span className={styles.marketNote}>
                   {m.airports.filter((a) => a.kind === "commercial").map((a) => a.code).join(", ")} ·{" "}

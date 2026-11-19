@@ -22,7 +22,14 @@ export type DemoMarket = {
   areas: string[];
   /** A small copy of the market's home page hero, for the form. */
   heroThumb: string;
+  /** Other states whose prospects this market fits (DC's suburbs). */
+  alsoStates?: string[];
+  /** How it's named, when "<city>, <state>" doesn't read right. */
+  label?: string;
 };
+
+/** "Phoenix, AZ", "Washington, DC", "Florida (statewide)". */
+export const marketLabel = (m: DemoMarket) => m.label ?? `${m.city}, ${m.state}`;
 
 export const DEMO_MARKETS: DemoMarket[] = [
   {
@@ -91,6 +98,61 @@ export const DEMO_MARKETS: DemoMarket[] = [
     ],
     heroThumb: "/demos/los-angeles-hero.jpg",
   },
+  {
+    id: "atlanta",
+    city: "Atlanta",
+    state: "GA",
+    timeZone: "Eastern",
+    airports: [
+      { code: "ATL", name: "Hartsfield-Jackson", kind: "commercial" },
+      { code: "PDK", name: "Peachtree-DeKalb", kind: "private" },
+      { code: "FTY", name: "Fulton County", kind: "private" },
+    ],
+    areas: ["Buckhead", "Midtown", "Downtown", "Alpharetta", "Sandy Springs", "Decatur", "The Battery Atlanta"],
+    heroThumb: "/demos/atlanta-hero.jpg",
+  },
+  {
+    id: "washington-dc",
+    city: "Washington, DC",
+    state: "DC",
+    alsoStates: ["MD", "VA"],
+    label: "Washington, DC",
+    timeZone: "Eastern",
+    airports: [
+      { code: "DCA", name: "Reagan National", kind: "commercial" },
+      { code: "IAD", name: "Dulles", kind: "commercial" },
+      { code: "BWI", name: "BWI", kind: "commercial" },
+      { code: "HEF", name: "Manassas", kind: "private" },
+    ],
+    areas: ["Georgetown", "Downtown", "Capitol Hill", "Arlington", "Alexandria", "Bethesda", "Tysons"],
+    heroThumb: "/demos/washington-dc-hero.jpg",
+  },
+  {
+    id: "florida",
+    city: "Florida",
+    state: "FL",
+    label: "Florida (statewide)",
+    timeZone: "Eastern",
+    airports: [
+      { code: "MIA", name: "Miami International", kind: "commercial" },
+      { code: "FLL", name: "Fort Lauderdale", kind: "commercial" },
+      { code: "PBI", name: "Palm Beach", kind: "commercial" },
+      { code: "MCO", name: "Orlando", kind: "commercial" },
+      { code: "TPA", name: "Tampa", kind: "commercial" },
+      { code: "JAX", name: "Jacksonville", kind: "commercial" },
+      { code: "OPF", name: "Opa-locka", kind: "private" },
+    ],
+    areas: [
+      "Miami Beach",
+      "Brickell & Downtown Miami",
+      "Fort Lauderdale",
+      "Palm Beach",
+      "Orlando",
+      "Tampa & St. Pete",
+      "Jacksonville",
+    ],
+    heroThumb: "/demos/florida-hero.jpg",
+  },
 ];
 
 /** The About page photo every market starts with (small copy). */
@@ -98,7 +160,8 @@ export const DEMO_ABOUT_THUMB = "/demos/about-hero.jpg";
 
 /** The market that fits a prospect's state, else Las Vegas. */
 export function marketFor(state: string): DemoMarket {
-  return DEMO_MARKETS.find((m) => m.state === state.toUpperCase()) ?? DEMO_MARKETS[0];
+  const st = state.trim().toUpperCase();
+  return DEMO_MARKETS.find((m) => m.state === st || m.alsoStates?.includes(st)) ?? DEMO_MARKETS[0];
 }
 
 export const DEMO_DAYS = [14, 30, 45] as const;

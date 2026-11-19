@@ -1,7 +1,7 @@
 // A preview (a prospect's demo site) as the admin screens show it, made
 // from what the demo platform reports. Safe anywhere.
 
-import { DEMO_MARKETS } from "./options";
+import { DEMO_MARKETS, marketLabel } from "./options";
 
 export type PreviewStatus = "NOT_OPENED" | "OPENED" | "EXPIRING" | "EXPIRED";
 
@@ -171,7 +171,7 @@ export function toPreviewView(d: PlatformDemo, now: Date): PreviewView {
     business: d.business,
     contactName: d.contactName,
     phone: d.phone,
-    market: market ? `${market.city}, ${market.state}` : d.marketId,
+    market: market ? marketLabel(market) : d.marketId,
     url: d.url,
     createdAt: d.createdAt,
     expiresAt: d.expiresAt,
