@@ -6,6 +6,11 @@
 // preview's address and length. The summary on the right says what gets
 // made. "Make the preview" sends it all to the demo platform (fnf-demos)
 // and goes back to their page, where the preview's link now is.
+//
+// With `editing`, the same form changes a live preview in place: its name,
+// contact details and photos. The market, address and length stay (a new
+// market would mean new airports and bookings; a new address would break
+// the link they already have).
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,7 +18,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/components/Dashboard/icons";
 import { Panel, Pill, btn, ui } from "@/components/Dashboard/ui/ui";
 import { useToast } from "@/components/Dashboard/Toast/Toast";
-import { makePreview } from "@/app/admin/demos/actions";
+import { editPreview, makePreview } from "@/app/admin/demos/actions";
+import type { PreviewEditing } from "@/lib/demos/preview";
 import { fmtDate } from "@/lib/dashboard/format";
 import type { ProspectView } from "@/lib/prospects/view";
 import {
@@ -32,6 +38,8 @@ type PhotoChoice = {
   own: boolean;
   /** Their photo, already made smaller for the upload, and its preview. */
   file: { url: string; name: string; blob: File } | null;
+  /** Editing: their photo already on the preview, until it's replaced. */
+  current?: string | null;
 };
 
 /** Their photo at most 2400px wide, as a JPEG: phone photos are often
@@ -54,22 +62,44 @@ async function shrink(file: File): Promise<File> {
 
 const DEFAULT_PHOTO: PhotoChoice = { own: false, file: null };
 
-export default function PreviewForm({ p, now }: { p: ProspectView; now: string }) {
+const startPhoto = (current: string | null | undefined): PhotoChoice =>
+  current ? { own: true, file: null, current } : DEFAULT_PHOTO;
+
+/** What to send for a photo when editing: a new file, "default", or
+ *  nothing (keep what's there). */
+function editedPhoto(choice: PhotoChoice, had: string | null): File | "default" | null {
+  if (choice.own && choice.file) return choice.file.blob;
+  if (choice.own && choice.current) return null;
+  return had ? "default" : null;
+}
+
+export default function PreviewForm({
+  p,
+  now,
+  editing,
+}: {
+  p: ProspectView;
+  now: string;
+  /** A live preview to change in place, instead of making a new one. */
+  editing?: PreviewEditing;
+}) {
   const router = useRouter();
   const toast = useToast();
-  const [business, setBusiness] = useState(p.business);
-  const [slug, setSlug] = useState(demoSlug(p.business));
+  const [business, setBusiness] = useState(editing?.business ?? p.business);
+  const [slug, setSlug] = useState(
+    editing ? editing.url.replace(/^https?:\/\//, "").split(".")[0] : demoSlug(p.business),
+  );
   const [slugEdited, setSlugEdited] = useState(false);
-  const [marketId, setMarketId] = useState(marketFor(p.state).id);
+  const [marketId, setMarketId] = useState(editing?.marketId ?? marketFor(p.state).id);
   const [days, setDays] = useState<number>(30);
-  const [hero, setHero] = useState<PhotoChoice>(DEFAULT_PHOTO);
-  const [about, setAbout] = useState<PhotoChoice>(DEFAULT_PHOTO);
+  const [hero, setHero] = useState<PhotoChoice>(startPhoto(editing?.heroUrl));
+  const [about, setAbout] = useState<PhotoChoice>(startPhoto(editing?.aboutUrl));
   const [pending, setPending] = useState(false);
 
   const market = DEMO_MARKETS.find((m) => m.id === marketId) ?? DEMO_MARKETS[0];
   const expires = useMemo(
-    () => new Date(new Date(now).getTime() + days * 86_400_000).toISOString(),
-    [now, days],
+    () => editing?.expiresAt ?? new Date(new Date(now).getTime() + days * 86_400_000).toISOString(),
+    [now, days, editing?.expiresAt],
   );
 
   // Photo previews live only in this tab; let them go when it closes.
@@ -82,7 +112,7 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
     [],
   );
 
-  const ownCount = [hero, about].filter((x) => x.own && x.file).length;
+  const ownCount = [hero, about].filter((x) => x.own && (x.file || x.current)).length;
   // "Their own" with no photo picked yet still counts as the default.
   const ready = business.trim().length > 1;
 
@@ -92,6 +122,24 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
     // The named fields (contact, phone, email…), then the rest.
     const form = new FormData(e.currentTarget);
     form.set("ref", p.id);
+    if (editing) {
+      form.set("business", business.trim());
+      const heroSend = editedPhoto(hero, editing.heroUrl);
+      const aboutSend = editedPhoto(about, editing.aboutUrl);
+      if (heroSend) form.set("hero", heroSend);
+      if (aboutSend) form.set("about", aboutSend);
+      setPending(true);
+      const res = await editPreview(editing.id, form);
+      setPending(false);
+      if (!res.ok) {
+        toast("The preview wasn't changed", { tone: "error", detail: res.error });
+        return;
+      }
+      toast("Preview updated", { detail: "It can take up to half a minute to show everywhere." });
+      router.push(`/admin/prospects/${p.id}`);
+      router.refresh();
+      return;
+    }
     form.set("business", business.trim());
     form.set("slug", slug);
     form.set("marketId", marketId);
@@ -117,7 +165,11 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
         {/* ── Their business ── */}
         <Panel
           title='Their business'
-          text='Filled in from their prospect page. Change anything here and it changes on the preview only.'
+          text={
+            editing
+              ? "What their preview shows now. Change anything and save: it changes on the preview only."
+              : "Filled in from their prospect page. Change anything here and it changes on the preview only."
+          }
         >
           <div className={styles.grid}>
             <label className={`${ui.field} ${styles.wide}`}>
@@ -132,13 +184,19 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
                 }}
               />
             </label>
-            <Field label='Short name for the logo' name='shortName' placeholder='Optional, e.g. Desert Star' />
-            <Field label='Contact name' name='contactName' value={p.contactName} />
-            <Field label='Phone on the site' name='phone' value={p.phone} type='tel' />
-            <Field label='Email on the site' name='email' value={p.email} type='email' />
+            <Field
+              label='Short name for the logo'
+              name='shortName'
+              value={editing?.shortName}
+              placeholder='Optional, e.g. Desert Star'
+            />
+            <Field label='Contact name' name='contactName' value={editing?.contactName ?? p.contactName} />
+            <Field label='Phone on the site' name='phone' value={editing?.phone ?? p.phone} type='tel' />
+            <Field label='Email on the site' name='email' value={editing?.email ?? p.email} type='email' />
             <Field
               label='Office address'
               name='address'
+              value={editing?.address}
               placeholder='Optional. Without one, the site shows their city.'
               wide
             />
@@ -146,6 +204,7 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
         </Panel>
 
         {/* ── Market ── */}
+        {!editing && (
         <Panel
           title='Market'
           text='Sets the airports, neighborhoods, time zone, wording and photos on their site.'
@@ -198,11 +257,16 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
             </div>
           </div>
         </Panel>
+        )}
 
         {/* ── Photos ── */}
         <Panel
           title='Photos'
-          text={`Their site starts with the ${market.city} photos. Swap either one for a photo of theirs, from their Instagram or Facebook. Used only inside their private preview.`}
+          text={
+            editing
+              ? `Swap either photo for a new one of theirs, or go back to the ${market.city} one.`
+              : `Their site starts with the ${market.city} photos. Swap either one for a photo of theirs, from their Instagram or Facebook. Used only inside their private preview.`
+          }
         >
           <div className={styles.slots}>
             <PhotoSlot
@@ -225,6 +289,7 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
         </Panel>
 
         {/* ── Address and length ── */}
+        {!editing && (
         <Panel title='Address and length'>
           <label className={ui.field}>
             <span className={ui.label}>Address</span>
@@ -268,6 +333,7 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
             />
           </label>
         </Panel>
+        )}
       </div>
 
       {/* ── What gets made ── */}
@@ -284,10 +350,17 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
               <Icon name='globe' className={styles.madeIcon} />
               Their site in {market.city}, with {market.airports.length} airports
             </li>
-            <li>
-              <Icon name='booking' className={styles.madeIcon} />
-              Booking and test payments
-            </li>
+            {editing ? (
+              <li>
+                <Icon name='history' className={styles.madeIcon} />
+                Same link, logins, bookings and visits
+              </li>
+            ) : (
+              <li>
+                <Icon name='booking' className={styles.madeIcon} />
+                Booking and test payments
+              </li>
+            )}
             <li>
               <Icon name='image' className={styles.madeIcon} />
               {ownCount === 2
@@ -296,10 +369,12 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
                   ? `One of their photos, one of ${market.city}`
                   : `The ${market.city} photos`}
             </li>
-            <li>
-              <Icon name='users' className={styles.madeIcon} />
-              Admin, driver and rider logins
-            </li>
+            {!editing && (
+              <li>
+                <Icon name='users' className={styles.madeIcon} />
+                Admin, driver and rider logins
+              </li>
+            )}
           </ul>
 
           <dl className={styles.summaryFacts}>
@@ -319,14 +394,16 @@ export default function PreviewForm({ p, now }: { p: ProspectView; now: string }
             disabled={!ready || pending}
             aria-busy={pending}
           >
-            {pending ? "Making it…" : "Make the preview"}
-            <Icon name='sparkle' className={styles.btnIcon} />
+            {editing ? (pending ? "Saving…" : "Save changes") : pending ? "Making it…" : "Make the preview"}
+            <Icon name={editing ? "check" : "sparkle"} className={styles.btnIcon} />
           </button>
           <Link href={`/admin/prospects/${p.id}`} className={`${btn("white")} ${styles.submit}`}>
             Cancel
           </Link>
           <p className={styles.summaryNote}>
-            Takes about half a minute. Then their link and logins are on their page.
+            {editing
+              ? "Changes their live preview. It can take up to half a minute to show everywhere."
+              : "Takes about half a minute. Then their link and logins are on their page."}
           </p>
         </div>
       </aside>
@@ -387,7 +464,7 @@ function PhotoSlot({
 
   const clear = () => {
     if (value.file) URL.revokeObjectURL(value.file.url);
-    onChange({ own: true, file: null });
+    onChange({ own: true, file: null, current: null });
   };
 
   return (
@@ -436,6 +513,23 @@ function PhotoSlot({
             type='button'
             className={styles.photoRemove}
             aria-label={`Remove ${value.file.name}`}
+            onClick={clear}
+          >
+            <Icon name='close' />
+          </button>
+        </figure>
+      ) : value.current ? (
+        <figure className={styles.slotPhoto}>
+          {/* Their photo on the preview now (Cloudinary). */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={value.current} alt={`${title} photo now`} className={styles.photoImg} />
+          <span className={styles.slotTag}>
+            <Pill tone='white'>On their preview</Pill>
+          </span>
+          <button
+            type='button'
+            className={styles.photoRemove}
+            aria-label={`Replace the ${title.toLowerCase()} photo`}
             onClick={clear}
           >
             <Icon name='close' />

@@ -102,6 +102,13 @@ export async function extendPlatformDemo(id: string, days: number): Promise<Plat
   ).demo;
 }
 
+/** Multipart: business, shortName, contactName, phone, email, address, and
+ *  "hero"/"about" as a new file or "default" (left out: kept). */
+export async function editPlatformDemo(id: string, form: FormData): Promise<PlatformDemo> {
+  return (await call<{ demo: PlatformDemo }>(`/demos/${encodeURIComponent(id)}`, { method: "PATCH", body: form }))
+    .demo;
+}
+
 export async function deletePlatformDemo(id: string): Promise<PlatformDemo> {
   return (await call<{ demo: PlatformDemo }>(`/demos/${encodeURIComponent(id)}`, { method: "DELETE" }))
     .demo;

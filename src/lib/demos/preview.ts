@@ -30,7 +30,44 @@ export type PlatformDemo = {
   lastSeenAt: string | null;
   logins: { password: string; admin: string; driver: string; rider: string };
   events?: { at: string; kind: PreviewEventKind; detail: string }[];
+  /** What the preview's site shows now (one preview only, while live). */
+  site?: { name: string; address: string; phone: string; email: string } | null;
 };
+
+/** A live preview's details, for the Edit form. */
+export type PreviewEditing = {
+  id: string;
+  url: string;
+  marketId: string;
+  expiresAt: string;
+  business: string;
+  /** "" when the logo shows the business name. */
+  shortName: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  address: string;
+  heroUrl: string | null;
+  aboutUrl: string | null;
+};
+
+export function toPreviewEditing(d: PlatformDemo): PreviewEditing {
+  const name = d.site?.name ?? d.business;
+  return {
+    id: d.id,
+    url: d.url,
+    marketId: d.marketId,
+    expiresAt: d.expiresAt,
+    business: d.business,
+    shortName: name === d.business ? "" : name,
+    contactName: d.contactName,
+    phone: d.site?.phone ?? d.phone,
+    email: d.site?.email ?? d.email,
+    address: d.site?.address ?? "",
+    heroUrl: d.heroUrl,
+    aboutUrl: d.aboutUrl,
+  };
+}
 
 export type PreviewView = {
   id: string;

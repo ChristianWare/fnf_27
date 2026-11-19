@@ -3,12 +3,13 @@
 // A prospect's preview (their demo site), on their page. Before one is
 // made: what it is and "Make a preview". After: the link and the text to
 // send them, whether they've opened it and what they did, the logins for
-// a walkthrough, and how long it has left, with Extend and Delete.
+// a walkthrough, and how long it has left, with Edit, Extend and Delete.
 //
 // Links you open from here add ?ff=owner, so your own visits never count
 // as theirs.
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Panel, Pill, ButtonLink, Notice, btn } from "@/components/Dashboard/ui/ui";
 import Icon from "@/components/Dashboard/icons";
@@ -241,6 +242,10 @@ export default function PreviewPanel({
       </div>
 
       <div className={styles.footRow}>
+        <Link href={`/admin/prospects/${p.id}/preview/edit`} className={btn("light")}>
+          <Icon name='pen' className={styles.btnIcon} />
+          Edit
+        </Link>
         <button type='button' className={btn("light")} onClick={extend} disabled={pending}>
           <Icon name='clock' className={styles.btnIcon} />
           Extend 14 days

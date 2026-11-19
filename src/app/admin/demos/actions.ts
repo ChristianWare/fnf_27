@@ -10,6 +10,7 @@ import { logActivity } from "@/lib/prospects/store";
 import {
   createPlatformDemo,
   deletePlatformDemo,
+  editPlatformDemo,
   extendPlatformDemo,
   PlatformError,
 } from "@/lib/demos/platform";
@@ -39,6 +40,24 @@ export async function makePreview(form: FormData): Promise<ActionResult<{ id: st
     }
     refresh();
     return done({ id: demo.id, url: demo.url });
+  } catch (e) {
+    return fail(why(e));
+  }
+}
+
+/** New name, contact details or photos for a live preview, in place. */
+export async function editPreview(id: string, form: FormData): Promise<ActionResult> {
+  const user = await admin();
+  if (!user) return fail("Only admins can do that.");
+  const prospectId = String(form.get("ref") ?? "");
+  form.delete("ref");
+  try {
+    const demo = await editPlatformDemo(id, form);
+    if (prospectId) {
+      await logActivity(prospectId, "NOTE", `Edited their preview: ${demo.url}`, user.id).catch(() => {});
+    }
+    refresh();
+    return done();
   } catch (e) {
     return fail(why(e));
   }
