@@ -85,6 +85,21 @@ export default function PreviewForm({
 }) {
   const router = useRouter();
   const toast = useToast();
+
+  // A photo dropped just outside a slot would make the browser open it
+  // and lose the form: ignore drops anywhere else on the page.
+  useEffect(() => {
+    const stop = (e: DragEvent) => {
+      if (e.dataTransfer?.types.includes("Files")) e.preventDefault();
+    };
+    window.addEventListener("dragover", stop);
+    window.addEventListener("drop", stop);
+    return () => {
+      window.removeEventListener("dragover", stop);
+      window.removeEventListener("drop", stop);
+    };
+  }, []);
+
   const [business, setBusiness] = useState(editing?.business ?? p.business);
   const [slug, setSlug] = useState(
     editing ? editing.url.replace(/^https?:\/\//, "").split(".")[0] : demoSlug(p.business),
@@ -452,14 +467,74 @@ function PhotoSlot({
   onChange: (next: PhotoChoice) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [over, setOver] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  // dragenter/dragleave fire for every child; count them so the
+  // highlight doesn't flicker while the photo moves across the slot.
+  const depth = useRef(0);
+
+  const takePhoto = async (f: File) => {
+    setProblem(null);
+    try {
+      const blob = await shrink(f);
+      if (value.file) URL.revokeObjectURL(value.file.url);
+      onChange({ own: true, file: { url: URL.createObjectURL(blob), name: f.name, blob } });
+    } catch {
+      setProblem("That photo couldn't be read. Try a JPG or PNG.");
+    }
+  };
 
   const pick = async (files: FileList | null) => {
     const f = [...(files ?? [])].find((x) => x.type.startsWith("image/"));
     if (fileRef.current) fileRef.current.value = "";
-    if (!f) return;
-    const blob = await shrink(f);
-    if (value.file) URL.revokeObjectURL(value.file.url);
-    onChange({ own: true, file: { url: URL.createObjectURL(blob), name: f.name, blob } });
+    if (f) await takePhoto(f);
+    else if (files?.length) setProblem("That isn't a photo. Use a JPG or PNG.");
+  };
+
+  /** A photo dragged in: a file from Finder or the desktop, or (when the
+   *  site allows it) an image dragged straight from another tab. */
+  const dropped = async (data: DataTransfer) => {
+    if (data.files.length) return pick(data.files);
+    const html = data.getData("text/html");
+    const src =
+      html.match(/<img[^>]+src="([^"]+)"/i)?.[1]?.replace(/&amp;/g, "&") ||
+      data.getData("text/uri-list").split("\n").find((l) => l && !l.startsWith("#")) ||
+      "";
+    if (!/^(https?:|data:image\/)/i.test(src)) {
+      setProblem("That isn't a photo. Use a JPG or PNG.");
+      return;
+    }
+    try {
+      const res = await fetch(src);
+      const blob = await res.blob();
+      if (!blob.type.startsWith("image/")) throw new Error("not an image");
+      const ext = blob.type.split("/")[1]?.replace("jpeg", "jpg") || "jpg";
+      await takePhoto(new File([blob], `photo.${ext}`, { type: blob.type }));
+    } catch {
+      setProblem("That site won't let its photos be dragged straight in. Save the photo to your Mac first, then drag the file here.");
+    }
+  };
+
+  const dragProps = {
+    onDragEnter: (e: React.DragEvent) => {
+      e.preventDefault();
+      depth.current++;
+      setOver(true);
+    },
+    onDragOver: (e: React.DragEvent) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    },
+    onDragLeave: () => {
+      depth.current = Math.max(0, depth.current - 1);
+      if (!depth.current) setOver(false);
+    },
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault();
+      depth.current = 0;
+      setOver(false);
+      void dropped(e.dataTransfer);
+    },
   };
 
   const clear = () => {
@@ -468,7 +543,7 @@ function PhotoSlot({
   };
 
   return (
-    <div className={styles.slot}>
+    <div className={`${styles.slot} ${over ? styles.slotOver : ""}`} {...dragProps}>
       <div className={styles.slotHead}>
         <span className={styles.slotTitle}>{title}</span>
         <span className={styles.slotNote}>{note}</span>
@@ -536,10 +611,10 @@ function PhotoSlot({
           </button>
         </figure>
       ) : (
-        <label className={`${styles.drop} ${styles.slotDrop}`}>
+        <label className={`${styles.drop} ${styles.slotDrop} ${over ? styles.dropOver : ""}`}>
           <Icon name='upload' className={styles.dropIcon} />
-          <span className={styles.dropText}>Add their photo</span>
-          <span className={styles.dropNote}>A wide one works best</span>
+          <span className={styles.dropText}>{over ? "Drop it here" : "Add their photo"}</span>
+          <span className={styles.dropNote}>Click or drag a photo here. A wide one works best.</span>
           <input
             ref={fileRef}
             type='file'
@@ -548,6 +623,14 @@ function PhotoSlot({
             onChange={(e) => void pick(e.target.files)}
           />
         </label>
+      )}
+      {over && value.own && (value.file || value.current) && (
+        <p className={styles.slotHint}>Drop to replace this photo</p>
+      )}
+      {problem && (
+        <p className={styles.slotProblem} role='alert'>
+          {problem}
+        </p>
       )}
     </div>
   );

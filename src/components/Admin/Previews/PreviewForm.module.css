@@ -215,6 +215,8 @@
 
 .slotDrop {
   aspect-ratio: 16 / 10;
+  padding: 0 2.4rem;
+  text-align: center;
 }
 
 .photoImg {
@@ -268,6 +270,32 @@
   .drop:hover {
     border-color: var(--black);
   }
+}
+
+/* A photo being dragged over the slot. */
+.dropOver,
+.dropOver:focus-within {
+  border-color: var(--black);
+  border-style: solid;
+  background-color: var(--white);
+}
+
+.slotOver .slotPhoto {
+  outline: 2px solid var(--black);
+  outline-offset: 3px;
+}
+
+.slotHint {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--black);
+}
+
+.slotProblem {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: var(--danger, #b42318);
 }
 
 .drop:focus-within {
