@@ -608,7 +608,7 @@ export default function ProspectPage({
         tone='danger'
         icon='trash'
         title={`Delete ${p.business}?`}
-        text="Their timeline goes too, and this can't be undone. An account they signed up for stays."
+        text="Their timeline and their preview go too, and this can't be undone. An account they signed up for stays."
         confirmLabel='Delete'
         cancelLabel='Keep them'
         pendingLabel='Deleting…'

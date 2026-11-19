@@ -114,8 +114,10 @@ export default function Previews({ rows, now }: { rows: PreviewView[]; now: stri
                       ? `Opened ${r.views}×, last ${inSentence(fmtAgo(r.lastSeenAt!, now))}`
                       : `Made ${inSentence(fmtAgo(r.createdAt, now))}`}
                   </span>
-                  <span className={`${styles.cell} ${left <= 5 && left >= 0 ? styles.soon : ""}`}>
-                    {left < 0 ? `Ended ${fmtShort(r.expiresAt)}` : `${left} day${left === 1 ? "" : "s"} left`}
+                  <span className={`${styles.cell} ${r.live && left <= 5 && left >= 0 ? styles.soon : ""}`}>
+                    {!r.live || left < 0
+                      ? `Ended ${fmtShort(r.expiresAt < now ? r.expiresAt : now)}`
+                      : `${left} day${left === 1 ? "" : "s"} left`}
                   </span>
                   <Icon name='arrow' className={styles.arrow} />
                 </Link>

@@ -483,7 +483,7 @@ function SelectBar({ shown, pick }: { shown: ProspectView[]; pick: Picking }) {
         tone='danger'
         icon='trash'
         title={names.length === 1 ? `Delete ${names[0]}?` : `Delete ${names.length} prospects?`}
-        text={`${names.length === 1 ? "Their timeline goes" : "Their timelines go"} too, and this can't be undone. An account someone signed up for stays.`}
+        text={`${names.length === 1 ? "Their timeline and preview go" : "Their timelines and previews go"} too, and this can't be undone. An account someone signed up for stays.`}
         items={names.length > 1 ? names : undefined}
         confirmLabel={names.length === 1 ? "Delete" : `Delete ${names.length} prospects`}
         cancelLabel='Keep them'

@@ -36,6 +36,7 @@ import {
   type ImportResult,
 } from "@/lib/prospects/store";
 import { formatPhone } from "@/lib/phone";
+import { deletePreviewsFor } from "@/lib/demos/platform";
 
 async function admin() {
   const user = await getSessionUser();
@@ -268,6 +269,8 @@ export async function saveProspect(
 export async function deleteProspect(id: string): Promise<ActionResult> {
   const a = await admin();
   if (!a.ok) return fail(a.error);
+  // Their preview goes too: a preview with no prospect has nowhere to live.
+  await deletePreviewsFor([String(id)]);
   await db.delete(s.prospects).where(eq(s.prospects.id, String(id)));
   refresh();
   return done();
@@ -284,6 +287,7 @@ export async function deleteProspects(
     ...new Set((Array.isArray(ids) ? ids : []).map(String).filter(Boolean)),
   ].slice(0, 2000);
   if (!list.length) return fail("Pick who to delete first.");
+  await deletePreviewsFor(list);
   const gone = await db
     .delete(s.prospects)
     .where(inArray(s.prospects.id, list))

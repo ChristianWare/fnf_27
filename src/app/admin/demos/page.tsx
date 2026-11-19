@@ -8,6 +8,7 @@ import { EXPIRING_DAYS, toPreviewView, type PreviewView } from "@/lib/demos/prev
 import {
   NOT_SET_UP,
   PlatformError,
+  isGone,
   listPlatformDemos,
   platformReady,
 } from "@/lib/demos/platform";
@@ -19,7 +20,9 @@ export const metadata: Metadata = { title: "Previews" };
 export default async function DemosPage() {
   await requireAdmin();
   const now = new Date();
-  const prospects = (await listProspects()).filter((p) => p.stage !== "DO_NOT_CALL");
+  const everyone = await listProspects();
+  const prospects = everyone.filter((p) => p.stage !== "DO_NOT_CALL");
+  const known = new Set(everyone.map((p) => p.id));
 
   let rows: PreviewView[] = [];
   let issue: string | null = null;
@@ -27,7 +30,10 @@ export default async function DemosPage() {
     issue = NOT_SET_UP;
   } else {
     try {
-      rows = (await listPlatformDemos()).map((d) => toPreviewView(d, now));
+      // Deleted previews, and ones whose prospect was deleted, aren't listed.
+      rows = (await listPlatformDemos())
+        .filter((d) => !isGone(d) && known.has(d.ref))
+        .map((d) => toPreviewView(d, now));
     } catch (e) {
       issue = e instanceof PlatformError ? e.message : "The previews couldn't be loaded.";
     }

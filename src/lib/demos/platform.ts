@@ -102,6 +102,29 @@ export async function extendPlatformDemo(id: string, days: number): Promise<Plat
   ).demo;
 }
 
+/** Deletes the live previews made for these prospects (when the prospects
+ *  themselves are deleted). Best effort: returns how many couldn't be. */
+export async function deletePreviewsFor(prospectIds: string[]): Promise<number> {
+  if (!platformReady() || !prospectIds.length) return 0;
+  const ids = new Set(prospectIds);
+  let failed = 0;
+  try {
+    const mine = (await listPlatformDemos()).filter(
+      (d) => ids.has(d.ref) && (d.status === "live" || d.status === "creating"),
+    );
+    for (const d of mine) {
+      await deletePlatformDemo(d.id).catch((e) => {
+        failed++;
+        console.error(`[demos] couldn't delete the preview for ${d.business}:`, e);
+      });
+    }
+  } catch (e) {
+    console.error("[demos] couldn't load previews to delete:", e);
+    return prospectIds.length;
+  }
+  return failed;
+}
+
 /** Multipart: business, shortName, contactName, phone, email, address, and
  *  "hero"/"about" as a new file or "default" (left out: kept). */
 export async function editPlatformDemo(id: string, form: FormData): Promise<PlatformDemo> {
@@ -115,8 +138,12 @@ export async function deletePlatformDemo(id: string): Promise<PlatformDemo> {
 }
 
 /** A prospect's newest preview (the live one first), with what they did. */
+/** A preview that's gone for good: deleted, or never finished. Kept on the
+ *  platform's records, but not shown anywhere here. */
+export const isGone = (d: PlatformDemo) => d.status === "deleted" || d.status === "failed";
+
 export async function previewForProspect(prospectId: string): Promise<PlatformDemo | null> {
-  const mine = (await listPlatformDemos()).filter((d) => d.ref === prospectId);
+  const mine = (await listPlatformDemos()).filter((d) => d.ref === prospectId && !isGone(d));
   const pick =
     mine.find((d) => d.status === "live" || d.status === "creating") ?? mine[0] ?? null;
   return pick ? getPlatformDemo(pick.id) : null;
