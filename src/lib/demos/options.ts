@@ -136,7 +136,7 @@ export const DEMO_MARKETS: DemoMarket[] = [
     airports: [
       { code: "MIA", name: "Miami International", kind: "commercial" },
       { code: "FLL", name: "Fort Lauderdale", kind: "commercial" },
-      { code: "PBI", name: "Palm Beach", kind: "commercial" },
+      { code: "DJT", name: "Palm Beach (Trump International)", kind: "commercial" },
       { code: "MCO", name: "Orlando", kind: "commercial" },
       { code: "TPA", name: "Tampa", kind: "commercial" },
       { code: "JAX", name: "Jacksonville", kind: "commercial" },
