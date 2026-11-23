@@ -427,3 +427,53 @@
   background-color: var(--accent3);
   color: var(--black);
 }
+
+/* ── Everyone as a list or a board ── */
+.layout {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  border-radius: 50px;
+  background-color: var(--light);
+}
+
+.layoutBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 3.6rem;
+  padding: 0 1.6rem 0 1.2rem;
+  border: none;
+  border-radius: 50px;
+  background-color: transparent;
+  font-family: var(--cdCopy);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.layoutBtn[aria-pressed="true"] {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .layoutBtn[aria-pressed="false"]:hover {
+    color: var(--black);
+  }
+}
+
+.layoutBtn:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.layoutIcon {
+  width: 1.8rem;
+  height: 1.8rem;
+}

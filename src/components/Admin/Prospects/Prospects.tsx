@@ -7,6 +7,9 @@
 // Tick prospects to delete them, one or many at a time. Coming back from a
 // prospect's page puts you where you were: the same tab, search, filters
 // and scroll.
+//
+// Everyone shows as a list or as a board, a column per stage that you drag
+// cards between. Whichever you pick is kept for next time.
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,6 +28,7 @@ import { deleteProspects, saveGoal } from "@/app/admin/prospects/actions";
 import type { ProspectView } from "@/lib/prospects/view";
 import ConfirmDialog from "@/components/Dashboard/ConfirmDialog/ConfirmDialog";
 import ImportProspects from "./ImportProspects";
+import ProspectBoard from "./ProspectBoard";
 import { stageTone } from "./tones";
 import styles from "./Prospects.module.css";
 
@@ -71,6 +75,31 @@ function writeView(v: SavedView) {
   }
 }
 
+/* ── List or board, kept on this browser from one visit to the next ── */
+
+const LAYOUT_KEY = "fnf:prospects:layout";
+
+type Layout = "list" | "board";
+
+type SavedLayout = { layout: Layout; notNowOpen: boolean };
+
+function readLayout(): Partial<SavedLayout> | null {
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY);
+    return raw ? (JSON.parse(raw) as Partial<SavedLayout>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLayout(v: SavedLayout) {
+  try {
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(v));
+  } catch {
+    // Storage blocked: it opens as a list next time.
+  }
+}
+
 export default function Prospects({
   rows,
   queue,
@@ -92,6 +121,8 @@ export default function Prospects({
   const [filter, setFilter] = useState<FilterKey>("OPEN");
   const [market, setMarket] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [layout, setLayoutState] = useState<Layout>("list");
+  const [notNowOpen, setNotNowOpenState] = useState(false);
   const byId = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
   const restored = useRef(false);
 
@@ -111,6 +142,26 @@ export default function Prospects({
     const y = Number(saved.scroll) || 0;
     if (y > 0) requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)));
   }, [rows.length]);
+
+  // List or board, as you last left it.
+  useEffect(() => {
+    const saved = readLayout();
+    /* eslint-disable react-hooks/set-state-in-effect -- read once, after
+       hydration, from storage the server can't see */
+    if (saved?.layout === "board") setLayoutState("board");
+    if (saved?.notNowOpen) setNotNowOpenState(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+
+  const setLayout = (next: Layout) => {
+    setLayoutState(next);
+    setSelected(new Set());
+    writeLayout({ layout: next, notNowOpen });
+  };
+  const setNotNowOpen = (open: boolean) => {
+    setNotNowOpenState(open);
+    writeLayout({ layout, notNowOpen: open });
+  };
 
   /** Remember where we are, then go to their page. */
   const remember = () => writeView({ tab, query, filter, market, scroll: window.scrollY });
@@ -195,6 +246,10 @@ export default function Prospects({
           setFilter={setFilter}
           market={market}
           setMarket={setMarket}
+          layout={layout}
+          setLayout={setLayout}
+          notNowOpen={notNowOpen}
+          setNotNowOpen={setNotNowOpen}
           pick={pick}
         />
       )}
@@ -314,6 +369,10 @@ function Everyone({
   setFilter,
   market,
   setMarket,
+  layout,
+  setLayout,
+  notNowOpen,
+  setNotNowOpen,
   pick,
 }: {
   rows: ProspectView[];
@@ -325,6 +384,10 @@ function Everyone({
   /** A state code ("AZ"), or "" for every market. */
   market: string;
   setMarket: (v: string) => void;
+  layout: Layout;
+  setLayout: (v: Layout) => void;
+  notNowOpen: boolean;
+  setNotNowOpen: (open: boolean) => void;
   pick: Picking;
 }) {
   // The states your prospects are in, most first.
@@ -346,11 +409,15 @@ function Everyone({
     return out;
   }, [rows]);
 
+  const board = layout === "board";
+
+  // The board has a column for every stage, so it skips the stage filter;
+  // search and market still apply.
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows
       .filter((r) =>
-        filter === "ALL" ? true : filter === "OPEN" ? !CLOSED.includes(r.stage) : r.stage === filter,
+        board || filter === "ALL" ? true : filter === "OPEN" ? !CLOSED.includes(r.stage) : r.stage === filter,
       )
       .filter((r) => !market || r.state.trim().toUpperCase() === market)
       .filter(
@@ -360,7 +427,7 @@ function Everyone({
             .toLowerCase()
             .includes(q),
       );
-  }, [rows, query, filter, market]);
+  }, [rows, query, filter, market, board]);
 
   return (
     <div className={styles.everyone}>
@@ -389,21 +456,53 @@ function Everyone({
           </label>
         )}
       </div>
-      <div className={styles.filters} role='group' aria-label='Show'>
-        {FILTERS.filter((f) => f.key === "OPEN" || f.key === "ALL" || counts[f.key]).map((f) => (
-          <button
-            key={f.key}
-            type='button'
-            className={ui.chip}
-            aria-pressed={filter === f.key}
-            onClick={() => setFilter(f.key)}
-          >
-            {f.label}
-            <span className={styles.count}>{counts[f.key] ?? 0}</span>
-          </button>
-        ))}
-      </div>
-      {shown.length ? (
+      {!board && (
+        <div className={styles.filters} role='group' aria-label='Show'>
+          {FILTERS.filter((f) => f.key === "OPEN" || f.key === "ALL" || counts[f.key]).map((f) => (
+            <button
+              key={f.key}
+              type='button'
+              className={ui.chip}
+              aria-pressed={filter === f.key}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label}
+              <span className={styles.count}>{counts[f.key] ?? 0}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {rows.length > 0 && (
+        <div className={styles.layout} role='group' aria-label='Show as'>
+          {(
+            [
+              ["list", "List", "list"],
+              ["board", "Board", "board"],
+            ] as const
+          ).map(([key, label, icon]) => (
+            <button
+              key={key}
+              type='button'
+              className={styles.layoutBtn}
+              aria-pressed={layout === key}
+              onClick={() => setLayout(key)}
+            >
+              <Icon name={icon} className={styles.layoutIcon} />
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+      {shown.length && board ? (
+        <ProspectBoard
+          rows={shown}
+          now={now}
+          notNowOpen={notNowOpen}
+          setNotNowOpen={setNotNowOpen}
+          remember={pick.remember}
+          openPage={pick.openPage}
+        />
+      ) : shown.length ? (
         <>
           <SelectBar shown={shown} pick={pick} />
           <List rows={shown} now={now} pick={pick} showNext />

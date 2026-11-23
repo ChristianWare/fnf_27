@@ -241,6 +241,13 @@ const paths = {
       <path d='M4 10h16M9 3v4M15 3v4' />
     </>
   ),
+  list: <path d='M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01' />,
+  board: (
+    <>
+      <rect x='3' y='4' width='18' height='16' rx='2' />
+      <path d='M9 4v16M15 4v16' />
+    </>
+  ),
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof paths;
