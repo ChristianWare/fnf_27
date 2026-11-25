@@ -24,6 +24,7 @@ import {
   discardDesignUpload,
   removeDesign,
   renameDesign,
+  reorderDesigns,
   sendDesigns,
   sendDocument,
 } from "@/app/admin/build-actions";
@@ -42,6 +43,8 @@ import type {
 } from "@/lib/dashboard/types";
 import type { CustomQuestions as Custom } from "@/lib/dashboard/customQuestions";
 import CustomQuestions from "./CustomQuestions";
+import { SortableDesign, SortableDesigns } from "./SortableDesigns";
+import { arrayMove } from "@dnd-kit/sortable";
 import AgreementEditor from "@/components/Admin/Agreement/AgreementEditor";
 import { updateAgreement } from "@/app/admin/agreement-actions";
 import type { AgreementDraft, AgreementTemplate } from "@/lib/agreements/types";
@@ -135,6 +138,43 @@ export default function Files({
   // client has MAX_DESIGNS in all.
   const sentCount = designs.options.length;
   const designRoom = MAX_DESIGNS - sentCount - uploads.length;
+
+  // The order you dragged the sent designs into. It shows while it saves;
+  // once the server sends the designs back, their own order takes over.
+  const [sentOrder, setSentOrder] = useState<{
+    ids: string[];
+    base: Designs["options"];
+    saving: boolean;
+  } | null>(null);
+  const sentOptions = (() => {
+    if (!sentOrder || !(sentOrder.saving || sentOrder.base === designs.options))
+      return designs.options;
+    const byId = new Map(designs.options.map((o) => [o.id, o]));
+    const list = sentOrder.ids.flatMap((id) => byId.get(id) ?? []);
+    return list.length === designs.options.length ? list : designs.options;
+  })();
+  const moveSent = (from: number, to: number) => {
+    const ids = arrayMove(
+      sentOptions.map((o) => o.id),
+      from,
+      to,
+    );
+    setSentOrder({ ids, base: designs.options, saving: true });
+    run(
+      () => reorderDesigns(clientId, ids),
+      () => {
+        setSentOrder((cur) =>
+          cur?.ids === ids ? { ...cur, saving: false } : cur,
+        );
+        return {
+          message: "Order saved",
+          detail: `${firstName} sees the designs in this order.`,
+        };
+      },
+      // Didn't save: back to how it was (the toast says why).
+      () => setSentOrder((cur) => (cur?.ids === ids ? null : cur)),
+    );
+  };
   // A sent design being renamed, and the name typed so far.
   const [renaming, setRenaming] = useState<{
     id: string;
@@ -675,121 +715,160 @@ export default function Files({
           </div>
 
           {sentCount > 0 && (
-            <ul className={styles.uploads}>
-              {designs.options.map((option) => {
+            <SortableDesigns
+              id='sent-designs'
+              ids={sentOptions.map((o) => o.id)}
+              nameOf={(id) =>
+                designs.options.find((o) => o.id === id)?.name ?? "Design"
+              }
+              onMove={moveSent}
+              className={styles.uploads}
+            >
+              {sentOptions.map((option) => {
                 const chosen = designs.chosen === option.id;
                 const image = option.images?.[0];
                 const editing = renaming?.id === option.id;
                 return (
-                  <li
+                  <SortableDesign
                     key={option.id}
+                    id={option.id}
+                    disabled={editing || sentCount < 2}
                     className={`${styles.uploadItem} ${own.sentDesign} ${chosen ? own.sentChosen : ""}`}
+                    liftedClassName={own.designLifted}
                   >
-                    <span className={styles.upload}>
-                      {image ? (
-                        <Image
-                          src={thumb(image, 320)}
-                          alt={option.name}
-                          fill
-                          unoptimized
-                          sizes='160px'
-                          className={styles.cover}
-                        />
-                      ) : (
-                        <span className={own.sentSwatches} aria-hidden='true'>
-                          {option.palette.map((p) => (
-                            <i key={p.hex} style={{ backgroundColor: p.hex }} />
-                          ))}
-                        </span>
-                      )}
-                      <button
-                        type='button'
-                        className={own.removeDesign}
-                        aria-label={`Remove ${option.name}`}
-                        onClick={() =>
-                          setRemoving({
-                            kind: "sent",
-                            id: option.id,
-                            name: option.name,
-                            chosen,
-                          })
-                        }
-                      >
-                        <Icon name='close' />
-                      </button>
-                    </span>
-                    {editing ? (
-                      <form
-                        className={own.renameRow}
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          saveName();
-                        }}
-                      >
-                        <input
-                          className={ui.input}
-                          value={renaming.value}
-                          maxLength={60}
-                          autoFocus
-                          onFocus={(e) => e.currentTarget.select()}
-                          onChange={(e) =>
-                            setRenaming({
-                              id: option.id,
-                              value: e.target.value,
-                            })
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "Escape") setRenaming(null);
-                          }}
-                          aria-label={`New name for ${option.name}`}
-                        />
-                        <span className={own.renameActions}>
-                          <button
-                            type='submit'
-                            className={own.renameSave}
-                            aria-label='Save the name'
-                            disabled={pending}
-                          >
-                            <Icon name='check' />
-                          </button>
+                    {(handle) => (
+                      <>
+                        <span className={styles.upload}>
+                          {sentCount > 1 && (
+                            <button
+                              type='button'
+                              className={own.gripDesign}
+                              aria-label={`Move ${option.name}`}
+                              {...handle}
+                            >
+                              <Icon name='grip' />
+                            </button>
+                          )}
+                          {image ? (
+                            <Image
+                              src={thumb(image, 320)}
+                              alt={option.name}
+                              fill
+                              unoptimized
+                              sizes='160px'
+                              className={styles.cover}
+                            />
+                          ) : (
+                            <span
+                              className={own.sentSwatches}
+                              aria-hidden='true'
+                            >
+                              {option.palette.map((p) => (
+                                <i
+                                  key={p.hex}
+                                  style={{ backgroundColor: p.hex }}
+                                />
+                              ))}
+                            </span>
+                          )}
                           <button
                             type='button'
-                            className={own.renameCancel}
-                            aria-label='Keep the old name'
-                            onClick={() => setRenaming(null)}
+                            className={own.removeDesign}
+                            aria-label={`Remove ${option.name}`}
+                            onClick={() =>
+                              setRemoving({
+                                kind: "sent",
+                                id: option.id,
+                                name: option.name,
+                                chosen,
+                              })
+                            }
                           >
                             <Icon name='close' />
                           </button>
                         </span>
-                      </form>
-                    ) : (
-                      <span className={own.sentName}>
-                        <span className={own.sentNameLine}>
-                          <span className={own.sentNameText}>
-                            {option.name}
-                          </span>
-                          <button
-                            type='button'
-                            className={own.renameBtn}
-                            aria-label={`Rename ${option.name}`}
-                            onClick={() =>
-                              setRenaming({ id: option.id, value: option.name })
-                            }
+                        {editing ? (
+                          <form
+                            className={own.renameRow}
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              saveName();
+                            }}
                           >
-                            <Icon name='pen' />
-                          </button>
-                        </span>
-                        {chosen && (
-                          <Pill tone='lime' dot>
-                            Chosen
-                          </Pill>
+                            <input
+                              className={ui.input}
+                              value={renaming.value}
+                              maxLength={60}
+                              autoFocus
+                              onFocus={(e) => e.currentTarget.select()}
+                              onChange={(e) =>
+                                setRenaming({
+                                  id: option.id,
+                                  value: e.target.value,
+                                })
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Escape") setRenaming(null);
+                              }}
+                              aria-label={`New name for ${option.name}`}
+                            />
+                            <span className={own.renameActions}>
+                              <button
+                                type='submit'
+                                className={own.renameSave}
+                                aria-label='Save the name'
+                                disabled={pending}
+                              >
+                                <Icon name='check' />
+                              </button>
+                              <button
+                                type='button'
+                                className={own.renameCancel}
+                                aria-label='Keep the old name'
+                                onClick={() => setRenaming(null)}
+                              >
+                                <Icon name='close' />
+                              </button>
+                            </span>
+                          </form>
+                        ) : (
+                          <span className={own.sentName}>
+                            <span className={own.sentNameLine}>
+                              <span className={own.sentNameText}>
+                                {option.name}
+                              </span>
+                              <button
+                                type='button'
+                                className={own.renameBtn}
+                                aria-label={`Rename ${option.name}`}
+                                onClick={() =>
+                                  setRenaming({
+                                    id: option.id,
+                                    value: option.name,
+                                  })
+                                }
+                              >
+                                <Icon name='pen' />
+                              </button>
+                            </span>
+                            {chosen && (
+                              <Pill tone='lime' dot>
+                                Chosen
+                              </Pill>
+                            )}
+                          </span>
                         )}
-                      </span>
+                      </>
                     )}
-                  </li>
+                  </SortableDesign>
                 );
               })}
-            </ul>
+            </SortableDesigns>
+          )}
+          {sentCount > 1 && (
+            <p className={own.orderHint}>
+              Drag the dots to change the order {firstName} sees them in.
+            </p>
           )}
 
           {sentCount >= MAX_DESIGNS ? (
@@ -835,49 +914,79 @@ export default function Files({
                 </span>
               </label>
               {uploads.length > 0 && (
-                <ul className={styles.uploads}>
+                <SortableDesigns
+                  id='new-designs'
+                  ids={uploads.map((u) => u.publicId)}
+                  nameOf={(id) =>
+                    uploads.find((u) => u.publicId === id)?.label || "Design"
+                  }
+                  onMove={(from, to) =>
+                    setUploads((list) => arrayMove(list, from, to))
+                  }
+                  className={styles.uploads}
+                >
                   {uploads.map((u, i) => (
-                    <li key={u.publicId} className={styles.uploadItem}>
-                      <span className={styles.upload}>
-                        <Image
-                          src={thumb(u.url, 320)}
-                          alt={u.label}
-                          fill
-                          unoptimized
-                          sizes='160px'
-                          className={styles.cover}
-                        />
-                        <button
-                          type='button'
-                          className={own.removeDesign}
-                          aria-label={`Remove ${u.label || `design ${i + 1}`}`}
-                          onClick={() =>
-                            setRemoving({
-                              kind: "upload",
-                              publicId: u.publicId,
-                              name: u.label.trim() || `Design ${i + 1}`,
-                            })
-                          }
-                        >
-                          <Icon name='close' />
-                        </button>
-                      </span>
-                      <input
-                        className={ui.input}
-                        value={u.label}
-                        onChange={(e) =>
-                          setUploads((list) =>
-                            list.map((x, j) =>
-                              j === i ? { ...x, label: e.target.value } : x,
-                            ),
-                          )
-                        }
-                        aria-label={`Name for design ${i + 1}`}
-                        placeholder={`Option ${sentCount + i + 1}`}
-                      />
-                    </li>
+                    <SortableDesign
+                      key={u.publicId}
+                      id={u.publicId}
+                      disabled={uploads.length < 2}
+                      className={styles.uploadItem}
+                      liftedClassName={own.designLifted}
+                    >
+                      {(handle) => (
+                        <>
+                          <span className={styles.upload}>
+                            {uploads.length > 1 && (
+                              <button
+                                type='button'
+                                className={own.gripDesign}
+                                aria-label={`Move ${u.label || `design ${i + 1}`}`}
+                                {...handle}
+                              >
+                                <Icon name='grip' />
+                              </button>
+                            )}
+                            <Image
+                              src={thumb(u.url, 320)}
+                              alt={u.label}
+                              fill
+                              unoptimized
+                              sizes='160px'
+                              className={styles.cover}
+                            />
+                            <button
+                              type='button'
+                              className={own.removeDesign}
+                              aria-label={`Remove ${u.label || `design ${i + 1}`}`}
+                              onClick={() =>
+                                setRemoving({
+                                  kind: "upload",
+                                  publicId: u.publicId,
+                                  name: u.label.trim() || `Design ${i + 1}`,
+                                })
+                              }
+                            >
+                              <Icon name='close' />
+                            </button>
+                          </span>
+                          <input
+                            className={ui.input}
+                            value={u.label}
+                            onChange={(e) =>
+                              setUploads((list) =>
+                                list.map((x, j) =>
+                                  j === i ? { ...x, label: e.target.value } : x,
+                                ),
+                              )
+                            }
+                            aria-label={`Name for design ${i + 1}`}
+                            placeholder={`Option ${sentCount + i + 1}`}
+                          />
+                        </>
+                      )}
+                    </SortableDesign>
                   ))}
-                </ul>
+                </SortableDesigns>
               )}
               {(sentCount === 0 || uploads.length > 0) && (
                 <div className={styles.actions}>

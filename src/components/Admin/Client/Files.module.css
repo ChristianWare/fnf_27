@@ -219,3 +219,56 @@
 .dropCompact {
   padding: 2rem;
 }
+
+/* The dotted handle that picks a design up to put it in order. */
+.gripDesign {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.8rem;
+  background-color: rgb(255 255 255 / 92%);
+  color: var(--black);
+  box-shadow: 0 0.2rem 0.6rem rgb(13 13 14 / 18%);
+  cursor: grab;
+  touch-action: none;
+}
+
+.gripDesign svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.gripDesign:hover {
+  background-color: var(--white);
+}
+
+.gripDesign:active {
+  cursor: grabbing;
+}
+
+.gripDesign:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+/* The design you're carrying. */
+.designLifted {
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 1.2rem 2.8rem rgb(13 13 14 / 22%);
+}
+
+.orderHint {
+  font-family: var(--cdCopy);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--text);
+}

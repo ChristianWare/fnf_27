@@ -506,6 +506,36 @@ export async function sendDesigns(
   return done();
 }
 
+/**
+ * Puts the client's designs in a new order: the order they see them on
+ * their Design page. `ids` must be exactly the designs they have now.
+ */
+export async function reorderDesigns(
+  clientId: string,
+  ids: string[],
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const client = await loadClient(clientId);
+  if (!client?.website) return fail("They don't have a website plan.");
+  const byId = new Map(client.designs.options.map((o) => [o.id, o]));
+  if (
+    ids.length !== byId.size ||
+    new Set(ids).size !== ids.length ||
+    ids.some((id) => !byId.has(id))
+  )
+    return fail("The designs changed. Refresh the page and try again.");
+  await db
+    .update(s.websites)
+    .set({
+      designs: { ...client.designs, options: ids.map((id) => byId.get(id)!) },
+      updatedAt: new Date(),
+    })
+    .where(eq(s.websites.clientId, clientId));
+  refresh();
+  return done();
+}
+
 /** Renames a design on the client's Design page. */
 export async function renameDesign(
   clientId: string,

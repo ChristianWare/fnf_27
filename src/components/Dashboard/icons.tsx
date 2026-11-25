@@ -248,6 +248,16 @@ const paths = {
       <path d='M9 4v16M15 4v16' />
     </>
   ),
+  grip: (
+    <>
+      <circle cx='9' cy='6' r='1.2' fill='currentColor' />
+      <circle cx='15' cy='6' r='1.2' fill='currentColor' />
+      <circle cx='9' cy='12' r='1.2' fill='currentColor' />
+      <circle cx='15' cy='12' r='1.2' fill='currentColor' />
+      <circle cx='9' cy='18' r='1.2' fill='currentColor' />
+      <circle cx='15' cy='18' r='1.2' fill='currentColor' />
+    </>
+  ),
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof paths;
