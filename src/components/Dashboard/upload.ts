@@ -2,6 +2,8 @@
 
 // Sends a file straight from the browser to Cloudinary, with a ticket the
 // server signed for one folder. The file never passes through our server.
+// It can also be an image on the web, by its address: Cloudinary fetches
+// it, so the site it's on doesn't have to allow it.
 
 import type { UploadTicket } from "@/lib/server/cloudinary";
 
@@ -13,12 +15,16 @@ export type Uploaded = {
   mime: string;
 };
 
+/** An image on the web (or a data: URL), to upload by its address. */
+export type RemoteFile = { url: string; name: string };
+
 export async function upload(
   ticket: UploadTicket,
-  file: File,
+  file: File | RemoteFile,
 ): Promise<Uploaded> {
+  const remote = !(file instanceof File);
   const form = new FormData();
-  form.append("file", file);
+  form.append("file", remote ? file.url : file);
   form.append("api_key", ticket.apiKey);
   form.append("timestamp", String(ticket.timestamp));
   form.append("signature", ticket.signature);
@@ -39,7 +45,9 @@ export async function upload(
     url: json.secure_url,
     publicId: json.public_id,
     name: file.name,
-    size: json.bytes ?? file.size,
-    mime: file.type || `${json.resource_type ?? "raw"}/${json.format ?? ""}`,
+    size: json.bytes ?? (remote ? 0 : file.size),
+    mime:
+      (!remote && file.type) ||
+      `${json.resource_type ?? "raw"}/${json.format ?? ""}`,
   };
 }

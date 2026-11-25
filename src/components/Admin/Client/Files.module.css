@@ -6,7 +6,11 @@
   gap: 0.6rem;
 }
 
-/* ── Design options: drag screenshots onto the upload area ── */
+/* ── Design options: drag screenshots anywhere onto the card ── */
+.cardOver {
+  box-shadow: inset 0 0 0 2px var(--black);
+}
+
 .dropOver,
 .dropOver:hover {
   border-color: var(--black);

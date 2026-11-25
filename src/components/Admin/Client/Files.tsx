@@ -7,13 +7,17 @@
 // emails the client.
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
 import ConfirmDialog from "@/components/Dashboard/ConfirmDialog/ConfirmDialog";
 import Icon from "@/components/Dashboard/icons";
 import { useToast } from "@/components/Dashboard/Toast/Toast";
 import { useAction } from "@/components/Dashboard/useAction";
-import { upload, type Uploaded } from "@/components/Dashboard/upload";
+import {
+  upload,
+  type RemoteFile,
+  type Uploaded,
+} from "@/components/Dashboard/upload";
 import { Pill, ui } from "@/components/Dashboard/ui/ui";
 import {
   adminUploadTicket,
@@ -48,6 +52,44 @@ import own from "./Files.module.css";
 
 const show = (value: Answers[string] | undefined) =>
   Array.isArray(value) ? value.join(", ") : value || "";
+
+/**
+ * What a drop holds: files from Finder or the desktop, or an image dragged
+ * straight from another tab (its address, which Cloudinary can fetch).
+ * "local" when it's an image the browser opened from a file on the
+ * computer: a page can't read those from another tab.
+ */
+function droppedImages(data: DataTransfer): (File | RemoteFile)[] | "local" {
+  const files = Array.from(data.files);
+  if (files.length) return files;
+  const html = data.getData("text/html");
+  const fromImg = html
+    .match(/<img[^>]+src=["']([^"']+)["']/i)?.[1]
+    ?.replace(/&amp;/g, "&");
+  const fromList = data
+    .getData("text/uri-list")
+    .split(/\r?\n/)
+    .find((line) => line && !line.startsWith("#"));
+  const src = (fromImg || fromList || "").trim();
+  if (!src) return [];
+  if (/^(file|blob|filesystem):/i.test(src)) return "local";
+  const looksLikeImage =
+    Boolean(fromImg) ||
+    /^data:image\//i.test(src) ||
+    /\.(png|jpe?g|webp|gif|avif)(\?|#|$)/i.test(src);
+  if (!looksLikeImage || !/^(https?:|data:image\/)/i.test(src)) return [];
+  let name = "Dropped image";
+  if (!src.startsWith("data:")) {
+    try {
+      name = decodeURIComponent(
+        new URL(src).pathname.split("/").filter(Boolean).pop() || name,
+      );
+    } catch {
+      // An odd address: keep the plain name.
+    }
+  }
+  return [{ url: src, name }];
+}
 
 export default function Files({
   clientId,
@@ -96,6 +138,27 @@ export default function Files({
   // dragleave on the parent, so count the layers instead of trusting it.
   const [dropOver, setDropOver] = useState(false);
   const dropDepth = useRef(0);
+  // Drops land anywhere on the Design options card, while it's taking
+  // uploads (before they're sent).
+  const canDropDesigns = designs.options.length === 0 && !sentDesigns;
+
+  // A screenshot dropped just off the card would make the browser open the
+  // image and leave this page. Catch those drops and ignore them.
+  useEffect(() => {
+    const hasFiles = (e: DragEvent) =>
+      Array.from(e.dataTransfer?.types ?? []).includes("Files");
+    const hold = (e: DragEvent) => {
+      // A file input takes its own drops; leave those alone.
+      if ((e.target as HTMLElement | null)?.tagName === "INPUT") return;
+      if (hasFiles(e) && !e.defaultPrevented) e.preventDefault();
+    };
+    window.addEventListener("dragover", hold);
+    window.addEventListener("drop", hold);
+    return () => {
+      window.removeEventListener("dragover", hold);
+      window.removeEventListener("drop", hold);
+    };
+  }, []);
   // The design you pressed the red x on, waiting for "Remove" in the dialog:
   // one uploaded but not sent yet, or one already on the client's page.
   const [removing, setRemoving] = useState<
@@ -187,7 +250,10 @@ export default function Files({
     );
   };
 
-  const uploadTo = async (kind: "designs" | "documents", files: File[]) => {
+  const uploadTo = async (
+    kind: "designs" | "documents",
+    files: (File | RemoteFile)[],
+  ) => {
     const ticket = await adminUploadTicket(clientId, kind);
     if (!ticket.ok) {
       toast(ticket.error, { tone: "error" });
@@ -204,8 +270,10 @@ export default function Files({
     return done;
   };
 
-  const addDesigns = async (picked: File[]) => {
-    const images = picked.filter((f) => f.type.startsWith("image/"));
+  const addDesigns = async (picked: (File | RemoteFile)[]) => {
+    const images = picked.filter(
+      (f) => !(f instanceof File) || f.type.startsWith("image/"),
+    );
     if (picked.length && !images.length) {
       toast("Those aren't images. Drop screenshots (PNG, JPG or WebP).", {
         tone: "error",
@@ -527,8 +595,49 @@ export default function Files({
           )}
         </section>
 
-        {/* ── Design options ── */}
-        <section className={styles.card}>
+        {/* ── Design options: the whole card takes a drop ── */}
+        <section
+          className={`${styles.card} ${dropOver ? own.cardOver : ""}`}
+          onDragEnter={(e) => {
+            if (!canDropDesigns) return;
+            e.preventDefault();
+            dropDepth.current++;
+            setDropOver(true);
+          }}
+          onDragOver={(e) => {
+            if (!canDropDesigns) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = uploading ? "none" : "copy";
+          }}
+          onDragLeave={() => {
+            if (!canDropDesigns) return;
+            dropDepth.current = Math.max(0, dropDepth.current - 1);
+            if (!dropDepth.current) setDropOver(false);
+          }}
+          onDrop={(e) => {
+            if (!canDropDesigns) return;
+            e.preventDefault();
+            dropDepth.current = 0;
+            setDropOver(false);
+            if (uploading) return;
+            const dropped = droppedImages(e.dataTransfer);
+            if (dropped === "local") {
+              toast("That image is open from a file on your computer.", {
+                tone: "error",
+                detail:
+                  "The browser won't hand it over from a tab. Drag the file from Finder or your desktop instead.",
+              });
+              return;
+            }
+            if (!dropped.length) {
+              toast("Nothing to add there. Drop screenshots (PNG, JPG or WebP).", {
+                tone: "error",
+              });
+              return;
+            }
+            void addDesigns(dropped);
+          }}
+        >
           <div className={styles.titles}>
             <h2 className={styles.heading}>Design options</h2>
             <p>
@@ -599,27 +708,6 @@ export default function Files({
             <>
               <label
                 className={`${styles.drop} ${dropOver ? own.dropOver : ""} ${uploads.length >= MAX_DESIGNS ? own.dropFull : ""}`}
-                onDragEnter={(e) => {
-                  e.preventDefault();
-                  dropDepth.current++;
-                  setDropOver(true);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect =
-                    uploading || sentDesigns ? "none" : "copy";
-                }}
-                onDragLeave={() => {
-                  dropDepth.current = Math.max(0, dropDepth.current - 1);
-                  if (!dropDepth.current) setDropOver(false);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  dropDepth.current = 0;
-                  setDropOver(false);
-                  if (uploading || sentDesigns) return;
-                  void addDesigns(Array.from(e.dataTransfer.files));
-                }}
               >
                 <input
                   ref={designInput}
