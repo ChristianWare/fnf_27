@@ -192,7 +192,7 @@ export const websites = pgTable("websites", {
   nextBillingAt: at("next_billing_at"),
   /** The build, as a list of things that happened: { stepName: ISO date }. */
   facts: jsonb("facts").$type<Record<string, string>>().notNull().default({}),
-  /** The three design options and the one they chose. */
+  /** The design options sent to them and the one they chose. */
   designs: jsonb("designs")
     .$type<{
       readyAt?: string;

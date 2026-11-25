@@ -19,7 +19,7 @@ import {
   sendDesigns,
   sendDocument,
 } from "@/app/admin/build-actions";
-import { assetNeeds } from "@/lib/dashboard/helpers";
+import { assetNeeds, MAX_DESIGNS } from "@/lib/dashboard/helpers";
 import { fmtDate, fmtShort, thumb } from "@/lib/dashboard/format";
 import {
   isAnswered,
@@ -89,6 +89,10 @@ export default function Files({
   const [uploading, setUploading] = useState(false);
   const [sentDesigns, setSentDesigns] = useState(false);
   const designInput = useRef<HTMLInputElement>(null);
+  // Screenshots dragged over the drop area. Entering a child fires
+  // dragleave on the parent, so count the layers instead of trusting it.
+  const [dropOver, setDropOver] = useState(false);
+  const dropDepth = useRef(0);
 
   const [docs, setDocs] = useState(documents);
   const [sending, setSending] = useState(false);
@@ -155,7 +159,24 @@ export default function Files({
     return done;
   };
 
-  const addDesigns = async (files: File[]) => {
+  const addDesigns = async (picked: File[]) => {
+    const images = picked.filter((f) => f.type.startsWith("image/"));
+    if (picked.length && !images.length) {
+      toast("Those aren't images. Drop screenshots (PNG, JPG or WebP).", {
+        tone: "error",
+      });
+      return;
+    }
+    const room = MAX_DESIGNS - uploads.length;
+    const files = images.slice(0, Math.max(0, room));
+    if (images.length > files.length) {
+      toast(
+        room > 0
+          ? `Only ${room} more fit, so the first ${room} were added.`
+          : `That's the most you can send at once (${MAX_DESIGNS}).`,
+        { tone: room > 0 ? "info" : "error" },
+      );
+    }
     if (!files.length) return;
     setUploading(true);
     try {
@@ -470,7 +491,7 @@ export default function Files({
                 ? `${firstName} chose ${designs.options.find((o) => o.id === designs.chosen)?.name}${designs.chosenAt ? ` on ${fmtDate(designs.chosenAt)}` : ""}.`
                 : designs.options.length
                   ? `Sent ${designs.readyAt ? fmtDate(designs.readyAt) : ""}. Waiting for ${firstName} to choose.`
-                  : "Upload three directions. They go to the client's Design page to choose from."}
+                  : `Upload your design directions, up to ${MAX_DESIGNS}. They go to the client's Design page to choose from.`}
             </p>
           </div>
 
@@ -497,26 +518,59 @@ export default function Files({
             </ul>
           ) : (
             <>
-              <label className={styles.drop}>
+              <label
+                className={`${styles.drop} ${dropOver ? own.dropOver : ""} ${uploads.length >= MAX_DESIGNS ? own.dropFull : ""}`}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  dropDepth.current++;
+                  setDropOver(true);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect =
+                    uploading || sentDesigns ? "none" : "copy";
+                }}
+                onDragLeave={() => {
+                  dropDepth.current = Math.max(0, dropDepth.current - 1);
+                  if (!dropDepth.current) setDropOver(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  dropDepth.current = 0;
+                  setDropOver(false);
+                  if (uploading || sentDesigns) return;
+                  void addDesigns(Array.from(e.dataTransfer.files));
+                }}
+              >
                 <input
                   ref={designInput}
                   type='file'
                   accept='image/*'
                   multiple
                   className={ui.srOnly}
-                  disabled={uploading || uploads.length >= 3}
+                  disabled={
+                    uploading || sentDesigns || uploads.length >= MAX_DESIGNS
+                  }
                   onChange={(e) => {
-                    const files = Array.from(e.target.files ?? []).slice(
-                      0,
-                      3 - uploads.length,
-                    );
+                    const files = Array.from(e.target.files ?? []);
                     e.target.value = "";
                     void addDesigns(files);
                   }}
                 />
                 <Icon name='upload' className={styles.dropIcon} />
                 <span className={styles.dropText}>
-                  {uploading ? "Uploading…" : "Upload screenshots, up to three"}
+                  {uploading
+                    ? "Uploading…"
+                    : dropOver
+                      ? "Drop to add them"
+                      : uploads.length >= MAX_DESIGNS
+                        ? `That's ${MAX_DESIGNS}, the most you can send`
+                        : "Drag screenshots here, or click to upload"}
+                </span>
+                <span className={own.dropHint}>
+                  {uploads.length
+                    ? `${uploads.length} of up to ${MAX_DESIGNS} added`
+                    : `Up to ${MAX_DESIGNS} designs`}
                 </span>
               </label>
               {uploads.length > 0 && (
@@ -532,6 +586,20 @@ export default function Files({
                           sizes='160px'
                           className={styles.cover}
                         />
+                        {!sentDesigns && (
+                          <button
+                            type='button'
+                            className={own.removeDesign}
+                            aria-label={`Remove ${u.label || `design ${i + 1}`}`}
+                            onClick={() =>
+                              setUploads((list) =>
+                                list.filter((x) => x.publicId !== u.publicId),
+                              )
+                            }
+                          >
+                            <Icon name='close' />
+                          </button>
+                        )}
                       </span>
                       <input
                         className={ui.input}

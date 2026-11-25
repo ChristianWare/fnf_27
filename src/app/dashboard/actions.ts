@@ -251,7 +251,7 @@ export async function submitQuestionnaire(
       eyebrow: "Questionnaire",
       heading: `${business} sent their questionnaire`,
       paragraphs: [
-        "Their answers are in. Next for you: the blueprint and three designs.",
+        "Their answers are in. Next for you: the blueprint and their design options.",
       ],
       button: {
         label: "Read their answers",

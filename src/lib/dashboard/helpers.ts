@@ -284,8 +284,8 @@ export function projectSteps(client: Client): Step[] {
     {
       id: "design",
       title: "Choose your design",
-      text: "Three directions, made for your brand. Pick the one that feels like you.",
-      waitText: "We're designing three options for you.",
+      text: "Design directions, made for your brand. Pick the one that feels like you.",
+      waitText: "We're designing your options.",
       owner: "you",
       after: ["questionnaire"],
       doneAt: f.designChosenAt ?? client.designs.chosenAt,
@@ -536,3 +536,6 @@ export function weekOf(now: string) {
   const monday = new Date(local.getTime() - day * 86_400_000);
   return monday.toISOString().slice(0, 10);
 }
+
+/** The most design options you can send a client at once. */
+export const MAX_DESIGNS = 10;

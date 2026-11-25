@@ -144,7 +144,7 @@ export default function Design({
         </span>
         <h2 className={styles.waitingTitle}>Your designs are on the way</h2>
         <p>
-          Once your questionnaire is in, we design three directions for your
+          Once your questionnaire is in, we design a few directions for your
           site. They show up here for you to choose from.
         </p>
       </section>

@@ -20,6 +20,7 @@ import {
   uploadsReady,
 } from "@/lib/server/cloudinary";
 import { firstOfMonth } from "@/lib/dashboard/billing";
+import { MAX_DESIGNS } from "@/lib/dashboard/helpers";
 import { parseBlueprint } from "@/lib/dashboard/blueprintMarkdown";
 import {
   parseQuestions,
@@ -433,7 +434,7 @@ export async function sendDesigns(
   if (!a.ok) return fail(a.error);
   const folder = filesFolder(clientId, "designs");
   const ok = options
-    .slice(0, 3)
+    .slice(0, MAX_DESIGNS)
     .filter((o) => isOurUpload(o.url, o.publicId, folder));
   if (!ok.length) return fail("Upload the designs first.");
   const client = await loadClient(clientId);
