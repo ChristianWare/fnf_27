@@ -427,56 +427,111 @@ export async function adminUploadTicket(
   return done(uploadTicket(filesFolder(clientId, kind)));
 }
 
+/**
+ * Sends designs to the client's Design page. The first send puts them up;
+ * later sends add to the ones already there (up to MAX_DESIGNS in all),
+ * and the client hears about the new ones.
+ */
 export async function sendDesigns(
   clientId: string,
   options: { name: string; url: string; publicId: string }[],
 ): Promise<ActionResult> {
   const a = await admin();
   if (!a.ok) return fail(a.error);
-  const folder = filesFolder(clientId, "designs");
-  const ok = options
-    .slice(0, MAX_DESIGNS)
-    .filter((o) => isOurUpload(o.url, o.publicId, folder));
-  if (!ok.length) return fail("Upload the designs first.");
   const client = await loadClient(clientId);
   if (!client?.website) return fail("They don't have a website plan.");
+  const existing = client.designs.options;
+  const room = MAX_DESIGNS - existing.length;
+  if (room <= 0)
+    return fail(
+      `They already have ${MAX_DESIGNS} designs, the most. Remove one first.`,
+    );
+  const folder = filesFolder(clientId, "designs");
+  const ok = options
+    .slice(0, room)
+    .filter((o) => isOurUpload(o.url, o.publicId, folder));
+  if (!ok.length) return fail("Upload the designs first.");
 
+  const adding = existing.length > 0;
   const now = new Date().toISOString();
   await db
     .update(s.websites)
     .set({
       designs: {
-        readyAt: now,
-        options: ok.map((o, i) => ({
-          id: createId(),
-          name: clean(o.name, 60) || `Option ${i + 1}`,
-          mood: "",
-          palette: [],
-          type: "",
-          notes: [],
-          images: [o.url],
-        })),
+        ...client.designs,
+        readyAt: client.designs.readyAt ?? now,
+        options: [
+          ...existing,
+          ...ok.map((o, i) => ({
+            id: createId(),
+            name: clean(o.name, 60) || `Option ${existing.length + i + 1}`,
+            mood: "",
+            palette: [],
+            type: "",
+            notes: [],
+            images: [o.url],
+          })),
+        ],
       },
       updatedAt: new Date(),
     })
     .where(eq(s.websites.clientId, clientId));
+  const more = `${ok.length} new design${ok.length === 1 ? "" : "s"}`;
   await addActivity(
     clientId,
     "build",
-    "Your design options are ready",
+    adding ? `${more} added to your options` : "Your design options are ready",
     "/dashboard/website/design",
   );
-  await emailClient(clientId, "Your designs are ready", {
-    eyebrow: "Design",
-    heading: `${ok.length === 3 ? "Three" : ok.length} designs, made for ${client.business}`,
-    paragraphs: [
-      "Pick the one that feels most like you. We fine-tune the details in the build, and you'll see everything on your preview before launch.",
-    ],
-    button: {
-      label: "Choose your design",
-      href: url("/dashboard/website/design"),
+  await emailClient(
+    clientId,
+    adding ? "More designs to look at" : "Your designs are ready",
+    {
+      eyebrow: "Design",
+      heading: adding
+        ? `${more} for ${client.business}`
+        : `${ok.length === 3 ? "Three" : ok.length} designs, made for ${client.business}`,
+      paragraphs: [
+        adding
+          ? "We added more options to your Design page. Have a look, and pick the one that feels most like you."
+          : "Pick the one that feels most like you. We fine-tune the details in the build, and you'll see everything on your preview before launch.",
+      ],
+      button: {
+        label: adding ? "See the new designs" : "Choose your design",
+        href: url("/dashboard/website/design"),
+      },
     },
-  });
+  );
+  refresh();
+  return done();
+}
+
+/** Renames a design on the client's Design page. */
+export async function renameDesign(
+  clientId: string,
+  optionId: string,
+  name: string,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const next = clean(name, 60);
+  if (!next) return fail("Give the design a name.");
+  const client = await loadClient(clientId);
+  if (!client?.website) return fail("They don't have a website plan.");
+  if (!client.designs.options.some((o) => o.id === optionId))
+    return fail("That design isn't there anymore.");
+  await db
+    .update(s.websites)
+    .set({
+      designs: {
+        ...client.designs,
+        options: client.designs.options.map((o) =>
+          o.id === optionId ? { ...o, name: next } : o,
+        ),
+      },
+      updatedAt: new Date(),
+    })
+    .where(eq(s.websites.clientId, clientId));
   refresh();
   return done();
 }

@@ -23,6 +23,7 @@ import {
   adminUploadTicket,
   discardDesignUpload,
   removeDesign,
+  renameDesign,
   sendDesigns,
   sendDocument,
 } from "@/app/admin/build-actions";
@@ -43,10 +44,7 @@ import type { CustomQuestions as Custom } from "@/lib/dashboard/customQuestions"
 import CustomQuestions from "./CustomQuestions";
 import AgreementEditor from "@/components/Admin/Agreement/AgreementEditor";
 import { updateAgreement } from "@/app/admin/agreement-actions";
-import type {
-  AgreementDraft,
-  AgreementTemplate,
-} from "@/lib/agreements/types";
+import type { AgreementDraft, AgreementTemplate } from "@/lib/agreements/types";
 import styles from "./Client.module.css";
 import own from "./Files.module.css";
 
@@ -132,15 +130,43 @@ export default function Files({
 
   const [uploads, setUploads] = useState<(Uploaded & { label: string })[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [sentDesigns, setSentDesigns] = useState(false);
   const designInput = useRef<HTMLInputElement>(null);
+  // Sent designs count toward the limit too: you can keep adding until the
+  // client has MAX_DESIGNS in all.
+  const sentCount = designs.options.length;
+  const designRoom = MAX_DESIGNS - sentCount - uploads.length;
+  // A sent design being renamed, and the name typed so far.
+  const [renaming, setRenaming] = useState<{
+    id: string;
+    value: string;
+  } | null>(null);
+  const saveName = () => {
+    const target = renaming;
+    if (!target || pending) return;
+    const name = target.value.trim();
+    const before = designs.options.find((o) => o.id === target.id)?.name;
+    if (!name || name === before) {
+      setRenaming(null);
+      return;
+    }
+    run(
+      () => renameDesign(clientId, target.id, name),
+      () => {
+        setRenaming(null);
+        return {
+          message: `Renamed to ${name}`,
+          detail: `${firstName} sees the new name on their Design page.`,
+        };
+      },
+    );
+  };
   // Screenshots dragged over the drop area. Entering a child fires
   // dragleave on the parent, so count the layers instead of trusting it.
   const [dropOver, setDropOver] = useState(false);
   const dropDepth = useRef(0);
-  // Drops land anywhere on the Design options card, while it's taking
-  // uploads (before they're sent).
-  const canDropDesigns = designs.options.length === 0 && !sentDesigns;
+  // Drops land anywhere on the Design options card, while there's room for
+  // another design.
+  const canDropDesigns = sentCount < MAX_DESIGNS;
 
   // A screenshot dropped just off the card would make the browser open the
   // image and leave this page. Catch those drops and ignore them.
@@ -182,16 +208,10 @@ export default function Files({
       );
       return;
     }
-    const last = designs.options.length === 1;
     run(
       () => removeDesign(clientId, target.id),
       () => {
         setRemoving(null);
-        if (last) {
-          // All gone: the upload area comes back, empty and ready to send.
-          setUploads([]);
-          setSentDesigns(false);
-        }
         return {
           message: `Removed ${target.name}`,
           detail: target.chosen
@@ -234,7 +254,9 @@ export default function Files({
                   agreement: {
                     ...d.agreement,
                     ...next,
-                    included: next.included.map((x) => x.trim()).filter(Boolean),
+                    included: next.included
+                      .map((x) => x.trim())
+                      .filter(Boolean),
                     date: new Date().toISOString(),
                   },
                 }
@@ -280,13 +302,13 @@ export default function Files({
       });
       return;
     }
-    const room = MAX_DESIGNS - uploads.length;
+    const room = designRoom;
     const files = images.slice(0, Math.max(0, room));
     if (images.length > files.length) {
       toast(
         room > 0
           ? `Only ${room} more fit, so the first ${room} were added.`
-          : `That's the most you can send at once (${MAX_DESIGNS}).`,
+          : `That's ${MAX_DESIGNS} designs, the most. Remove one to add another.`,
         { tone: room > 0 ? "info" : "error" },
       );
     }
@@ -630,9 +652,12 @@ export default function Files({
               return;
             }
             if (!dropped.length) {
-              toast("Nothing to add there. Drop screenshots (PNG, JPG or WebP).", {
-                tone: "error",
-              });
+              toast(
+                "Nothing to add there. Drop screenshots (PNG, JPG or WebP).",
+                {
+                  tone: "error",
+                },
+              );
               return;
             }
             void addDesigns(dropped);
@@ -649,11 +674,12 @@ export default function Files({
             </p>
           </div>
 
-          {designs.options.length > 0 ? (
+          {sentCount > 0 && (
             <ul className={styles.uploads}>
               {designs.options.map((option) => {
                 const chosen = designs.chosen === option.id;
                 const image = option.images?.[0];
+                const editing = renaming?.id === option.id;
                 return (
                   <li
                     key={option.id}
@@ -692,22 +718,92 @@ export default function Files({
                         <Icon name='close' />
                       </button>
                     </span>
-                    <span className={own.sentName}>
-                      <span>{option.name}</span>
-                      {chosen && (
-                        <Pill tone='lime' dot>
-                          Chosen
-                        </Pill>
-                      )}
-                    </span>
+                    {editing ? (
+                      <form
+                        className={own.renameRow}
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          saveName();
+                        }}
+                      >
+                        <input
+                          className={ui.input}
+                          value={renaming.value}
+                          maxLength={60}
+                          autoFocus
+                          onFocus={(e) => e.currentTarget.select()}
+                          onChange={(e) =>
+                            setRenaming({
+                              id: option.id,
+                              value: e.target.value,
+                            })
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") setRenaming(null);
+                          }}
+                          aria-label={`New name for ${option.name}`}
+                        />
+                        <span className={own.renameActions}>
+                          <button
+                            type='submit'
+                            className={own.renameSave}
+                            aria-label='Save the name'
+                            disabled={pending}
+                          >
+                            <Icon name='check' />
+                          </button>
+                          <button
+                            type='button'
+                            className={own.renameCancel}
+                            aria-label='Keep the old name'
+                            onClick={() => setRenaming(null)}
+                          >
+                            <Icon name='close' />
+                          </button>
+                        </span>
+                      </form>
+                    ) : (
+                      <span className={own.sentName}>
+                        <span className={own.sentNameLine}>
+                          <span className={own.sentNameText}>
+                            {option.name}
+                          </span>
+                          <button
+                            type='button'
+                            className={own.renameBtn}
+                            aria-label={`Rename ${option.name}`}
+                            onClick={() =>
+                              setRenaming({ id: option.id, value: option.name })
+                            }
+                          >
+                            <Icon name='pen' />
+                          </button>
+                        </span>
+                        {chosen && (
+                          <Pill tone='lime' dot>
+                            Chosen
+                          </Pill>
+                        )}
+                      </span>
+                    )}
                   </li>
                 );
               })}
             </ul>
+          )}
+
+          {sentCount >= MAX_DESIGNS ? (
+            <p className={styles.help}>
+              That&apos;s {MAX_DESIGNS} designs, the most. Remove one to add
+              another.
+            </p>
           ) : (
             <>
+              {sentCount > 0 && (
+                <h3 className={own.addMoreTitle}>Add more designs</h3>
+              )}
               <label
-                className={`${styles.drop} ${dropOver ? own.dropOver : ""} ${uploads.length >= MAX_DESIGNS ? own.dropFull : ""}`}
+                className={`${styles.drop} ${sentCount > 0 ? own.dropCompact : ""} ${dropOver ? own.dropOver : ""} ${designRoom <= 0 ? own.dropFull : ""}`}
               >
                 <input
                   ref={designInput}
@@ -715,9 +811,7 @@ export default function Files({
                   accept='image/*'
                   multiple
                   className={ui.srOnly}
-                  disabled={
-                    uploading || sentDesigns || uploads.length >= MAX_DESIGNS
-                  }
+                  disabled={uploading || designRoom <= 0}
                   onChange={(e) => {
                     const files = Array.from(e.target.files ?? []);
                     e.target.value = "";
@@ -730,13 +824,13 @@ export default function Files({
                     ? "Uploading…"
                     : dropOver
                       ? "Drop to add them"
-                      : uploads.length >= MAX_DESIGNS
+                      : designRoom <= 0
                         ? `That's ${MAX_DESIGNS}, the most you can send`
                         : "Drag screenshots here, or click to upload"}
                 </span>
                 <span className={own.dropHint}>
-                  {uploads.length
-                    ? `${uploads.length} of up to ${MAX_DESIGNS} added`
+                  {sentCount + uploads.length
+                    ? `${sentCount + uploads.length} of up to ${MAX_DESIGNS}${sentCount ? ` · ${sentCount} sent` : ""}`
                     : `Up to ${MAX_DESIGNS} designs`}
                 </span>
               </label>
@@ -753,22 +847,20 @@ export default function Files({
                           sizes='160px'
                           className={styles.cover}
                         />
-                        {!sentDesigns && (
-                          <button
-                            type='button'
-                            className={own.removeDesign}
-                            aria-label={`Remove ${u.label || `design ${i + 1}`}`}
-                            onClick={() =>
-                              setRemoving({
-                                kind: "upload",
-                                publicId: u.publicId,
-                                name: u.label.trim() || `Design ${i + 1}`,
-                              })
-                            }
-                          >
-                            <Icon name='close' />
-                          </button>
-                        )}
+                        <button
+                          type='button'
+                          className={own.removeDesign}
+                          aria-label={`Remove ${u.label || `design ${i + 1}`}`}
+                          onClick={() =>
+                            setRemoving({
+                              kind: "upload",
+                              publicId: u.publicId,
+                              name: u.label.trim() || `Design ${i + 1}`,
+                            })
+                          }
+                        >
+                          <Icon name='close' />
+                        </button>
                       </span>
                       <input
                         className={ui.input}
@@ -781,43 +873,50 @@ export default function Files({
                           )
                         }
                         aria-label={`Name for design ${i + 1}`}
-                        placeholder={`Option ${i + 1}`}
+                        placeholder={`Option ${sentCount + i + 1}`}
                       />
                     </li>
                   ))}
                 </ul>
               )}
-              <div className={styles.actions}>
-                <button
-                  type='button'
-                  className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
-                  disabled={
-                    uploads.length === 0 || sentDesigns || pending || uploading
-                  }
-                  onClick={() =>
-                    run(
-                      () =>
-                        sendDesigns(
-                          clientId,
-                          uploads.map((u) => ({
-                            name: u.label,
-                            url: u.url,
-                            publicId: u.publicId,
-                          })),
-                        ),
-                      () => {
-                        setSentDesigns(true);
-                        return {
-                          message: `${uploads.length} design${uploads.length === 1 ? "" : "s"} sent to ${firstName}`,
-                          detail: `${email} gets an email to choose one.`,
-                        };
-                      },
-                    )
-                  }
-                >
-                  {sentDesigns ? "Sent" : `Send to ${firstName}`}
-                </button>
-              </div>
+              {(sentCount === 0 || uploads.length > 0) && (
+                <div className={styles.actions}>
+                  <button
+                    type='button'
+                    className={`${ui.btn} ${ui.btn_black} ${ui.btnSmall}`}
+                    disabled={uploads.length === 0 || pending || uploading}
+                    onClick={() => {
+                      const batch = uploads;
+                      const adding = sentCount > 0;
+                      run(
+                        () =>
+                          sendDesigns(
+                            clientId,
+                            batch.map((u) => ({
+                              name: u.label,
+                              url: u.url,
+                              publicId: u.publicId,
+                            })),
+                          ),
+                        () => {
+                          setUploads([]);
+                          const n = `${batch.length}${adding ? " more" : ""} design${batch.length === 1 ? "" : "s"}`;
+                          return {
+                            message: `${n} sent to ${firstName}`,
+                            detail: adding
+                              ? `${email} gets an email about the new ones.`
+                              : `${email} gets an email to choose one.`,
+                          };
+                        },
+                      );
+                    }}
+                  >
+                    {sentCount > 0
+                      ? `Send ${uploads.length > 1 ? `${uploads.length} more` : "it"} to ${firstName}`
+                      : `Send to ${firstName}`}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </section>
