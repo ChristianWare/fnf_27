@@ -42,7 +42,13 @@ import { alertAdmins, emailClient, emailPerson } from "@/lib/server/notify";
 import { errorText, stripe } from "@/lib/billing/stripe";
 import { setWebsiteCancel } from "@/lib/billing/website";
 import { setLeadsCancel, startLeadsSubscription } from "@/lib/billing/leads";
-import { assetsComplete, isLive, leadsAccess } from "@/lib/dashboard/helpers";
+import {
+  assetsComplete,
+  isLive,
+  leadsAccess,
+  picksNeeded,
+  picksOf,
+} from "@/lib/dashboard/helpers";
 import { fmtDate } from "@/lib/dashboard/format";
 import { renderAgreement } from "@/lib/agreements/AgreementPdf";
 import { agreementFileName, isAgreementBody } from "@/lib/agreements/types";
@@ -513,41 +519,71 @@ export async function commentOnSection(
 
 /* ── Design ── */
 
-export async function chooseDesign(
-  optionId: string,
+/**
+ * The client's favorite designs, #1 first: three of them, or all when
+ * there are fewer. Saves them, puts it on their activity, and emails the
+ * studio. They can send new picks until the site is live.
+ */
+export async function chooseDesigns(
+  optionIds: string[],
 ): Promise<ActionResult<{ chosenAt: string }>> {
   const a = await actor();
   if (!a.ok) return fail(a.error);
   const client = await loadClient(a.clientId);
   if (!client?.website) return fail("There's no website plan yet.");
   if (isLive(client)) return fail("Your site is live, so the design is set.");
-  const option = client.designs.options.find((o) => o.id === optionId);
-  if (!option) return fail("We couldn't find that design.");
+  const options = client.designs.options;
+  const need = picksNeeded(options.length);
+  const ids = [...new Set(optionIds)];
+  if (!need) return fail("There are no designs to pick from yet.");
+  if (ids.length !== need)
+    return fail(
+      need === 1 ? "Pick a design first." : `Pick your top ${need} first.`,
+    );
+  const picked = ids.map((id) => options.find((o) => o.id === id));
+  if (picked.some((o) => !o))
+    return fail("One of those designs isn't there anymore. Refresh the page.");
+  const names = picked.map((o) => o!.name);
+  const before = picksOf(client.designs);
+  const changed = before.length > 0;
+  if (changed && before.join() === ids.join())
+    return done({ chosenAt: client.designs.chosenAt ?? new Date().toISOString() });
 
   const now = new Date().toISOString();
   await db
     .update(s.websites)
     .set({
-      designs: { ...client.designs, chosen: option.id, chosenAt: now },
+      designs: { ...client.designs, picks: ids, chosen: ids[0], chosenAt: now },
       updatedAt: new Date(),
     })
     .where(eq(s.websites.clientId, a.clientId));
   await setFact(a.clientId, "designChosenAt", now);
+  const ranked = names.map((n, i) => `${i + 1}. ${n}`);
+  const top = need === 1 ? "design" : `top ${need}`;
   await addActivity(
     a.clientId,
     "build",
-    `You chose your design: ${option.name}`,
+    `You sent your ${top}: ${names.join(", ")}`,
     "/dashboard/website/design",
   );
-  await alertAdmins("blueprint", `${client.business} chose ${option.name}`, {
-    eyebrow: "Design",
-    heading: `${client.business} chose ${option.name}`,
-    paragraphs: ["Their design direction is picked."],
-    button: {
-      label: "Open their files",
-      href: url(`/admin/clients/${a.clientId}?tab=files`),
+  await alertAdmins(
+    "blueprint",
+    `${client.business} ${changed ? "changed" : "picked"} their ${top} design${need === 1 ? "" : "s"}`,
+    {
+      eyebrow: "Design",
+      heading: `${client.business}'s ${changed ? "new " : ""}${top}`,
+      paragraphs: [
+        changed
+          ? "They changed their picks. Here's the new order, favorite first:"
+          : "Their favorite designs, in order:",
+        ...ranked,
+      ],
+      button: {
+        label: "Open their files",
+        href: url(`/admin/clients/${a.clientId}?tab=files`),
+      },
     },
-  });
+  );
   refresh();
   return done({ chosenAt: now });
 }

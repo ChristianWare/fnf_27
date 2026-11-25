@@ -2,12 +2,12 @@
 
 import Image, { type StaticImageData } from "next/image";
 import { useState } from "react";
-import Modal from "@/components/shared/Modal/Modal";
 import Icon from "../icons";
-import { Pill, ui } from "../ui/ui";
+import { ui } from "../ui/ui";
 import { useAction } from "../useAction";
 import styles from "./Design.module.css";
-import { chooseDesign } from "@/app/dashboard/actions";
+import { chooseDesigns } from "@/app/dashboard/actions";
+import { picksNeeded, picksOf } from "@/lib/dashboard/helpers";
 import { fmtDate, thumb } from "@/lib/dashboard/format";
 import type { DesignId, DesignOption, Designs } from "@/lib/dashboard/types";
 import Night from "../../../../public/images/cadiMotion.png";
@@ -129,12 +129,18 @@ export default function Design({
   locked: boolean;
 }) {
   const { run, pending: saving } = useAction();
-  const [chosen, setChosen] = useState(designs.chosen);
+  const need = picksNeeded(designs.options.length);
+  const byId = new Map(designs.options.map((o) => [o.id, o]));
+  // Their picks as sent, and the ones they're making now, #1 first.
+  const [saved, setSaved] = useState<DesignId[]>(() =>
+    picksOf(designs).filter((id) => byId.has(id)),
+  );
+  const [draft, setDraft] = useState<DesignId[]>(saved);
   const [chosenAt, setChosenAt] = useState(designs.chosenAt);
-  const [confirm, setConfirm] = useState<DesignId | null>(null);
-
-  const pending = designs.options.find((o) => o.id === confirm);
-  const current = designs.options.find((o) => o.id === chosen);
+  const ready = draft.length === need;
+  const dirty = draft.join() !== saved.join();
+  const sentBefore = saved.length > 0 && Boolean(chosenAt);
+  const top = need === 1 ? "pick" : `top ${need}`;
 
   if (!designs.options.length) {
     return (
@@ -151,44 +157,136 @@ export default function Design({
     );
   }
 
+  const toggle = (id: DesignId) =>
+    setDraft((list) =>
+      list.includes(id)
+        ? list.filter((x) => x !== id)
+        : list.length < need
+          ? [...list, id]
+          : list,
+    );
+
+  const send = () => {
+    const picks = draft;
+    if (picks.length !== need || saving) return;
+    run(
+      () => chooseDesigns(picks),
+      (data) => {
+        setSaved(picks);
+        setChosenAt(data?.chosenAt ?? new Date().toISOString());
+        const first = byId.get(picks[0])?.name ?? "your #1";
+        return need === 1
+          ? {
+              message: `${first} it is`,
+              detail: "We'll build your site in this direction.",
+            }
+          : {
+              message: `Your top ${need} are in`,
+              detail: `Thanks! We'll start from your #1 pick, ${first}, and fine-tune it in the build.`,
+            };
+      },
+    );
+  };
+
+  const status = locked
+    ? "Your picks, favorite first."
+    : !ready
+      ? need === 1
+        ? "Pick the design you like best."
+        : draft.length === 0
+          ? `Pick your ${need} favorites in order: your #1 first. Tap a pick again to take it back.`
+          : `${need - draft.length} more to go. Tap a pick again to take it back.`
+      : dirty
+        ? `That's your ${top}. Send ${need === 1 ? "it" : "them"} over when you're happy with the order.`
+        : sentBefore
+          ? `Sent ${fmtDate(chosenAt!)}. You can change ${need === 1 ? "it" : "them"} until we start the build.`
+          : "";
+
   return (
     <>
-      {current && chosenAt && (
-        <div className={styles.chosenBar}>
-          <span className={styles.chosenSwatches} aria-hidden='true'>
-            {current.palette.map((swatch) => (
-              <i key={swatch.hex} style={{ backgroundColor: swatch.hex }} />
-            ))}
+      <section className={styles.picksBar} aria-label={`Your ${top}`}>
+        <div className={styles.picksIntro}>
+          <span className={ui.monoMuted}>
+            Your {top}
+            {sentBefore && !dirty ? " · sent" : ""}
           </span>
-          <p>
-            You chose <strong>{current.name}</strong> on {fmtDate(chosenAt)}.
-            {!locked && " You can still switch until we start the build."}
-          </p>
+          <p aria-live='polite'>{status}</p>
         </div>
-      )}
+        <ol className={styles.slots}>
+          {Array.from({ length: need }, (_, i) => {
+            const option = draft[i] ? byId.get(draft[i]) : undefined;
+            return (
+              <li
+                key={i}
+                className={`${styles.slot} ${option ? styles.slotFilled : ""}`}
+              >
+                <span className={styles.slotNum}>{i + 1}</span>
+                <span className={styles.slotName}>
+                  {option ? option.name : "Not picked yet"}
+                </span>
+                {option && !locked && (
+                  <button
+                    type='button'
+                    className={styles.slotRemove}
+                    aria-label={`Take ${option.name} out of your picks`}
+                    onClick={() => toggle(option.id)}
+                  >
+                    <Icon name='close' />
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+        {!locked && (
+          <button
+            type='button'
+            className={`${ui.btn} ${ui.btn_black} ${styles.sendPicks}`}
+            disabled={!ready || !dirty || saving}
+            onClick={send}
+          >
+            {saving
+              ? "Sending…"
+              : sentBefore && !dirty
+                ? "Sent"
+                : sentBefore
+                  ? "Send my new picks"
+                  : need === 1
+                    ? "Send my pick"
+                    : `Send my top ${need}`}
+            <Icon
+              name={sentBefore && !dirty ? "check" : "arrow"}
+              className={ui.btnIcon}
+            />
+          </button>
+        )}
+      </section>
 
       <section className={styles.options}>
         {designs.options.map((option, index) => {
-          const isChosen = option.id === chosen;
+          const rank = draft.indexOf(option.id);
+          const picked = rank >= 0;
           return (
             <article
               key={option.id}
-              className={`${styles.option} ${isChosen ? styles.optionChosen : ""}`}
+              className={`${styles.option} ${picked ? styles.optionChosen : ""}`}
             >
-              <Preview
-                option={option}
-                index={index}
-                business={business}
-                city={city}
-              />
+              <div className={styles.previewWrap}>
+                <Preview
+                  option={option}
+                  index={index}
+                  business={business}
+                  city={city}
+                />
+                {picked && (
+                  <span className={styles.rankBadge} aria-hidden='true'>
+                    #{rank + 1}
+                  </span>
+                )}
+              </div>
               <div className={styles.body}>
                 <div className={styles.titleRow}>
                   <h2 className={styles.name}>{option.name}</h2>
-                  {isChosen && (
-                    <Pill tone='lime' dot>
-                      Your choice
-                    </Pill>
-                  )}
                 </div>
                 {option.mood && <p>{option.mood}</p>}
                 {option.palette.length > 0 && (
@@ -220,16 +318,34 @@ export default function Design({
                     ))}
                   </ul>
                 )}
-                {!locked && !isChosen && (
+                {!locked && (
                   <button
                     type='button'
-                    className={`${ui.btn} ${chosen ? ui.btn_light : ui.btn_black} ${styles.choose}`}
-                    onClick={() => setConfirm(option.id)}
+                    aria-pressed={picked}
+                    className={`${ui.btn} ${picked ? ui.btn_light : ui.btn_black} ${styles.choose} ${picked ? styles.choosePicked : ""}`}
+                    disabled={!picked && draft.length >= need}
+                    onClick={() => toggle(option.id)}
                   >
-                    {chosen
-                      ? `Switch to ${option.name}`
-                      : `Choose ${option.name}`}
-                    <Icon name='arrow' className={ui.btnIcon} />
+                    {picked ? (
+                      <>
+                        <Icon name='check' className={styles.pickCheck} />
+                        {need === 1 ? "Picked" : `Your #${rank + 1} pick`}
+                        <span className={styles.pickUndo}>Undo</span>
+                      </>
+                    ) : draft.length >= need ? (
+                      need === 1 ? (
+                        "Take back your pick to switch"
+                      ) : (
+                        `Your top ${need} is full`
+                      )
+                    ) : (
+                      <>
+                        {need === 1
+                          ? `Pick ${option.name}`
+                          : `Pick as #${draft.length + 1}`}
+                        <Icon name='arrow' className={ui.btnIcon} />
+                      </>
+                    )}
                   </button>
                 )}
               </div>
@@ -237,51 +353,6 @@ export default function Design({
           );
         })}
       </section>
-
-      <Modal isOpen={Boolean(pending)} onClose={() => setConfirm(null)}>
-        {pending && (
-          <div className={ui.modalBody}>
-            <span className={ui.monoMuted}>Your design</span>
-            <h2 className={ui.modalTitle}>Go with {pending.name}?</h2>
-            <p className={styles.modalCopy}>
-              We&apos;ll build your site in this direction. Colors, photos and
-              details still get fine-tuned along the way, and you&apos;ll see
-              everything on your preview before launch.
-            </p>
-            <div className={ui.modalActions}>
-              <button
-                type='button'
-                className={`${ui.btn} ${ui.btn_light}`}
-                onClick={() => setConfirm(null)}
-              >
-                Keep looking
-              </button>
-              <button
-                type='button'
-                className={`${ui.btn} ${ui.btn_black}`}
-                disabled={saving}
-                onClick={() =>
-                  run(
-                    () => chooseDesign(pending.id),
-                    (data) => {
-                      setChosen(pending.id);
-                      setChosenAt(data?.chosenAt ?? new Date().toISOString());
-                      setConfirm(null);
-                      return {
-                        message: `${pending.name} it is`,
-                        detail: "We'll build your site in this direction.",
-                      };
-                    },
-                  )
-                }
-              >
-                Choose {pending.name}
-                <Icon name='check' className={ui.btnIcon} />
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </>
   );
 }

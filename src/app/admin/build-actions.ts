@@ -21,7 +21,7 @@ import {
   uploadsReady,
 } from "@/lib/server/cloudinary";
 import { firstOfMonth } from "@/lib/dashboard/billing";
-import { MAX_DESIGNS } from "@/lib/dashboard/helpers";
+import { MAX_DESIGNS, picksOf } from "@/lib/dashboard/helpers";
 import { parseBlueprint } from "@/lib/dashboard/blueprintMarkdown";
 import {
   parseQuestions,
@@ -606,7 +606,9 @@ export async function removeDesign(
   if (!option) return fail("That design isn't there anymore.");
 
   const options = client.designs.options.filter((o) => o.id !== optionId);
-  const wasChosen = client.designs.chosen === optionId;
+  // Out of their picks too; the next one moves up. If it was their only
+  // pick, they pick again.
+  const picks = picksOf(client.designs).filter((id) => id !== optionId);
   await db
     .update(s.websites)
     .set({
@@ -614,8 +616,9 @@ export async function removeDesign(
         ? {
             ...client.designs,
             options,
-            chosen: wasChosen ? undefined : client.designs.chosen,
-            chosenAt: wasChosen ? undefined : client.designs.chosenAt,
+            picks: picks.length ? picks : undefined,
+            chosen: picks[0],
+            chosenAt: picks.length ? client.designs.chosenAt : undefined,
           }
         : { options: [] },
       updatedAt: new Date(),

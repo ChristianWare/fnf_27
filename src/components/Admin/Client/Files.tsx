@@ -28,7 +28,12 @@ import {
   sendDesigns,
   sendDocument,
 } from "@/app/admin/build-actions";
-import { assetNeeds, MAX_DESIGNS } from "@/lib/dashboard/helpers";
+import {
+  assetNeeds,
+  MAX_DESIGNS,
+  picksNeeded,
+  picksOf,
+} from "@/lib/dashboard/helpers";
 import { fmtDate, fmtShort, thumb } from "@/lib/dashboard/format";
 import {
   isAnswered,
@@ -137,6 +142,10 @@ export default function Files({
   // Sent designs count toward the limit too: you can keep adding until the
   // client has MAX_DESIGNS in all.
   const sentCount = designs.options.length;
+  // The client's favorites, #1 first.
+  const picks = picksOf(designs).filter((id) =>
+    designs.options.some((o) => o.id === id),
+  );
   const designRoom = MAX_DESIGNS - sentCount - uploads.length;
 
   // The order you dragged the sent designs into. It shows while it saves;
@@ -229,7 +238,7 @@ export default function Files({
   // one uploaded but not sent yet, or one already on the client's page.
   const [removing, setRemoving] = useState<
     | { kind: "upload"; publicId: string; name: string }
-    | { kind: "sent"; id: string; name: string; chosen: boolean }
+    | { kind: "sent"; id: string; name: string; rank: number }
     | null
   >(null);
   const confirmRemove = () => {
@@ -254,9 +263,10 @@ export default function Files({
         setRemoving(null);
         return {
           message: `Removed ${target.name}`,
-          detail: target.chosen
-            ? `It was ${firstName}'s choice, so they'll choose again.`
-            : `${firstName} won't see it on their Design page anymore.`,
+          detail:
+            target.rank > 0
+              ? `It was ${firstName}'s #${target.rank} pick, so they'll need to pick again.`
+              : `${firstName} won't see it on their Design page anymore.`,
         };
       },
     );
@@ -706,11 +716,18 @@ export default function Files({
           <div className={styles.titles}>
             <h2 className={styles.heading}>Design options</h2>
             <p>
-              {designs.chosen
-                ? `${firstName} chose ${designs.options.find((o) => o.id === designs.chosen)?.name}${designs.chosenAt ? ` on ${fmtDate(designs.chosenAt)}` : ""}.`
+              {picks.length
+                ? `${firstName}'s ${picks.length < picksNeeded(sentCount) ? `picks so far` : picks.length === 1 ? "pick" : `top ${picks.length}`}: ${picks
+                    .map(
+                      (id, i) =>
+                        `${i + 1}. ${designs.options.find((o) => o.id === id)?.name}`,
+                    )
+                    .join(
+                      " · ",
+                    )}${designs.chosenAt ? ` (sent ${fmtDate(designs.chosenAt)})` : ""}.`
                 : designs.options.length
-                  ? `Sent ${designs.readyAt ? fmtDate(designs.readyAt) : ""}. Waiting for ${firstName} to choose.`
-                  : `Upload your design directions, up to ${MAX_DESIGNS}. They go to the client's Design page to choose from.`}
+                  ? `Sent ${designs.readyAt ? fmtDate(designs.readyAt) : ""}. Waiting for ${firstName} to pick their top ${picksNeeded(sentCount)}.`
+                  : `Upload your design directions, up to ${MAX_DESIGNS}. They go to the client's Design page to rank.`}
             </p>
           </div>
 
@@ -725,7 +742,8 @@ export default function Files({
               className={styles.uploads}
             >
               {sentOptions.map((option) => {
-                const chosen = designs.chosen === option.id;
+                const rank = picks.indexOf(option.id) + 1;
+                const chosen = rank > 0;
                 const image = option.images?.[0];
                 const editing = renaming?.id === option.id;
                 return (
@@ -780,7 +798,7 @@ export default function Files({
                                 kind: "sent",
                                 id: option.id,
                                 name: option.name,
-                                chosen,
+                                rank,
                               })
                             }
                           >
@@ -852,8 +870,8 @@ export default function Files({
                               </button>
                             </span>
                             {chosen && (
-                              <Pill tone='lime' dot>
-                                Chosen
+                              <Pill tone={rank === 1 ? "lime" : "gray"} dot>
+                                #{rank} pick
                               </Pill>
                             )}
                           </span>
@@ -1039,8 +1057,8 @@ export default function Files({
         items={removing ? [removing.name] : undefined}
         text={
           removing?.kind === "sent"
-            ? removing.chosen
-              ? `${firstName} chose this one. Removing it takes it off their Design page, and they'll need to choose again.`
+            ? removing.rank > 0
+              ? `${firstName} picked this as their #${removing.rank}. Removing it takes it off their Design page and out of their picks, and they'll need to pick again.`
               : `It comes off ${firstName}'s Design page, and the screenshot is deleted.`
             : `It won't be sent to ${firstName}, and the screenshot is deleted.`
         }

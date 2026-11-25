@@ -207,6 +207,8 @@ export const websites = pgTable("websites", {
       }[];
       chosen?: string;
       chosenAt?: string;
+      /** Their favorites in order, #1 first. */
+      picks?: string[];
     }>()
     .notNull()
     .default({ options: [] }),

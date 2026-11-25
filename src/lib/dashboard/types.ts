@@ -137,8 +137,12 @@ export type DesignOption = {
 export type Designs = {
   readyAt?: string;
   options: DesignOption[];
+  /** Their #1 pick: the direction the build starts from. */
   chosen?: DesignId;
+  /** When they last sent their picks. */
   chosenAt?: string;
+  /** Their favorites in order, #1 first: up to TOP_PICKS of them. */
+  picks?: DesignId[];
 };
 
 export type ChangeStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "DECLINED";

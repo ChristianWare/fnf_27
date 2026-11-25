@@ -13,7 +13,7 @@ export default async function DesignPage() {
       <PageHead
         crumb='Your website'
         title='Design'
-        text='Three directions for your site, made for your brand. Pick the one that feels most like you; we fine-tune the details in the build.'
+        text='Design directions for your site, made for your brand. Pick your top 3, favorite first, and send them over; we fine-tune the details in the build.'
       />
       <Design
         designs={client.designs}

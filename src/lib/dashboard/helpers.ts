@@ -283,8 +283,8 @@ export function projectSteps(client: Client): Step[] {
     },
     {
       id: "design",
-      title: "Choose your design",
-      text: "Design directions, made for your brand. Pick the one that feels like you.",
+      title: "Pick your top designs",
+      text: "Design directions, made for your brand. Rank your top 3, favorite first.",
       waitText: "We're designing your options.",
       owner: "you",
       after: ["questionnaire"],
@@ -539,3 +539,15 @@ export function weekOf(now: string) {
 
 /** The most design options you can send a client at once. */
 export const MAX_DESIGNS = 10;
+
+/** How many favorites a client ranks on their Design page. */
+export const TOP_PICKS = 3;
+
+/** How many picks a client with these designs sends: three, or all of
+ *  them when there are fewer. */
+export const picksNeeded = (optionCount: number) =>
+  Math.min(TOP_PICKS, optionCount);
+
+/** Their ranked picks, #1 first. Older clients chose just one. */
+export const picksOf = (designs: { picks?: string[]; chosen?: string }) =>
+  designs.picks ?? (designs.chosen ? [designs.chosen] : []);
