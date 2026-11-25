@@ -28,7 +28,7 @@
   color: var(--text);
 }
 
-/* The × on a design you've uploaded but not sent yet. */
+/* The red × on a design's screenshot. Asks before removing it. */
 .removeDesign {
   position: absolute;
   top: 0.6rem;
@@ -40,23 +40,76 @@
   width: 2.8rem;
   height: 2.8rem;
   padding: 0;
-  border: none;
+  border: 2px solid var(--white);
   border-radius: 50%;
-  background-color: rgb(13 13 14 / 75%);
+  background-color: #d33a1f;
   color: var(--white);
+  box-shadow: 0 0.2rem 0.6rem rgb(13 13 14 / 25%);
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .removeDesign svg {
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  stroke-width: 2.6;
 }
 
 .removeDesign:hover {
-  background-color: var(--black);
+  background-color: #a2301c;
+  transform: scale(1.06);
 }
 
 .removeDesign:focus-visible {
   outline: 2px solid var(--black);
   outline-offset: 2px;
+}
+
+/* Designs already sent: the screenshot, its name, and which one they chose. */
+.sentDesign {
+  padding: 0.6rem;
+  border-radius: 1.6rem;
+  background-color: var(--light);
+}
+
+.sentChosen {
+  background-color: var(--white);
+  box-shadow: inset 0 0 0 2px var(--black);
+}
+
+.sentName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.2rem 0.4rem 0.4rem;
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--black);
+  overflow-wrap: anywhere;
+}
+
+/* An older design with colors instead of a screenshot. */
+.sentSwatches {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sentSwatches i {
+  width: 3rem;
+  height: 3rem;
+  margin-left: -0.8rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--white);
+}
+
+.sentSwatches i:first-child {
+  margin-left: 0;
 }

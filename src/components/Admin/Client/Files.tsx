@@ -9,6 +9,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import Modal from "@/components/shared/Modal/Modal";
+import ConfirmDialog from "@/components/Dashboard/ConfirmDialog/ConfirmDialog";
 import Icon from "@/components/Dashboard/icons";
 import { useToast } from "@/components/Dashboard/Toast/Toast";
 import { useAction } from "@/components/Dashboard/useAction";
@@ -16,6 +17,8 @@ import { upload, type Uploaded } from "@/components/Dashboard/upload";
 import { Pill, ui } from "@/components/Dashboard/ui/ui";
 import {
   adminUploadTicket,
+  discardDesignUpload,
+  removeDesign,
   sendDesigns,
   sendDocument,
 } from "@/app/admin/build-actions";
@@ -93,6 +96,48 @@ export default function Files({
   // dragleave on the parent, so count the layers instead of trusting it.
   const [dropOver, setDropOver] = useState(false);
   const dropDepth = useRef(0);
+  // The design you pressed the red x on, waiting for "Remove" in the dialog:
+  // one uploaded but not sent yet, or one already on the client's page.
+  const [removing, setRemoving] = useState<
+    | { kind: "upload"; publicId: string; name: string }
+    | { kind: "sent"; id: string; name: string; chosen: boolean }
+    | null
+  >(null);
+  const confirmRemove = () => {
+    const target = removing;
+    if (!target || pending) return;
+    if (target.kind === "upload") {
+      run(
+        () => discardDesignUpload(clientId, target.publicId),
+        () => {
+          setUploads((list) =>
+            list.filter((x) => x.publicId !== target.publicId),
+          );
+          setRemoving(null);
+          return { message: `Removed ${target.name}` };
+        },
+      );
+      return;
+    }
+    const last = designs.options.length === 1;
+    run(
+      () => removeDesign(clientId, target.id),
+      () => {
+        setRemoving(null);
+        if (last) {
+          // All gone: the upload area comes back, empty and ready to send.
+          setUploads([]);
+          setSentDesigns(false);
+        }
+        return {
+          message: `Removed ${target.name}`,
+          detail: target.chosen
+            ? `It was ${firstName}'s choice, so they'll choose again.`
+            : `${firstName} won't see it on their Design page anymore.`,
+        };
+      },
+    );
+  };
 
   const [docs, setDocs] = useState(documents);
   const [sending, setSending] = useState(false);
@@ -496,25 +541,59 @@ export default function Files({
           </div>
 
           {designs.options.length > 0 ? (
-            <ul className={styles.designs}>
-              {designs.options.map((option) => (
-                <li
-                  key={option.id}
-                  className={`${styles.design} ${designs.chosen === option.id ? styles.designOn : ""}`}
-                >
-                  <span className={styles.swatches} aria-hidden='true'>
-                    {option.palette.map((p) => (
-                      <i key={p.hex} style={{ backgroundColor: p.hex }} />
-                    ))}
-                  </span>
-                  <span className={styles.designName}>{option.name}</span>
-                  {designs.chosen === option.id && (
-                    <Pill tone='lime' dot>
-                      Chosen
-                    </Pill>
-                  )}
-                </li>
-              ))}
+            <ul className={styles.uploads}>
+              {designs.options.map((option) => {
+                const chosen = designs.chosen === option.id;
+                const image = option.images?.[0];
+                return (
+                  <li
+                    key={option.id}
+                    className={`${styles.uploadItem} ${own.sentDesign} ${chosen ? own.sentChosen : ""}`}
+                  >
+                    <span className={styles.upload}>
+                      {image ? (
+                        <Image
+                          src={thumb(image, 320)}
+                          alt={option.name}
+                          fill
+                          unoptimized
+                          sizes='160px'
+                          className={styles.cover}
+                        />
+                      ) : (
+                        <span className={own.sentSwatches} aria-hidden='true'>
+                          {option.palette.map((p) => (
+                            <i key={p.hex} style={{ backgroundColor: p.hex }} />
+                          ))}
+                        </span>
+                      )}
+                      <button
+                        type='button'
+                        className={own.removeDesign}
+                        aria-label={`Remove ${option.name}`}
+                        onClick={() =>
+                          setRemoving({
+                            kind: "sent",
+                            id: option.id,
+                            name: option.name,
+                            chosen,
+                          })
+                        }
+                      >
+                        <Icon name='close' />
+                      </button>
+                    </span>
+                    <span className={own.sentName}>
+                      <span>{option.name}</span>
+                      {chosen && (
+                        <Pill tone='lime' dot>
+                          Chosen
+                        </Pill>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <>
@@ -592,9 +671,11 @@ export default function Files({
                             className={own.removeDesign}
                             aria-label={`Remove ${u.label || `design ${i + 1}`}`}
                             onClick={() =>
-                              setUploads((list) =>
-                                list.filter((x) => x.publicId !== u.publicId),
-                              )
+                              setRemoving({
+                                kind: "upload",
+                                publicId: u.publicId,
+                                name: u.label.trim() || `Design ${i + 1}`,
+                              })
                             }
                           >
                             <Icon name='close' />
@@ -653,6 +734,26 @@ export default function Files({
           )}
         </section>
       </div>
+
+      <ConfirmDialog
+        open={Boolean(removing)}
+        tone='danger'
+        icon='trash'
+        title='Remove this design?'
+        items={removing ? [removing.name] : undefined}
+        text={
+          removing?.kind === "sent"
+            ? removing.chosen
+              ? `${firstName} chose this one. Removing it takes it off their Design page, and they'll need to choose again.`
+              : `It comes off ${firstName}'s Design page, and the screenshot is deleted.`
+            : `It won't be sent to ${firstName}, and the screenshot is deleted.`
+        }
+        confirmLabel='Remove'
+        pendingLabel='Removing…'
+        pending={pending}
+        onConfirm={confirmRemove}
+        onClose={() => setRemoving(null)}
+      />
 
       <Modal isOpen={Boolean(editingDoc)} onClose={() => setEditingDoc(null)}>
         {draft && (

@@ -15,6 +15,7 @@ import { createId } from "@/lib/server/ids";
 import { url } from "@/lib/server/config";
 import { emailClient } from "@/lib/server/notify";
 import {
+  destroyUpload,
   isOurUpload,
   uploadTicket,
   uploadsReady,
@@ -476,6 +477,71 @@ export async function sendDesigns(
       href: url("/dashboard/website/design"),
     },
   });
+  refresh();
+  return done();
+}
+
+/**
+ * A design screenshot uploaded but not sent yet, taken back out: its file
+ * goes too. Only files in this client's designs folder.
+ */
+export async function discardDesignUpload(
+  clientId: string,
+  publicId: string,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  if (!publicId.startsWith(`${filesFolder(clientId, "designs")}/`))
+    return fail("That isn't one of their design uploads.");
+  await destroyUpload(publicId, "image/*");
+  return done();
+}
+
+/** The public id inside a Cloudinary file URL: after /upload/ and its version. */
+const publicIdOf = (fileUrl: string) =>
+  fileUrl
+    .split("/upload/")[1]
+    ?.replace(/^v\d+\//, "")
+    .replace(/\.[a-z0-9]+$/i, "") ?? "";
+
+/**
+ * Takes a design back from the client's choices, and deletes its file. If
+ * it was the one they chose, they choose again. Remove them all and the
+ * upload area comes back.
+ */
+export async function removeDesign(
+  clientId: string,
+  optionId: string,
+): Promise<ActionResult> {
+  const a = await admin();
+  if (!a.ok) return fail(a.error);
+  const client = await loadClient(clientId);
+  if (!client?.website) return fail("They don't have a website plan.");
+  const option = client.designs.options.find((o) => o.id === optionId);
+  if (!option) return fail("That design isn't there anymore.");
+
+  const options = client.designs.options.filter((o) => o.id !== optionId);
+  const wasChosen = client.designs.chosen === optionId;
+  await db
+    .update(s.websites)
+    .set({
+      designs: options.length
+        ? {
+            ...client.designs,
+            options,
+            chosen: wasChosen ? undefined : client.designs.chosen,
+            chosenAt: wasChosen ? undefined : client.designs.chosenAt,
+          }
+        : { options: [] },
+      updatedAt: new Date(),
+    })
+    .where(eq(s.websites.clientId, clientId));
+
+  const folder = `${filesFolder(clientId, "designs")}/`;
+  for (const image of option.images ?? []) {
+    const publicId = publicIdOf(image);
+    if (publicId.startsWith(folder)) await destroyUpload(publicId, "image/*");
+  }
   refresh();
   return done();
 }
