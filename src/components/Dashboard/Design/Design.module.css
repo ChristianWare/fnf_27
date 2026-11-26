@@ -612,3 +612,80 @@
     width: 100%;
   }
 }
+
+/* A soft shade over each design, with a light "Click to expand" button,
+   so it's clear the full design opens bigger. */
+.shotShade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1.6rem;
+  background: linear-gradient(
+    to bottom,
+    rgb(13 13 14 / 0%) 35%,
+    rgb(13 13 14 / 38%) 100%
+  );
+  transition: background-color 0.2s ease;
+}
+
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  height: 4.4rem;
+  padding: 0 2rem 0 1.6rem;
+  border-radius: 50px;
+  background-color: rgb(255 255 255 / 94%);
+  box-shadow: 0 0.6rem 1.8rem rgb(13 13 14 / 22%);
+  font-family: var(--CreatoDisplayMedium);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--black);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.expandIcon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* "Tap" on phones and tablets, "Click" with a mouse. */
+.expandTap {
+  display: none;
+}
+
+@media (hover: none) {
+  .expandClick {
+    display: none;
+  }
+
+  .expandTap {
+    display: inline;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .shot:hover .shotShade {
+    background-color: rgb(13 13 14 / 12%);
+  }
+
+  .shot:hover .expandBtn {
+    background-color: var(--white);
+    transform: translateY(-2px);
+  }
+}
+
+.shot:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 3px;
+}
+
+/* The rank badge stays above the shade. */
+.rankBadge {
+  z-index: 2;
+}

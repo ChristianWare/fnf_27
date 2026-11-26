@@ -59,6 +59,15 @@ function Preview({
           sizes='(max-width: 968px) 100vw, 33vw'
           className={styles.shotImg}
         />
+        {/* A soft shade and a light button, so it's clear the whole
+            design opens bigger. */}
+        <span className={styles.shotShade} aria-hidden='true'>
+          <span className={styles.expandBtn}>
+            <Icon name='expand' className={styles.expandIcon} />
+            <span className={styles.expandClick}>Click to expand</span>
+            <span className={styles.expandTap}>Tap to expand</span>
+          </span>
+        </span>
       </a>
     );
   }
